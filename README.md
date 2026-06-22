@@ -1,42 +1,66 @@
-<!-- markdownlint-disable -->
+# MutualExclusionAllocator
 
-<div align="center">
-
-# 狂野飙车9 擂台选车助手
-<br>
-<div>
-  <img alt="license" src="https://img.shields.io/badge/License-MIT-yellow.svg">
-</div>
-<div>
-  <img alt="Static%20Web" src="https://img.shields.io/badge/Static%20Web-HTML%2FCSS%2FJS-blue">
-</div>
-<br>
-
-<!-- markdownlint-restore -->
-
-</div>
-
-一个为《狂野飙车9：竞速传奇》玩家设计的**擂台选车辅助工具**。  
-根据您拥有的车辆，从五张不同大地图的赛道中，按游戏内推荐顺序自动分配车辆，并确保**五张图推荐车辆不重复**，帮助您在擂台赛中快速决策。
+A constraint-based resource allocation demo with greedy matching algorithm and reusable static-web architecture.
 
 ---
 
-## ✨ 功能特点
+## Problem Definition
 
-- 🗺️ **五张地图独立选择** – 每行选择大地图 + 小地图，系统自动互斥大地图，避免重复。
-- 🚗 **点亮式车库** – 预置游戏内擂台常见的赛车，点击车名即可点亮/熄灭，直观标记您拥有的车辆。
-- 🔁 **无重复推荐算法** – 按照游戏内推荐顺序，依次为五张图分配车辆，**已使用的车辆不会再次分配**，更贴近实际选车场景。
-- 📦 **数据外置** – 所有赛道数据存放在独立的 `data.json` 文件中，便于更新和维护。
-- 🌐 **纯静态页面** – 无需后端，可直接部署在任何静态托管服务（GitHub Pages、Netlify等）。
+Multi-group allocation with mutual exclusion constraints:
 
-## 🚀 如何使用
+- **Resource pool** -- a set of items, each can be marked as available or unavailable.
+- **Allocation groups** -- multiple groups, each with multiple candidate slots. Slots within the same group category are mutually exclusive (only one can be selected).
+- **Priority-ordered preference lists** -- each slot has a ranked list of preferred resources.
+- **No-reuse constraint** -- a resource assigned to one slot cannot be reassigned to another.
 
-### 在线体验
-项目已部署在 GitHub Pages，您可以直接访问：  
-👉 [https://testiphi.github.io/Asphalt9GauntletSelector/](https://testiphi.github.io/Asphalt9GauntletSelector/)
+The goal is to assign available resources to the selected slots according to their preference priority, while respecting the mutual exclusion and no-reuse constraints.
 
+---
 
-### 本地运行
-1. 下载本仓库到本地：
-   ```bash
-   git clone https://testiphi.github.io/asphalt9-gaunlet-selector/.git
+## Algorithm
+
+Greedy matching with priority ordering:
+
+1. User selects one slot from each group category, ensuring no duplicate categories.
+2. For each selected slot, iterate through its preference list in priority order.
+3. Assign the first available resource that has not been used by a previous slot.
+4. Mark the assigned resource as used so it is excluded from subsequent allocations.
+
+This greedy strategy yields O(n * m) time, where n is the number of slots and m is the maximum length of a preference list. While not guaranteed to find the globally optimal assignment, it produces a valid allocation that respects all constraints in a single pass.
+
+---
+
+## System Design
+
+- **Data-driven architecture** -- all slot definitions and preference lists are stored in an external JSON file (data.json), decoupled from the UI logic.
+- **Client-side state management** -- the resource pool is tracked as a local toggle state (available / unavailable). No server or database is required.
+- **Pure static deployment** -- the application is entirely client-side (HTML, CSS, JavaScript). It can be hosted on any static web service such as GitHub Pages or Netlify.
+- **Reusability** -- the same codebase can be adapted to other allocation scenarios by replacing the JSON data file, without modifying the algorithm or UI logic.
+
+---
+
+## Application Example
+
+The current data configuration models a vehicle-to-track allocation scenario from a racing game. Each "group category" represents a map region, each "slot" represents a specific track, and each "resource" represents a vehicle. The assignment logic follows the in-game recommended priority and ensures no vehicle is assigned to multiple tracks.
+
+---
+
+## Usage
+
+The project is deployed on GitHub Pages:
+
+[https://testiphi.github.io/Asphalt9GauntletSelector/](https://testiphi.github.io/Asphalt9GauntletSelector/)
+
+To run locally:
+
+```bash
+git clone https://github.com/Testiphi/Asphalt9GauntletSelector.git
+```
+
+Then open `index.html` in any modern browser. No build step or server is required.
+
+---
+
+## License
+
+MIT
