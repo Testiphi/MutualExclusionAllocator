@@ -172,6 +172,31 @@
             font-weight: 700;
             box-shadow: 0 0 6px #f5bc3c;
         }
+        .garage-search {
+            width: 100%;
+            padding: 10px 18px;
+            background: #030617;
+            border: 1px solid #3a4880;
+            color: #f0f4ff;
+            border-radius: 34px;
+            font-size: 0.85rem;
+            outline: none;
+            margin-bottom: 12px;
+            box-sizing: border-box;
+        }
+        .garage-search:focus {
+            border-color: #f5c542;
+        }
+        .garage-search::placeholder {
+            color: #5a6c9f;
+        }
+        .no-match {
+            color: #6a7db0;
+            text-align: center;
+            width: 100%;
+            padding: 20px;
+            font-size: 0.9rem;
+        }
         .action {
             text-align: center;
             margin: 18px 0 24px;
@@ -336,12 +361,13 @@
 
     <div class="garage">
         <div class="garage-header">
-            <h2>🚘 我的车库</h2>
+            <h2 id="garageTitle">🚘 我的车库</h2>
             <div class="garage-actions">
                 <span class="garage-btn" id="selectAllBtn">✔ 全部点亮</span>
                 <span class="garage-btn" id="clearAllBtn">✖ 全部清空</span>
             </div>
         </div>
+        <input class="garage-search" id="garageSearch" type="text" placeholder="🔍 搜索车辆..." autocomplete="off">
         <div class="car-grid" id="carGrid"></div>
     </div>
 
@@ -395,6 +421,7 @@
     let smallSelects = [];
 
     let selectedCars = new Set();            // 车库拥有车辆
+    let searchQuery = '';                    // 车库搜索关键字
     let currentBestSchemes = [];             // 非支配方案列表 { assignment, vector }
     let computing = false;
 
@@ -538,8 +565,21 @@
 
     // 车库渲染
     function renderGarage() {
+        // 更新标题计数
+        document.getElementById('garageTitle').textContent = `🚘 我的车库 (${selectedCars.size}/${USER_CARS.length})`;
+
+        // 按搜索关键字过滤
+        const filtered = searchQuery ? USER_CARS.filter(car => car.includes(searchQuery)) : USER_CARS;
+
         carGrid.innerHTML = '';
-        USER_CARS.forEach(car => {
+        if (filtered.length === 0) {
+            const msg = document.createElement('div');
+            msg.className = 'no-match';
+            msg.textContent = `❌ 未找到"${searchQuery}"`;
+            carGrid.appendChild(msg);
+            return;
+        }
+        filtered.forEach(car => {
             const span = document.createElement('span');
             span.className = 'car-tag' + (selectedCars.has(car) ? ' selected' : '');
             span.textContent = car;
@@ -553,7 +593,11 @@
         });
     }
 
-    function selectAll() { USER_CARS.forEach(c => selectedCars.add(c)); renderGarage(); }
+    function selectAll() {
+        const targets = searchQuery ? USER_CARS.filter(c => c.includes(searchQuery)) : USER_CARS;
+        targets.forEach(c => selectedCars.add(c));
+        renderGarage();
+    }
     function clearAll() { selectedCars.clear(); renderGarage(); }
 
     // 获取原始推荐组(含所有车,未过滤)
@@ -848,6 +892,11 @@
         recommendBtn.addEventListener('click', computeAndDisplay);
         selectAllBtn.addEventListener('click', () => { selectAll(); computeAndDisplay(); });
         clearAllBtn.addEventListener('click', () => { clearAll(); computeAndDisplay(); });
+        const searchInput = document.getElementById('garageSearch');
+        searchInput.addEventListener('input', () => {
+            searchQuery = searchInput.value.trim();
+            renderGarage();
+        });
         schemeSelect.addEventListener('change', (e) => {
             const idx = parseInt(e.target.value, 10);
             if (!isNaN(idx) && idx >= 0 && idx < currentBestSchemes.length) {
