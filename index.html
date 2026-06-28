@@ -529,6 +529,11 @@
                 if (Array.isArray(arr)) { arr.forEach(c => selectedCars.add(c)); }
             }
         } catch(e) {}
+        // 首次加载无数据时默认全选
+        if (selectedCars.size === 0) {
+            USER_CARS.forEach(c => selectedCars.add(c));
+            saveGarage();
+        }
     }
 
     // 车库渲染
