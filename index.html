@@ -286,12 +286,51 @@
             margin-left: 12px;
             font-weight: normal;
         }
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5);
+            justify-content: center; align-items: center;
+            z-index: 999;
+        }
+        .loading-overlay.show { display: flex; }
+        .loading-box {
+            background: #111827;
+            border: 1px solid #2a3650;
+            border-radius: 32px;
+            padding: 40px 60px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+        }
+        .loading-spinner {
+            width: 50px; height: 50px;
+            border: 4px solid #2a3650;
+            border-top: 4px solid #f7d44a;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 16px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .loading-box p { color: #cddcff; font-size: 1rem; margin: 12px 0 0; }
+        .result-score {
+            font-size: 0.75rem;
+            color: #83a0d8;
+            margin-top: 2px;
+        }
     </style>
 </head>
 <body>
 <div class="card">
-    <h1>🏆 擂台选车v0.9（非稳定版本）</h1>
-    <div class="sub">🚀 仅保留“无法被其他方案全面超越”的分配策略 | 每张图优先级数值越小越强</div>
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-box">
+            <div class="loading-spinner"></div>
+            <p>🔄 正在计算最优方案...</p>
+        </div>
+    </div>
+
+    <h1>🏆 擂台选车助手</h1>
+    <div class="sub">🚀 帕累托最优分配 | 每张图优先级数值越小越强 | 仅显示不可被其他方案全面超越的策略</div>
 
     <div class="map-rows" id="mapRowsContainer"></div>
 
@@ -316,11 +355,11 @@
             <span class="badge-pareto" id="schemeCountBadge">0</span>
         </div>
         <div class="scheme-selector">
-            <label for="schemeSelect">🏅 选择方案：</label>
+            <label for="schemeSelect">🏅 选择方案:</label>
             <select id="schemeSelect"></select>
         </div>
         <div class="result-grid" id="resultGrid"></div>
-        <div class="footer-note">给出的首个方案不一定为最优，需根据自身情况选择更好的方案</div>
+        <div class="footer-note">给出的首个方案不一定为最优,需根据自身情况选择更好的方案</div>
     </div>
 </div>
 
@@ -328,17 +367,17 @@
 (function() {
     // ----------------------------- 车辆库 --------------------------------
     const USER_CARS = [
-        "杰皇", "f5r", "r兔", "300+", "玻璃", "银电", "小蜥蜴", "恶魔", "大超", "莫斯勒", 
-        "21c", "cc850", "f5", "风龙", "杰弟", "黑龙", "ssc", "c2", "猫头鹰", "白龙", 
-        "杰哥", "ps龙", "肥龙", "att", "fp1", "urs", "统治", "divo", "法拉第", "速尾", "纳兰", 
-        "秋王", "sf90", "cs", "自燃", "c1", "狼王", "塞纳", "电牛", "复仇", "小自燃", 
-        "自私", "万达", "狼崽", "火山", "b95", "499p", "英灵殿", "t牛", "650s", "霓虹gtr", "007s", "9x8", "gtr50", "红秋王", "fe3", 
-        "风扇", "r牛", "er9", "六子", "sgt", "600lt", "帕梅", "5n"
+        "杰皇", "f5r", "r兔", "300+", "玻璃", "银电", "小蜥蜴", "恶魔", "大超", "莫斯勒",
+        "21c", "cc850", "f5", "风龙", "杰弟", "黑龙", "ssc", "c2", "猫头鹰", "白龙",
+        "杰哥", "ps龙", "肥龙", "att", "fp1", "urs", "统治", "divo", "法拉第", "速尾", "纳兰",
+        "秋王", "冬王", "sf90", "ts900", "cs", "自燃", "c1", "狼王", "塞纳", "电牛", "复仇", "小自燃",
+        "自私", "万达", "狼崽", "火山", "b95", "499p", "英灵殿", "t牛", "650s", "霓虹gtr", "007s", "9x8", "gtr50", "红秋王", "fe3",
+        "风扇", "r牛", "er9", "六子", "sgt", "600lt", "帕梅", "5n", "小牛"
     ];
 
-    let RACE_DATA = null;               
+    let RACE_DATA = null;
     let bigMapList = [];
-    let smallMapsByBig = {};            
+    let smallMapsByBig = {};
 
     // DOM 元素
     const mapRowsContainer = document.getElementById('mapRowsContainer');
@@ -349,6 +388,7 @@
     const schemeSelect = document.getElementById('schemeSelect');
     const resultGrid = document.getElementById('resultGrid');
     const schemeCountBadge = document.getElementById('schemeCountBadge');
+    const loadingOverlay = document.getElementById('loadingOverlay');
 
     const ROWS = 5;
     let bigSelects = [];
@@ -356,8 +396,9 @@
 
     let selectedCars = new Set();            // 车库拥有车辆
     let currentBestSchemes = [];             // 非支配方案列表 { assignment, vector }
+    let computing = false;
 
-    // 解析车组（例如 "狼崽/火山" -> ["狼崽","火山"]）
+    // 解析车组(例如 "狼崽/火山" -> ["狼崽","火山"])
     function parseCarGroup(cell) {
         if (typeof cell === 'string' && cell.includes('/')) {
             return cell.split('/').map(s => s.trim());
@@ -410,7 +451,7 @@
         }
     }
 
-    // 刷新大地图选项（互斥避免同一大地图重复）
+    // 刷新大地图选项(互斥避免同一大地图重复)
     function refreshBigMaps() {
         const oldBigValues = bigSelects.map(sel => sel.value);
         const oldSmallValues = smallSelects.map(sel => sel.value);
@@ -476,6 +517,20 @@
         }
     }
 
+    // --- 车库持久化 ---
+    function saveGarage() {
+        try { localStorage.setItem('garageCars', JSON.stringify([...selectedCars])); } catch(e) {}
+    }
+    function loadGarage() {
+        try {
+            const stored = localStorage.getItem('garageCars');
+            if (stored) {
+                const arr = JSON.parse(stored);
+                if (Array.isArray(arr)) { arr.forEach(c => selectedCars.add(c)); }
+            }
+        } catch(e) {}
+    }
+
     // 车库渲染
     function renderGarage() {
         carGrid.innerHTML = '';
@@ -486,6 +541,7 @@
             span.addEventListener('click', () => {
                 if (selectedCars.has(car)) selectedCars.delete(car);
                 else selectedCars.add(car);
+                saveGarage();
                 renderGarage();
             });
             carGrid.appendChild(span);
@@ -495,7 +551,7 @@
     function selectAll() { USER_CARS.forEach(c => selectedCars.add(c)); renderGarage(); }
     function clearAll() { selectedCars.clear(); renderGarage(); }
 
-    // 获取原始推荐组（含所有车，未过滤）
+    // 获取原始推荐组(含所有车,未过滤)
     function getOriginalGroups(big, small) {
         const list = smallMapsByBig[big];
         if (!list) return null;
@@ -503,22 +559,22 @@
         return found ? found.orderGroups : null;
     }
 
-    // ---------- 核心：生成所有可行方案，然后进行帕累托非支配过滤 ----------
+    // ---------- 核心:生成所有可行方案,然后进行帕累托非支配过滤 ----------
     // validMaps: 用户选中的地图列表 [{ big, small, originalIndex }]
     // ownedSet: 车库车辆
-    // maxSchemesLimit: 若非支配方案超过此数量，则按字典序截取前N个（保证界面友好）
+    // maxSchemesLimit: 若非支配方案超过此数量,则按字典序截取前N个(保证界面友好)
     function generateParetoSchemes(validMaps, ownedSet, maxSchemesLimit = 20) {
         const n = validMaps.length;
         if (n === 0) return [];
 
-        // 1. 预计算每张图的数据：候选组、车→优先级映射
+        // 1. 预计算每张图的数据:候选组、车→优先级映射
         const mapsData = [];
         for (let i = 0; i < n; i++) {
             const { big, small } = validMaps[i];
             const originalGroups = getOriginalGroups(big, small);
             if (!originalGroups) return [];
 
-            // 过滤候选：每组只保留拥有的车
+            // 过滤候选:每组只保留拥有的车
             const filteredGroups = originalGroups.map(group => group.filter(car => ownedSet.has(car)));
             // 车->优先级 (组索引)
             const carToPriority = new Map();
@@ -533,7 +589,7 @@
             mapsData.push({ filteredGroups, carToPriority });
         }
 
-        // 2. 回溯生成所有可行分配（车辆不重复）
+        // 2. 回溯生成所有可行分配(车辆不重复)
         const allSchemes = [];    // 每个元素 { assignment: string[], vector: number[] }
         const usedCars = new Set();
         const curAssign = new Array(n).fill(null);
@@ -548,7 +604,7 @@
                 return;
             }
             const { filteredGroups, carToPriority } = mapsData[idx];
-            if (filteredGroups.length === 0) return; // 该图无可用车，此路不通
+            if (filteredGroups.length === 0) return; // 该图无可用车,此路不通
 
             for (let g = 0; g < filteredGroups.length; g++) {
                 const group = filteredGroups[g];
@@ -571,12 +627,12 @@
         backtrack(0);
         if (allSchemes.length === 0) return [];
 
-        // 3. 非支配过滤（帕累托前沿）
-        // 比较两个方案：方案A支配方案B 当且仅当 对于所有有效位置 i，A.vector[i] <= B.vector[i] 且至少一个严格小于
+        // 3. 非支配过滤(帕累托前沿)
+        // 比较两个方案:方案A支配方案B 当且仅当 对于所有有效位置 i,A.vector[i] <= B.vector[i] 且至少一个严格小于
         function dominates(aVec, bVec) {
             let atLeastOneBetter = false;
             for (let i = 0; i < n; i++) {
-                if (aVec[i] > bVec[i]) return false;   // 有一项劣于B，则不能支配
+                if (aVec[i] > bVec[i]) return false;   // 有一项劣于B,则不能支配
                 if (aVec[i] < bVec[i]) atLeastOneBetter = true;
             }
             return atLeastOneBetter;
@@ -605,7 +661,7 @@
             }
         }
 
-        // 可选：按字典序排序（便于展示，不影响非支配性质）
+        // 可选:按字典序排序(便于展示,不影响非支配性质)
         paretoFront.sort((a, b) => {
             for (let i = 0; i < n; i++) {
                 if (a.vector[i] !== b.vector[i]) return a.vector[i] - b.vector[i];
@@ -613,10 +669,10 @@
             return 0;
         });
 
-        // 若数量超过限制，截取前 maxSchemesLimit 个（按字典序，保留最好的一部分）
+        // 若数量超过限制,截取前 maxSchemesLimit 个(按字典序,保留最好的一部分)
         const finalSchemes = paretoFront.slice(0, maxSchemesLimit);
 
-        // 将 assignment 扩展为全长 ROWS 的数组（未选地图位置为 null）
+        // 将 assignment 扩展为全长 ROWS 的数组(未选地图位置为 null)
         const extended = finalSchemes.map(scheme => {
             const fullAssign = new Array(ROWS).fill(null);
             const fullVec = new Array(ROWS).fill(null);
@@ -644,6 +700,18 @@
         return maps;
     }
 
+    // 显示单个方案的总优先级分
+    function getTotalScore(scheme) {
+        if (!scheme || !scheme.vector) return 0;
+        let total = 0;
+        for (let i = 0; i < ROWS; i++) {
+            if (bigSelects[i]?.value && smallSelects[i]?.value && scheme.vector[i] !== null) {
+                total += scheme.vector[i];
+            }
+        }
+        return total;
+    }
+
     // 渲染结果网格
     function renderResultGrid(scheme) {
         if (!scheme) {
@@ -663,6 +731,7 @@
             return;
         }
 
+        const totalScore = getTotalScore(scheme);
         let html = '';
         for (let i = 0; i < ROWS; i++) {
             const big = bigSelects[i].value;
@@ -692,6 +761,7 @@
                 </div>`;
             }
         }
+        html += `<div class="result-score" style="grid-column:1/-1;">📊 当前方案总优先级分：${totalScore}（越小越优）</div>`;
         resultGrid.innerHTML = html;
     }
 
@@ -701,7 +771,7 @@
         schemeSelect.innerHTML = '';
         if (currentBestSchemes.length === 0) {
             const opt = document.createElement('option');
-            opt.textContent = '😭 无可分配方案（请检查车库是否拥有必要车辆）';
+            opt.textContent = '😭 无可分配方案(请检查车库是否拥有必要车辆)';
             opt.value = '-1';
             schemeSelect.appendChild(opt);
             schemeSelect.disabled = true;
@@ -715,27 +785,30 @@
         currentBestSchemes.forEach((scheme, idx) => {
             // 构建摘要：只显示有效地图
             const parts = [];
+            let totalScore = 0;
             for (let i = 0; i < ROWS; i++) {
                 if (bigSelects[i].value && smallSelects[i].value) {
                     const car = scheme.assignment[i] || '?';
                     const prio = scheme.vector[i] !== null ? scheme.vector[i] : '—';
                     parts.push(`${i+1}:${car}(${prio})`);
+                    if (scheme.vector[i] !== null) totalScore += scheme.vector[i];
                 }
             }
             const vectorStr = scheme.vector.filter(v => v !== null).join(',');
             const option = document.createElement('option');
             option.value = idx;
-            option.textContent = `🏆 方案${idx+1}  [${vectorStr}]  | ${parts.join(' ')}`;
+            option.textContent = `🏆 方案${idx+1}  [${vectorStr}]  Σ=${totalScore}  | ${parts.join(' ')}`;
             schemeSelect.appendChild(option);
         });
         schemeSelect.value = 0;
         renderResultGrid(currentBestSchemes[0]);
     }
 
-    // 主控：根据当前地图选择 + 车库，生成帕累托最优方案
+    // 主控:根据当前地图选择 + 车库,生成帕累托最优方案
     function computeAndDisplay() {
         const validMaps = getCurrentValidMaps();
         if (validMaps.length === 0) {
+            loadingOverlay.classList.remove('show');
             currentBestSchemes = [];
             schemeSelect.innerHTML = '';
             const opt = document.createElement('option');
@@ -744,12 +817,23 @@
             schemeSelect.appendChild(opt);
             schemeSelect.disabled = true;
             schemeCountBadge.textContent = '0';
-            resultGrid.innerHTML = `<div style="grid-column:1/-1; text-align:center; color:#8f9bcb;">未选择任何地图，请先选择大地图与小地图</div>`;
+            resultGrid.innerHTML = `<div style="grid-column:1/-1; text-align:center; color:#8f9bcb;">未选择任何地图,请先选择大地图与小地图</div>`;
             return;
         }
 
-        const paretoSchemes = generateParetoSchemes(validMaps, selectedCars, 25); // 上限25个非支配方案
-        updateUIWithSchemes(paretoSchemes);
+        // 显示加载动画,用 setTimeout 让浏览器渲染一次
+        loadingOverlay.classList.add('show');
+        setTimeout(() => {
+            const paretoSchemes = generateParetoSchemes(validMaps, selectedCars, 25);
+            // 按总优先级排序(升序),辅助用户快速找到最优
+            paretoSchemes.sort((a, b) => {
+                const sumA = a.vector.reduce((s, v) => s + (v !== null ? v : 0), 0);
+                const sumB = b.vector.reduce((s, v) => s + (v !== null ? v : 0), 0);
+                return sumA - sumB;
+            });
+            loadingOverlay.classList.remove('show');
+            updateUIWithSchemes(paretoSchemes);
+        }, 50);
     }
 
     // 事件绑定
@@ -775,6 +859,7 @@
             RACE_DATA = await response.json();
             buildMapIndex();
             renderMapRows();
+            loadGarage();              // 从 localStorage 恢复车库
             renderGarage();
             refreshBigMaps();          // 填充地图下拉
             bindEvents();
