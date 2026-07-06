@@ -500,9 +500,12 @@
             const small = item.小地图;
             const rawOrder = item.选车顺序;
             const orderGroups = rawOrder.map(cell => parseCarGroup(cell));
+            // 四区独立排序(如不存在则 fallback 为五区顺序过滤)
+            const zone4Raw = item.四区选车顺序;
+            const zone4OrderGroups = zone4Raw ? zone4Raw.map(cell => parseCarGroup(cell)) : null;
             bigSet.add(big);
             if (!map[big]) map[big] = [];
-            map[big].push({ name: small, orderGroups });
+            map[big].push({ name: small, orderGroups, zone4OrderGroups });
         });
         bigMapList = Array.from(bigSet).sort();
         smallMapsByBig = map;
@@ -683,11 +686,15 @@
     function clearAll() { selectedCars.clear(); renderGarage(); }
 
     // 获取原始推荐组(含所有车,未过滤)
-    function getOriginalGroups(big, small) {
+    function getOriginalGroups(big, small, zone) {
         const list = smallMapsByBig[big];
         if (!list) return null;
         const found = list.find(item => item.name === small);
-        return found ? found.orderGroups : null;
+        if (!found) return null;
+        if (zone === 'zone4' && found.zone4OrderGroups) {
+            return found.zone4OrderGroups;
+        }
+        return found.orderGroups;
     }
 
     // ---------- 核心:生成所有可行方案,然后进行帕累托非支配过滤 ----------
@@ -702,15 +709,11 @@
         const mapsData = [];
         for (let i = 0; i < n; i++) {
             const { big, small } = validMaps[i];
-            const originalGroups = getOriginalGroups(big, small);
+            const originalGroups = getOriginalGroups(big, small, currentZone);
             if (!originalGroups) return [];
 
             // 过滤候选:每组只保留拥有的车
-            // 四区模式额外限制为ZONE4_CARS
-            const zoneFilter = currentZone === 'zone4'
-                ? (car => ownedSet.has(car) && ZONE4_CARS.has(car))
-                : (car => ownedSet.has(car));
-            const filteredGroups = originalGroups.map(group => group.filter(zoneFilter));
+            const filteredGroups = originalGroups.map(group => group.filter(car => ownedSet.has(car)));
             // 车->优先级 (组索引)
             const carToPriority = new Map();
             for (let gIdx = 0; gIdx < originalGroups.length; gIdx++) {
