@@ -1022,9 +1022,12 @@
                     }
                     if (changed) saveGarage();
                 }
-                // 重渲染
+                // 重渲染（新创建的 select 需要重新绑定事件）
                 renderMapRows();
                 refreshBigMaps();
+                // 重新绑定 map select 事件
+                bigSelects.forEach(sel => sel.addEventListener('change', () => { refreshBigMaps(); computeAndDisplay(); }));
+                smallSelects.forEach(sel => sel.addEventListener('change', computeAndDisplay));
                 renderGarage();
                 computeAndDisplay();
             });
@@ -1041,8 +1044,8 @@
             if (!response.ok) throw new Error(`HTTP ${response.status}`);
             RACE_DATA = await response.json();
             buildMapIndex();
-            renderMapRows();
-            loadGarage();              // 从 localStorage 恢复车库+模式
+            loadGarage();              // 从 localStorage 恢复车库+模式（必须先恢复，ROWS 才正确）
+            renderMapRows();           // 用正确的 ROWS 渲染地图行
             renderGarage();
             refreshBigMaps();          // 填充地图下拉
             bindEvents();
