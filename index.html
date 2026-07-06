@@ -514,6 +514,8 @@
     // 渲染地图行
     function renderMapRows() {
         mapRowsContainer.innerHTML = '';
+        bigSelects = [];
+        smallSelects = [];
         for (let i = 0; i < ROWS; i++) {
             const rowDiv = document.createElement('div');
             rowDiv.className = 'map-row';
@@ -533,8 +535,8 @@
             mapRowsContainer.appendChild(rowDiv);
             const bigSel = rowDiv.querySelector('.big-map-select');
             const smallSel = rowDiv.querySelector('.small-map-select');
-            bigSelects[i] = bigSel;
-            smallSelects[i] = smallSel;
+            bigSelects.push(bigSel);
+            smallSelects.push(smallSel);
         }
     }
 
