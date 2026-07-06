@@ -35,6 +35,45 @@
             align-items: center;
             gap: 8px;
         }
+        /* 四区/五区切换开关 */
+        .zone-toggle {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            padding: 0 0 0 22px;
+        }
+        .zone-toggle label {
+            color: #9aa9ce;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            user-select: none;
+            padding: 6px 16px;
+            border-radius: 40px;
+            border: 1px solid #3a4880;
+            background: #0f1624;
+            transition: all .2s;
+        }
+        .zone-toggle label.active {
+            background: #f3bc3c;
+            color: #0e1422;
+            border-color: #ffdf8c;
+            font-weight: 700;
+            box-shadow: 0 0 6px #f5bc3c;
+        }
+        .zone-toggle label.inactive {
+            opacity: 0.5;
+        }
+        .zone-toggle label.inactive:hover {
+            opacity: 0.8;
+            border-color: #4f639a;
+        }
+        .car-tag.disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
+            border-color: #2a3857;
+        }
         .sub {
             color: #9aa9ce;
             margin-bottom: 28px;
@@ -357,6 +396,11 @@
     <h1>🏆 擂台选车助手</h1>
     <div class="sub">🚀 帕累托最优分配 | 每张图优先级数值越小越强 | 仅显示不可被其他方案全面超越的策略</div>
 
+    <div class="zone-toggle" id="zoneToggle">
+        <label data-zone="zone5" class="active">🏁 五区</label>
+        <label data-zone="zone4" class="inactive">🔄 四区</label>
+    </div>
+
     <div class="map-rows" id="mapRowsContainer"></div>
 
     <div class="garage">
@@ -400,6 +444,17 @@
         "自私", "万达", "狼崽", "火山", "b95", "499p", "英灵殿", "t牛", "650s", "霓虹gtr", "007s", "9x8", "gtr50", "红秋王", "fe3",
         "风扇", "r牛", "er9", "六子", "sgt", "600lt", "帕梅", "5n", "小牛"
     ];
+    // 四区可用车辆（五区全部可用，四区受限）
+    const ZONE4_CARS = new Set([
+        "f5", "杰哥", "ssc", "玻璃", "恶魔", "大超", "莫斯勒",
+        "21c", "c2", "肥龙", "fp1", "urs", "统治", "法拉第",
+        "速尾", "秋王", "sf90", "ts900", "狼王", "塞纳", "复仇",
+        "万达", "狼崽", "火山", "英灵殿", "9x8", "fe3", "风扇",
+        "r牛", "er9", "六子", "sgt", "600lt", "帕梅", "5n", "小牛"
+    ]);
+
+    let currentZone = 'zone5'; // 'zone5' | 'zone4'
+
 
     let RACE_DATA = null;
     let bigMapList = [];
@@ -416,7 +471,9 @@
     const schemeCountBadge = document.getElementById('schemeCountBadge');
     const loadingOverlay = document.getElementById('loadingOverlay');
 
-    const ROWS = 5;
+    let ROWS = 5;
+    function updateRows() { ROWS = currentZone === "zone5" ? 5 : 4; }
+
     let bigSelects = [];
     let smallSelects = [];
 
@@ -547,6 +604,10 @@
     // --- 车库持久化 ---
     function saveGarage() {
         try { localStorage.setItem('garageCars', JSON.stringify([...selectedCars])); } catch(e) {}
+        saveZoneMode();
+    }
+    function saveZoneMode() {
+        try { localStorage.setItem('zoneMode', currentZone); } catch(e) {}
     }
     function loadGarage() {
         try {
@@ -556,6 +617,12 @@
                 if (Array.isArray(arr)) { arr.forEach(c => selectedCars.add(c)); }
             }
         } catch(e) {}
+        // 恢复四区/五区模式
+        try {
+            const savedZone = localStorage.getItem('zoneMode');
+            if (savedZone === 'zone4' || savedZone === 'zone5') currentZone = savedZone;
+        } catch(e) {}
+        updateRows();
         // 首次加载无数据时默认全选
         if (selectedCars.size === 0) {
             USER_CARS.forEach(c => selectedCars.add(c));
@@ -565,11 +632,15 @@
 
     // 车库渲染
     function renderGarage() {
-        // 更新标题计数
-        document.getElementById('garageTitle').textContent = `🚘 我的车库 (${selectedCars.size}/${USER_CARS.length})`;
+        const isZone4 = currentZone === 'zone4';
+        const totalLabel = isZone4
+            ? `🚘 我的车库 (${[...selectedCars].filter(c => ZONE4_CARS.has(c)).length}/${ZONE4_CARS.size}) 🔄四区`
+            : `🚘 我的车库 (${selectedCars.size}/${USER_CARS.length}) 🏁五区`;
+        document.getElementById('garageTitle').textContent = totalLabel;
 
-        // 按搜索关键字过滤
-        const filtered = searchQuery ? USER_CARS.filter(car => car.includes(searchQuery)) : USER_CARS;
+        const filtered = searchQuery
+            ? USER_CARS.filter(car => car.includes(searchQuery))
+            : (isZone4 ? USER_CARS.filter(car => ZONE4_CARS.has(car)) : USER_CARS);
 
         carGrid.innerHTML = '';
         if (filtered.length === 0) {
@@ -580,21 +651,32 @@
             return;
         }
         filtered.forEach(car => {
+            const disabled = isZone4 && !ZONE4_CARS.has(car);
             const span = document.createElement('span');
-            span.className = 'car-tag' + (selectedCars.has(car) ? ' selected' : '');
+            span.className = 'car-tag'
+                + (selectedCars.has(car) && !disabled ? ' selected' : '')
+                + (disabled ? ' disabled' : '');
             span.textContent = car;
-            span.addEventListener('click', () => {
-                if (selectedCars.has(car)) selectedCars.delete(car);
-                else selectedCars.add(car);
-                saveGarage();
-                renderGarage();
-            });
+            if (!disabled) {
+                span.addEventListener('click', () => {
+                    if (selectedCars.has(car)) selectedCars.delete(car);
+                    else selectedCars.add(car);
+                    saveGarage();
+                    renderGarage();
+                });
+            }
             carGrid.appendChild(span);
         });
     }
 
     function selectAll() {
-        const targets = searchQuery ? USER_CARS.filter(c => c.includes(searchQuery)) : USER_CARS;
+        const isZone4 = currentZone === 'zone4';
+        let targets;
+        if (searchQuery) {
+            targets = USER_CARS.filter(c => c.includes(searchQuery) && (!isZone4 || ZONE4_CARS.has(c)));
+        } else {
+            targets = isZone4 ? USER_CARS.filter(c => ZONE4_CARS.has(c)) : USER_CARS;
+        }
         targets.forEach(c => selectedCars.add(c));
         renderGarage();
     }
@@ -624,7 +706,11 @@
             if (!originalGroups) return [];
 
             // 过滤候选:每组只保留拥有的车
-            const filteredGroups = originalGroups.map(group => group.filter(car => ownedSet.has(car)));
+            // 四区模式额外限制为ZONE4_CARS
+            const zoneFilter = currentZone === 'zone4'
+                ? (car => ownedSet.has(car) && ZONE4_CARS.has(car))
+                : (car => ownedSet.has(car));
+            const filteredGroups = originalGroups.map(group => group.filter(zoneFilter));
             // 车->优先级 (组索引)
             const carToPriority = new Map();
             for (let gIdx = 0; gIdx < originalGroups.length; gIdx++) {
@@ -906,6 +992,44 @@
     }
 
     // 初始化加载数据
+    // 四区/五区切换
+    function initZoneToggle() {
+        const labels = document.querySelectorAll('#zoneToggle label');
+        labels.forEach(label => {
+            label.addEventListener('click', () => {
+                const zone = label.dataset.zone;
+                if (zone === currentZone) return;
+                currentZone = zone;
+                updateRows();
+                saveZoneMode();
+                // 更新toggle样式
+                labels.forEach(l => {
+                    l.className = l.dataset.zone === currentZone ? 'active' : 'inactive';
+                });
+                // 四区切换时取消非四区车辆的选中
+                if (currentZone === 'zone4') {
+                    let changed = false;
+                    for (const car of selectedCars) {
+                        if (!ZONE4_CARS.has(car)) {
+                            selectedCars.delete(car);
+                            changed = true;
+                        }
+                    }
+                    if (changed) saveGarage();
+                }
+                // 重渲染
+                renderMapRows();
+                refreshBigMaps();
+                renderGarage();
+                computeAndDisplay();
+            });
+        });
+        // 设置初始样式
+        labels.forEach(l => {
+            l.className = l.dataset.zone === currentZone ? 'active' : 'inactive';
+        });
+    }
+
     async function initApp() {
         try {
             const response = await fetch('data.json');
@@ -913,10 +1037,11 @@
             RACE_DATA = await response.json();
             buildMapIndex();
             renderMapRows();
-            loadGarage();              // 从 localStorage 恢复车库
+            loadGarage();              // 从 localStorage 恢复车库+模式
             renderGarage();
             refreshBigMaps();          // 填充地图下拉
             bindEvents();
+            initZoneToggle();          // 初始化四区/五区切换
             computeAndDisplay();       // 初次计算
         } catch (err) {
             mapRowsContainer.innerHTML = `<div class="loading" style="color:#f99;padding:30px;">❌ 加载失败: ${err.message}<br>请确保 data.json 文件存在且格式正确</div>`;
