@@ -471,8 +471,7 @@
     const schemeCountBadge = document.getElementById('schemeCountBadge');
     const loadingOverlay = document.getElementById('loadingOverlay');
 
-    let ROWS = 5;
-    function updateRows() { ROWS = currentZone === "zone5" ? 5 : 4; }
+    const ROWS = 5;
 
     let bigSelects = [];
     let smallSelects = [];
@@ -627,7 +626,6 @@
             const savedZone = localStorage.getItem('zoneMode');
             if (savedZone === 'zone4' || savedZone === 'zone5') currentZone = savedZone;
         } catch(e) {}
-        updateRows();
         // 首次加载无数据时默认全选
         if (selectedCars.size === 0) {
             USER_CARS.forEach(c => selectedCars.add(c));
@@ -1005,8 +1003,7 @@
                 const zone = label.dataset.zone;
                 if (zone === currentZone) return;
                 currentZone = zone;
-                updateRows();
-                saveZoneMode();
+                        saveZoneMode();
                 // 更新toggle样式
                 labels.forEach(l => {
                     l.className = l.dataset.zone === currentZone ? 'active' : 'inactive';
