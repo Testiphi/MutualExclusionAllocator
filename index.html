@@ -485,9 +485,9 @@
     // ========================== 工具函数 ==========================
 
     // 解析车组(例如 "狼崽/火山" -> ["狼崽","火山"])
-    // 支持传入字符串或 {车: "...", ...} 对象
+    // 支持传入字符串、["车名"] 数组、或 {"车": "...", ...} 旧对象
     function parseCarGroup(cell) {
-        const name = typeof cell === 'object' && cell !== null ? cell.车 : cell;
+        const name = Array.isArray(cell) ? cell[0] : (typeof cell === 'object' && cell !== null ? cell.车 : cell);
         if (typeof name === 'string' && name.includes('/')) {
             return name.split('/').map(s => s.trim());
         }
@@ -513,8 +513,8 @@
             const small = item.小地图;
             const zone5Entries = item.五区 || [];
             const zone4Entries = item.四区 || [];
-            const orderGroups = zone5Entries.map(entry => parseCarGroup(entry.车));
-            const zone4OrderGroups = zone4Entries.map(entry => parseCarGroup(entry.车));
+            const orderGroups = zone5Entries.map(entry => parseCarGroup(entry));
+            const zone4OrderGroups = zone4Entries.map(entry => parseCarGroup(entry));
             bigSet.add(big);
             if (!map[big]) map[big] = [];
             map[big].push({
@@ -537,9 +537,9 @@
         if (!found) return null;
         const entries = zone === 'zone4' ? found.zone4Entries : found.zone5Entries;
         for (const entry of entries) {
-            const cars = parseCarGroup(entry.车);
+            const cars = parseCarGroup(entry);
             if (cars.includes(carName)) {
-                return entry.成绩 || null;
+                return Array.isArray(entry) && entry.length > 1 ? entry[1] : null;
             }
         }
         return null;
