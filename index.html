@@ -409,9 +409,10 @@
             <div class="garage-actions">
                 <span class="garage-btn" id="selectAllBtn">✔ 全部点亮</span>
                 <span class="garage-btn" id="clearAllBtn">✖ 全部清空</span>
+                <span class="garage-btn" id="sortBtn">📊 默认</span>
             </div>
         </div>
-        <input class="garage-search" id="garageSearch" type="text" placeholder="🔍 搜索车辆..." autocomplete="off">
+        <input class="garage-search" id="garageSearch" type="text" placeholder="🔍 搜索车辆(支持昵称/真名)... autocomplete="off">
         <div class="car-grid" id="carGrid"></div>
     </div>
 
@@ -480,6 +481,11 @@
     let searchQuery = '';                    // 车库搜索关键字
     let currentBestSchemes = [];             // 非支配方案列表 { assignment, vector }
     let computing = false;
+
+    // 车辆度量数据 (cars.json 动态加载后填充)
+    let carStats = {};         // 真车名 → { score, max_speed, acceleration, handling, nitro }
+    let nickToName = {};       // 昵称 → 真车名
+    let sortMode = 'default';  // 'default' | 'score-desc' | 'score-asc'
 
     // 解析车组(例如 "狼崽/火山" -> ["狼崽","火山"])
     function parseCarGroup(cell) {
@@ -633,6 +639,17 @@
         }
     }
 
+    // 排序+搜索辅助: 根据 sortMode 对车辆列表排序
+    function sortCarList(list) {
+        if (sortMode === 'default') return list;
+        const desc = sortMode === 'score-desc';
+        return [...list].sort((a, b) => {
+            const sa = carStats[nickToName[a]]?.score ?? 0;
+            const sb = carStats[nickToName[b]]?.score ?? 0;
+            return desc ? sb - sa : sa - sb;
+        });
+    }
+
     // 车库渲染
     function renderGarage() {
         const isZone4 = currentZone === 'zone4';
@@ -641,9 +658,28 @@
             : `🚘 我的车库 (${selectedCars.size}/${USER_CARS.length}) 🏁五区`;
         document.getElementById('garageTitle').textContent = totalLabel;
 
-        const filtered = searchQuery
-            ? USER_CARS.filter(car => car.includes(searchQuery))
-            : (isZone4 ? USER_CARS.filter(car => ZONE4_CARS.has(car)) : USER_CARS);
+        const sortBtn = document.getElementById('sortBtn');
+        if (sortBtn) {
+            const labels = { 'default': '📊 默认', 'score-desc': '📉 分↓', 'score-asc': '📈 分↑' };
+            sortBtn.textContent = labels[sortMode] || sortMode;
+        }
+
+        // 搜索: 支持昵称和真车名
+        let filtered;
+        if (searchQuery) {
+            const q = searchQuery.toLowerCase();
+            filtered = USER_CARS.filter(car => {
+                if (car.includes(searchQuery)) return true;
+                const realName = nickToName[car];
+                if (realName && realName.toLowerCase().includes(q)) return true;
+                return false;
+            });
+        } else {
+            filtered = isZone4 ? USER_CARS.filter(car => ZONE4_CARS.has(car)) : [...USER_CARS];
+        }
+
+        // 排序
+        filtered = sortCarList(filtered);
 
         carGrid.innerHTML = '';
         if (filtered.length === 0) {
@@ -659,7 +695,11 @@
             span.className = 'car-tag'
                 + (selectedCars.has(car) && !disabled ? ' selected' : '')
                 + (disabled ? ' disabled' : '');
-            span.textContent = car;
+            // 显示昵称, 如果搜索的是真名则加后缀提示
+            const realName = nickToName[car];
+            span.textContent = realName && searchQuery && realName.toLowerCase().includes(searchQuery.toLowerCase())
+                ? `${car} (${realName})`
+                : car;
             if (!disabled) {
                 span.addEventListener('click', () => {
                     if (selectedCars.has(car)) selectedCars.delete(car);
@@ -674,9 +714,13 @@
 
     function selectAll() {
         const isZone4 = currentZone === 'zone4';
+        const q = searchQuery.toLowerCase();
         let targets;
         if (searchQuery) {
-            targets = USER_CARS.filter(c => c.includes(searchQuery) && (!isZone4 || ZONE4_CARS.has(c)));
+            targets = USER_CARS.filter(c => {
+                const match = c.includes(searchQuery) || (nickToName[c] && nickToName[c].toLowerCase().includes(q));
+                return match && (!isZone4 || ZONE4_CARS.has(c));
+            });
         } else {
             targets = isZone4 ? USER_CARS.filter(c => ZONE4_CARS.has(c)) : USER_CARS;
         }
@@ -981,6 +1025,12 @@
         recommendBtn.addEventListener('click', computeAndDisplay);
         selectAllBtn.addEventListener('click', () => { selectAll(); computeAndDisplay(); });
         clearAllBtn.addEventListener('click', () => { clearAll(); computeAndDisplay(); });
+        document.getElementById('sortBtn').addEventListener('click', () => {
+            const modes = ['default', 'score-desc', 'score-asc'];
+            const idx = modes.indexOf(sortMode);
+            sortMode = modes[(idx + 1) % modes.length];
+            renderGarage();
+        });
         const searchInput = document.getElementById('garageSearch');
         searchInput.addEventListener('input', () => {
             searchQuery = searchInput.value.trim();
@@ -1037,10 +1087,28 @@
 
     async function initApp() {
         try {
+            // 加载赛道数据
             const response = await fetch('data.json');
             if (!response.ok) throw new Error(`HTTP ${response.status}`);
             RACE_DATA = await response.json();
             buildMapIndex();
+
+            // 加载车辆度量数据
+            try {
+                const carResp = await fetch('cars.json');
+                if (carResp.ok) {
+                    const carData = await carResp.json();
+                    carStats = {};
+                    nickToName = {};
+                    for (const c of carData.cars) {
+                        carStats[c.title] = c;
+                    }
+                    Object.assign(nickToName, carData._nickname_map);
+                }
+            } catch(e) {
+                console.warn('cars.json 加载失败, 搜索/排序降级:', e.message);
+            }
+
             loadGarage();              // 从 localStorage 恢复车库+模式（必须先恢复，ROWS 才正确）
             renderMapRows();           // 用正确的 ROWS 渲染地图行
             renderGarage();
