@@ -211,6 +211,32 @@
             font-weight: 700;
             box-shadow: 0 0 6px #f5bc3c;
         }
+        .class-filter {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+        .class-filter-btn {
+            background: #18203a;
+            color: #8f9ec7;
+            padding: 4px 14px;
+            border-radius: 60px;
+            font-size: 0.8rem;
+            border: 1px solid #40548b;
+            cursor: pointer;
+            user-select: none;
+            font-weight: 600;
+        }
+        .class-filter-btn.active {
+            background: #f3bc3c;
+            color: #0e1422;
+            border-color: #ffdf8c;
+            box-shadow: 0 0 4px #f5bc3c;
+        }
+        .class-filter-btn:hover {
+            border-color: #f5c542;
+        }
         .garage-search {
             width: 100%;
             padding: 10px 18px;
@@ -413,6 +439,15 @@
             </div>
         </div>
         <input class="garage-search" id="garageSearch" type="text" placeholder="🔍 搜索车辆(支持昵称/真名)..." autocomplete="off">
+        <div class="class-filter" id="classFilter">
+            <span class="class-filter-btn active" data-class="">全部</span>
+            <span class="class-filter-btn" data-class="R">R</span>
+            <span class="class-filter-btn" data-class="S">S</span>
+            <span class="class-filter-btn" data-class="A">A</span>
+            <span class="class-filter-btn" data-class="B">B</span>
+            <span class="class-filter-btn" data-class="C">C</span>
+            <span class="class-filter-btn" data-class="D">D</span>
+        </div>
         <div class="car-grid" id="carGrid"></div>
     </div>
 
@@ -533,7 +568,8 @@
     // 车辆度量数据 (cars.json 动态加载后填充)
     let carStats = {};         // 真车名 → { score, max_speed, ... }
     let nickToName = {};       // 昵称 → 真车名
-    let sortMode = 'default';  // 'default' | 'score-desc' | 'score-asc'
+    let sortMode = 'alpha';    // 'alpha' | 'score-desc' | 'score-asc'
+    let filterClass = null;    // null = 全部, 或 'S','A','B','C','D','R' 之一
 
     // DOM 元素
     const mapRowsContainer = document.getElementById('mapRowsContainer');
@@ -752,13 +788,20 @@
         // 更新排序按钮文字
         const sortBtn = document.getElementById('sortBtn');
         if (sortBtn) {
-            const labels = { 'default': '📊 默认', 'score-desc': '📉 分↓', 'score-asc': '📈 分↑' };
+            const labels = { 'alpha': '🔤 字母', 'score-desc': '📉 分↓', 'score-asc': '📈 分↑' };
             sortBtn.textContent = labels[sortMode] || sortMode;
         }
 
+        // 更新等级筛选按钮高亮
+        document.querySelectorAll('.class-filter-btn').forEach(btn => {
+            const cls = btn.dataset.class || null;
+            btn.classList.toggle('active', cls === filterClass);
+        });
+
+        const filterSuffix = filterClass ? ` [${filterClass}]` : '';
         const totalLabel = isZone4
-            ? `🚘 我的车库 (${[...selectedCars].filter(c => zone4Cars.includes(c)).length}/${zone4Cars.length}) 🔄四区`
-            : `🚘 我的车库 (${selectedCars.size}/${zone5Cars.length}) 🏁五区`;
+            ? `🚘 我的车库 (${[...selectedCars].filter(c => zone4Cars.includes(c)).length}/${zone4Cars.length}) 🔄四区${filterSuffix}`
+            : `🚘 我的车库 (${selectedCars.size}/${zone5Cars.length}) 🏁五区${filterSuffix}`;
         document.getElementById('garageTitle').textContent = totalLabel;
 
         // 搜索: 支持昵称和真车名
@@ -775,14 +818,30 @@
             filtered = [...carList];
         }
 
-        // 按性能分排序
-        if (sortMode !== 'default') {
-            const desc = sortMode === 'score-desc';
+        // 等级筛选
+        if (filterClass) {
+            filtered = filtered.filter(car => {
+                const stats = carStats[nickToName[car]];
+                return stats && stats.class === filterClass;
+            });
+        }
+
+        // 排序
+        if (sortMode === 'score-desc') {
             filtered.sort((a, b) => {
                 const sa = carStats[nickToName[a]]?.score ?? 0;
                 const sb = carStats[nickToName[b]]?.score ?? 0;
-                return desc ? sb - sa : sa - sb;
+                return sb - sa;
             });
+        } else if (sortMode === 'score-asc') {
+            filtered.sort((a, b) => {
+                const sa = carStats[nickToName[a]]?.score ?? 0;
+                const sb = carStats[nickToName[b]]?.score ?? 0;
+                return sa - sb;
+            });
+        } else {
+            // 按字母(昵称)排序
+            filtered.sort((a, b) => a.localeCompare(b, 'zh'));
         }
 
         carGrid.innerHTML = '';
@@ -1127,11 +1186,20 @@
         selectAllBtn.addEventListener('click', () => { selectAll(); computeAndDisplay(); });
         clearAllBtn.addEventListener('click', () => { clearAll(); computeAndDisplay(); });
 
-        // 排序按钮: 默认 → 分↓ → 分↑
+        // 排序按钮: 字母 → 分↓ → 分↑
         document.getElementById('sortBtn').addEventListener('click', () => {
-            const modes = ['default', 'score-desc', 'score-asc'];
+            const modes = ['alpha', 'score-desc', 'score-asc'];
             const idx = modes.indexOf(sortMode);
             sortMode = modes[(idx + 1) % modes.length];
+            renderGarage();
+        });
+
+        // 等级筛选按钮
+        document.getElementById('classFilter').addEventListener('click', (e) => {
+            const btn = e.target.closest('.class-filter-btn');
+            if (!btn) return;
+            const cls = btn.dataset.class || null;
+            filterClass = cls;
             renderGarage();
         });
 
