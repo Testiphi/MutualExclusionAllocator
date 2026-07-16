@@ -74,6 +74,7 @@
             cursor: not-allowed;
             border-color: #2a3857;
         }
+        /* ===== 副标题 ===== */
         .sub {
             color: #9aa9ce;
             margin-bottom: 28px;
@@ -81,6 +82,7 @@
             padding-left: 18px;
             font-size: 0.9rem;
         }
+        /* ===== 地图选择行 ===== */
         .map-rows {
             display: flex;
             flex-direction: column;
@@ -145,6 +147,7 @@
         select:disabled {
             opacity: 0.6;
         }
+        /* ===== 车库区域 ===== */
         .garage {
             background: #0e1627;
             border-radius: 32px;
@@ -255,6 +258,7 @@
         .garage-search::placeholder {
             color: #5a6c9f;
         }
+        /* ===== 搜索无匹配提示 ===== */
         .no-match {
             color: #6a7db0;
             text-align: center;
@@ -262,6 +266,7 @@
             padding: 20px;
             font-size: 0.9rem;
         }
+        /* ===== 生成按钮 ===== */
         .action {
             text-align: center;
             margin: 18px 0 24px;
@@ -282,6 +287,7 @@
             background: linear-gradient(115deg, #ffcd5a, #e6a82a);
             transform: scale(0.98);
         }
+        /* ===== 结果面板 ===== */
         .result-panel {
             background: #0f1628;
             border-radius: 32px;
@@ -376,6 +382,7 @@
             margin-left: 12px;
             font-weight: normal;
         }
+        /* ===== 加载动画遮罩 ===== */
         .loading-overlay {
             display: none;
             position: fixed;
@@ -471,6 +478,14 @@
 
 <script>
 (function() {
+/** ====================================================================
+ *  架构概览
+ *    1) 数据层 —— data.json（赛道+优先级）+ cars.json（性能+昵称映射）
+ *    2) UI 层  —— 动态渲染地图行、车库网格、结果面板
+ *    3) 算法层  —— 回溯枚举分配 → 帕累托非支配排序
+ *    4) 持久化  —— localStorage（车库选中状态 + 四/五区模式）
+ * ===================================================================== */
+
     // 当前模式: 'zone5' | 'zone4'
     let currentZone = 'zone5';
 
@@ -594,8 +609,12 @@
 
     // ========================== 工具函数 ==========================
 
-    // 解析车组(例如 "狼崽/火山" -> ["狼崽","火山"])
-    // 支持传入字符串、["车名"] 数组、或 {"车": "...", ...} 旧对象
+    /**
+     * 解析 data.json 中的车组条目。
+     * 格式兼容：字符串（直接返回）、数组（取第一元素）、含 '/' 的多选一组合。
+     * @param {string|string[]|Object} cell - data.json 中的一条选车数据
+     * @returns {string[]} 车名数组（一般长度为 1，遇到 "狼崽/火山" 格式时为多选）
+     */
     function parseCarGroup(cell) {
         const name = Array.isArray(cell) ? cell[0] : (typeof cell === 'object' && cell !== null ? cell.车 : cell);
         if (typeof name === 'string' && name.includes('/')) {
@@ -639,7 +658,15 @@
         smallMapsByBig = map;
     }
 
-    // 查询某车在某地图的成绩
+    /**
+     * 查询某辆车在某小地图上的具体成绩。
+     * data.json 中每组的第二元素（如有）即为该车的成绩值。
+     * @param {string} big - 大地图名
+     * @param {string} small - 小地图名
+     * @param {string} carName - 车昵称
+     * @param {string} zone - 'zone5' | 'zone4'
+     * @returns {string|null} 成绩字符串，或 null
+     */
     function getCarScore(big, small, carName, zone) {
         const list = smallMapsByBig[big];
         if (!list) return null;
@@ -891,9 +918,19 @@
     }
     function clearAll() { selectedCars.clear(); renderGarage(); }
 
-    // ========================== 核心算法 ==========================
+    // =======================================================================
+    //  核心算法
+    //  三步法：
+    //    1) 预计算每张图的候选车组 + 车→优先级映射
+    //    2) 回溯枚举所有可行的不重复分配
+    //    3) 帕累托非支配过滤，保留不可被全面超越的方案
+    // =======================================================================
 
-    // 获取原始推荐组(含所有车,未过滤)
+    /**
+     * 获取某地图的选车推荐组。
+     * 组索引 = 优先级等级（越小越优）;
+     * 四区模式优先使用 data.json 中的四区数据，回退时按 ZONE4_CARS 过滤。
+     */
     function getOriginalGroups(big, small, zone) {
         const list = smallMapsByBig[big];
         if (!list) return null;
@@ -905,7 +942,30 @@
         return found.orderGroups;
     }
 
-    // ---------- 核心:生成所有可行方案,然后进行帕累托非支配过滤 ----------
+    /** 默认无车优先级标记（100 以内，远大于实际优先级值） */
+    const NO_CAR_PRIORITY = 99;
+
+    /**
+     * 帕累托非支配比较：方案 A 支配 B ⟺ A 各维度不差于 B 且至少一维严格更优。
+     * 此处维度 = 各图的优先级数值（越小越好）。
+     */
+    function dominates(aVec, bVec) {
+        let atLeastOneBetter = false;
+        for (let i = 0; i < aVec.length; i++) {
+            if (aVec[i] > bVec[i]) return false;
+            if (aVec[i] < bVec[i]) atLeastOneBetter = true;
+        }
+        return atLeastOneBetter;
+    }
+
+    /**
+     * 核心：生成所有可行方案 → 帕累托非支配过滤。
+     *
+     * 1) 预计算每图的候选车组 + 车→优先级映射
+     * 2) 回溯递归，保证一车不重复用
+     * 3) 对枚举结果执行帕累托非支配过滤
+     */
+    function generateParetoSchemes(validMaps, ownedSet, maxSchemesLimit = 20) {
     function generateParetoSchemes(validMaps, ownedSet, maxSchemesLimit = 20) {
         const n = validMaps.length;
         if (n === 0) return [];
@@ -932,12 +992,16 @@
             mapsData.push({ filteredGroups, carToPriority });
         }
 
-        // 2. 回溯生成所有可行分配(车辆不重复)
-        const allSchemes = [];    // 每个元素 { assignment: string[], vector: number[] }
+        // ---- 2. 回溯枚举所有可行分配（车不重复） ----
+        const allSchemes = [];    // { assignment: string[], vector: number[] }
         const usedCars = new Set();
         const curAssign = new Array(n).fill(null);
-        const curVector = new Array(n).fill(99);
+        const curVector = new Array(n).fill(NO_CAR_PRIORITY);
 
+        /**
+         * 递归回溯。按地图顺序逐一尝试可用车辆，保证同一辆车不重复分配。
+         * 剪枝：某图无可用车时直接返回（此路不通）。
+         */
         function backtrack(idx) {
             if (idx === n) {
                 allSchemes.push({
@@ -947,21 +1011,21 @@
                 return;
             }
             const { filteredGroups, carToPriority } = mapsData[idx];
-            if (filteredGroups.length === 0) return; // 该图无可用车,此路不通
+            if (filteredGroups.length === 0) return;  // 该图无可用车
 
             for (let g = 0; g < filteredGroups.length; g++) {
                 const group = filteredGroups[g];
                 if (group.length === 0) continue;
                 for (const car of group) {
                     if (!usedCars.has(car)) {
-                        const prio = carToPriority.get(car) ?? 99;
+                        const prio = carToPriority.get(car) ?? NO_CAR_PRIORITY;
                         usedCars.add(car);
                         curAssign[idx] = car;
                         curVector[idx] = prio;
                         backtrack(idx + 1);
                         usedCars.delete(car);
                         curAssign[idx] = null;
-                        curVector[idx] = 99;
+                        curVector[idx] = NO_CAR_PRIORITY;
                     }
                 }
             }
@@ -970,16 +1034,7 @@
         backtrack(0);
         if (allSchemes.length === 0) return [];
 
-        // 3. 非支配过滤(帕累托前沿)
-        function dominates(aVec, bVec) {
-            let atLeastOneBetter = false;
-            for (let i = 0; i < n; i++) {
-                if (aVec[i] > bVec[i]) return false;
-                if (aVec[i] < bVec[i]) atLeastOneBetter = true;
-            }
-            return atLeastOneBetter;
-        }
-
+        // ---- 3. 帕累托非支配过滤（前沿构建） ----
         const paretoFront = [];
         for (const scheme of allSchemes) {
             let dominated = false;
@@ -1002,7 +1057,7 @@
             }
         }
 
-        // 按字典序排序
+        // 按优先级向量字典序排序
         paretoFront.sort((a, b) => {
             for (let i = 0; i < n; i++) {
                 if (a.vector[i] !== b.vector[i]) return a.vector[i] - b.vector[i];
@@ -1040,7 +1095,7 @@
         return maps;
     }
 
-    // 显示单个方案的总优先级分
+    /** 计算方案的总优先级分（仅累加已选地图行，越小越优） */
     function getTotalScore(scheme) {
         if (!scheme || !scheme.vector) return 0;
         let total = 0;
@@ -1052,7 +1107,11 @@
         return total;
     }
 
-    // 渲染结果网格（带成绩显示）
+    /**
+     * 渲染单个方案的结果网格。
+     * 每列显示：小地图名、大地图名、分配车辆、成绩值、优先级等级。
+     * 底部显示总优先级分。
+     */
     function renderResultGrid(scheme) {
         if (!scheme) {
             let html = '';
@@ -1148,7 +1207,11 @@
         renderResultGrid(currentBestSchemes[0]);
     }
 
-    // 主控:根据当前地图选择 + 车库,生成帕累托最优方案
+    /**
+     * 主控：根据当前地图选择 + 车库状态，生成帕累托最优方案并渲染。
+     * 无地图选中时显示提示；有地图时启动计算（延迟 50ms 给加载动画时间）。
+     * 结果按总优先级分升序排列。
+     */
     function computeAndDisplay() {
         const validMaps = getCurrentValidMaps();
         if (validMaps.length === 0) {
@@ -1186,11 +1249,11 @@
         selectAllBtn.addEventListener('click', () => { selectAll(); computeAndDisplay(); });
         clearAllBtn.addEventListener('click', () => { clearAll(); computeAndDisplay(); });
 
-        // 排序按钮: 字母 → 分↓ → 分↑
+        // 排序按钮循环: 字母顺序 → 分数降序 → 分数升序
         document.getElementById('sortBtn').addEventListener('click', () => {
-            const modes = ['alpha', 'score-desc', 'score-asc'];
-            const idx = modes.indexOf(sortMode);
-            sortMode = modes[(idx + 1) % modes.length];
+            const SORT_CYCLE = ['alpha', 'score-desc', 'score-asc'];
+            const idx = SORT_CYCLE.indexOf(sortMode);
+            sortMode = SORT_CYCLE[(idx + 1) % SORT_CYCLE.length];
             renderGarage();
         });
 
@@ -1251,6 +1314,11 @@
         });
     }
 
+    /**
+     * 应用入口。初始化顺序：
+     *   data.json 加载 → 地图索引构建 → cars.json 加载（可选）
+     *   → 车库持久化恢复 → UI 渲染 → 事件绑定 → 首次计算
+     */
     async function initApp() {
         try {
             const response = await fetch('data.json');
