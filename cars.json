@@ -26,7 +26,7 @@
     "ps龙": "Bugatti Chiron Pur Sport",
     "r兔": "Rimac Nevera R",
     "sf90": "Ferrari SF90 Stradale",
-    "sgt": "Mosler Super GT",
+    "sgt": "McLaren Solus GT",
     "ssc": "SSC Tuatara",
     "ts900": "Tushek TS 900 Racer Pro",
     "urs": "Ultima RS",
@@ -520,16 +520,6 @@
       "acceleration": 83.27,
       "handling": 49.79,
       "nitro": 44.54,
-      "nickname": "sgt"
-    },
-    {
-      "title": "Mosler Super GT",
-      "score": 5169,
-      "class": "S",
-      "max_speed": 506.7,
-      "acceleration": 83.27,
-      "handling": 49.79,
-      "nitro": 44.54,
       "nickname": "莫斯勒"
     },
     {
@@ -751,6 +741,16 @@
       "handling": 74.39,
       "nitro": 69.0,
       "nickname": "小自燃"
+    },
+    {
+      "title": "McLaren Solus GT",
+      "score": 4075,
+      "class": "B",
+      "max_speed": 335.4,
+      "acceleration": 89.3,
+      "handling": 83.11,
+      "nitro": 76.82,
+      "nickname": "sgt"
     }
   ]
 }
