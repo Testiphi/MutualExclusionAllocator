@@ -61,7 +61,7 @@
     "速尾": "McLaren Speedtail",
     "银电": "Mercedes-Benz Silver Lightning",
     "霓虹gtr": "Nissan GT-R Neon Edition",
-    "风扇": "McMurtry Spéirling",
+    "风扇": "McMurtry Speirling",
     "风龙": "Bugatti Mistral",
     "红秋王": "Automobili Pininfarina Battista Edizione Nino Farina",
     "统治": "Koenigsegg Regera",
@@ -493,7 +493,7 @@
       "nickname": "速尾"
     },
     {
-      "title": "McMurtry Spéirling",
+      "title": "McMurtry Speirling",
       "score": 4003,
       "class": "A",
       "max_speed": 339.7,
