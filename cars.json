@@ -61,14 +61,14 @@
     "速尾": "McLaren Speedtail",
     "银电": "Mercedes-Benz Silver Lightning",
     "霓虹gtr": "Nissan GT-R Neon Edition",
-    "风扇": "McMurtry Speirling",
+    "风扇": "McMurtry Spéirling",
     "风龙": "Bugatti Mistral",
     "红秋王": "Automobili Pininfarina Battista Edizione Nino Farina",
     "统治": "Koenigsegg Regera",
     "电牛": "Lamborghini Terzo Millennio",
     "帕梅": "Porsche Panamera Turbo S",
     "六子": "Lamborghini Sesto Elemento",
-    "黑龙": "Bugatti La Voiture Noire",
+    "黑龙": "Bugatti LA Voiture Noire",
     "爱音": "Tushek Aeon E"
   },
   "cars": [
@@ -373,33 +373,33 @@
       "nickname": "统治"
     },
     {
-      "title": "LEGO Technic Bugatti Chiron Pur Sport",
-      "score": 4764,
+      "title": "Bugatti Chiron Pur Sport",
+      "score": 4821,
       "class": "S",
-      "max_speed": 394.4,
-      "acceleration": 84.98,
-      "handling": 61.19,
-      "nitro": 73.64,
+      "max_speed": 397.8,
+      "acceleration": 87.01,
+      "handling": 73.62,
+      "nitro": 65.32,
       "nickname": "ps龙"
     },
     {
-      "title": "LEGO Technic Lamborghini Revuelto",
-      "score": 4264,
+      "title": "Lamborghini Revuelto",
+      "score": 4375,
       "class": "B",
-      "max_speed": 368.2,
-      "acceleration": 83.11,
-      "handling": 70.61,
-      "nitro": 56.07,
+      "max_speed": 361.5,
+      "acceleration": 86.36,
+      "handling": 76.33,
+      "nitro": 54.22,
       "nickname": "r牛"
     },
     {
-      "title": "LEGO Technic McLaren Senna GTR",
-      "score": 3846,
-      "class": "A",
-      "max_speed": 349.8,
-      "acceleration": 82.43,
-      "handling": 79.32,
-      "nitro": 65.28,
+      "title": "McLaren Senna",
+      "score": 4407,
+      "class": "S",
+      "max_speed": 358.3,
+      "acceleration": 82.91,
+      "handling": 101.81,
+      "nitro": 78.25,
       "nickname": "塞纳"
     },
     {
@@ -751,6 +751,16 @@
       "handling": 83.11,
       "nitro": 76.82,
       "nickname": "sgt"
+    },
+    {
+      "title": "Automobili Pininfarina Battista",
+      "score": 4551,
+      "class": "S",
+      "max_speed": 368.3,
+      "acceleration": 88.48,
+      "handling": 80.42,
+      "nitro": 78.22,
+      "nickname": "秋王"
     }
   ]
 }
