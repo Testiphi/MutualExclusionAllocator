@@ -701,7 +701,8 @@
                 zone4Entries
             });
         });
-        bigMapList = Array.from(bigSet).sort();
+        // 保持 data.json 中的原始顺序（已按目标排序）
+        bigMapList = Array.from(bigSet);
         smallMapsByBig = map;
     }
 
