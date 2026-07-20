@@ -1,6 +1,6 @@
 {
-  "_comment": "国服狂野飙车9 擂台可用车辆数据",
-  "_source": "Asphalt9_car_data.csv (a9mmgj.top) + 用户提供",
+  "_comment": "A9 国服全量车辆数据 (整合自 a9mmgj.top + asec.tools)",
+  "_source": "Asphalt9_car_data.csv (a9mmgj.top) + asec_cars.csv (asec.tools)",
   "_nickname_map": {
     "007s": "Glickenhaus 007S",
     "21c": "Czinger 21C",
@@ -761,6 +761,2265 @@
       "handling": 80.42,
       "nitro": 78.22,
       "nickname": "秋王"
+    },
+    {
+      "title": "ATS Automobili Corsa RRTurbo",
+      "score": 3389,
+      "class": "B",
+      "max_speed": 322.3,
+      "acceleration": 87.54,
+      "handling": 68.39,
+      "nitro": 45.94
+    },
+    {
+      "title": "ATS Automobili GT",
+      "score": 4161,
+      "class": "S",
+      "max_speed": 391.1,
+      "acceleration": 81.47,
+      "handling": 52.12,
+      "nitro": 46.85
+    },
+    {
+      "title": "Acura 2017 NSX",
+      "score": 3208,
+      "class": "B",
+      "max_speed": 323.8,
+      "acceleration": 84.32,
+      "handling": 63.02,
+      "nitro": 54.67
+    },
+    {
+      "title": "Acura NSX GT3 EVO",
+      "score": 3585,
+      "class": "B",
+      "max_speed": 313.9,
+      "acceleration": 74.31,
+      "handling": 86.11,
+      "nitro": 73.78
+    },
+    {
+      "title": "Ajlani Drakuma",
+      "score": 4702,
+      "class": "S",
+      "max_speed": 441.0,
+      "acceleration": 81.56,
+      "handling": 47.91,
+      "nitro": 60.58
+    },
+    {
+      "title": "Alfa Romeo Giulia GTAm",
+      "score": 2895,
+      "class": "D",
+      "max_speed": 312.2,
+      "acceleration": 77.28,
+      "handling": 45.17,
+      "nitro": 47.09
+    },
+    {
+      "title": "Apex AP-0",
+      "score": 3922,
+      "class": "A",
+      "max_speed": 334.8,
+      "acceleration": 80.83,
+      "handling": 89.1,
+      "nitro": 74.95
+    },
+    {
+      "title": "Apollo EVO",
+      "score": 4265,
+      "class": "B",
+      "max_speed": 355.0,
+      "acceleration": 85.46,
+      "handling": 70.34,
+      "nitro": 65.79
+    },
+    {
+      "title": "Apollo IE",
+      "score": 3946,
+      "class": "A",
+      "max_speed": 348.0,
+      "acceleration": 84.58,
+      "handling": 72.82,
+      "nitro": 68.9
+    },
+    {
+      "title": "Apollo N",
+      "score": 3548,
+      "class": "A",
+      "max_speed": 369.6,
+      "acceleration": 80.32,
+      "handling": 58.13,
+      "nitro": 60.57
+    },
+    {
+      "title": "Arash AF10",
+      "score": 3109,
+      "class": "C",
+      "max_speed": 336.9,
+      "acceleration": 78.71,
+      "handling": 50.36,
+      "nitro": 59.53
+    },
+    {
+      "title": "Arash AF8 Falcon Edition",
+      "score": 3289,
+      "class": "C",
+      "max_speed": 333.1,
+      "acceleration": 76.78,
+      "handling": 66.13,
+      "nitro": 77.1
+    },
+    {
+      "title": "Arash Imperium",
+      "score": 4577,
+      "class": "S",
+      "max_speed": 397.5,
+      "acceleration": 84.85,
+      "handling": 60.77,
+      "nitro": 56.61
+    },
+    {
+      "title": "Ares S1",
+      "score": 3377,
+      "class": "C",
+      "max_speed": 307.8,
+      "acceleration": 89.55,
+      "handling": 78.93,
+      "nitro": 68.93
+    },
+    {
+      "title": "Arrinera Hussarya 33",
+      "score": 3910,
+      "class": "A",
+      "max_speed": 352.1,
+      "acceleration": 78.53,
+      "handling": 59.47,
+      "nitro": 47.71
+    },
+    {
+      "title": "Artega Scalo Superelletra",
+      "score": 3093,
+      "class": "B",
+      "max_speed": 316.3,
+      "acceleration": 85.72,
+      "handling": 57.94,
+      "nitro": 71.91
+    },
+    {
+      "title": "Aston Martin DB11",
+      "score": 2330,
+      "class": "C",
+      "max_speed": 340.4,
+      "acceleration": 74.2,
+      "handling": 43.21,
+      "nitro": 55.4
+    },
+    {
+      "title": "Aston Martin DB12",
+      "score": 3580,
+      "class": "B",
+      "max_speed": 343.2,
+      "acceleration": 74.11,
+      "handling": 69.68,
+      "nitro": 77.89
+    },
+    {
+      "title": "Aston Martin DBS 770 Ultimate",
+      "score": 3922,
+      "class": "C",
+      "max_speed": 353.9,
+      "acceleration": 77.55,
+      "handling": 62.96,
+      "nitro": 43.03
+    },
+    {
+      "title": "Aston Martin DBS GT Zagato",
+      "score": 4109,
+      "class": "A",
+      "max_speed": 361.9,
+      "acceleration": 80.65,
+      "handling": 75.77,
+      "nitro": 78.17
+    },
+    {
+      "title": "Aston Martin DBS Superleggera",
+      "score": 3423,
+      "class": "B",
+      "max_speed": 355.4,
+      "acceleration": 79.16,
+      "handling": 70.74,
+      "nitro": 73.88
+    },
+    {
+      "title": "Aston Martin One77",
+      "score": 3771,
+      "class": "B",
+      "max_speed": 363.4,
+      "acceleration": 79.32,
+      "handling": 68.72,
+      "nitro": 56.56
+    },
+    {
+      "title": "Aston Martin V12 Spedster",
+      "score": 2733,
+      "class": "C",
+      "max_speed": 312.9,
+      "acceleration": 80.12,
+      "handling": 57.27,
+      "nitro": 62.49
+    },
+    {
+      "title": "Aston Martin V12 Vantage 2022",
+      "score": 4072,
+      "class": "B",
+      "max_speed": 343.7,
+      "acceleration": 79.4,
+      "handling": 88.64,
+      "nitro": 79.82
+    },
+    {
+      "title": "Aston Martin Valkyrie",
+      "score": 4487,
+      "class": "S",
+      "max_speed": 378.1,
+      "acceleration": 80.26,
+      "handling": 77.87,
+      "nitro": 76.72
+    },
+    {
+      "title": "Aston Martin Valour",
+      "score": 3178,
+      "class": "B",
+      "max_speed": 331.0,
+      "acceleration": 78.23,
+      "handling": 56.43,
+      "nitro": 60.73
+    },
+    {
+      "title": "Aston Martin Vantage GT12",
+      "score": 3958,
+      "class": "A",
+      "max_speed": 337.6,
+      "acceleration": 78.26,
+      "handling": 86.85,
+      "nitro": 80.46
+    },
+    {
+      "title": "Aston Martin Victor",
+      "score": 4251,
+      "class": "A",
+      "max_speed": 371.8,
+      "acceleration": 78.34,
+      "handling": 76.86,
+      "nitro": 69.6
+    },
+    {
+      "title": "Aston Martin Vulcan",
+      "score": 3000,
+      "class": "B",
+      "max_speed": 343.1,
+      "acceleration": 78.7,
+      "handling": 47.8,
+      "nitro": 64.79
+    },
+    {
+      "title": "BMW 3.0 CSL Hommage",
+      "score": 1827,
+      "class": "D",
+      "max_speed": 297.5,
+      "acceleration": 73.39,
+      "handling": 50.08,
+      "nitro": 51.2
+    },
+    {
+      "title": "BMW M Hybrid V8",
+      "score": 4057,
+      "class": "B",
+      "max_speed": 355.8,
+      "acceleration": 81.39,
+      "handling": 67.1,
+      "nitro": 69.84
+    },
+    {
+      "title": "BMW M4 GT3",
+      "score": 3665,
+      "class": "B",
+      "max_speed": 346.9,
+      "acceleration": 79.57,
+      "handling": 69.5,
+      "nitro": 65.65
+    },
+    {
+      "title": "BMW M4 GTS",
+      "score": 2447,
+      "class": "C",
+      "max_speed": 326.5,
+      "acceleration": 73.72,
+      "handling": 51.19,
+      "nitro": 52.48
+    },
+    {
+      "title": "BMW Z4 LCI E89",
+      "score": 1476,
+      "class": "D",
+      "max_speed": 266.8,
+      "acceleration": 68.86,
+      "handling": 47.43,
+      "nitro": 57.49
+    },
+    {
+      "title": "BMW i8 Roadster",
+      "score": 2122,
+      "class": "D",
+      "max_speed": 273.1,
+      "acceleration": 79.73,
+      "handling": 78.63,
+      "nitro": 66.87
+    },
+    {
+      "title": "BXR Bailey Blade GT1",
+      "score": 4759,
+      "class": "S",
+      "max_speed": 449.0,
+      "acceleration": 80.51,
+      "handling": 46.84,
+      "nitro": 70.64
+    },
+    {
+      "title": "Bentley Continental GT Speed",
+      "score": 3330,
+      "class": "B",
+      "max_speed": 348.1,
+      "acceleration": 76.45,
+      "handling": 74.06,
+      "nitro": 59.19
+    },
+    {
+      "title": "Bentley Continental GT3",
+      "score": 2781,
+      "class": "C",
+      "max_speed": 301.3,
+      "acceleration": 74.78,
+      "handling": 72.59,
+      "nitro": 44.04
+    },
+    {
+      "title": "Bentley Mulliner Bacalar",
+      "score": 3340,
+      "class": "B",
+      "max_speed": 329.6,
+      "acceleration": 77.37,
+      "handling": 67.2,
+      "nitro": 55.81
+    },
+    {
+      "title": "Bolwell MK X Nagari 500",
+      "score": 2854,
+      "class": "C",
+      "max_speed": 314.5,
+      "acceleration": 81.59,
+      "handling": 65.86,
+      "nitro": 63.02
+    },
+    {
+      "title": "Brabham BT62",
+      "score": 3489,
+      "class": "B",
+      "max_speed": 322.4,
+      "acceleration": 83.88,
+      "handling": 76.06,
+      "nitro": 75.65
+    },
+    {
+      "title": "Bugatti EB110",
+      "score": 3766,
+      "class": "B",
+      "max_speed": 348.4,
+      "acceleration": 74.11,
+      "handling": 66.05,
+      "nitro": 58.11
+    },
+    {
+      "title": "Bugatti Veyron 16.4 Grand Sport Vitesse",
+      "score": 4411,
+      "class": "S",
+      "max_speed": 419.1,
+      "acceleration": 81.08,
+      "handling": 49.17,
+      "nitro": 50.7
+    },
+    {
+      "title": "Cadillac Cien Concept",
+      "score": 3155,
+      "class": "B",
+      "max_speed": 368.0,
+      "acceleration": 76.55,
+      "handling": 36.14,
+      "nitro": 61.1
+    },
+    {
+      "title": "Chevrolet Camaro LT",
+      "score": 1546,
+      "class": "D",
+      "max_speed": 284.1,
+      "acceleration": 64.81,
+      "handling": 48.39,
+      "nitro": 63.29
+    },
+    {
+      "title": "Chevrolet Camaro ZL1 50th Edition",
+      "score": 1971,
+      "class": "D",
+      "max_speed": 272.1,
+      "acceleration": 78.14,
+      "handling": 83.14,
+      "nitro": 72.33
+    },
+    {
+      "title": "Chevrolet Corvette C7.R",
+      "score": 2836,
+      "class": "C",
+      "max_speed": 303.6,
+      "acceleration": 80.57,
+      "handling": 47.14,
+      "nitro": 57.23
+    },
+    {
+      "title": "Chevrolet Corvette Grand Sport",
+      "score": 3906,
+      "class": "A",
+      "max_speed": 334.6,
+      "acceleration": 76.55,
+      "handling": 94.52,
+      "nitro": 81.88
+    },
+    {
+      "title": "Chevrolet Corvette Grand Sport Halloween Edition",
+      "score": 4112,
+      "class": "A",
+      "max_speed": 357.4,
+      "acceleration": 81.66,
+      "handling": 80.58,
+      "nitro": 70.94
+    },
+    {
+      "title": "Chevrolet Corvette Stingray",
+      "score": 3788,
+      "class": "B",
+      "max_speed": 327.0,
+      "acceleration": 81.52,
+      "handling": 60.15,
+      "nitro": 64.47
+    },
+    {
+      "title": "Chevrolet Corvette ZR1",
+      "score": 4031,
+      "class": "A",
+      "max_speed": 355.4,
+      "acceleration": 82.03,
+      "handling": 60.09,
+      "nitro": 76.33
+    },
+    {
+      "title": "Chrysler ME412",
+      "score": 4241,
+      "class": "S",
+      "max_speed": 399.1,
+      "acceleration": 74.9,
+      "handling": 66.52,
+      "nitro": 63.39
+    },
+    {
+      "title": "Citroën DS Survolt",
+      "score": 2796,
+      "class": "C",
+      "max_speed": 291.4,
+      "acceleration": 81.82,
+      "handling": 81.42,
+      "nitro": 64.56
+    },
+    {
+      "title": "Citroën GT by Citroën",
+      "score": 4099,
+      "class": "A",
+      "max_speed": 383.5,
+      "acceleration": 76.54,
+      "handling": 64.63,
+      "nitro": 67.23
+    },
+    {
+      "title": "DS Automobiles DS E-Tense",
+      "score": 1976,
+      "class": "D",
+      "max_speed": 270.1,
+      "acceleration": 76.07,
+      "handling": 81.27,
+      "nitro": 72.3
+    },
+    {
+      "title": "DS Automobiles DS E-Tense Performance",
+      "score": 3424,
+      "class": "C",
+      "max_speed": 318.7,
+      "acceleration": 90.06,
+      "handling": 76.68,
+      "nitro": 61.55
+    },
+    {
+      "title": "De Tomaso P72",
+      "score": 4586,
+      "class": "A",
+      "max_speed": 375.6,
+      "acceleration": 82.74,
+      "handling": 75.24,
+      "nitro": 71.18
+    },
+    {
+      "title": "De Tomaso P900",
+      "score": 3937,
+      "class": "C",
+      "max_speed": 331.8,
+      "acceleration": 82.95,
+      "handling": 62.0,
+      "nitro": 59.08
+    },
+    {
+      "title": "Dodge Challenger 392 Hemi Scat Pack",
+      "score": 2152,
+      "class": "C",
+      "max_speed": 302.7,
+      "acceleration": 73.64,
+      "handling": 43.57,
+      "nitro": 62.82
+    },
+    {
+      "title": "Dodge Challenger SRT8",
+      "score": 1683,
+      "class": "D",
+      "max_speed": 308.4,
+      "acceleration": 71.92,
+      "handling": 37.98,
+      "nitro": 45.41
+    },
+    {
+      "title": "Dodge Viper ACR",
+      "score": 2827,
+      "class": "B",
+      "max_speed": 303.4,
+      "acceleration": 77.32,
+      "handling": 86.2,
+      "nitro": 68.94
+    },
+    {
+      "title": "Dodge Viper GTS",
+      "score": 3295,
+      "class": "B",
+      "max_speed": 353.4,
+      "acceleration": 80.33,
+      "handling": 45.29,
+      "nitro": 67.55
+    },
+    {
+      "title": "Donkervoort D8 GTO Individual Series",
+      "score": 2991,
+      "class": "C",
+      "max_speed": 306.8,
+      "acceleration": 85.56,
+      "handling": 86.91,
+      "nitro": 64.0
+    },
+    {
+      "title": "Drako GTE",
+      "score": 3434,
+      "class": "B",
+      "max_speed": 346.3,
+      "acceleration": 81.97,
+      "handling": 47.38,
+      "nitro": 61.36
+    },
+    {
+      "title": "Exotic Rides W70",
+      "score": 2633,
+      "class": "B",
+      "max_speed": 329.7,
+      "acceleration": 80.21,
+      "handling": 45.2,
+      "nitro": 56.71
+    },
+    {
+      "title": "FV Frangivento Asfane",
+      "score": 4377,
+      "class": "A",
+      "max_speed": 373.9,
+      "acceleration": 82.03,
+      "handling": 69.13,
+      "nitro": 67.63
+    },
+    {
+      "title": "FV Frangivento GT65",
+      "score": 4127,
+      "class": "B",
+      "max_speed": 371.1,
+      "acceleration": 81.8,
+      "handling": 51.98,
+      "nitro": 54.39
+    },
+    {
+      "title": "FV Frangivento Sorpasso GT3",
+      "score": 4398,
+      "class": "S",
+      "max_speed": 391.3,
+      "acceleration": 85.7,
+      "handling": 56.68,
+      "nitro": 47.35
+    },
+    {
+      "title": "Ferrari 296 GTB",
+      "score": 4009,
+      "class": "C",
+      "max_speed": 341.6,
+      "acceleration": 81.23,
+      "handling": 65.0,
+      "nitro": 52.13
+    },
+    {
+      "title": "Ferrari 488 Challenge EVO",
+      "score": 4095,
+      "class": "A",
+      "max_speed": 347.5,
+      "acceleration": 82.63,
+      "handling": 76.76,
+      "nitro": 76.65
+    },
+    {
+      "title": "Ferrari 488 GTB",
+      "score": 3334,
+      "class": "B",
+      "max_speed": 347.6,
+      "acceleration": 80.24,
+      "handling": 48.38,
+      "nitro": 65.84
+    },
+    {
+      "title": "Ferrari 599XX EVO",
+      "score": 3433,
+      "class": "B",
+      "max_speed": 310.1,
+      "acceleration": 80.97,
+      "handling": 83.61,
+      "nitro": 70.81
+    },
+    {
+      "title": "Ferrari 812 Superfast",
+      "score": 3941,
+      "class": "A",
+      "max_speed": 354.0,
+      "acceleration": 81.13,
+      "handling": 63.17,
+      "nitro": 74.33
+    },
+    {
+      "title": "Ferrari Daytona SP3",
+      "score": 4073,
+      "class": "C",
+      "max_speed": 348.8,
+      "acceleration": 80.46,
+      "handling": 54.89,
+      "nitro": 60.3
+    },
+    {
+      "title": "Ferrari Enzo Ferrari",
+      "score": 4014,
+      "class": "A",
+      "max_speed": 365.8,
+      "acceleration": 75.19,
+      "handling": 64.75,
+      "nitro": 72.1
+    },
+    {
+      "title": "Ferrari F12 Berlinetta",
+      "score": 3950,
+      "class": "B",
+      "max_speed": 357.2,
+      "acceleration": 81.86,
+      "handling": 61.13,
+      "nitro": 68.14
+    },
+    {
+      "title": "Ferrari F12tdf",
+      "score": 3705,
+      "class": "A",
+      "max_speed": 360.3,
+      "acceleration": 78.38,
+      "handling": 40.12,
+      "nitro": 80.18
+    },
+    {
+      "title": "Ferrari F40",
+      "score": 3343,
+      "class": "B",
+      "max_speed": 334.1,
+      "acceleration": 72.87,
+      "handling": 69.3,
+      "nitro": 63.45
+    },
+    {
+      "title": "Ferrari F50",
+      "score": 2838,
+      "class": "C",
+      "max_speed": 338.8,
+      "acceleration": 73.82,
+      "handling": 57.63,
+      "nitro": 61.34
+    },
+    {
+      "title": "Ferrari F8 Tributo",
+      "score": 4313,
+      "class": "S",
+      "max_speed": 360.8,
+      "acceleration": 83.23,
+      "handling": 94.48,
+      "nitro": 70.07
+    },
+    {
+      "title": "Ferrari FXX K",
+      "score": 3821,
+      "class": "A",
+      "max_speed": 363.1,
+      "acceleration": 83.9,
+      "handling": 43.75,
+      "nitro": 72.39
+    },
+    {
+      "title": "Ferrari J50",
+      "score": 3229,
+      "class": "B",
+      "max_speed": 350.5,
+      "acceleration": 80.41,
+      "handling": 48.37,
+      "nitro": 64.65
+    },
+    {
+      "title": "Ferrari LaFerrari",
+      "score": 3445,
+      "class": "A",
+      "max_speed": 364.6,
+      "acceleration": 80.23,
+      "handling": 43.06,
+      "nitro": 71.4
+    },
+    {
+      "title": "Ferrari LaFerrari Aperta",
+      "score": 4293,
+      "class": "S",
+      "max_speed": 366.2,
+      "acceleration": 81.03,
+      "handling": 82.48,
+      "nitro": 70.1
+    },
+    {
+      "title": "Ferrari Monza SP1",
+      "score": 3334,
+      "class": "C",
+      "max_speed": 319.6,
+      "acceleration": 82.32,
+      "handling": 62.53,
+      "nitro": 63.22
+    },
+    {
+      "title": "Ferrari Roma",
+      "score": 3061,
+      "class": "B",
+      "max_speed": 331.9,
+      "acceleration": 77.46,
+      "handling": 60.47,
+      "nitro": 66.78
+    },
+    {
+      "title": "Ferrari SF90 XX Stradale",
+      "score": 4286,
+      "class": "A",
+      "max_speed": 361.2,
+      "acceleration": 85.73,
+      "handling": 79.17,
+      "nitro": 62.85
+    },
+    {
+      "title": "Ford GT",
+      "score": 2816,
+      "class": "B",
+      "max_speed": 362.8,
+      "acceleration": 77.54,
+      "handling": 34.11,
+      "nitro": 48.64
+    },
+    {
+      "title": "Ford GT CNY Edition",
+      "score": 4093,
+      "class": "A",
+      "max_speed": 366.8,
+      "acceleration": 79.14,
+      "handling": 68.15,
+      "nitro": 73.89
+    },
+    {
+      "title": "Ford GT MK II",
+      "score": 3198,
+      "class": "B",
+      "max_speed": 321.0,
+      "acceleration": 86.25,
+      "handling": 78.97,
+      "nitro": 67.89
+    },
+    {
+      "title": "Ford GT MK IV",
+      "score": 4262,
+      "class": "B",
+      "max_speed": 361.4,
+      "acceleration": 87.26,
+      "handling": 54.52,
+      "nitro": 59.57
+    },
+    {
+      "title": "Ford Mustang Mach-E1400",
+      "score": 3097,
+      "class": "D",
+      "max_speed": 301.2,
+      "acceleration": 82.87,
+      "handling": 51.83,
+      "nitro": 64.82
+    },
+    {
+      "title": "Ford Mustang RTR Spec 5 10th Anniv.",
+      "score": 3025,
+      "class": "B",
+      "max_speed": 335.2,
+      "acceleration": 75.65,
+      "handling": 46.89,
+      "nitro": 73.82
+    },
+    {
+      "title": "Ford Mustang RTR Spec 5-FD",
+      "score": 4693,
+      "class": "S",
+      "max_speed": 415.0,
+      "acceleration": 78.77,
+      "handling": 54.9,
+      "nitro": 74.41
+    },
+    {
+      "title": "Ford Shelby GR-1",
+      "score": 2642,
+      "class": "C",
+      "max_speed": 321.7,
+      "acceleration": 75.32,
+      "handling": 69.6,
+      "nitro": 66.63
+    },
+    {
+      "title": "Ford Shelby GT350R",
+      "score": 2531,
+      "class": "C",
+      "max_speed": 299.7,
+      "acceleration": 75.06,
+      "handling": 58.97,
+      "nitro": 52.93
+    },
+    {
+      "title": "Ford Shelby Super Snake",
+      "score": 4350,
+      "class": "A",
+      "max_speed": 363.4,
+      "acceleration": 85.44,
+      "handling": 75.98,
+      "nitro": 59.74
+    },
+    {
+      "title": "Formula E Gen 2 Asphalt Edition",
+      "score": 4019,
+      "class": "B",
+      "max_speed": 323.5,
+      "acceleration": 83.75,
+      "handling": 87.29,
+      "nitro": 78.34
+    },
+    {
+      "title": "Genty Akylone",
+      "score": 4323,
+      "class": "S",
+      "max_speed": 371.7,
+      "acceleration": 82.93,
+      "handling": 67.81,
+      "nitro": 70.35
+    },
+    {
+      "title": "Ginetta G60",
+      "score": 2632,
+      "class": "D",
+      "max_speed": 290.7,
+      "acceleration": 71.51,
+      "handling": 74.81,
+      "nitro": 62.66
+    },
+    {
+      "title": "Glickenhaus 003S",
+      "score": 3534,
+      "class": "A",
+      "max_speed": 369.0,
+      "acceleration": 79.44,
+      "handling": 38.58,
+      "nitro": 63.11
+    },
+    {
+      "title": "Glickenhaus 004C",
+      "score": 2840,
+      "class": "D",
+      "max_speed": 311.2,
+      "acceleration": 76.75,
+      "handling": 56.89,
+      "nitro": 60.87
+    },
+    {
+      "title": "HTT Locus Plethore LC750",
+      "score": 4955,
+      "class": "S",
+      "max_speed": 414.5,
+      "acceleration": 78.04,
+      "handling": 75.86,
+      "nitro": 84.58
+    },
+    {
+      "title": "Hennessey Venom GT",
+      "score": 4963,
+      "class": "S",
+      "max_speed": 468.4,
+      "acceleration": 78.54,
+      "handling": 47.88,
+      "nitro": 46.91
+    },
+    {
+      "title": "Honda Civic Type-R",
+      "score": 2627,
+      "class": "C",
+      "max_speed": 285.1,
+      "acceleration": 82.09,
+      "handling": 68.41,
+      "nitro": 62.55
+    },
+    {
+      "title": "Hyundai N Vision 74",
+      "score": 4579,
+      "class": "S",
+      "max_speed": 404.5,
+      "acceleration": 75.17,
+      "handling": 55.76,
+      "nitro": 58.53
+    },
+    {
+      "title": "Inferno Automobili Inferno",
+      "score": 4725,
+      "class": "S",
+      "max_speed": 412.9,
+      "acceleration": 83.02,
+      "handling": 54.86,
+      "nitro": 76.59
+    },
+    {
+      "title": "Infiniti Project Black S",
+      "score": 2371,
+      "class": "D",
+      "max_speed": 281.5,
+      "acceleration": 76.19,
+      "handling": 66.98,
+      "nitro": 64.67
+    },
+    {
+      "title": "ItalDesign Davinci",
+      "score": 2210,
+      "class": "D",
+      "max_speed": 278.0,
+      "acceleration": 83.52,
+      "handling": 73.57,
+      "nitro": 55.34
+    },
+    {
+      "title": "ItalDesign Zerouno",
+      "score": 3295,
+      "class": "B",
+      "max_speed": 340.9,
+      "acceleration": 79.25,
+      "handling": 58.34,
+      "nitro": 54.1
+    },
+    {
+      "title": "Jaguar C-X75",
+      "score": 3900,
+      "class": "A",
+      "max_speed": 368.9,
+      "acceleration": 75.58,
+      "handling": 73.15,
+      "nitro": 74.14
+    },
+    {
+      "title": "Jaguar F-Type SVR",
+      "score": 2487,
+      "class": "C",
+      "max_speed": 340.3,
+      "acceleration": 75.55,
+      "handling": 49.28,
+      "nitro": 50.12
+    },
+    {
+      "title": "Jaguar XE SV Project 8",
+      "score": 3289,
+      "class": "C",
+      "max_speed": 338.7,
+      "acceleration": 78.28,
+      "handling": 48.14,
+      "nitro": 62.98
+    },
+    {
+      "title": "Jaguar XJ220S TWR",
+      "score": 4175,
+      "class": "S",
+      "max_speed": 383.0,
+      "acceleration": 75.19,
+      "handling": 60.59,
+      "nitro": 82.2
+    },
+    {
+      "title": "Jaguar XJR-15",
+      "score": 3244,
+      "class": "C",
+      "max_speed": 320.6,
+      "acceleration": 80.98,
+      "handling": 71.28,
+      "nitro": 61.34
+    },
+    {
+      "title": "Jaguar XJR-9",
+      "score": 4438,
+      "class": "A",
+      "max_speed": 400.7,
+      "acceleration": 72.45,
+      "handling": 59.33,
+      "nitro": 84.95
+    },
+    {
+      "title": "Jaguar XKR-S GT",
+      "score": 2700,
+      "class": "C",
+      "max_speed": 321.2,
+      "acceleration": 72.92,
+      "handling": 52.08,
+      "nitro": 60.42
+    },
+    {
+      "title": "KTM X-Bow GTX",
+      "score": 1738,
+      "class": "D",
+      "max_speed": 247.5,
+      "acceleration": 83.84,
+      "handling": 64.99,
+      "nitro": 66.99
+    },
+    {
+      "title": "Kepler Motion",
+      "score": 3393,
+      "class": "B",
+      "max_speed": 338.7,
+      "acceleration": 86.54,
+      "handling": 48.81,
+      "nitro": 61.41
+    },
+    {
+      "title": "Kimera EVO37",
+      "score": 3108,
+      "class": "D",
+      "max_speed": 297.8,
+      "acceleration": 80.98,
+      "handling": 78.18,
+      "nitro": 57.43
+    },
+    {
+      "title": "Koenigsegg Agera RS",
+      "score": 4940,
+      "class": "S",
+      "max_speed": 484.8,
+      "acceleration": 79.67,
+      "handling": 60.03,
+      "nitro": 58.86
+    },
+    {
+      "title": "Koenigsegg CCXR",
+      "score": 4998,
+      "class": "S",
+      "max_speed": 412.2,
+      "acceleration": 79.4,
+      "handling": 79.09,
+      "nitro": 71.51
+    },
+    {
+      "title": "Koenigsegg One:1",
+      "score": 5076,
+      "class": "S",
+      "max_speed": 454.8,
+      "acceleration": 83.18,
+      "handling": 59.7,
+      "nitro": 43.83
+    },
+    {
+      "title": "LEGO Technic Aston Martin Valkyrie",
+      "score": 3920,
+      "class": "A",
+      "max_speed": 372.3,
+      "acceleration": 81.04,
+      "handling": 65.74,
+      "nitro": 59.77
+    },
+    {
+      "title": "LEGO Technic BMW M4 GT3 EVO",
+      "score": 3896,
+      "class": "B",
+      "max_speed": 333.5,
+      "acceleration": 80.79,
+      "handling": 82.01,
+      "nitro": 74.7
+    },
+    {
+      "title": "LEGO Technic Bugatti Chiron Pur Sport",
+      "score": 4764,
+      "class": "S",
+      "max_speed": 394.4,
+      "acceleration": 84.98,
+      "handling": 61.19,
+      "nitro": 73.64
+    },
+    {
+      "title": "LEGO Technic Chevrolet Corvette Stingray",
+      "score": 3647,
+      "class": "B",
+      "max_speed": 327.7,
+      "acceleration": 82.76,
+      "handling": 80.66,
+      "nitro": 70.4
+    },
+    {
+      "title": "LEGO Technic Ferrari FXX K",
+      "score": 3522,
+      "class": "A",
+      "max_speed": 364.6,
+      "acceleration": 81.82,
+      "handling": 45.96,
+      "nitro": 64.44
+    },
+    {
+      "title": "LEGO Technic Lamborghini Revuelto",
+      "score": 4264,
+      "class": "B",
+      "max_speed": 368.2,
+      "acceleration": 83.11,
+      "handling": 70.61,
+      "nitro": 56.07
+    },
+    {
+      "title": "LEGO Technic McLaren Senna GTR",
+      "score": 3846,
+      "class": "A",
+      "max_speed": 349.8,
+      "acceleration": 82.43,
+      "handling": 79.32,
+      "nitro": 65.28
+    },
+    {
+      "title": "Lamborghini Asterion",
+      "score": 2983,
+      "class": "B",
+      "max_speed": 336.6,
+      "acceleration": 81.05,
+      "handling": 45.56,
+      "nitro": 68.21
+    },
+    {
+      "title": "Lamborghini Autentica",
+      "score": 3884,
+      "class": "A",
+      "max_speed": 366.8,
+      "acceleration": 78.82,
+      "handling": 47.2,
+      "nitro": 68.72
+    },
+    {
+      "title": "Lamborghini Aventador J",
+      "score": 4002,
+      "class": "A",
+      "max_speed": 362.9,
+      "acceleration": 79.83,
+      "handling": 73.1,
+      "nitro": 77.86
+    },
+    {
+      "title": "Lamborghini Aventador SV Coupe",
+      "score": 3763,
+      "class": "A",
+      "max_speed": 367.9,
+      "acceleration": 80.83,
+      "handling": 50.14,
+      "nitro": 70.6
+    },
+    {
+      "title": "Lamborghini Aventador SVJ Roadster",
+      "score": 4080,
+      "class": "A",
+      "max_speed": 364.8,
+      "acceleration": 81.09,
+      "handling": 73.75,
+      "nitro": 73.93
+    },
+    {
+      "title": "Lamborghini Centenario",
+      "score": 3696,
+      "class": "A",
+      "max_speed": 363.7,
+      "acceleration": 80.48,
+      "handling": 47.46,
+      "nitro": 70.31
+    },
+    {
+      "title": "Lamborghini Countach 25th Anniversary",
+      "score": 2618,
+      "class": "D",
+      "max_speed": 305.4,
+      "acceleration": 71.43,
+      "handling": 65.58,
+      "nitro": 48.39
+    },
+    {
+      "title": "Lamborghini Countach LPI 800-4",
+      "score": 4571,
+      "class": "S",
+      "max_speed": 373.7,
+      "acceleration": 82.53,
+      "handling": 86.93,
+      "nitro": 73.04
+    },
+    {
+      "title": "Lamborghini Diablo GT",
+      "score": 3869,
+      "class": "B",
+      "max_speed": 349.2,
+      "acceleration": 74.97,
+      "handling": 63.52,
+      "nitro": 58.83
+    },
+    {
+      "title": "Lamborghini Essenza SCV12",
+      "score": 4036,
+      "class": "A",
+      "max_speed": 340.1,
+      "acceleration": 85.03,
+      "handling": 75.44,
+      "nitro": 74.52
+    },
+    {
+      "title": "Lamborghini Gallardo LP560-4",
+      "score": 3706,
+      "class": "A",
+      "max_speed": 331.2,
+      "acceleration": 76.48,
+      "handling": 75.43,
+      "nitro": 59.41
+    },
+    {
+      "title": "Lamborghini Huracan STO",
+      "score": 3236,
+      "class": "B",
+      "max_speed": 320.4,
+      "acceleration": 86.02,
+      "handling": 73.3,
+      "nitro": 57.28
+    },
+    {
+      "title": "Lamborghini Huracan Sterrato",
+      "score": 3995,
+      "class": "C",
+      "max_speed": 334.5,
+      "acceleration": 81.86,
+      "handling": 64.86,
+      "nitro": 62.63
+    },
+    {
+      "title": "Lamborghini Huracan Super Trofeo EVO",
+      "score": 3256,
+      "class": "B",
+      "max_speed": 311.6,
+      "acceleration": 82.63,
+      "handling": 63.62,
+      "nitro": 54.57
+    },
+    {
+      "title": "Lamborghini Invencible",
+      "score": 4091,
+      "class": "B",
+      "max_speed": 340.4,
+      "acceleration": 88.49,
+      "handling": 75.74,
+      "nitro": 67.64
+    },
+    {
+      "title": "Lamborghini Miura Concept",
+      "score": 3688,
+      "class": "B",
+      "max_speed": 346.7,
+      "acceleration": 73.39,
+      "handling": 56.22,
+      "nitro": 60.53
+    },
+    {
+      "title": "Lamborghini Murcielago LP640 Roadster",
+      "score": 3924,
+      "class": "A",
+      "max_speed": 354.0,
+      "acceleration": 77.45,
+      "handling": 66.92,
+      "nitro": 61.49
+    },
+    {
+      "title": "Lamborghini Reventon Roadster",
+      "score": 3983,
+      "class": "B",
+      "max_speed": 357.0,
+      "acceleration": 79.38,
+      "handling": 69.05,
+      "nitro": 74.91
+    },
+    {
+      "title": "Lamborghini SC18",
+      "score": 4079,
+      "class": "A",
+      "max_speed": 355.6,
+      "acceleration": 81.99,
+      "handling": 64.05,
+      "nitro": 82.46
+    },
+    {
+      "title": "Lamborghini SC20",
+      "score": 4326,
+      "class": "S",
+      "max_speed": 371.3,
+      "acceleration": 82.04,
+      "handling": 72.71,
+      "nitro": 69.2
+    },
+    {
+      "title": "Lamborghini SC63",
+      "score": 4062,
+      "class": "B",
+      "max_speed": 353.8,
+      "acceleration": 85.38,
+      "handling": 70.15,
+      "nitro": 56.43
+    },
+    {
+      "title": "Lamborghini Sián FKP 37",
+      "score": 4860,
+      "class": "S",
+      "max_speed": 374.0,
+      "acceleration": 82.06,
+      "handling": 92.32,
+      "nitro": 81.15
+    },
+    {
+      "title": "Lamborghini Veneno",
+      "score": 4142,
+      "class": "S",
+      "max_speed": 370.0,
+      "acceleration": 81.16,
+      "handling": 62.42,
+      "nitro": 78.82
+    },
+    {
+      "title": "Lexus Electrified Sport Concept",
+      "score": 4565,
+      "class": "A",
+      "max_speed": 379.2,
+      "acceleration": 88.43,
+      "handling": 50.26,
+      "nitro": 55.59
+    },
+    {
+      "title": "Lotus Elise Sprint 220",
+      "score": 2363,
+      "class": "C",
+      "max_speed": 269.5,
+      "acceleration": 82.25,
+      "handling": 83.47,
+      "nitro": 72.71
+    },
+    {
+      "title": "Lotus Emeya",
+      "score": 2402,
+      "class": "D",
+      "max_speed": 276.5,
+      "acceleration": 81.79,
+      "handling": 75.33,
+      "nitro": 67.23
+    },
+    {
+      "title": "Lotus Emira",
+      "score": 2612,
+      "class": "D",
+      "max_speed": 307.4,
+      "acceleration": 70.86,
+      "handling": 57.47,
+      "nitro": 53.42
+    },
+    {
+      "title": "Lotus Evija",
+      "score": 4432,
+      "class": "S",
+      "max_speed": 368.1,
+      "acceleration": 81.14,
+      "handling": 65.02,
+      "nitro": 63.31
+    },
+    {
+      "title": "Lotus Evora Sport 410",
+      "score": 2123,
+      "class": "C",
+      "max_speed": 317.7,
+      "acceleration": 71.7,
+      "handling": 50.92,
+      "nitro": 47.05
+    },
+    {
+      "title": "Maserati Alfieri",
+      "score": 3209,
+      "class": "B",
+      "max_speed": 335.9,
+      "acceleration": 74.42,
+      "handling": 41.44,
+      "nitro": 72.91
+    },
+    {
+      "title": "Maserati MC12",
+      "score": 3100,
+      "class": "C",
+      "max_speed": 342.9,
+      "acceleration": 76.48,
+      "handling": 72.36,
+      "nitro": 38.94
+    },
+    {
+      "title": "Maserati MC20",
+      "score": 3772,
+      "class": "B",
+      "max_speed": 335.7,
+      "acceleration": 81.63,
+      "handling": 90.78,
+      "nitro": 75.84
+    },
+    {
+      "title": "Maserati MC20 GT2",
+      "score": 3832,
+      "class": "C",
+      "max_speed": 336.3,
+      "acceleration": 83.68,
+      "handling": 63.95,
+      "nitro": 46.53
+    },
+    {
+      "title": "Mazda Furai",
+      "score": 3408,
+      "class": "B",
+      "max_speed": 305.5,
+      "acceleration": 80.95,
+      "handling": 57.23,
+      "nitro": 49.67
+    },
+    {
+      "title": "Mazzanti Evantra Millecavalli",
+      "score": 4790,
+      "class": "S",
+      "max_speed": 412.3,
+      "acceleration": 82.6,
+      "handling": 63.85,
+      "nitro": 64.81
+    },
+    {
+      "title": "McLaren 570S Spider",
+      "score": 4135,
+      "class": "S",
+      "max_speed": 377.2,
+      "acceleration": 79.23,
+      "handling": 66.06,
+      "nitro": 64.75
+    },
+    {
+      "title": "McLaren 765LT",
+      "score": 3651,
+      "class": "B",
+      "max_speed": 349.5,
+      "acceleration": 80.5,
+      "handling": 70.61,
+      "nitro": 62.26
+    },
+    {
+      "title": "McLaren Artura",
+      "score": 3280,
+      "class": "B",
+      "max_speed": 337.8,
+      "acceleration": 81.14,
+      "handling": 68.52,
+      "nitro": 47.54
+    },
+    {
+      "title": "McLaren Elva",
+      "score": 3530,
+      "class": "B",
+      "max_speed": 339.2,
+      "acceleration": 81.3,
+      "handling": 75.51,
+      "nitro": 65.91
+    },
+    {
+      "title": "McLaren F1LM",
+      "score": 4301,
+      "class": "S",
+      "max_speed": 377.0,
+      "acceleration": 74.64,
+      "handling": 66.56,
+      "nitro": 73.08
+    },
+    {
+      "title": "McLaren GT",
+      "score": 3432,
+      "class": "B",
+      "max_speed": 339.2,
+      "acceleration": 80.97,
+      "handling": 69.06,
+      "nitro": 57.25
+    },
+    {
+      "title": "McLaren P1™",
+      "score": 3602,
+      "class": "A",
+      "max_speed": 364.6,
+      "acceleration": 83.64,
+      "handling": 47.54,
+      "nitro": 62.89
+    },
+    {
+      "title": "McLaren Sabre",
+      "score": 4173,
+      "class": "A",
+      "max_speed": 363.1,
+      "acceleration": 87.04,
+      "handling": 68.06,
+      "nitro": 58.45
+    },
+    {
+      "title": "McLaren Senna GTR",
+      "score": 4025,
+      "class": "A",
+      "max_speed": 357.9,
+      "acceleration": 82.0,
+      "handling": 60.85,
+      "nitro": 77.62
+    },
+    {
+      "title": "McMurtry Spéirling",
+      "score": 4003,
+      "class": "A",
+      "max_speed": 339.7,
+      "acceleration": 90.52,
+      "handling": 82.09,
+      "nitro": 62.82
+    },
+    {
+      "title": "Mercedes-Benz 2022 Showcar Vision AMG",
+      "score": 3288,
+      "class": "C",
+      "max_speed": 335.1,
+      "acceleration": 75.32,
+      "handling": 51.68,
+      "nitro": 59.18
+    },
+    {
+      "title": "Mercedes-Benz AMG GT S",
+      "score": 2281,
+      "class": "C",
+      "max_speed": 329.4,
+      "acceleration": 71.34,
+      "handling": 42.69,
+      "nitro": 54.66
+    },
+    {
+      "title": "Mercedes-Benz CLK-GTR",
+      "score": 3083,
+      "class": "C",
+      "max_speed": 332.7,
+      "acceleration": 78.92,
+      "handling": 70.49,
+      "nitro": 57.24
+    },
+    {
+      "title": "Mercedes-Benz Mercedes-AMG GT Black Series",
+      "score": 3513,
+      "class": "C",
+      "max_speed": 335.6,
+      "acceleration": 81.67,
+      "handling": 60.63,
+      "nitro": 67.23
+    },
+    {
+      "title": "Mercedes-Benz Mercedes-AMG One",
+      "score": 4571,
+      "class": "A",
+      "max_speed": 375.2,
+      "acceleration": 81.53,
+      "handling": 78.84,
+      "nitro": 60.91
+    },
+    {
+      "title": "Mercedes-Benz SLR McLaren",
+      "score": 3389,
+      "class": "B",
+      "max_speed": 352.9,
+      "acceleration": 78.18,
+      "handling": 66.59,
+      "nitro": 79.56
+    },
+    {
+      "title": "Mercedes-Benz Vision One-Eleven",
+      "score": 4600,
+      "class": "A",
+      "max_speed": 381.0,
+      "acceleration": 83.93,
+      "handling": 76.35,
+      "nitro": 57.95
+    },
+    {
+      "title": "Mitsubishi Lancer Evolution",
+      "score": 1381,
+      "class": "D",
+      "max_speed": 270.1,
+      "acceleration": 55.03,
+      "handling": 53.79,
+      "nitro": 68.19
+    },
+    {
+      "title": "Nio EP9",
+      "score": 4571,
+      "class": "S",
+      "max_speed": 372.8,
+      "acceleration": 82.96,
+      "handling": 77.72,
+      "nitro": 76.17
+    },
+    {
+      "title": "Nissan 370Z Nismo",
+      "score": 1662,
+      "class": "D",
+      "max_speed": 268.5,
+      "acceleration": 66.61,
+      "handling": 81.83,
+      "nitro": 67.07
+    },
+    {
+      "title": "Nissan 370Z Nismo Neon Edition",
+      "score": 3121,
+      "class": "C",
+      "max_speed": 303.1,
+      "acceleration": 76.12,
+      "handling": 91.7,
+      "nitro": 80.03
+    },
+    {
+      "title": "Nissan GT-R Nismo",
+      "score": 3144,
+      "class": "B",
+      "max_speed": 329.9,
+      "acceleration": 84.83,
+      "handling": 60.69,
+      "nitro": 60.6
+    },
+    {
+      "title": "Nissan Leaf Nismo RC",
+      "score": 2101,
+      "class": "D",
+      "max_speed": 250.6,
+      "acceleration": 78.87,
+      "handling": 59.91,
+      "nitro": 65.03
+    },
+    {
+      "title": "Nissan R390 GT1",
+      "score": 3627,
+      "class": "B",
+      "max_speed": 373.5,
+      "acceleration": 76.72,
+      "handling": 52.63,
+      "nitro": 55.45
+    },
+    {
+      "title": "Nissan Z GT4",
+      "score": 4098,
+      "class": "C",
+      "max_speed": 345.0,
+      "acceleration": 81.15,
+      "handling": 54.32,
+      "nitro": 62.04
+    },
+    {
+      "title": "Noble M600 Speedster",
+      "score": 4464,
+      "class": "A",
+      "max_speed": 375.7,
+      "acceleration": 81.03,
+      "handling": 85.47,
+      "nitro": 61.71
+    },
+    {
+      "title": "Pagani Huayra BC",
+      "score": 4292,
+      "class": "S",
+      "max_speed": 365.4,
+      "acceleration": 80.04,
+      "handling": 63.11,
+      "nitro": 86.75
+    },
+    {
+      "title": "Pagani Huayra R",
+      "score": 4259,
+      "class": "A",
+      "max_speed": 376.4,
+      "acceleration": 83.04,
+      "handling": 58.21,
+      "nitro": 64.11
+    },
+    {
+      "title": "Pagani Imola",
+      "score": 4564,
+      "class": "S",
+      "max_speed": 378.5,
+      "acceleration": 80.26,
+      "handling": 72.44,
+      "nitro": 71.29
+    },
+    {
+      "title": "Pagani Utopia Coupe",
+      "score": 4308,
+      "class": "A",
+      "max_speed": 367.9,
+      "acceleration": 81.03,
+      "handling": 80.63,
+      "nitro": 77.19
+    },
+    {
+      "title": "Pagani Zonda Cinque",
+      "score": 4105,
+      "class": "A",
+      "max_speed": 369.7,
+      "acceleration": 79.84,
+      "handling": 74.76,
+      "nitro": 73.22
+    },
+    {
+      "title": "Pagani Zonda HP Barchetta",
+      "score": 3678,
+      "class": "A",
+      "max_speed": 350.1,
+      "acceleration": 79.44,
+      "handling": 73.51,
+      "nitro": 73.66
+    },
+    {
+      "title": "Pagani Zonda R",
+      "score": 4164,
+      "class": "A",
+      "max_speed": 368.3,
+      "acceleration": 84.54,
+      "handling": 57.29,
+      "nitro": 67.54
+    },
+    {
+      "title": "Peugeot Onyx",
+      "score": 4026,
+      "class": "A",
+      "max_speed": 365.6,
+      "acceleration": 81.94,
+      "handling": 84.83,
+      "nitro": 59.59
+    },
+    {
+      "title": "Peugeot SR1",
+      "score": 2307,
+      "class": "D",
+      "max_speed": 310.5,
+      "acceleration": 71.51,
+      "handling": 52.39,
+      "nitro": 31.19
+    },
+    {
+      "title": "Pininfarina H2 Speed",
+      "score": 3026,
+      "class": "B",
+      "max_speed": 318.0,
+      "acceleration": 78.22,
+      "handling": 86.5,
+      "nitro": 60.57
+    },
+    {
+      "title": "Pininfarina Teorema",
+      "score": 4473,
+      "class": "S",
+      "max_speed": 422.9,
+      "acceleration": 77.14,
+      "handling": 55.74,
+      "nitro": 51.7
+    },
+    {
+      "title": "Porsche 718 Cayman",
+      "score": 2344,
+      "class": "C",
+      "max_speed": 295.6,
+      "acceleration": 70.52,
+      "handling": 61.9,
+      "nitro": 60.28
+    },
+    {
+      "title": "Porsche 718 Cayman GT4 Clubsport",
+      "score": 3415,
+      "class": "B",
+      "max_speed": 314.7,
+      "acceleration": 73.44,
+      "handling": 87.23,
+      "nitro": 70.53
+    },
+    {
+      "title": "Porsche 911 50 Years Porsche Design",
+      "score": 3210,
+      "class": "C",
+      "max_speed": 312.1,
+      "acceleration": 79.72,
+      "handling": 84.61,
+      "nitro": 70.45
+    },
+    {
+      "title": "Porsche 911 Carrera RS 3.8",
+      "score": 2435,
+      "class": "D",
+      "max_speed": 301.9,
+      "acceleration": 72.15,
+      "handling": 71.66,
+      "nitro": 35.99
+    },
+    {
+      "title": "Porsche 911 GT1 Evolution",
+      "score": 3049,
+      "class": "B",
+      "max_speed": 343.2,
+      "acceleration": 75.15,
+      "handling": 53.67,
+      "nitro": 68.89
+    },
+    {
+      "title": "Porsche 911 GT2 RS Clubsport",
+      "score": 4289,
+      "class": "S",
+      "max_speed": 357.2,
+      "acceleration": 83.75,
+      "handling": 85.71,
+      "nitro": 73.93
+    },
+    {
+      "title": "Porsche 911 GT3 RS",
+      "score": 4019,
+      "class": "A",
+      "max_speed": 338.9,
+      "acceleration": 85.84,
+      "handling": 92.97,
+      "nitro": 86.39
+    },
+    {
+      "title": "Porsche 911 GTS Coupe",
+      "score": 2185,
+      "class": "C",
+      "max_speed": 328.7,
+      "acceleration": 71.21,
+      "handling": 45.84,
+      "nitro": 56.6
+    },
+    {
+      "title": "Porsche 911 Targa 4S",
+      "score": 2571,
+      "class": "C",
+      "max_speed": 315.0,
+      "acceleration": 75.37,
+      "handling": 41.56,
+      "nitro": 38.33
+    },
+    {
+      "title": "Porsche 911 Turbo 50 Years",
+      "score": 3495,
+      "class": "B",
+      "max_speed": 343.5,
+      "acceleration": 82.94,
+      "handling": 53.72,
+      "nitro": 59.39
+    },
+    {
+      "title": "Porsche 918 Spyder",
+      "score": 4114,
+      "class": "S",
+      "max_speed": 362.4,
+      "acceleration": 83.02,
+      "handling": 51.8,
+      "nitro": 79.97
+    },
+    {
+      "title": "Porsche 935(2019)",
+      "score": 4229,
+      "class": "A",
+      "max_speed": 352.0,
+      "acceleration": 84.94,
+      "handling": 87.96,
+      "nitro": 72.61
+    },
+    {
+      "title": "Porsche Boxster 25th",
+      "score": 1985,
+      "class": "D",
+      "max_speed": 298.7,
+      "acceleration": 72.12,
+      "handling": 46.1,
+      "nitro": 54.35
+    },
+    {
+      "title": "Porsche Carrera GT",
+      "score": 4010,
+      "class": "A",
+      "max_speed": 344.7,
+      "acceleration": 78.59,
+      "handling": 84.59,
+      "nitro": 82.64
+    },
+    {
+      "title": "Porsche GT3 RS 2023",
+      "score": 4621,
+      "class": "S",
+      "max_speed": 360.6,
+      "acceleration": 87.44,
+      "handling": 91.48,
+      "nitro": 71.56
+    },
+    {
+      "title": "Porsche Mission R",
+      "score": 3229,
+      "class": "C",
+      "max_speed": 312.1,
+      "acceleration": 87.92,
+      "handling": 63.47,
+      "nitro": 62.72
+    },
+    {
+      "title": "Porsche Taycan Turbo S",
+      "score": 2704,
+      "class": "C",
+      "max_speed": 278.8,
+      "acceleration": 83.66,
+      "handling": 75.47,
+      "nitro": 56.94
+    },
+    {
+      "title": "Praga Bohema",
+      "score": 3553,
+      "class": "C",
+      "max_speed": 315.7,
+      "acceleration": 80.72,
+      "handling": 80.22,
+      "nitro": 69.65
+    },
+    {
+      "title": "Praga R1",
+      "score": 2624,
+      "class": "D",
+      "max_speed": 283.3,
+      "acceleration": 87.8,
+      "handling": 62.25,
+      "nitro": 60.92
+    },
+    {
+      "title": "Puritalia Berlinetta",
+      "score": 4061,
+      "class": "A",
+      "max_speed": 348.8,
+      "acceleration": 83.35,
+      "handling": 82.35,
+      "nitro": 69.25
+    },
+    {
+      "title": "Raesr Aglaia",
+      "score": 4880,
+      "class": "S",
+      "max_speed": 439.3,
+      "acceleration": 85.88,
+      "handling": 47.8,
+      "nitro": 46.08
+    },
+    {
+      "title": "Raesr Tachyon Speed",
+      "score": 4095,
+      "class": "A",
+      "max_speed": 400.5,
+      "acceleration": 77.88,
+      "handling": 53.38,
+      "nitro": 59.79
+    },
+    {
+      "title": "Renault Dezir",
+      "score": 2213,
+      "class": "D",
+      "max_speed": 293.2,
+      "acceleration": 65.56,
+      "handling": 69.43,
+      "nitro": 68.44
+    },
+    {
+      "title": "Renault R.S. 01",
+      "score": 3571,
+      "class": "B",
+      "max_speed": 321.0,
+      "acceleration": 83.67,
+      "handling": 61.35,
+      "nitro": 71.97
+    },
+    {
+      "title": "Renault TREZOR",
+      "score": 2646,
+      "class": "C",
+      "max_speed": 306.0,
+      "acceleration": 78.42,
+      "handling": 63.39,
+      "nitro": 67.48
+    },
+    {
+      "title": "Rezvani Beast X",
+      "score": 2635,
+      "class": "C",
+      "max_speed": 299.4,
+      "acceleration": 84.62,
+      "handling": 69.2,
+      "nitro": 63.68
+    },
+    {
+      "title": "Saleen S1",
+      "score": 3148,
+      "class": "C",
+      "max_speed": 305.3,
+      "acceleration": 76.74,
+      "handling": 82.8,
+      "nitro": 74.07
+    },
+    {
+      "title": "Saleen S7 Twin Turbo",
+      "score": 4629,
+      "class": "S",
+      "max_speed": 429.9,
+      "acceleration": 69.5,
+      "handling": 68.97,
+      "nitro": 77.31
+    },
+    {
+      "title": "Sin R1 550",
+      "score": 3950,
+      "class": "A",
+      "max_speed": 368.3,
+      "acceleration": 77.04,
+      "handling": 45.58,
+      "nitro": 74.13
+    },
+    {
+      "title": "Spania GTA 2015 GTA Spano",
+      "score": 4385,
+      "class": "S",
+      "max_speed": 383.7,
+      "acceleration": 81.2,
+      "handling": 59.72,
+      "nitro": 69.97
+    },
+    {
+      "title": "TVR Griffith",
+      "score": 2641,
+      "class": "C",
+      "max_speed": 338.7,
+      "acceleration": 69.28,
+      "handling": 47.31,
+      "nitro": 37.49
+    },
+    {
+      "title": "TVR Sagaris",
+      "score": 3246,
+      "class": "C",
+      "max_speed": 321.0,
+      "acceleration": 75.52,
+      "handling": 70.65,
+      "nitro": 74.61
+    },
+    {
+      "title": "Techrules AT96 Dragon Boat Edition",
+      "score": 4556,
+      "class": "S",
+      "max_speed": 366.4,
+      "acceleration": 87.23,
+      "handling": 75.05,
+      "nitro": 72.62
+    },
+    {
+      "title": "Techrules AT96 Track Version",
+      "score": 4020,
+      "class": "A",
+      "max_speed": 364.6,
+      "acceleration": 85.53,
+      "handling": 75.74,
+      "nitro": 69.65
+    },
+    {
+      "title": "Torino Design Super Sport",
+      "score": 4741,
+      "class": "S",
+      "max_speed": 405.3,
+      "acceleration": 82.28,
+      "handling": 62.3,
+      "nitro": 75.81
+    },
+    {
+      "title": "Toroidion 1MW",
+      "score": 4808,
+      "class": "S",
+      "max_speed": 460.4,
+      "acceleration": 81.28,
+      "handling": 60.34,
+      "nitro": 54.16
+    },
+    {
+      "title": "Toyota GR Super Sport Concept",
+      "score": 4076,
+      "class": "B",
+      "max_speed": 364.8,
+      "acceleration": 85.64,
+      "handling": 56.7,
+      "nitro": 45.09
+    },
+    {
+      "title": "Toyota GR Supra 2023",
+      "score": 3258,
+      "class": "C",
+      "max_speed": 315.1,
+      "acceleration": 80.38,
+      "handling": 73.43,
+      "nitro": 56.83
+    },
+    {
+      "title": "Toyota GR Supra Racing Concept",
+      "score": 2930,
+      "class": "D",
+      "max_speed": 312.0,
+      "acceleration": 71.98,
+      "handling": 61.16,
+      "nitro": 53.66
+    },
+    {
+      "title": "VLF Force 1 V10",
+      "score": 3929,
+      "class": "A",
+      "max_speed": 369.4,
+      "acceleration": 80.33,
+      "handling": 54.68,
+      "nitro": 74.63
+    },
+    {
+      "title": "Vencer Sarthe",
+      "score": 3290,
+      "class": "B",
+      "max_speed": 350.1,
+      "acceleration": 74.12,
+      "handling": 62.87,
+      "nitro": 46.83
+    },
+    {
+      "title": "Vision 1789",
+      "score": 4442,
+      "class": "S",
+      "max_speed": 389.9,
+      "acceleration": 81.28,
+      "handling": 59.91,
+      "nitro": 72.19
+    },
+    {
+      "title": "Volkswagen Electric R",
+      "score": 3062,
+      "class": "C",
+      "max_speed": 291.1,
+      "acceleration": 88.6,
+      "handling": 58.15,
+      "nitro": 68.06
+    },
+    {
+      "title": "Volkswagen W12 Coupe",
+      "score": 4334,
+      "class": "S",
+      "max_speed": 370.2,
+      "acceleration": 79.02,
+      "handling": 84.32,
+      "nitro": 54.56
+    },
+    {
+      "title": "Volkswagen XL Sport Concept",
+      "score": 1814,
+      "class": "D",
+      "max_speed": 291.2,
+      "acceleration": 60.31,
+      "handling": 62.02,
+      "nitro": 61.94
+    },
+    {
+      "title": "W Motors Fenyr Supersport CNY Edition",
+      "score": 4653,
+      "class": "S",
+      "max_speed": 410.2,
+      "acceleration": 83.0,
+      "handling": 61.33,
+      "nitro": 60.21
+    },
+    {
+      "title": "W Motors Lykan Hypersport Neon Edition",
+      "score": 4636,
+      "class": "S",
+      "max_speed": 407.5,
+      "acceleration": 80.48,
+      "handling": 53.75,
+      "nitro": 65.9
+    },
+    {
+      "title": "Zenvo Aurora Tur",
+      "score": 5100,
+      "class": "S",
+      "max_speed": 467.5,
+      "acceleration": 81.73,
+      "handling": 56.53,
+      "nitro": 42.65
+    },
+    {
+      "title": "神秘组织 拦路虎",
+      "score": 4305,
+      "class": "A",
+      "max_speed": 361.1,
+      "acceleration": 83.2,
+      "handling": 78.8,
+      "nitro": 45.56
     }
   ]
 }
