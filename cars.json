@@ -69,7 +69,8 @@
     "帕梅": "Porsche Panamera Turbo S",
     "六子": "Lamborghini Sesto Elemento",
     "黑龙": "Bugatti LA Voiture Noire",
-    "爱音": "Tushek Aeon E"
+    "爱音": "Tushek Aeon E",
+    "冰山": "Icona Vulcano Spyder"
   },
   "cars": [
     {
@@ -3020,6 +3021,124 @@
       "acceleration": 83.2,
       "handling": 78.8,
       "nitro": 45.56
+    },
+    {
+      "title": "Porsche 917 Living Legend",
+      "score": 4791,
+      "class": "S",
+      "max_speed": 382.6,
+      "acceleration": 86.69,
+      "handling": 77.65,
+      "nitro": 67.68
+    },
+    {
+      "title": "Porsche 918 Spyder Asphalt Edition",
+      "score": 4252,
+      "class": "S",
+      "max_speed": 401.6,
+      "acceleration": 76.24,
+      "handling": 59.93,
+      "nitro": 51.87
+    },
+    {
+      "title": "Porsche 919 Street",
+      "score": 4628,
+      "class": "A",
+      "max_speed": 374.4,
+      "acceleration": 87.83,
+      "handling": 85.29,
+      "nitro": 62.21
+    },
+    {
+      "title": "Porsche 911 GT3 R Rennsport",
+      "score": 3546,
+      "class": "C",
+      "max_speed": 322.5,
+      "acceleration": 81.15,
+      "handling": 74.4,
+      "nitro": 65.78
+    },
+    {
+      "title": "Nilu27 Nilu",
+      "score": 5003,
+      "class": "S",
+      "max_speed": 429.9,
+      "acceleration": 81.96,
+      "handling": 54.04,
+      "nitro": 67.0
+    },
+    {
+      "title": "Zenvo TSR-S Dragonboat Edition",
+      "score": 4665,
+      "class": "S",
+      "max_speed": 368.9,
+      "acceleration": 84.53,
+      "handling": 81.08,
+      "nitro": 71.56
+    },
+    {
+      "title": "Mercedes-Benz C11",
+      "score": 4506,
+      "class": "S",
+      "max_speed": 414.7,
+      "acceleration": 79.49,
+      "handling": 56.98,
+      "nitro": 58.2
+    },
+    {
+      "title": "Lexus LFA Nurburgring Package",
+      "score": 3612,
+      "class": "C",
+      "max_speed": 337.3,
+      "acceleration": 74.12,
+      "handling": 61.05,
+      "nitro": 62.13
+    },
+    {
+      "title": "Icona Vulcano Spyder",
+      "score": 4868,
+      "class": "S",
+      "max_speed": 430.7,
+      "acceleration": 83.6,
+      "handling": 55.64,
+      "nitro": 51.99,
+      "nickname": "冰山"
+    },
+    {
+      "title": "Zenvo Aurora Agil",
+      "score": 4393,
+      "class": "A",
+      "max_speed": 379.4,
+      "acceleration": 83.12,
+      "handling": 70.3,
+      "nitro": 64.25
+    },
+    {
+      "title": "McLaren 750S Coupe",
+      "score": 3996,
+      "class": "B",
+      "max_speed": 348.8,
+      "acceleration": 83.02,
+      "handling": 65.3,
+      "nitro": 67.36
+    },
+    {
+      "title": "Mercedes-Benz C 63 AMG DTM",
+      "score": 3773,
+      "class": "C",
+      "max_speed": 322.1,
+      "acceleration": 80.81,
+      "handling": 72.85,
+      "nitro": 68.98
+    },
+    {
+      "title": "Dodge Charger SRT Hellcat Redeye Widebody",
+      "score": 3518,
+      "class": "C",
+      "max_speed": 342.6,
+      "acceleration": 76.31,
+      "handling": 51.13,
+      "nitro": 58.64
     }
   ]
 }
