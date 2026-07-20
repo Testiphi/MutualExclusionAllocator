@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>狂野飙车9 · 擂台选车小助手</title>
+    <script src="config.js"></script>
+    <script src="api.js"></script>
     <style>
         * {
             box-sizing: border-box;
@@ -483,7 +485,7 @@
  *    1) 数据层 —— data.json（赛道+优先级）+ cars.json（性能+昵称映射）
  *    2) UI 层  —— 动态渲染地图行、车库网格、结果面板
  *    3) 算法层  —— 回溯枚举分配 → 帕累托非支配排序
- *    4) 持久化  —— localStorage（车库选中状态 + 四/五区模式）
+ *    4) 持久化  —— 通过 api.js 统一接入（static→localStorage / api→服务器）
  * ===================================================================== */
 
     // 当前模式: 'zone5' | 'zone4'
@@ -830,22 +832,19 @@
 
     // --- 车库持久化 ---
     function saveGarage() {
-        try { localStorage.setItem('garageCars', JSON.stringify([...selectedCars])); } catch(e) {}
+        api.saveGarage(selectedCars);
         saveZoneMode();
     }
     function saveZoneMode() {
-        try { localStorage.setItem('zoneMode', currentZone); } catch(e) {}
+        api.savePref(APP_CONFIG.storageKeys.zoneMode, currentZone);
     }
-    function loadGarage() {
+    async function loadGarage() {
         try {
-            const stored = localStorage.getItem('garageCars');
-            if (stored) {
-                const arr = JSON.parse(stored);
-                if (Array.isArray(arr)) { arr.forEach(c => selectedCars.add(c)); }
-            }
+            const loaded = await api.loadGarage();
+            loaded.forEach(c => selectedCars.add(c));
         } catch(e) {}
         try {
-            const savedZone = localStorage.getItem('zoneMode');
+            const savedZone = api.loadPref(APP_CONFIG.storageKeys.zoneMode);
             if (savedZone === 'zone4' || savedZone === 'zone5') currentZone = savedZone;
         } catch(e) {}
         // 首次加载无数据时默认全选当前区
@@ -1346,28 +1345,24 @@
      */
     async function initApp() {
         try {
-            const response = await fetch('data.json');
-            if (!response.ok) throw new Error(`HTTP ${response.status}`);
-            RACE_DATA = await response.json();
+            // 通过 api 层加载数据
+            RACE_DATA = await api.getRaceData();
             buildMapIndex();          // 建地图索引
 
-            // 加载车辆度量数据 (cars.json)
+            // 加载车辆度量数据
             try {
-                const carResp = await fetch('cars.json');
-                if (carResp.ok) {
-                    const carData = await carResp.json();
-                    carStats = {};
-                    nickToName = {};
-                    for (const c of carData.cars) {
-                        carStats[c.title] = c;
-                    }
-                    Object.assign(nickToName, carData._nickname_map);
+                const carData = await api.getCars();
+                carStats = {};
+                nickToName = {};
+                for (const c of carData.cars) {
+                    carStats[c.title] = c;
                 }
+                Object.assign(nickToName, carData._nickname_map);
             } catch(e) {
-                console.warn('cars.json 加载失败, 搜索/排序降级:', e.message);
+                console.warn('车辆数据加载失败, 搜索/排序降级:', e.message);
             }
 
-            loadGarage();             // 加载车库（现在 zone5Cars/zone4Cars 已就绪）
+            await loadGarage();        // 加载车库（现在 zone5Cars/zone4Cars 已就绪）
             renderMapRows();
             renderGarage();
             refreshBigMaps();
