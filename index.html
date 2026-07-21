@@ -481,6 +481,10 @@
             <label for="schemeSelect">🏅 选择方案:</label>
             <select id="schemeSelect"></select>
         </div>
+        <div class="sc-panel" id="scPanel" style="display:none;margin-bottom:14px;padding:10px 14px;background:#0c1425;border-radius:24px;border:1px solid #2f3f6b;">
+            <div style="color:#bacaee;font-size:0.8rem;font-weight:500;margin-bottom:10px;">🏃 特殊跑法开关</div>
+            <div id="scToggleList" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
+        </div>
         <div class="result-grid" id="resultGrid"></div>
         <div class="footer-note">给出的首个方案不一定为最优,需根据自身情况选择更好的方案</div>
     </div>
@@ -799,10 +803,7 @@
                         <label>🗺️ 小地图</label>
                         <select class="small-map-select" data-index="${i}" disabled></select>
                     </div>
-                    <div class="select-wrapper sc-toggle-wrapper" style="min-width:60px;display:none;">
-                        <label>🏃 特殊跑法</label>
-                        <span class="sc-toggle" data-index="${i}" style="display:inline-block;padding:8px 12px;border-radius:34px;font-size:0.8rem;cursor:pointer;border:1px solid #3a4880;background:#0f1624;color:#9aa9ce;text-align:center;user-select:none;">🔀 开启</span>
-                    </div>
+
                 </div>
             `;
             mapRowsContainer.appendChild(rowDiv);
@@ -878,34 +879,7 @@
         } else {
             smallSel.value = '';
         }
-        // 更新特殊跑法开关
-        updateScToggle(index, smallSel.value ? bigMap + '/' + smallSel.value : null);
-    }
 
-    // 更新特殊跑法开关的显示状态
-    function updateScToggle(index, mapKey) {
-        const row = mapRowsContainer.querySelectorAll('.map-row')[index];
-        if (!row) return;
-        const wrapper = row.querySelector('.sc-toggle-wrapper');
-        const toggle = row.querySelector('.sc-toggle');
-        if (!wrapper || !toggle) return;
-        
-        if (!mapKey) {
-            wrapper.style.display = 'none';
-            return;
-        }
-        // 从 gauntlet_data 检查该赛道是否有特殊跑法
-        const track = RACE_DATA?.tracks?.find(t => (t['大地图'] + '/' + t['小地图']) === mapKey);
-        if (track && track.has_special_route) {
-            wrapper.style.display = '';
-            const isOn = specialRouteEnabled[mapKey] !== false;
-            toggle.textContent = isOn ? '🔀 开启' : '🚫 关闭';
-            toggle.style.background = isOn ? '#2a3a60' : '#0f1624';
-            toggle.style.borderColor = isOn ? '#f5c542' : '#3a4880';
-        } else {
-            wrapper.style.display = 'none';
-        }
-    }
 
     // --- 车库持久化 ---
     function saveGarage() {
@@ -1218,8 +1192,47 @@
 
 
 
+    /** 渲染特殊跑法开关（在结果面板中展示） */
+    function renderScToggles() {
+        const panel = document.getElementById('scPanel');
+        const list = document.getElementById('scToggleList');
+        if (!panel || !list) return;
+        
+        let hasSc = false;
+        let toggleHtml = '';
+        
+        for (let i = 0; i < ROWS; i++) {
+            const big = bigSelects[i]?.value;
+            const small = smallSelects[i]?.value;
+            if (!big || !small) continue;
+            
+            const mapKey = big + '/' + small;
+            const track = RACE_DATA?.tracks?.find(t => (t['大地图'] + '/' + t['小地图']) === mapKey);
+            if (!track || !track.has_special_route) continue;
+            
+            // 检查当前档位是否有 sc 条目
+            const zoneKey = currentZone === 'zone4' ? '四区' : '五区';
+            const tierData = track[zoneKey]?.[currentTier];
+            const hasScEntries = tierData && Array.isArray(tierData) && tierData.some(e => e.sc);
+            if (!hasScEntries) continue;
+            
+            hasSc = true;
+            const isOn = specialRouteEnabled[mapKey] !== false;
+            const note = track.special_route_note || '';
+            toggleHtml += `<span class="sc-toggle" data-mapkey="${mapKey}" style="display:inline-flex;align-items:center;gap:4px;padding:6px 14px;border-radius:34px;font-size:0.8rem;cursor:pointer;border:1px solid ${isOn ? '#f5c542' : '#3a4880'};background:${isOn ? '#2a3a60' : '#0f1624'};color:${isOn ? '#f5c542' : '#9aa9ce'};user-select:none;">
+                ${small}
+                <span style="font-size:0.7rem;">${note ? '(' + note + ')' : ''}</span>
+                <span>${isOn ? '🟢' : '🔴'}</span>
+            </span>`;
+        }
+        
+        list.innerHTML = toggleHtml;
+        panel.style.display = hasSc ? '' : 'none';
+    }
+
     /** 渲染无可用方案时的空状态 */
     function renderEmptyResult() {
+        document.getElementById('scPanel').style.display = 'none';
         let html = '';
         for (let i = 0; i < ROWS; i++) {
             const big = bigSelects[i]?.value;
@@ -1242,9 +1255,13 @@
      */
     function renderResultGrid(scheme) {
         if (!scheme) {
+            document.getElementById('scPanel').style.display = 'none';
             renderEmptyResult();
             return;
         }
+
+        // 渲染特殊跑法开关
+        renderScToggles();
 
         const totalScore = getTotalScore(scheme);
         let html = '';
@@ -1384,21 +1401,13 @@
             renderGarage();
         });
 
-        // 特殊跑法开关点击（事件委托）
-        mapRowsContainer.addEventListener('click', (e) => {
+        // 特殊跑法开关点击（结果面板中的开关，使用事件委托）
+        resultGrid.addEventListener('click', (e) => {
             const toggle = e.target.closest('.sc-toggle');
             if (!toggle) return;
-            const idx = parseInt(toggle.dataset.index, 10);
-            const big = bigSelects[idx]?.value;
-            const small = smallSelects[idx]?.value;
-            if (!big || !small) return;
-            const mapKey = big + '/' + small;
-            // 切换状态
+            const mapKey = toggle.dataset.mapkey;
             const current = specialRouteEnabled[mapKey];
             specialRouteEnabled[mapKey] = current === false ? true : false;
-            updateScToggle(idx, mapKey);
-            // 重构建地图索引 + 重新计算
-            buildMapIndex();
             computeAndDisplay();
         });
 
