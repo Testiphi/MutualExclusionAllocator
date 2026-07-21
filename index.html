@@ -1081,7 +1081,11 @@
         for (let i = 0; i < n; i++) {
             const { big, small } = validMaps[i];
             const originalGroups = getOriginalGroups(big, small, currentZone);
-            if (!originalGroups) return [];
+            if (!originalGroups) {
+                // 无数据的地图，标记为空
+                mapsData.push({ filteredGroups: [], carToPriority: new Map() });
+                continue;
+            }
 
             // 过滤候选:每组只保留拥有的车
             const filteredGroups = originalGroups.map(group => group.filter(car => ownedSet.has(car)));
@@ -1106,7 +1110,7 @@
 
         /**
          * 递归回溯。按地图顺序逐一尝试可用车辆，保证同一辆车不重复分配。
-         * 剪枝：某图无可用车时直接返回（此路不通）。
+         * 某图无可用车时将其留空，继续后续地图。
          */
         function backtrack(idx) {
             if (idx === n) {
@@ -1117,7 +1121,14 @@
                 return;
             }
             const { filteredGroups, carToPriority } = mapsData[idx];
-            if (filteredGroups.length === 0) return;  // 该图无可用车
+
+            if (filteredGroups.length === 0 || filteredGroups.every(g => g.length === 0)) {
+                // 无可用车：留空当前图，继续
+                curAssign[idx] = null;
+                curVector[idx] = NO_CAR_PRIORITY;
+                backtrack(idx + 1);
+                return;
+            }
 
             for (let g = 0; g < filteredGroups.length; g++) {
                 const group = filteredGroups[g];
