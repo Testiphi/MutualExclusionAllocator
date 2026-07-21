@@ -639,8 +639,7 @@
             const names = entry.cars.map(c => c.name);
             const result = [names[0]];  // 主车名
             if (entry.time != null) result.push(entry.time);
-            // 挂载原始对象供后续读取（含 sc, time, stars 等字段）
-            result._raw = entry;
+            result._raw = entry;  // 挂载原始对象供后续读取
             return result;
         }
         return entry;  // 已经是旧格式
@@ -648,7 +647,6 @@
 
     /**
      * 从当前档位中提取五区/四区的原始车组列表（转换为旧格式）。
-     * 不在这里做 sc 过滤，运行时由 getOriginalGroups 处理。
      */
     function getTierEntries(track, zone) {
         const tierData = track[zone]?.[currentTier];
@@ -803,7 +801,6 @@
                         <label>🗺️ 小地图</label>
                         <select class="small-map-select" data-index="${i}" disabled></select>
                     </div>
-
                 </div>
             `;
             mapRowsContainer.appendChild(rowDiv);
@@ -859,7 +856,6 @@
             const opt = document.createElement('option');
             opt.textContent = '❌ 先选大地图';
             smallSel.appendChild(opt);
-            updateScToggle(index, null);
             return;
         }
         smallSel.disabled = false;
@@ -879,7 +875,7 @@
         } else {
             smallSel.value = '';
         }
-
+    }
 
     // --- 车库持久化 ---
     function saveGarage() {
@@ -999,7 +995,6 @@
     /**
      * 获取某地图的选车推荐组。
      * 组索引 = 优先级等级（越小越优）;
-     * 如果特殊跑法关闭，过滤掉 sc: true 的条目的车组。
      * 四区模式优先使用 data.json 中的四区数据，回退时按 ZONE4_CARS 过滤。
      */
     function getOriginalGroups(big, small, zone) {
@@ -1007,29 +1002,10 @@
         if (!list) return null;
         const found = list.find(item => item.name === small);
         if (!found) return null;
-        
-        const mapKey = big + '/' + small;
-        const scOn = specialRouteEnabled[mapKey] !== false;
-        
-        // 选择五区或四区的数据
-        let entries;
-        if (zone === 'zone4' && found.zone4Entries && found.zone4Entries.length > 0) {
-            entries = found.zone4Entries;
-        } else {
-            entries = found.zone5Entries;
+        if (zone === 'zone4' && found.zone4OrderGroups && found.zone4OrderGroups.length > 0) {
+            return found.zone4OrderGroups;
         }
-        
-        // 过滤 + 生成车组
-        const groups = [];
-        for (const entry of entries) {
-            // 如果特殊跑法关闭且该条目是 sc 条目，跳过
-            if (!scOn && entry._raw && entry._raw.sc) continue;
-            const cars = parseCarGroup(entry);
-            if (cars.length > 0 && cars[0]) {
-                groups.push(cars);
-            }
-        }
-        return groups;
+        return found.orderGroups;
     }
 
     /** 默认无车优先级标记（100 以内，远大于实际优先级值） */
@@ -1194,38 +1170,28 @@
 
     /** 渲染特殊跑法开关（在结果面板中展示） */
     function renderScToggles() {
-        const panel = document.getElementById('scPanel');
-        const list = document.getElementById('scToggleList');
+        var panel = document.getElementById('scPanel');
+        var list = document.getElementById('scToggleList');
         if (!panel || !list) return;
-        
-        let hasSc = false;
-        let toggleHtml = '';
-        
-        for (let i = 0; i < ROWS; i++) {
-            const big = bigSelects[i]?.value;
-            const small = smallSelects[i]?.value;
+        var hasSc = false;
+        var toggleHtml = '';
+        for (var i = 0; i < ROWS; i++) {
+            var big = bigSelects[i]?.value;
+            var small = smallSelects[i]?.value;
             if (!big || !small) continue;
-            
-            const mapKey = big + '/' + small;
-            const track = RACE_DATA?.tracks?.find(t => (t['大地图'] + '/' + t['小地图']) === mapKey);
+            var mapKey = big + '/' + small;
+            var track = RACE_DATA?.tracks?.find(function(t) { return t['大地图'] + '/' + t['小地图'] === mapKey; });
             if (!track || !track.has_special_route) continue;
-            
-            // 检查当前档位是否有 sc 条目
-            const zoneKey = currentZone === 'zone4' ? '四区' : '五区';
-            const tierData = track[zoneKey]?.[currentTier];
-            const hasScEntries = tierData && Array.isArray(tierData) && tierData.some(e => e.sc);
+            var zoneKey = currentZone === 'zone4' ? '四区' : '五区';
+            var tierData = track[zoneKey]?.[currentTier];
+            var hasScEntries = tierData && Array.isArray(tierData) && tierData.some(function(e) { return e.sc; });
             if (!hasScEntries) continue;
-            
             hasSc = true;
-            const isOn = specialRouteEnabled[mapKey] !== false;
-            const note = track.special_route_note || '';
-            toggleHtml += `<span class="sc-toggle" data-mapkey="${mapKey}" style="display:inline-flex;align-items:center;gap:4px;padding:6px 14px;border-radius:34px;font-size:0.8rem;cursor:pointer;border:1px solid ${isOn ? '#f5c542' : '#3a4880'};background:${isOn ? '#2a3a60' : '#0f1624'};color:${isOn ? '#f5c542' : '#9aa9ce'};user-select:none;">
-                ${small}
-                <span style="font-size:0.7rem;">${note ? '(' + note + ')' : ''}</span>
-                <span>${isOn ? '🟢' : '🔴'}</span>
-            </span>`;
+            var isOn = specialRouteEnabled[mapKey] !== false;
+            var note = track.special_route_note || '';
+            var statusClass = isOn ? 'sc-on' : 'sc-off';
+            toggleHtml += '<span class="sc-toggle ' + statusClass + '" data-mapkey="' + mapKey + '" style="display:inline-flex;align-items:center;gap:4px;padding:6px 14px;border-radius:34px;font-size:0.8rem;cursor:pointer;border:1px solid ' + (isOn ? '#f5c542' : '#3a4880') + ';background:' + (isOn ? '#2a3a60' : '#0f1624') + ';color:' + (isOn ? '#f5c542' : '#9aa9ce') + ';user-select:none;">' + small + ' <span style="font-size:0.7rem;">' + (note ? '(' + note + ')' : '') + '</span> <span>' + (isOn ? '\uD83D\uDFE2' : '\uD83D\uDD34') + '</span></span>';
         }
-        
         list.innerHTML = toggleHtml;
         panel.style.display = hasSc ? '' : 'none';
     }
@@ -1255,12 +1221,9 @@
      */
     function renderResultGrid(scheme) {
         if (!scheme) {
-            document.getElementById('scPanel').style.display = 'none';
             renderEmptyResult();
             return;
         }
-
-        // 渲染特殊跑法开关
         renderScToggles();
 
         const totalScore = getTotalScore(scheme);
@@ -1402,11 +1365,11 @@
         });
 
         // 特殊跑法开关点击（结果面板中的开关，使用事件委托）
-        resultGrid.addEventListener('click', (e) => {
-            const toggle = e.target.closest('.sc-toggle');
+        resultGrid.addEventListener('click', function(e) {
+            var toggle = e.target.closest('.sc-toggle');
             if (!toggle) return;
-            const mapKey = toggle.dataset.mapkey;
-            const current = specialRouteEnabled[mapKey];
+            var mapKey = toggle.dataset.mapkey;
+            var current = specialRouteEnabled[mapKey];
             specialRouteEnabled[mapKey] = current === false ? true : false;
             computeAndDisplay();
         });
