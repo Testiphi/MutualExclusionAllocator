@@ -1977,7 +1977,34 @@
           "cars": [
             "秋王"
           ],
-          "time": 21.555
+          "time": null,
+          "sc_time": 19.8,
+          "sc_note": "BWO跳图"
+        },
+        {
+          "cars": [
+            "sgt",
+            "白龙"
+          ],
+          "time": null,
+          "sc_time": 20.4,
+          "sc_note": "BWO跳图"
+        },
+        {
+          "cars": [
+            "速尾"
+          ],
+          "time": null,
+          "sc_time": 21.0,
+          "sc_note": "BWO跳图"
+        },
+        {
+          "cars": [
+            "第六元素"
+          ],
+          "time": null,
+          "sc_time": 21.5,
+          "sc_note": "BWO跳图"
         }
       ]
     },

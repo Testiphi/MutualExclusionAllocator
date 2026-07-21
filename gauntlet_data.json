@@ -665,9 +665,10 @@
     {
       "大地图": "沙漠高速",
       "小地图": "发夹弯冲刺",
-      "has_special_route": false,
+      "has_special_route": true,
+      "special_route_note": "BWO跳图",
       "五区": {
-        "理论": [{"cars":[{"name":"恶魔"}],"time":28.4}, {"cars":[{"name":"玻璃"},{"name":"f5r"}],"time":28.8}, {"cars":[{"name":"杰皇"}],"time":29.1}, {"cars":[{"name":"f5"}],"time":29.4}, {"cars":[{"name":"杰哥"},{"name":"r兔"}],"time":29.7}, {"cars":[{"name":"秋王"}],"time":21.555}],
+        "理论": [{"cars":[{"name":"恶魔"}],"time":28.4}, {"cars":[{"name":"玻璃"},{"name":"f5r"}],"time":28.8}, {"cars":[{"name":"杰皇"}],"time":29.1}, {"cars":[{"name":"f5"}],"time":29.4}, {"cars":[{"name":"杰哥"},{"name":"r兔"}],"time":29.7}, {"cars":[{"name":"秋王"}],"time":19.8,"sc":true,"sc_note":"BWO跳图"}, {"cars":[{"name":"sgt"},{"name":"白龙"}],"time":20.4,"sc":true,"sc_note":"BWO跳图"}, {"cars":[{"name":"速尾"}],"time":21.0,"sc":true,"sc_note":"BWO跳图"}, {"cars":[{"name":"第六元素"}],"time":21.5,"sc":true,"sc_note":"BWO跳图"}],
         "高手": [{"cars":[{"name":"恶魔","stars":6}],"time":28.4}, {"cars":[{"name":"杰皇","stars":6}],"time":29.1}, {"cars":[{"name":"玻璃","stars":6}],"time":28.8}, {"cars":[{"name":"r兔","stars":6}],"time":29.7}, {"cars":[{"name":"爱音","stars":6}],"time":null}, {"cars":[{"name":"f5","stars":6}],"time":29.4}, {"cars":[{"name":"cc850","stars":6}],"time":null}, {"cars":[{"name":"杰哥","stars":6}],"time":29.7}, {"cars":[{"name":"狼崽","stars":6}],"time":null}, {"cars":[{"name":"火山","stars":6}],"time":null}],
         "普通": [{"cars":[{"name":"恶魔"}]}, {"cars":[{"name":"杰皇"}]}, {"cars":[{"name":"玻璃"}]}, {"cars":[{"name":"r兔"}]}, {"cars":[{"name":"爱音"}]}, {"cars":[{"name":"f5"}]}, {"cars":[{"name":"cc850"}]}, {"cars":[{"name":"杰哥"}]}, {"cars":[{"name":"狼崽"}]}, {"cars":[{"name":"火山"}]}],
         "自动": [{"cars":[{"name":"玻璃"}]}]
