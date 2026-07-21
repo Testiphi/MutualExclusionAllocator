@@ -1,157 +1,188 @@
 # MutualExclusionAllocator
 
-加拉帕戈斯（Asphalt 9: Legends）擂台选车助手 — 基于帕累托最优的互斥资源分配器。
-
-A9 Gauntlet car selector with Pareto-optimal matching, tier-based data, and special-route support.
+A constraint-based resource allocation tool with Pareto-optimal filtering, supporting multiple user tiers and alternative-route heuristics.
 
 ---
 
-## 功能概览
+## Overview
 
-### 🏎️ 擂台选车
-- 选 1-5 张地图（大地图互斥不可重复），自动分配最优车辆
-- 基于回溯枚举 + 帕累托非支配过滤，只展示不可被全面超越的方案
-- 车库可自由开关车辆，持久化到 localStorage
+This tool solves a **multi-group mutual-exclusion allocation problem**:
 
-### 📊 四档位切换
-| 档位 | 说明 |
-|------|------|
-| 理论档 | 金车理论成绩（满星，含特殊跑法如 BWO/跳图），按时间排序 |
-| 高手档 | 当前擂台选车数据，有成绩/星级字段，默认 ★6 |
-| 普通档 | 高手档基础上 ban 部分车（目前空 ban，待配置） |
-| 自动档 | 白名单模式，只保留 11 辆好开车 + 个别赛道特例 |
+- You have a **pool of resources** (e.g., items, agents, assets), each available or unavailable.
+- You define up to **N allocation groups**, each with a **priority-ordered list of candidate subsets**.
+- Each candidate subset is one or more resources that are mutually interchangeable for that slot.
+- A resource assigned to one slot **cannot be reused** elsewhere.
+- Some entries may have **alternative routes** that yield different efficiency metrics, enabled per-slot.
 
-### 🏃 特殊跑法开关
-9 条赛道有特殊跑法（BWO 跳图、超绝跳图、低 pf 等）：
-- 单类型 → 开启/关闭 toggle
-- 多类型（地心探险：新跳图/旧跳图/稳定跳图）→ 下拉选择器
-- 关闭时只显示正常跑法成绩，开启时 sc 版本替换普通版本
-
-### 🔄 四区模式
-- 一键切换五区/四区选车
-- 四区独立数据排序，车库自动过滤
-- 模式持久化到 localStorage
-
-### 🔍 车库增强
-- 搜索过滤（支持昵称和真名）
-- 排序切换（默认/分↓/分↑）
-- 等级筛选（R/S/A/B/C/D）
-- 70+ 昵称映射 → 320 辆全量数据
+The algorithm finds all feasible assignments via **backtracking enumeration**, then applies **Pareto non-dominated filtering** to return only schemes that cannot be strictly improved across all dimensions.
 
 ---
 
-## 架构
+## Algorithm
 
-纯静态前端应用，3 个 `<script>`：
+### 1. Data Model
+
+Each track (allocation slot) has a list of **entry groups**. Within each group, resources are mutually interchangeable — picking any one satisfies that slot at that priority level.
 
 ```
-config.js → api.js → index.html (inline IIFE)
+Slot: "Slot A"
+  Group 0: {Resource X, Resource Y}  ← priority 0 (best)
+  Group 1: {Resource Z}               ← priority 1
+  Group 2: {Resource W}               ← priority 2
+  ...
 ```
 
-所有逻辑在 IIFE 内，变量不暴露到 window。
+Some entries carry an `sc` (special/heuristic route) flag with optional subtype (`sc_type`) and note. When a heuristic route is enabled, the sc version replaces its normal counterpart at the same priority slot.
+
+### 2. Backtracking Enumeration
+
+```
+for each slot (in order):
+  for each entry group (by ascending priority):
+    for each resource in the group:
+      if resource is not already used AND is available:
+        assign → recurse to next slot
+```
+
+If a slot has zero available resources, it is left unassigned and enumeration continues (partial assignments are allowed).
+
+### 3. Pareto Non-Dominated Filtering
+
+Each complete assignment produces a **priority vector** `[p₀, p₁, ..., pₙ₋₁]` where `pᵢ` is the priority of the resource assigned to slot `i` (lower = better). Unassigned slots get a sentinel value.
+
+**Scheme A dominates scheme B** iff `∀i : A[i] ≤ B[i]` and `∃j : A[j] < B[j]`.
+
+Only schemes on the **Pareto front** (non-dominated set) are returned, sorted by total priority sum.
 
 ---
 
-## 数据格式 (gauntlet_data.json)
+## Tiers
+
+The system supports multiple data tiers for different use cases:
+
+| Tier | Purpose |
+|------|---------|
+| **Theory** | Reference data with best-known efficiency metrics. Includes heuristic route times. |
+| **Expert** | Practical data with per-item efficiency scores and optional star ratings. |
+| **Normal** | Subset of Expert with certain items excluded (ban list). No scores. |
+| **Auto** | Allow-list mode — only a curated set of items is available. |
+
+Tiers share the same slot structure but differ in which entries and which items within each entry are available. Switching tiers rebuilds the allocation index without changing the underlying algorithm.
+
+---
+
+## Heuristic Routes (Special Routes)
+
+Certain slots may have entries flagged with `sc: true`, representing alternative approaches (e.g., different techniques, shortcuts, workarounds) that yield different efficiency metrics.
+
+- **Per-slot toggle**: each heuristic route can be enabled or disabled independently.
+- **Multiple subtypes**: a slot may have several distinct heuristic methods, each with its own toggle (e.g., "method A", "method B").
+- **Replacement semantics**: when enabled, the heuristic entry replaces the normal entry for the same items at the same priority position; it does not add a duplicate.
+- **Affects**: both the allocation order (which items the algorithm tries first) and the displayed efficiency score.
+
+---
+
+## Multi-Zone Mode
+
+Each slot can have two independent priority lists (e.g., "Zone A" and "Zone B"). The user switches between zones; switching filters the candidate list and resource pool accordingly.
+
+---
+
+## Data Format
 
 ```json
 {
-  "_version": 2,
   "tier_info": {
-    "理论": {"label": "理论档", "desc": "..."},
-    "高手": {"label": "高手档", "desc": "..."},
-    "普通": {"label": "普通档", "desc": "..."},
-    "自动": {"label": "自动档", "desc": "..."}
+    "theory": { "label": "Theory", "desc": "..." },
+    "expert": { "label": "Expert", "desc": "..." }
   },
   "tracks": [
     {
-      "大地图": "冰火岛",
-      "小地图": "地心探险",
-      "has_special_route": true,
-      "special_route_note": "BWO新跳图 / BWO旧跳图 / BWO稳定跳图",
-      "五区": {
-        "理论": [
-          {"cars": [{"name": "9x8"}], "time": 14.7, "sc": true, "sc_type": "新跳图"},
-          {"cars": [{"name": "秋王"}], "time": 16.0, "sc": true, "sc_type": "新跳图"},
-          ...
-        ],
-        "高手": [
-          {"cars": [{"name": "恶魔", "stars": 6}], "time": 36.7},
-          ...
-        ],
-        "普通": [{"cars": [{"name": "恶魔"}]}, ...],
-        "自动": [{"cars": [{"name": "玻璃"}]}, ...]
-      },
-      "四区": { ... }
+      "category": "Region A",
+      "slot": "Slot 1",
+      "has_heuristic_route": true,
+      "zones": {
+        "primary": {
+          "theory": [
+            {"items": [{"id": "X"}, {"id": "Y"}], "score": 12.5},
+            {"items": [{"id": "X"}], "score": 8.3, "heuristic": true, "heuristic_type": "route_A"}
+          ],
+          "expert": [
+            {"items": [{"id": "X", "stars": 5}], "score": 12.5},
+            ...
+          ],
+          "normal": [{"items": [{"id": "X"}]}, ...],
+          "auto": [{"items": [{"id": "X"}]}, ...]
+        },
+        "secondary": { ... }
+      }
     }
   ]
 }
 ```
 
-### 特殊跑法标记
+### Entry Properties
 
-```json
-// 单类型 sc
-{"cars": [{"name": "杰皇"}], "time": 19.5, "sc": true, "sc_note": "超绝跳图版"}
+| Field | Type | Description |
+|-------|------|-------------|
+| `items` | `[{id, ?stars}]` | Candidate resources; pick one |
+| `score` | number/null | Efficiency metric (lower = better) |
+| `heuristic` | bool | Marks as heuristic route entry |
+| `heuristic_type` | string | Subtype for multi-heuristic slots |
+| `heuristic_note` | string | Human-readable note |
 
-// 多类型 sc（地心探险）
-{"cars": [{"name": "9x8"}], "time": 14.7, "sc": true, "sc_type": "新跳图", "sc_note": "BWO新跳图"}
+---
+
+## Architecture
+
+Pure client-side static application:
+
+```
+config → data loader (api abstraction) → application logic (IIFE)
 ```
 
----
+- **Config** — paths, keys, storage settings
+- **Data loader** — fetches JSON data, handles static and API modes
+- **Application logic** — builds slot indexes, runs backtracking + Pareto filtering, renders UI
+- **State persistence** — resource pool state saved to localStorage
 
-## 文件结构
-
-```
-MutualExclusionAllocator/
-├── index.html              # 单页应用
-├── config.js               # 配置文件（dataJson 路径等）
-├── api.js                  # 数据加载抽象层
-├── gauntlet_data.json      # 统一赛道数据（4 档位）
-├── cars.json               # 320 辆车辆数据（昵称+性能）
-├── ban_config.json         # 普通/自动档的 ban/allow 配置
-├── migrate_v2.py           # 迁移脚本
-├── reformat_json.py        # JSON 格式化脚本
-└── README.md
-```
+No server, no build step, no database.
 
 ---
 
-## 开发
+## Development
 
-### 数据更新流程
+### Data Pipeline
 
-1. 修改 `theory.json`（理论档数据）或 `ban_config.json`（ban 配置）
-2. 跑迁移：`python migrate_v2.py`
-3. 格式化：`python reformat_json.py`
-4. 复制到 repo：`copy gauntlet_data.json repo/`
-5. 部署：`git push`
+1. Edit source data files (tier definitions, ban/allow lists)
+2. Run migration script: `python migrate.py`
+3. Reformat: `python reformat.py`
+4. Deploy: push to hosting
 
-### 算法
+### Algorithm Notes
 
-- 回溯枚举所有可行分配（车不重复，图不重复）
-- 帕累托非支配过滤
-- 按总优先级分升序排列
-- 某图无可用车时留空，不阻断整体方案
+- Complexity: `O(k^n)` worst case where `k` = avg. entry group count and `n` = slot count. With realistic constraints (`n ≤ 5`, `k ≤ ~25`), enumeration completes near-instantly.
+- Partial assignments: slots with no available resources are left unassigned rather than blocking the entire solution.
+- The Pareto filter runs on the full enumeration output; for very large item pools, the scheme count may be capped.
 
 ---
 
-## 部署
+## Deployment
 
-GitHub Pages: [https://testiphi.github.io/MutualExclusionAllocator/](https://testiphi.github.io/MutualExclusionAllocator/)
+Static hosting (GitHub Pages, Netlify, any web server).
 
-强制刷新（Ctrl+F5）清除 CDN 缓存。
+Requires: `index.html`, `gauntlet_data.json`, `cars.json` (or equivalent data files).
 
 ---
 
-## 待办 / 下一步
+## Future Directions
 
-| 优先级 | 目标 |
-|--------|------|
-| P0 | 高手档按 time 排序（当前仍按数组下标） |
-| P1 | 星级自定义 UI（1-6★，影响可用性和排序） |
-| P2 | 成绩展示优化（s 后缀、sc 标注、null 隐藏） |
-| P3 | 普通档 ban 配置 |
-| P4 | 理论档四区数据补充 |
-| P5 | 高手档特殊跑法数据 |
-| P6 | 界面微调（档位名显示、方案详情等） |
+| Priority | Feature |
+|----------|---------|
+| P0 | Time-based sorting for Expert tier (currently uses arbitrary index order) |
+| P1 | Per-item star rating UI (affects availability and priority) |
+| P2 | Better score display (units, null handling, heuristic route annotations) |
+| P3 | Ban list configuration for Normal tier |
+| P4 | Secondary zone data for Theory tier |
+| P5 | Heuristic route data for Expert tier |
+| P6 | UI polish (tier name in header, detailed scheme info) |
