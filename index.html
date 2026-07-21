@@ -1142,11 +1142,13 @@
                 return;
             }
 
+            var anyAssigned = false;
             for (let g = 0; g < filteredGroups.length; g++) {
                 const group = filteredGroups[g];
                 if (group.length === 0) continue;
                 for (const car of group) {
                     if (!usedCars.has(car)) {
+                        anyAssigned = true;
                         const prio = carToPriority.get(car) ?? NO_CAR_PRIORITY;
                         usedCars.add(car);
                         curAssign[idx] = car;
@@ -1157,6 +1159,12 @@
                         curVector[idx] = NO_CAR_PRIORITY;
                     }
                 }
+            }
+            // 所有车已被其他图占用：留空继续
+            if (!anyAssigned) {
+                curAssign[idx] = null;
+                curVector[idx] = NO_CAR_PRIORITY;
+                backtrack(idx + 1);
             }
         }
 
