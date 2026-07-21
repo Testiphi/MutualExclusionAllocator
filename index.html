@@ -1011,12 +1011,44 @@
         if (!list) return null;
         const found = list.find(item => item.name === small);
         if (!found) return null;
-        if (zone === 'zone4' && found.zone4OrderGroups && found.zone4OrderGroups.length > 0) {
-            return found.zone4OrderGroups;
-        }
-        return found.orderGroups;
-    }
 
+        var mapKey = big + '/' + small;
+        var scOn = specialRouteEnabled[mapKey] !== false;
+
+        // 选择五区或四区的数据
+        var entries;
+        if (zone === 'zone4' && found.zone4Entries && found.zone4Entries.length > 0) {
+            entries = found.zone4Entries;
+        } else {
+            entries = found.zone5Entries;
+        }
+
+        // 过滤 + 生成车组，sc开启时 sc 版本替换同车普通版本
+        var groups = [];
+        var seenCar = {};
+        for (var ei = 0; ei < entries.length; ei++) {
+            var entry = entries[ei];
+            if (!scOn && entry._raw && entry._raw.sc) continue;
+            var cars = parseCarGroup(entry);
+            if (!cars.length || !cars[0]) continue;
+            var carName = cars[0];
+
+            if (scOn && entry._raw && entry._raw.sc) {
+                // sc 条目替换同车普通条目，不新增
+                var existingIdx = seenCar[carName];
+                if (existingIdx !== undefined && existingIdx < groups.length) {
+                    groups[existingIdx] = cars;
+                    continue;
+                }
+            }
+
+            if (seenCar[carName] === undefined) {
+                seenCar[carName] = groups.length;
+            }
+            groups.push(cars);
+        }
+        return groups;
+    }
     /** 默认无车优先级标记（100 以内，远大于实际优先级值） */
     const NO_CAR_PRIORITY = 99;
 
