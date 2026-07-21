@@ -28,12 +28,12 @@
         "理论": [{"cars":[{"name":"杰皇"}],"time":31.3}, {"cars":[{"name":"恶魔"}],"time":31.3}, {"cars":[{"name":"玻璃"},{"name":"f5r"}],"time":31.7}, {"cars":[{"name":"大超"}],"time":31.9}, {"cars":[{"name":"f5"}],"time":32.0}, {"cars":[{"name":"ssc"}],"time":32.2}, {"cars":[{"name":"cc850"},{"name":"杰哥"}],"time":32.5}],
         "高手": [{"cars":[{"name":"恶魔","stars":6}],"time":31.3}, {"cars":[{"name":"杰皇","stars":6}],"time":31.3}, {"cars":[{"name":"玻璃","stars":6}],"time":31.7}, {"cars":[{"name":"f5","stars":6}],"time":32.0}, {"cars":[{"name":"爱音","stars":6}],"time":null}, {"cars":[{"name":"ssc","stars":6}],"time":32.2}, {"cars":[{"name":"杰哥","stars":6}],"time":32.5}, {"cars":[{"name":"复仇","stars":6}],"time":null}, {"cars":[{"name":"速尾","stars":6}],"time":null}, {"cars":[{"name":"狼崽","stars":6}],"time":null}, {"cars":[{"name":"火山","stars":6}],"time":null}],
         "普通": [{"cars":[{"name":"恶魔"}]}, {"cars":[{"name":"杰皇"}]}, {"cars":[{"name":"玻璃"}]}, {"cars":[{"name":"f5"}]}, {"cars":[{"name":"爱音"}]}, {"cars":[{"name":"ssc"}]}, {"cars":[{"name":"杰哥"}]}, {"cars":[{"name":"复仇"}]}, {"cars":[{"name":"速尾"}]}, {"cars":[{"name":"狼崽"}]}, {"cars":[{"name":"火山"}]}],
-        "自动": [{"cars":[{"name":"玻璃"}]}, {"cars":[{"name":"速尾"}]}]
+        "自动": [{"cars":[{"name":"速尾"}]}]
       },
       "四区": {
         "高手": [{"cars":[{"name":"恶魔","stars":6}],"time":null}, {"cars":[{"name":"爱音","stars":6}],"time":null}, {"cars":[{"name":"杰哥","stars":6}],"time":null}, {"cars":[{"name":"ssc","stars":6}],"time":null}, {"cars":[{"name":"f5","stars":6}],"time":null}, {"cars":[{"name":"玻璃","stars":6}],"time":null}, {"cars":[{"name":"复仇","stars":6}],"time":null}, {"cars":[{"name":"速尾","stars":6}],"time":null}, {"cars":[{"name":"狼崽","stars":6}],"time":null}, {"cars":[{"name":"火山","stars":6}],"time":null}],
         "普通": [{"cars":[{"name":"恶魔"}]}, {"cars":[{"name":"爱音"}]}, {"cars":[{"name":"杰哥"}]}, {"cars":[{"name":"ssc"}]}, {"cars":[{"name":"f5"}]}, {"cars":[{"name":"玻璃"}]}, {"cars":[{"name":"复仇"}]}, {"cars":[{"name":"速尾"}]}, {"cars":[{"name":"狼崽"}]}, {"cars":[{"name":"火山"}]}],
-        "自动": [{"cars":[{"name":"玻璃"}]}, {"cars":[{"name":"速尾"}]}]
+        "自动": [{"cars":[{"name":"速尾"}]}]
       }
     },
     {
