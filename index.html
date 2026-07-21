@@ -431,6 +431,14 @@
     <h1>🏆 擂台选车助手</h1>
     <div class="sub">🚀 帕累托最优分配 | 每张图优先级数值越小越强 | 仅显示不可被其他方案全面超越的策略</div>
 
+    <!-- 档位切换 -->
+    <div class="zone-toggle" id="tierToggle" style="margin-bottom:12px;">
+        <label data-tier="理论" class="inactive">📊 理论档</label>
+        <label data-tier="高手" class="active">🏎️ 高手档</label>
+        <label data-tier="普通" class="inactive">🚗 普通档</label>
+        <label data-tier="自动" class="inactive">🤖 自动档</label>
+    </div>
+
     <div class="zone-toggle" id="zoneToggle">
         <label data-zone="zone5" class="active">🏁 五区</label>
         <label data-zone="zone4" class="inactive">🔄 四区</label>
@@ -1336,6 +1344,40 @@
         });
     }
 
+    // 档位切换
+    function initTierToggle() {
+        const labels = document.querySelectorAll('#tierToggle label');
+        labels.forEach(label => {
+            label.addEventListener('click', () => {
+                const tier = label.dataset.tier;
+                if (tier === currentTier) return;
+                currentTier = tier;
+                // 更新样式
+                labels.forEach(l => {
+                    l.className = l.dataset.tier === currentTier ? 'active' : 'inactive';
+                });
+                // 重构建地图索引（档位数据不同）
+                buildMapIndex();
+                refreshBigMaps();
+                // 如果理论档，更新小标题提示
+                updateSubtitle();
+                computeAndDisplay();
+            });
+        });
+        // 初始样式
+        labels.forEach(l => {
+            l.className = l.dataset.tier === currentTier ? 'active' : 'inactive';
+        });
+    }
+
+    function updateSubtitle() {
+        const tierInfo = RACE_DATA?.tier_info?.[currentTier];
+        const sub = document.querySelector('.sub');
+        if (sub && tierInfo) {
+            sub.textContent = '🚀 ' + tierInfo.desc + ' | 帕累托最优分配 | 仅显示不可被其他方案全面超越的策略';
+        }
+    }
+
     // 四区/五区切换
     function initZoneToggle() {
         const labels = document.querySelectorAll('#zoneToggle label');
@@ -1400,7 +1442,9 @@
             renderGarage();
             refreshBigMaps();
             bindEvents();
+            initTierToggle();
             initZoneToggle();
+            updateSubtitle();
             computeAndDisplay();
         } catch (err) {
             mapRowsContainer.innerHTML = `<div class="loading" style="color:#f99;padding:30px;">❌ 加载失败: ${err.message}<br>请确保 data.json 文件存在且格式正确</div>`;
