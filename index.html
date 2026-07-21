@@ -767,13 +767,17 @@
         const found = list.find(item => item.name === small);
         if (!found) return null;
         const mapKey = big + '/' + small;
-        const scOn = specialRouteEnabled[mapKey] !== false;
-        const entries = zone === 'zone4' ? found.zone4Entries : found.zone5Entries;
+        var scState = specialRouteEnabled[mapKey];
+        var scOn = scState !== 'off';  // undefined/'all'/type=开, 'off'=关
+        var entries = zone === 'zone4' ? found.zone4Entries : found.zone5Entries;
         var scScore = null;
         var normalScore = null;
-        for (const entry of entries) {
-            const cars = parseCarGroup(entry);
+        for (var ei = 0; ei < entries.length; ei++) {
+            var entry = entries[ei];
+            var cars = parseCarGroup(entry);
             if (!cars.includes(carName)) continue;
+            // 跳过不匹配的 sc 类型
+            if (entry._raw && entry._raw.sc && scState !== 'all' && scState !== undefined && entry._raw.sc_type && entry._raw.sc_type !== scState) continue;
             var score = null;
             if (entry._raw && entry._raw.time != null) score = entry._raw.time;
             else if (Array.isArray(entry) && entry.length > 1) score = entry[1];
