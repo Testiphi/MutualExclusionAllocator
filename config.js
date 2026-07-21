@@ -27,7 +27,7 @@ const APP_CONFIG = {
   // ---- 静态资源路径（dataSource='static' 时生效）----
   staticPaths: {
     carsJson: 'cars.json',
-    dataJson: 'data.json',
+    dataJson: 'gauntlet_data.json',
   },
 
   // ---- 本地存储键名 ---- 

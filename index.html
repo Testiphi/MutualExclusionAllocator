@@ -490,6 +490,8 @@
 
     // 当前模式: 'zone5' | 'zone4'
     let currentZone = 'zone5';
+    // 当前档位: '理论' | '高手' | '普通' | '自动'
+    let currentTier = '高手';
 
     let RACE_DATA = null;
     let bigMapList = [];
@@ -613,17 +615,44 @@
     // ========================== 工具函数 ==========================
 
     /**
-     * 解析 data.json 中的车组条目。
-     * 格式兼容：字符串（直接返回）、数组（取第一元素）、含 '/' 的多选一组合。
-     * @param {string|string[]|Object} cell - data.json 中的一条选车数据
-     * @returns {string[]} 车名数组（一般长度为 1，遇到 "狼崽/火山" 格式时为多选）
+     * 将 gauntlet_data.json 的新格式条目转换为旧格式 ([carName] 数组)。
+     * 新格式: {"cars": [{"name": "杰皇"}, ...], "time": 123, "sc": true}
+     * 旧格式: ["杰皇"]  或  ["杰皇", 123]
+     * 同时返回原始 entry 对象供成绩查询（保留 time、sc 等字段）。
+     */
+    function normalizeEntry(entry) {
+        if (entry && entry.cars) {
+            const names = entry.cars.map(c => c.name);
+            const result = [names[0]];  // 主车名
+            if (entry.time != null) result.push(entry.time);
+            result._raw = entry;  // 挂载原始对象供后续读取
+            return result;
+        }
+        return entry;  // 已经是旧格式
+    }
+
+    /**
+     * 从当前档位中提取五区/四区的原始车组列表（转换为旧格式）。
+     */
+    function getTierEntries(track, zone) {
+        const tierData = track[zone]?.[currentTier];
+        if (!tierData || !Array.isArray(tierData)) return [];
+        return tierData.map(normalizeEntry);
+    }
+
+    /**
+     * 解析车组条目，取第一元素作为车名。
+     * @param {string|string[]|Object} cell - 一条选车数据
+     * @returns {string[]} 车名数组
      */
     function parseCarGroup(cell) {
-        const name = Array.isArray(cell) ? cell[0] : (typeof cell === 'object' && cell !== null ? cell.车 : cell);
-        if (typeof name === 'string' && name.includes('/')) {
-            return name.split('/').map(s => s.trim());
+        if (Array.isArray(cell)) {
+            return [String(cell[0])];
         }
-        return [name];
+        if (typeof cell === 'string') {
+            return [cell];
+        }
+        return ['?'];
     }
 
     /** 获取当前模式的车列表 */
@@ -682,16 +711,16 @@
 
     // 车池由上方硬编码 ZONE5_CARS / ZONE4_CARS 定义
 
-    // 构建地图索引
+    // 构建地图索引（从 gauntlet_data.json 读取，按当前档位获取数据）
     function buildMapIndex() {
-        if (!RACE_DATA || !RACE_DATA.擂台选车表) return;
+        if (!RACE_DATA || !RACE_DATA.tracks) return;
         const bigSet = new Set();
         const map = {};
-        RACE_DATA.擂台选车表.forEach(item => {
+        RACE_DATA.tracks.forEach(item => {
             const big = item.大地图;
             const small = item.小地图;
-            const zone5Entries = item.五区 || [];
-            const zone4Entries = item.四区 || [];
+            const zone5Entries = getTierEntries(item, '五区');
+            const zone4Entries = getTierEntries(item, '四区');
             const orderGroups = zone5Entries.map(entry => parseCarGroup(entry));
             const zone4OrderGroups = zone4Entries.map(entry => parseCarGroup(entry));
             bigSet.add(big);
@@ -704,19 +733,19 @@
                 zone4Entries
             });
         });
-        // 保持 data.json 中的原始顺序（已按目标排序）
+        // 保持原始顺序
         bigMapList = Array.from(bigSet);
         smallMapsByBig = map;
     }
 
     /**
      * 查询某辆车在某小地图上的具体成绩。
-     * data.json 中每组的第二元素（如有）即为该车的成绩值。
+     * gauntlet_data.json 中使用 time 字段存储成绩。
      * @param {string} big - 大地图名
      * @param {string} small - 小地图名
      * @param {string} carName - 车昵称
      * @param {string} zone - 'zone5' | 'zone4'
-     * @returns {string|null} 成绩字符串，或 null
+     * @returns {number|string|null} 成绩值，或 null
      */
     function getCarScore(big, small, carName, zone) {
         const list = smallMapsByBig[big];
@@ -727,7 +756,11 @@
         for (const entry of entries) {
             const cars = parseCarGroup(entry);
             if (cars.includes(carName)) {
-                return Array.isArray(entry) && entry.length > 1 ? entry[1] : null;
+                // 新格式: entry._raw.time 存储成绩
+                if (entry._raw && entry._raw.time != null) return entry._raw.time;
+                // 旧格式兼容: entry[1]
+                if (Array.isArray(entry) && entry.length > 1) return entry[1];
+                return null;
             }
         }
         return null;
