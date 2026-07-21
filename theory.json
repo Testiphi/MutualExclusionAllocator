@@ -2592,7 +2592,8 @@
           ],
           "time": null,
           "sc_time": 14.7,
-          "sc_note": "BWO新跳图"
+          "sc_note": "BWO新跳图",
+          "sc_type": "新跳图"
         },
         {
           "cars": [
@@ -2600,7 +2601,8 @@
           ],
           "time": null,
           "sc_time": 16.0,
-          "sc_note": "BWO新跳图"
+          "sc_note": "BWO新跳图",
+          "sc_type": "新跳图"
         },
         {
           "cars": [
@@ -2608,7 +2610,8 @@
           ],
           "time": null,
           "sc_time": 16.8,
-          "sc_note": "BWO新跳图"
+          "sc_note": "BWO新跳图",
+          "sc_type": "新跳图"
         },
         {
           "cars": [
@@ -2616,7 +2619,8 @@
           ],
           "time": null,
           "sc_time": 18.6,
-          "sc_note": "BWO旧跳图"
+          "sc_note": "BWO旧跳图",
+          "sc_type": "旧跳图"
         },
         {
           "cars": [
@@ -2624,7 +2628,8 @@
           ],
           "time": null,
           "sc_time": 20.6,
-          "sc_note": "BWO旧跳图"
+          "sc_note": "BWO旧跳图",
+          "sc_type": "旧跳图"
         },
         {
           "cars": [
@@ -2632,7 +2637,8 @@
           ],
           "time": null,
           "sc_time": 26.7,
-          "sc_note": "BWO稳定跳图"
+          "sc_note": "BWO稳定跳图",
+          "sc_type": "稳定跳图"
         },
         {
           "cars": [
@@ -2640,7 +2646,8 @@
           ],
           "time": null,
           "sc_time": 28.0,
-          "sc_note": "BWO稳定跳图"
+          "sc_note": "BWO稳定跳图",
+          "sc_type": "稳定跳图"
         },
         {
           "cars": [
@@ -2648,7 +2655,8 @@
           ],
           "time": null,
           "sc_time": 29.0,
-          "sc_note": "BWO稳定跳图"
+          "sc_note": "BWO稳定跳图",
+          "sc_type": "稳定跳图"
         },
         {
           "cars": [

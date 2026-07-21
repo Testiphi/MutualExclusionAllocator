@@ -1013,7 +1013,8 @@
         if (!found) return null;
 
         var mapKey = big + '/' + small;
-        var scOn = specialRouteEnabled[mapKey] !== false;
+        var scState = specialRouteEnabled[mapKey];
+        if (scState === undefined) scState = 'all';  // 默认全部开启
 
         // 选择五区或四区的数据
         var entries;
@@ -1028,12 +1029,19 @@
         var seenCar = {};
         for (var ei = 0; ei < entries.length; ei++) {
             var entry = entries[ei];
-            if (!scOn && entry._raw && entry._raw.sc) continue;
+            var raw = entry._raw;
+            var isSc = raw && raw.sc;
+
+            // sc 关闭 → 跳过所有 sc 条目
+            if (scState === 'off' && isSc) continue;
+            // sc 有特定类型 → 只保留匹配类型的 sc 条目
+            if (scState !== 'off' && scState !== 'all' && isSc && raw.sc_type !== scState) continue;
+
             var cars = parseCarGroup(entry);
             if (!cars.length || !cars[0]) continue;
             var carName = cars[0];
 
-            if (scOn && entry._raw && entry._raw.sc) {
+            if (isSc && scState !== 'off') {
                 // sc 条目替换同车普通条目，不新增
                 var existingIdx = seenCar[carName];
                 if (existingIdx !== undefined && existingIdx < groups.length) {
@@ -1221,6 +1229,19 @@
 
 
     /** 渲染特殊跑法开关（在结果面板中展示） */
+    function getScTypes(track) {
+        var zoneKey = currentZone === 'zone4' ? '四区' : '五区';
+        var tierData = track[zoneKey]?.[currentTier];
+        if (!tierData || !Array.isArray(tierData)) return [];
+        var types = {};
+        for (var ei = 0; ei < tierData.length; ei++) {
+            if (tierData[ei].sc && tierData[ei].sc_type) {
+                types[tierData[ei].sc_type] = true;
+            }
+        }
+        return Object.keys(types);
+    }
+
     function renderScToggles() {
         var panel = document.getElementById('scPanel');
         var list = document.getElementById('scToggleList');
@@ -1239,10 +1260,29 @@
             var hasScEntries = tierData && Array.isArray(tierData) && tierData.some(function(e) { return e.sc; });
             if (!hasScEntries) continue;
             hasSc = true;
-            var isOn = specialRouteEnabled[mapKey] !== false;
             var note = track.special_route_note || '';
-            var statusClass = isOn ? 'sc-on' : 'sc-off';
-            toggleHtml += '<span class="sc-toggle ' + statusClass + '" data-mapkey="' + mapKey + '" style="display:inline-flex;align-items:center;gap:4px;padding:6px 14px;border-radius:34px;font-size:0.8rem;cursor:pointer;border:1px solid ' + (isOn ? '#f5c542' : '#3a4880') + ';background:' + (isOn ? '#2a3a60' : '#0f1624') + ';color:' + (isOn ? '#f5c542' : '#9aa9ce') + ';user-select:none;">' + small + ' <span style="font-size:0.7rem;">' + (note ? '(' + note + ')' : '') + '</span> <span>' + (isOn ? '\uD83D\uDFE2' : '\uD83D\uDD34') + '</span></span>';
+            var currentState = specialRouteEnabled[mapKey];
+            if (currentState === undefined) currentState = 'all';
+            var scTypes = getScTypes(track);
+
+            if (scTypes.length > 1) {
+                // 多 sc 类型：显示下拉选择器
+                var opts = '';
+                opts += '<option value="off"' + (currentState === 'off' ? ' selected' : '') + '>关闭</option>';
+                opts += '<option value="all"' + (currentState === 'all' ? ' selected' : '') + '>全部</option>';
+                for (var ti = 0; ti < scTypes.length; ti++) {
+                    opts += '<option value="' + scTypes[ti] + '"' + (currentState === scTypes[ti] ? ' selected' : '') + '>' + scTypes[ti] + '</option>';
+                }
+                toggleHtml += '<span style="display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:34px;font-size:0.8rem;border:1px solid #2f3f6b;background:#0f1624;">';
+                toggleHtml += '<span>' + small + '</span>';
+                if (note) toggleHtml += ' <span style="font-size:0.7rem;color:#8b9ad4;">(' + note + ')</span>';
+                toggleHtml += ' <select class="sc-select" data-mapkey="' + mapKey + '" style="padding:3px 8px;border-radius:16px;border:1px solid #3a4880;background:#1a2640;color:#cddcff;font-size:0.75rem;cursor:pointer;">' + opts + '</select>';
+                toggleHtml += '</span>';
+            } else {
+                // 单 sc 类型：显示切换开关
+                var isOn = currentState !== 'off';
+                toggleHtml += '<span class="sc-toggle" data-mapkey="' + mapKey + '" style="display:inline-flex;align-items:center;gap:4px;padding:6px 14px;border-radius:34px;font-size:0.8rem;cursor:pointer;border:1px solid ' + (isOn ? '#f5c542' : '#3a4880') + ';background:' + (isOn ? '#2a3a60' : '#0f1624') + ';color:' + (isOn ? '#f5c542' : '#9aa9ce') + ';user-select:none;">' + small + ' <span style="font-size:0.7rem;">' + (note ? '(' + note + ')' : '') + '</span> <span>' + (isOn ? '\uD83D\uDFE2' : '\uD83D\uDD34') + '</span></span>';
+            }
         }
         list.innerHTML = toggleHtml;
         panel.style.display = hasSc ? '' : 'none';
@@ -1416,13 +1456,21 @@
             renderGarage();
         });
 
-        // 特殊跑法开关点击（绑定到 scPanel，toggle 元素在 scToggleList 内）
+        // 特殊跑法开关点击 + 下拉选择（绑定到 scPanel）
         document.getElementById('scPanel').addEventListener('click', function(e) {
             var toggle = e.target.closest('.sc-toggle');
             if (!toggle) return;
             var mapKey = toggle.dataset.mapkey;
             var current = specialRouteEnabled[mapKey];
-            specialRouteEnabled[mapKey] = current === false ? true : false;
+            // 单类型 toggle：off <-> all
+            specialRouteEnabled[mapKey] = current === 'off' ? 'all' : 'off';
+            computeAndDisplay();
+        });
+        document.getElementById('scPanel').addEventListener('change', function(e) {
+            var sel = e.target.closest('.sc-select');
+            if (!sel) return;
+            var mapKey = sel.dataset.mapkey;
+            specialRouteEnabled[mapKey] = sel.value;
             computeAndDisplay();
         });
 
