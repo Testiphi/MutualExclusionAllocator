@@ -766,18 +766,27 @@
         if (!list) return null;
         const found = list.find(item => item.name === small);
         if (!found) return null;
+        const mapKey = big + '/' + small;
+        const scOn = specialRouteEnabled[mapKey] !== false;
         const entries = zone === 'zone4' ? found.zone4Entries : found.zone5Entries;
+        var scScore = null;
+        var normalScore = null;
         for (const entry of entries) {
             const cars = parseCarGroup(entry);
-            if (cars.includes(carName)) {
-                // 新格式: entry._raw.time 存储成绩
-                if (entry._raw && entry._raw.time != null) return entry._raw.time;
-                // 旧格式兼容: entry[1]
-                if (Array.isArray(entry) && entry.length > 1) return entry[1];
-                return null;
+            if (!cars.includes(carName)) continue;
+            var score = null;
+            if (entry._raw && entry._raw.time != null) score = entry._raw.time;
+            else if (Array.isArray(entry) && entry.length > 1) score = entry[1];
+            if (score == null) continue;
+            if (entry._raw && entry._raw.sc) {
+                scScore = score;
+            } else {
+                normalScore = score;
             }
         }
-        return null;
+        // 特殊跑法开启时优先显示 sc 版本的成绩
+        if (scOn && scScore != null) return scScore;
+        return normalScore;
     }
 
     // ========================== 界面渲染 ==========================
@@ -1364,8 +1373,8 @@
             renderGarage();
         });
 
-        // 特殊跑法开关点击（结果面板中的开关，使用事件委托）
-        resultGrid.addEventListener('click', function(e) {
+        // 特殊跑法开关点击（绑定到 scPanel，toggle 元素在 scToggleList 内）
+        document.getElementById('scPanel').addEventListener('click', function(e) {
             var toggle = e.target.closest('.sc-toggle');
             if (!toggle) return;
             var mapKey = toggle.dataset.mapkey;
