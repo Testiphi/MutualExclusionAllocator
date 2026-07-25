@@ -71,7 +71,8 @@
     "黑龙": "Bugatti LA Voiture Noire",
     "爱音": "Tushek Aeon E",
     "冰山": "Icona Vulcano Spyder",
-    "西安": "Lamborghini Sián FKP 37"
+    "西安": "Lamborghini Sián FKP 37",
+    "dose": "Ferrante Design Elytron"
   },
   "cars": [
     {
@@ -3140,6 +3141,70 @@
       "acceleration": 76.31,
       "handling": 51.13,
       "nitro": 58.64
+    },
+    {
+      "title": "Ares Panther",
+      "score": 4387,
+      "class": "B",
+      "max_speed": 368.6,
+      "acceleration": 83.84,
+      "handling": 70.82,
+      "nitro": 49.07
+    },
+    {
+      "title": "Mercedes-Benz Biome 2010",
+      "score": 4078,
+      "class": "A",
+      "max_speed": 337.0,
+      "acceleration": 80.62,
+      "handling": 80.16,
+      "nitro": 83.39
+    },
+    {
+      "title": "Bugatti Tourbillon",
+      "score": 5676,
+      "class": "R",
+      "max_speed": 492.8,
+      "acceleration": 85.24,
+      "handling": 70.17,
+      "nitro": 48.98
+    },
+    {
+      "title": "Nio EP9 Anniversary Special Edition",
+      "score": 4501,
+      "class": "A",
+      "max_speed": 348.7,
+      "acceleration": 86.14,
+      "handling": 59.71,
+      "nitro": 60.93
+    },
+    {
+      "title": "Ferrante Design Elytron",
+      "score": 5050,
+      "class": "S",
+      "max_speed": 462.4,
+      "acceleration": 85.24,
+      "handling": 56.39,
+      "nitro": 47.19,
+      "nickname": "dose"
+    },
+    {
+      "title": "Pagani Codalunga",
+      "score": 4647,
+      "class": "S",
+      "max_speed": 398.3,
+      "acceleration": 81.7,
+      "handling": 65.49,
+      "nitro": 72.01
+    },
+    {
+      "title": "Ferrari 12 Cilindri",
+      "score": 4294,
+      "class": "B",
+      "max_speed": 351.3,
+      "acceleration": 85.29,
+      "handling": 70.13,
+      "nitro": 75.09
     }
   ]
 }
