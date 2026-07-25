@@ -651,7 +651,19 @@
     function getTierEntries(track, zone) {
         const tierData = track[zone]?.[currentTier];
         if (!tierData || !Array.isArray(tierData)) return [];
-        return tierData.map(normalizeEntry);
+        let entries = tierData.map(normalizeEntry);
+        // 高手档按 time 升序（小=快排前面），time=null 排末尾
+        if (currentTier === '高手') {
+            entries.sort((a, b) => {
+                const ta = a._raw?.time;
+                const tb = b._raw?.time;
+                if (ta == null && tb == null) return 0;
+                if (ta == null) return 1;
+                if (tb == null) return -1;
+                return ta - tb;
+            });
+        }
+        return entries;
     }
 
     /**
