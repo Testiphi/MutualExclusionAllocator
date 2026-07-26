@@ -114,54 +114,6 @@ const api = (() => {
       }
     },
 
-    // ---------------------------------------------------------------------
-    //  未来扩展 — 骨架方法（暂抛未实现异常）
-    // ---------------------------------------------------------------------
 
-    /** 登录 */
-    async login(username, password) {
-      if (cfg.dataSource === 'static') {
-        console.warn('login: dataSource=static, 跳过');
-        return null;
-      }
-      return apiFetch('POST', '/auth/login', { username, password });
-    },
-
-    /** 注册 */
-    async register(username, password) {
-      if (cfg.dataSource === 'static') {
-        console.warn('register: dataSource=static, 跳过');
-        return null;
-      }
-      return apiFetch('POST', '/auth/register', { username, password });
-    },
-
-    /** 退出登录 */
-    async logout() {
-      if (cfg.dataSource === 'static') return;
-      return apiFetch('POST', '/auth/logout');
-    },
-
-    /** 获取当前用户信息 */
-    async getUser() {
-      if (cfg.dataSource === 'static') return null;
-      return apiFetch('GET', '/auth/me');
-    },
-
-    /** 提交成绩（排行榜） */
-    async submitScore(scoreData) {
-      if (cfg.dataSource === 'static') {
-        console.warn('submitScore: 未启用');
-        return;
-      }
-      return apiFetch('POST', '/leaderboard', scoreData);
-    },
-
-    /** 获取排行榜 */
-    async getLeaderboard(options = {}) {
-      if (cfg.dataSource === 'static') return [];
-      const q = new URLSearchParams(options).toString();
-      return apiFetch('GET', `/leaderboard?${q}`);
-    },
   };
 })();
