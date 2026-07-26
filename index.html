@@ -1249,6 +1249,10 @@
         return Object.keys(types);
     }
 
+    function displayScType(raw) {
+        return raw === 'BWO' ? '跳图' : raw;
+    }
+
     function renderScToggles() {
         var panel = document.getElementById('scPanel');
         var list = document.getElementById('scToggleList');
@@ -1278,7 +1282,7 @@
                 opts += '<option value="off"' + (currentState === 'off' ? ' selected' : '') + '>关闭</option>';
                 opts += '<option value="all"' + (currentState === 'all' ? ' selected' : '') + '>全部</option>';
                 for (var ti = 0; ti < scTypes.length; ti++) {
-                    opts += '<option value="' + scTypes[ti] + '"' + (currentState === scTypes[ti] ? ' selected' : '') + '>' + scTypes[ti] + '</option>';
+                    opts += '<option value="' + scTypes[ti] + '"' + (currentState === scTypes[ti] ? ' selected' : '') + '>' + displayScType(scTypes[ti]) + '</option>';
                 }
                 toggleHtml += '<span style="display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:8px;font-size:0.8rem;border:1px solid #21262d;background:#0d1117;">';
                 toggleHtml += '<span>' + small + '</span>';
@@ -1288,7 +1292,7 @@
             } else {
                 // 单 sc 类型：显示切换开关
                 var isOn = currentState !== 'off';
-                toggleHtml += '<span class="sc-toggle" data-mapkey="' + mapKey + '" style="display:inline-flex;align-items:center;gap:4px;padding:6px 14px;border-radius:8px;font-size:0.8rem;cursor:pointer;border:1px solid ' + (isOn ? '#58a6ff' : '#30363d') + ';background:' + (isOn ? '#1f3a5f' : '#0d1117') + ';color:' + (isOn ? '#58a6ff' : '#6e7681') + ';user-select:none;">' + small + ' <span style="font-size:0.7rem;">' + (note ? '(' + note + ')' : '') + '</span> <span>' + (isOn ? '\u25C9' : '\u25CB') + '</span></span>';
+                toggleHtml += '<span class="sc-toggle" data-mapkey="' + mapKey + '" style="display:inline-flex;align-items:center;gap:4px;padding:6px 14px;border-radius:8px;font-size:0.8rem;cursor:pointer;border:1px solid ' + (isOn ? '#58a6ff' : '#30363d') + ';background:' + (isOn ? '#1f3a5f' : '#0d1117') + ';color:' + (isOn ? '#58a6ff' : '#8b949e') + ';user-select:none;">' + small + ' <span style="font-size:0.7rem;">' + (note ? '(' + note + ')' : '') + '</span> <span>' + (isOn ? '\u25C9' : '\u25CB') + '</span></span>';
             }
         }
         list.innerHTML = toggleHtml;
