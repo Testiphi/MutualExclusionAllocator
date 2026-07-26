@@ -15,15 +15,6 @@ const APP_CONFIG = {
   apiBaseUrl: '',                // 例如 'https://your-domain.com'
   apiPrefix: '/api',             // API 路由前缀
 
-  // ---- 功能开关（未来扩展）----
-  features: {
-    userAccounts: false,         // 用户登录/注册
-    leaderboard: false,          // 排行榜
-    multiProfile: false,         // 多车库配置（不同用户/场景）
-    customChallenges: false,     // 自定义挑战
-    historyTracking: false,      // 历史成绩追踪
-  },
-
   // ---- 静态资源路径（dataSource='static' 时生效）----
   staticPaths: {
     carsJson: 'cars.json',
