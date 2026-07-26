@@ -30,7 +30,6 @@ const APP_CONFIG = {
 
   // ---- 算法参数 ----
   algorithm: {
-    maxSchemesDisplay: 20,       // 最大展示方案数
     noCarPriority: 99,           // 无车优先级标记
   },
 };
