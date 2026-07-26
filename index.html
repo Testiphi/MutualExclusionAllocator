@@ -12,7 +12,7 @@
             font-family: system-ui, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
         }
         body {
-            background: #0b0f17;
+            background: #0d1117;
             margin: 0;
             min-height: 100vh;
             display: flex;
@@ -23,11 +23,10 @@
         .card {
             max-width: 1280px;
             width: 100%;
-            background: #111827;
-            border-radius: 32px;
-            padding: 24px 28px;
-            border: 1px solid #2a3650;
-            box-shadow: 0 20px 35px rgba(0,0,0,0.5);
+            background: #161b22;
+            border: 1px solid #21262d;
+            border-radius: 16px;
+            padding: 20px 24px;
         }
         h1 {
             color: #e6edf3;
@@ -75,7 +74,7 @@
         .car-tag.disabled {
             opacity: 0.35;
             cursor: not-allowed;
-            border-color: #2a3857;
+            border-color: #21262d;
         }
         /* ===== 副标题 ===== */
         .sub {
@@ -94,20 +93,17 @@
             display: flex;
             align-items: center;
             gap: 14px;
-            background: #0f1624;
-            padding: 10px 18px;
-            border-radius: 60px;
-            border: 1px solid #2a3857;
+            background: #0d1117;
+            padding: 10px 16px;
+            border-radius: 12px;
+            border: 1px solid #21262d;
         }
         .map-index {
-            width: 36px; height: 36px;
-            background: #1f2a44;
-            color: #ffde9c;
-            border-radius: 40px;
-            display: flex; align-items: center; justify-content: center;
-            font-weight: bold;
-            font-size: 1.2rem;
+            width: 28px;
+            color: #484f58;
+            font-size: 0.9rem;
             flex-shrink: 0;
+            text-align: center;
         }
         .map-select-group {
             display: flex;
@@ -122,27 +118,27 @@
         .select-wrapper label {
             display: block;
             font-size: 0.7rem;
-            color: #8f9ec7;
+            color: #6e7681;
             margin-bottom: 4px;
             font-weight: 500;
         }
         select {
             width: 100%;
             padding: 10px 14px;
-            background: #030617;
-            border: 1px solid #3a4880;
-            color: #f0f4ff;
-            border-radius: 34px;
+            background: #0d1117;
+            border: 1px solid #30363d;
+            color: #e6edf3;
+            border-radius: 10px;
             font-size: 0.88rem;
             cursor: pointer;
             appearance: none;
-            background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2393a5df' stroke-width='2'><polyline points='6 9 12 15 18 9'/></svg>");
+            background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%238b949e' stroke-width='2'><polyline points='6 9 12 15 18 9'/></svg>");
             background-repeat: no-repeat;
             background-position: right 14px center;
             background-size: 14px;
         }
         select:focus {
-            border-color: #f5c542;
+            border-color: #58a6ff;
             outline: none;
         }
         select:disabled {
@@ -150,11 +146,9 @@
         }
         /* ===== 车库区域 ===== */
         .garage {
-            background: #0e1627;
-            border-radius: 32px;
-            padding: 18px 20px;
-            margin: 18px 0 24px;
-            border: 1px solid #29385c;
+            background: #161b22;
+            border-radius: 12px;
+            padding: 16px;
         }
         .garage-header {
             display: flex;
@@ -166,54 +160,53 @@
         }
         .garage-header h2 {
             margin: 0;
-            font-size: 1.3rem;
+            font-size: 1.2rem;
             font-weight: 600;
-            color: #dbe4ff;
+            color: #e6edf3;
         }
         .garage-actions {
             display: flex;
             gap: 12px;
         }
         .garage-btn {
-            background: #202a42;
-            border: 1px solid #4f639a;
-            color: #f2e9c7;
-            padding: 5px 18px;
-            border-radius: 40px;
+            background: #21262d;
+            border: 1px solid #30363d;
+            color: #e6edf3;
+            padding: 4px 14px;
+            border-radius: 8px;
             font-size: 0.8rem;
             cursor: pointer;
         }
         .garage-btn:hover {
-            background: #2f3e66;
-            border-color: #f5c542;
+            background: #30363d;
+            border-color: #58a6ff;
         }
         .car-grid {
             display: flex;
             flex-wrap: wrap;
-            gap: 8px;
+            gap: 6px;
             max-height: 270px;
             overflow-y: auto;
             padding: 8px 6px;
-            background: #070c18;
-            border-radius: 34px;
-            border: 1px solid #253153;
+            background: #0d1117;
+            border-radius: 12px;
+            border: 1px solid #21262d;
         }
         .car-tag {
-            background: #18203a;
-            color: #cbd9ff;
-            padding: 6px 16px;
-            border-radius: 60px;
-            font-size: 0.85rem;
-            border: 1px solid #40548b;
+            background: #21262d;
+            color: #e6edf3;
+            padding: 5px 12px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            border: 1px solid #30363d;
             cursor: pointer;
             user-select: none;
         }
         .car-tag.selected {
-            background: #f3bc3c;
-            color: #0e1422;
-            border-color: #ffdf8c;
-            font-weight: 700;
-            box-shadow: 0 0 6px #f5bc3c;
+            background: #1f3a5f;
+            color: #58a6ff;
+            border-color: #58a6ff;
+            font-weight: 600;
         }
         .class-filter {
             display: flex;
@@ -222,46 +215,45 @@
             flex-wrap: wrap;
         }
         .class-filter-btn {
-            background: #18203a;
-            color: #8f9ec7;
-            padding: 4px 14px;
-            border-radius: 60px;
+            background: #21262d;
+            color: #8b949e;
+            padding: 4px 12px;
+            border-radius: 8px;
             font-size: 0.8rem;
-            border: 1px solid #40548b;
+            border: 1px solid #30363d;
             cursor: pointer;
             user-select: none;
-            font-weight: 600;
+            font-weight: 500;
         }
         .class-filter-btn.active {
-            background: #f3bc3c;
-            color: #0e1422;
-            border-color: #ffdf8c;
-            box-shadow: 0 0 4px #f5bc3c;
+            background: #1f3a5f;
+            color: #58a6ff;
+            border-color: #58a6ff;
         }
         .class-filter-btn:hover {
-            border-color: #f5c542;
+            border-color: #58a6ff;
         }
         .garage-search {
             width: 100%;
             padding: 10px 18px;
-            background: #030617;
-            border: 1px solid #3a4880;
-            color: #f0f4ff;
-            border-radius: 34px;
+            background: #0d1117;
+            border: 1px solid #30363d;
+            color: #e6edf3;
+            border-radius: 10px;
             font-size: 0.85rem;
             outline: none;
             margin-bottom: 12px;
             box-sizing: border-box;
         }
         .garage-search:focus {
-            border-color: #f5c542;
+            border-color: #58a6ff;
         }
         .garage-search::placeholder {
-            color: #5a6c9f;
+            color: #484f58;
         }
         /* ===== 搜索无匹配提示 ===== */
         .no-match {
-            color: #6a7db0;
+            color: #484f58;
             text-align: center;
             width: 100%;
             padding: 20px;
@@ -273,27 +265,24 @@
             margin: 18px 0 24px;
         }
         .recommend-btn {
-            background: linear-gradient(115deg, #f0b429, #cf951e);
+            background: #238636;
             border: none;
-            color: #0c1120;
-            font-weight: bold;
-            font-size: 1.35rem;
-            padding: 14px 42px;
-            border-radius: 70px;
-            border-bottom: 3px solid #9b6f18;
+            color: #ffffff;
+            font-weight: 600;
+            font-size: 1.1rem;
+            padding: 12px 36px;
+            border-radius: 10px;
             cursor: pointer;
-            box-shadow: 0 6px 12px rgba(0,0,0,0.4);
+            transition: background .15s;
         }
         .recommend-btn:hover {
-            background: linear-gradient(115deg, #ffcd5a, #e6a82a);
-            transform: scale(0.98);
+            background: #2ea043;
         }
         /* ===== 结果面板 ===== */
         .result-panel {
-            background: #0f1628;
-            border-radius: 32px;
-            padding: 20px 22px;
-            border: 1px solid #2f3f6b;
+            background: #161b22;
+            border-radius: 12px;
+            padding: 16px;
         }
         .result-title {
             color: #e6edf3;
@@ -309,14 +298,14 @@
             flex-wrap: wrap;
         }
         .scheme-selector label {
-            color: #bacaee;
-            font-weight: 500;
+            color: #8b949e;
+            font-weight: 400;
         }
         .scheme-selector select {
             width: auto;
-            min-width: 380px;
-            background: #121b32;
-            border-color: #536cac;
+            min-width: 340px;
+            background: #0d1117;
+            border-color: #30363d;
         }
         .result-grid {
             display: grid;
@@ -324,46 +313,45 @@
             gap: 16px;
         }
         .result-item {
-            background: #141e38;
-            border-radius: 28px;
-            padding: 14px 8px;
+            background: #0d1117;
+            border-radius: 10px;
+            padding: 12px 8px;
             text-align: center;
-            border: 1px solid #2e4278;
+            border: 1px solid #21262d;
         }
         .result-map {
-            font-weight: 700;
-            color: #f2e4b3;
-            font-size: 1rem;
-            margin-bottom: 6px;
+            font-weight: 600;
+            color: #e6edf3;
+            font-size: 0.9rem;
+            margin-bottom: 4px;
         }
         .result-bigmap {
-            font-size: 0.7rem;
-            color: #8b9ad4;
-            margin-bottom: 12px;
-            text-transform: uppercase;
+            font-size: 0.65rem;
+            color: #6e7681;
+            margin-bottom: 10px;
         }
         .result-car {
-            background: #1f2c54;
-            padding: 9px 0;
-            border-radius: 60px;
-            font-weight: 800;
-            color: #f8df96;
-            border: 1px solid #6b86c9;
-            font-size: 0.95rem;
+            background: #21262d;
+            padding: 8px 0;
+            border-radius: 8px;
+            font-weight: 600;
+            color: #e6edf3;
+            border: 1px solid #30363d;
+            font-size: 0.85rem;
         }
         .result-car.empty {
-            background: #182040;
-            color: #7f8bbd;
-            border: 1px dashed #5b6fa5;
+            background: #161b22;
+            color: #484f58;
+            border: 1px dashed #30363d;
         }
         .priority-badge {
-            font-size: 0.65rem;
-            background: #01040e60;
-            border-radius: 30px;
+            font-size: 0.6rem;
+            background: rgba(1,4,14,0.4);
+            border-radius: 6px;
             display: inline-block;
-            margin-top: 6px;
-            color: #b7c5ff;
-            padding: 2px 8px;
+            margin-top: 4px;
+            color: #6e7681;
+            padding: 2px 6px;
         }
         .footer-note {
             color: #484f58;
@@ -391,23 +379,22 @@
         }
         .loading-overlay.show { display: flex; }
         .loading-box {
-            background: #111827;
-            border: 1px solid #2a3650;
-            border-radius: 32px;
-            padding: 40px 60px;
+            background: #161b22;
+            border: 1px solid #21262d;
+            border-radius: 12px;
+            padding: 32px 48px;
             text-align: center;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
         }
         .loading-spinner {
             width: 50px; height: 50px;
-            border: 4px solid #2a3650;
-            border-top: 4px solid #f7d44a;
+            border: 4px solid #21262d;
+            border-top: 4px solid #58a6ff;
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
             margin: 0 auto 16px;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
-        .loading-box p { color: #cddcff; font-size: 1rem; margin: 12px 0 0; }
+        .loading-box p { color: #e6edf3; font-size: 0.9rem; margin: 10px 0 0; }
         .result-score {
             font-size: 0.75rem;
             color: #83a0d8;
@@ -420,7 +407,7 @@
     <div class="loading-overlay" id="loadingOverlay">
         <div class="loading-box">
             <div class="loading-spinner"></div>
-            <p>🔄 正在计算最优方案...</p>
+            <p>计算最优方案...</p>
         </div>
     </div>
 
@@ -444,14 +431,14 @@
 
     <div class="garage">
         <div class="garage-header">
-            <h2 id="garageTitle">🚘 我的车库</h2>
+            <h2 id="garageTitle"> 我的车库</h2>
             <div class="garage-actions">
-                <span class="garage-btn" id="selectAllBtn">✔ 全部点亮</span>
-                <span class="garage-btn" id="clearAllBtn">✖ 全部清空</span>
-                <span class="garage-btn" id="sortBtn">📊 默认</span>
+                <span class="garage-btn" id="selectAllBtn">全部点亮</span>
+                <span class="garage-btn" id="clearAllBtn">全部清空</span>
+                <span class="garage-btn" id="sortBtn">默认</span>
             </div>
         </div>
-        <input class="garage-search" id="garageSearch" type="text" placeholder="🔍 搜索车辆(支持昵称/真名)..." autocomplete="off">
+        <input class="garage-search" id="garageSearch" type="text" placeholder="搜索车辆(支持昵称/真名)..." autocomplete="off">
         <div class="class-filter" id="classFilter">
             <span class="class-filter-btn active" data-class="">全部</span>
             <span class="class-filter-btn" data-class="R">R</span>
@@ -465,7 +452,7 @@
     </div>
 
     <div class="action">
-        <button class="recommend-btn" id="recommendBtn">✨ 生成方案 ✨</button>
+        <button class="recommend-btn" id="recommendBtn">生成方案</button>
     </div>
 
     <div class="result-panel">
@@ -474,11 +461,11 @@
             <span class="badge-pareto" id="schemeCountBadge">0</span>
         </div>
         <div class="scheme-selector">
-            <label for="schemeSelect">🏅 选择方案:</label>
+            <label for="schemeSelect">选择方案:</label>
             <select id="schemeSelect"></select>
         </div>
-        <div class="sc-panel" id="scPanel" style="display:none;margin-bottom:14px;padding:10px 14px;background:#0c1425;border-radius:24px;border:1px solid #2f3f6b;">
-            <div style="color:#bacaee;font-size:0.8rem;font-weight:500;margin-bottom:10px;">🏃 特殊跑法开关</div>
+        <div class="sc-panel" id="scPanel" style="display:none;margin-bottom:14px;padding:10px 14px;background:#0d1117;border-radius:10px;border:1px solid #21262d;">
+            <div style="color:#8b949e;font-size:0.8rem;margin-bottom:8px;">特殊跑法</div>
             <div id="scToggleList" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
         </div>
         <div class="result-grid" id="resultGrid"></div>
@@ -815,11 +802,11 @@
                 <div class="map-index">${i+1}</div>
                 <div class="map-select-group">
                     <div class="select-wrapper">
-                        <label>🏞️ 大地图</label>
+                        <label>大地图</label>
                         <select class="big-map-select" data-index="${i}"></select>
                     </div>
                     <div class="select-wrapper">
-                        <label>🗺️ 小地图</label>
+                        <label>小地图</label>
                         <select class="small-map-select" data-index="${i}" disabled></select>
                     </div>
                 </div>
@@ -875,7 +862,7 @@
         if (!bigMap || !smallMapsByBig[bigMap]) {
             smallSel.disabled = true;
             const opt = document.createElement('option');
-            opt.textContent = '❌ 先选大地图';
+            opt.textContent = '先选大地图';
             smallSel.appendChild(opt);
             return;
         }
@@ -930,7 +917,7 @@
         const isZone4 = currentZone === 'zone4';
         const sortBtn = document.getElementById('sortBtn');
         if (sortBtn) {
-            const labels = { 'alpha': '🔤 字母', 'score-desc': '📉 分↓', 'score-asc': '📈 分↑' };
+            const labels = { 'alpha': '字母', 'score-desc': '分↓', 'score-asc': '分↑' };
             sortBtn.textContent = labels[sortMode] || sortMode;
         }
 
@@ -941,8 +928,8 @@
 
         const filterSuffix = filterClass ? ` [${filterClass}]` : '';
         const totalLabel = isZone4
-            ? `🚘 我的车库 (${[...selectedCars].filter(c => zone4Cars.includes(c)).length}/${zone4Cars.length}) 🔄四区${filterSuffix}`
-            : `🚘 我的车库 (${selectedCars.size}/${zone5Cars.length}) 🏁五区${filterSuffix}`;
+            ? ` 我的车库 (${[...selectedCars].filter(c => zone4Cars.includes(c)).length}/${zone4Cars.length}) 四区${filterSuffix}`
+            : ` 我的车库 (${selectedCars.size}/${zone5Cars.length}) 五区${filterSuffix}`;
         document.getElementById('garageTitle').textContent = totalLabel;
     }
 
@@ -961,7 +948,7 @@
         if (filtered.length === 0) {
             const msg = document.createElement('div');
             msg.className = 'no-match';
-            msg.textContent = `❌ 未找到"${searchQuery}"`;
+            msg.textContent = `未找到"${searchQuery}"`;
             carGrid.appendChild(msg);
             return;
         }
@@ -1293,15 +1280,15 @@
                 for (var ti = 0; ti < scTypes.length; ti++) {
                     opts += '<option value="' + scTypes[ti] + '"' + (currentState === scTypes[ti] ? ' selected' : '') + '>' + scTypes[ti] + '</option>';
                 }
-                toggleHtml += '<span style="display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:34px;font-size:0.8rem;border:1px solid #2f3f6b;background:#0f1624;">';
+                toggleHtml += '<span style="display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:8px;font-size:0.8rem;border:1px solid #21262d;background:#0d1117;">';
                 toggleHtml += '<span>' + small + '</span>';
-                if (note) toggleHtml += ' <span style="font-size:0.7rem;color:#8b9ad4;">(' + note + ')</span>';
-                toggleHtml += ' <select class="sc-select" data-mapkey="' + mapKey + '" style="padding:3px 8px;border-radius:16px;border:1px solid #3a4880;background:#1a2640;color:#cddcff;font-size:0.75rem;cursor:pointer;">' + opts + '</select>';
+                if (note) toggleHtml += ' <span style="font-size:0.7rem;color:#6e7681;">(' + note + ')</span>';
+                toggleHtml += ' <select class="sc-select" data-mapkey="' + mapKey + '" style="padding:2px 8px;border-radius:6px;border:1px solid #30363d;background:#0d1117;color:#e6edf3;font-size:0.75rem;cursor:pointer;">' + opts + '</select>';
                 toggleHtml += '</span>';
             } else {
                 // 单 sc 类型：显示切换开关
                 var isOn = currentState !== 'off';
-                toggleHtml += '<span class="sc-toggle" data-mapkey="' + mapKey + '" style="display:inline-flex;align-items:center;gap:4px;padding:6px 14px;border-radius:34px;font-size:0.8rem;cursor:pointer;border:1px solid ' + (isOn ? '#f5c542' : '#3a4880') + ';background:' + (isOn ? '#2a3a60' : '#0f1624') + ';color:' + (isOn ? '#f5c542' : '#9aa9ce') + ';user-select:none;">' + small + ' <span style="font-size:0.7rem;">' + (note ? '(' + note + ')' : '') + '</span> <span>' + (isOn ? '\uD83D\uDFE2' : '\uD83D\uDD34') + '</span></span>';
+                toggleHtml += '<span class="sc-toggle" data-mapkey="' + mapKey + '" style="display:inline-flex;align-items:center;gap:4px;padding:6px 14px;border-radius:8px;font-size:0.8rem;cursor:pointer;border:1px solid ' + (isOn ? '#58a6ff' : '#30363d') + ';background:' + (isOn ? '#1f3a5f' : '#0d1117') + ';color:' + (isOn ? '#58a6ff' : '#6e7681') + ';user-select:none;">' + small + ' <span style="font-size:0.7rem;">' + (note ? '(' + note + ')' : '') + '</span> <span>' + (isOn ? '\u25C9' : '\u25CB') + '</span></span>';
             }
         }
         list.innerHTML = toggleHtml;
@@ -1316,11 +1303,11 @@
             const big = bigSelects[i]?.value;
             const small = smallSelects[i]?.value;
             if (big && small) {
-                html += `<div class="result-item"><div class="result-map">${small}</div><div class="result-bigmap">${big}</div><div class="result-car empty">🚫 无法分配</div></div>`;
+                html += `<div class="result-item"><div class="result-map">${small}</div><div class="result-bigmap">${big}</div><div class="result-car empty">无法分配</div></div>`;
             } else if (bigSelects[i]?.value || smallSelects[i]?.value) {
                 html += `<div class="result-item"><div class="result-map">未选完整</div><div class="result-bigmap">--</div><div class="result-car empty">⛔ 缺地图</div></div>`;
             } else {
-                html += `<div class="result-item"><div class="result-map">第${i+1}图</div><div class="result-bigmap">未选</div><div class="result-car empty">⚡ 待选图</div></div>`;
+                html += `<div class="result-item"><div class="result-map">第${i+1}图</div><div class="result-bigmap">未选</div><div class="result-car empty">待选图</div></div>`;
             }
         }
         resultGrid.innerHTML = html;
@@ -1354,7 +1341,7 @@
                     html += `<div class="result-item">
                         <div class="result-map">${small}</div>
                         <div class="result-bigmap">${big}</div>
-                        <div class="result-car">🏎️ ${car}</div>
+                        <div class="result-car">${car}</div>
                         ${scoreHtml}
                         <div class="priority-badge">⭐ 优先级 ${prio}</div>
                     </div>`;
@@ -1362,7 +1349,7 @@
                     html += `<div class="result-item">
                         <div class="result-map">${small}</div>
                         <div class="result-bigmap">${big}</div>
-                        <div class="result-car empty">❌ 无可用车</div>
+                        <div class="result-car empty">无可用车</div>
                     </div>`;
                 }
             } else {
@@ -1373,7 +1360,7 @@
                 </div>`;
             }
         }
-        html += `<div class="result-score" style="grid-column:1/-1;">📊 当前方案总优先级分：${totalScore}（越小越优）</div>`;
+        html += `<div class="result-score" style="grid-column:1/-1;"> 当前方案总优先级分：${totalScore}（越小越优）</div>`;
         resultGrid.innerHTML = html;
     }
 
@@ -1383,7 +1370,7 @@
         schemeSelect.innerHTML = '';
         if (currentBestSchemes.length === 0) {
             const opt = document.createElement('option');
-            opt.textContent = '😭 无可分配方案(请检查车库是否拥有必要车辆)';
+            opt.textContent = '无可分配方案';
             opt.value = '-1';
             schemeSelect.appendChild(opt);
             schemeSelect.disabled = true;
@@ -1408,7 +1395,7 @@
             const vectorStr = scheme.vector.filter(v => v !== null).join(',');
             const option = document.createElement('option');
             option.value = idx;
-            option.textContent = `🏆 方案${idx+1}  [${vectorStr}]  Σ=${totalScore}  | ${parts.join(' ')}`;
+            option.textContent = ` 方案${idx+1}  [${vectorStr}]  Σ=${totalScore}  | ${parts.join(' ')}`;
             schemeSelect.appendChild(option);
         });
         schemeSelect.value = 0;
@@ -1430,12 +1417,12 @@
             currentBestSchemes = [];
             schemeSelect.innerHTML = '';
             const opt = document.createElement('option');
-            opt.textContent = '⚠️ 请至少选择一张地图';
+            opt.textContent = '请至少选择一张地图';
             opt.disabled = true;
             schemeSelect.appendChild(opt);
             schemeSelect.disabled = true;
             schemeCountBadge.textContent = '0';
-            resultGrid.innerHTML = `<div style="grid-column:1/-1; text-align:center; color:#8f9bcb;">未选择任何地图,请先选择大地图与小地图</div>`;
+            resultGrid.innerHTML = `<div style="grid-column:1/-1; text-align:center; color:#8f9bcb;">请先选择地图</div>`;
             return;
         }
 
