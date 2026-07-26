@@ -1280,9 +1280,9 @@
                 for (var ti = 0; ti < scTypes.length; ti++) {
                     opts += '<option value="' + scTypes[ti] + '"' + (currentState === scTypes[ti] ? ' selected' : '') + '>' + scTypes[ti] + '</option>';
                 }
-                toggleHtml += '<span style="display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:8px;font-size:0.8rem;border:1px solid #21262d;background:#0d1117;">';
-                toggleHtml += '<span style="color:#e6edf3;">' + small + '</span>';
-                if (note) toggleHtml += ' <span style="font-size:0.7rem;color:#6e7681;">(' + note + ')</span>';
+                toggleHtml += '<span style="display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:8px;font-size:0.8rem;border:1px solid #21262d;background:#0d1117;color:#e6edf3;">';
+                toggleHtml += '<span>' + small + '</span>';
+                if (note) toggleHtml += ' <span style="font-size:0.7rem;">(' + note + ')</span>';
                 toggleHtml += ' <select class="sc-select" data-mapkey="' + mapKey + '" style="padding:2px 8px;border-radius:6px;border:1px solid #30363d;background:#0d1117;color:#e6edf3;font-size:0.75rem;cursor:pointer;">' + opts + '</select>';
                 toggleHtml += '</span>';
             } else {
