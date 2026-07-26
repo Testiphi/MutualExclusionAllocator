@@ -1267,7 +1267,7 @@
             var hasScEntries = tierData && Array.isArray(tierData) && tierData.some(function(e) { return e.sc; });
             if (!hasScEntries) continue;
             hasSc = true;
-            var note = (track.special_route_note || '').replace(/BWO/g, '').trim();
+            var note = track.special_route_note || '';
             var currentState = specialRouteEnabled[mapKey];
             if (currentState === undefined) currentState = 'all';
             var scTypes = getScTypes(track);
@@ -1281,7 +1281,7 @@
                     opts += '<option value="' + scTypes[ti] + '"' + (currentState === scTypes[ti] ? ' selected' : '') + '>' + scTypes[ti] + '</option>';
                 }
                 toggleHtml += '<span style="display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:8px;font-size:0.8rem;border:1px solid #21262d;background:#0d1117;">';
-                toggleHtml += '<span style="color:#e6edf3;">' + small + '</span>';
+                toggleHtml += '<span>' + small + '</span>';
                 if (note) toggleHtml += ' <span style="font-size:0.7rem;color:#6e7681;">(' + note + ')</span>';
                 toggleHtml += ' <select class="sc-select" data-mapkey="' + mapKey + '" style="padding:2px 8px;border-radius:6px;border:1px solid #30363d;background:#0d1117;color:#e6edf3;font-size:0.75rem;cursor:pointer;">' + opts + '</select>';
                 toggleHtml += '</span>';
