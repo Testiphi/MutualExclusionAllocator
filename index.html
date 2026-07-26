@@ -30,12 +30,10 @@
             box-shadow: 0 20px 35px rgba(0,0,0,0.5);
         }
         h1 {
-            color: #f7d44a;
-            font-size: 1.9rem;
-            margin: 0 0 6px 0;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+            color: #e6edf3;
+            font-size: 1.5rem;
+            margin: 0 0 4px 0;
+            font-weight: 600;
         }
         /* 四区/五区切换开关 */
         .zone-toggle {
@@ -78,11 +76,9 @@
         }
         /* ===== 副标题 ===== */
         .sub {
-            color: #9aa9ce;
-            margin-bottom: 28px;
-            border-left: 4px solid #e6b422;
-            padding-left: 18px;
-            font-size: 0.9rem;
+            color: #6e7681;
+            margin-bottom: 24px;
+            font-size: 0.8rem;
         }
         /* ===== 地图选择行 ===== */
         .map-rows {
@@ -297,13 +293,10 @@
             border: 1px solid #2f3f6b;
         }
         .result-title {
-            color: #cddcff;
-            margin-bottom: 16px;
-            font-size: 1.1rem;
+            color: #e6edf3;
+            margin-bottom: 14px;
+            font-size: 0.95rem;
             font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 8px;
         }
         .scheme-selector {
             margin-bottom: 22px;
@@ -370,18 +363,18 @@
             padding: 2px 8px;
         }
         .footer-note {
-            color: #596b9b;
+            color: #484f58;
             text-align: right;
-            margin-top: 14px;
-            font-size: 0.75rem;
+            margin-top: 10px;
+            font-size: 0.7rem;
         }
         .badge-pareto {
-            background: #2c3e6b;
-            color: #ffd966;
+            background: #21262d;
+            color: #8b949e;
             border-radius: 40px;
             font-size: 0.7rem;
             padding: 2px 10px;
-            margin-left: 12px;
+            margin-left: 8px;
             font-weight: normal;
         }
         /* ===== 加载动画遮罩 ===== */
@@ -428,8 +421,8 @@
         </div>
     </div>
 
-    <h1>🏆 擂台选车助手</h1>
-    <div class="sub">🚀 帕累托最优分配 | 每张图优先级数值越小越强 | 仅显示不可被其他方案全面超越的策略</div>
+    <h1>擂台选车助手</h1>
+    <div class="sub">帕累托最优 · 擂台选车</div>
 
     <!-- 档位切换 -->
     <div class="zone-toggle" id="tierToggle" style="margin-bottom:12px;">
@@ -474,7 +467,7 @@
 
     <div class="result-panel">
         <div class="result-title">
-            📌 一个可能的方案
+            方案
             <span class="badge-pareto" id="schemeCountBadge">0</span>
         </div>
         <div class="scheme-selector">
@@ -486,7 +479,7 @@
             <div id="scToggleList" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
         </div>
         <div class="result-grid" id="resultGrid"></div>
-        <div class="footer-note">给出的首个方案不一定为最优,需根据自身情况选择更好的方案</div>
+        <div class="footer-note">按优先级总和排序，越小越优</div>
     </div>
 </div>
 
@@ -1545,7 +1538,7 @@
         const tierInfo = RACE_DATA?.tier_info?.[currentTier];
         const sub = document.querySelector('.sub');
         if (sub && tierInfo) {
-            sub.textContent = '🚀 ' + tierInfo.desc + ' | 帕累托最优分配 | 仅显示不可被其他方案全面超越的策略';
+            sub.textContent = tierInfo.desc;
         }
     }
 
