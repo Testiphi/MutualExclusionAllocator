@@ -1,4 +1,6 @@
-# MutualExclusionAllocator
+# [MutualExclusionAllocator](https://github.com/Testiphi/MutualExclusionAllocator)
+
+> 🌐 **Live demo**: [testiphi.github.io/MutualExclusionAllocator](https://testiphi.github.io/MutualExclusionAllocator/)
 
 A constraint-based resource allocation tool with Pareto-optimal filtering, supporting multiple user tiers and alternative-route heuristics.
 
@@ -168,6 +170,9 @@ No server, no build step, no database.
 ---
 
 ## Deployment
+
+- **GitHub Pages**: [testiphi.github.io/MutualExclusionAllocator](https://testiphi.github.io/MutualExclusionAllocator/)
+- **Repo**: [github.com/Testiphi/MutualExclusionAllocator](https://github.com/Testiphi/MutualExclusionAllocator)
 
 Static hosting (GitHub Pages, Netlify, any web server).
 
