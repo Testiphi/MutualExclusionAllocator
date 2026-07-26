@@ -1468,6 +1468,7 @@
             const SORT_CYCLE = ['alpha', 'score-desc', 'score-asc'];
             const idx = SORT_CYCLE.indexOf(sortMode);
             sortMode = SORT_CYCLE[(idx + 1) % SORT_CYCLE.length];
+            api.savePref(APP_CONFIG.storageKeys.sortMode, sortMode);
             renderGarage();
         });
 
@@ -1608,6 +1609,9 @@
             }
 
             await loadGarage();        // 加载车库（现在 zone5Cars/zone4Cars 已就绪）
+            // 恢复排序模式
+            const savedSort = api.loadPref(APP_CONFIG.storageKeys.sortMode);
+            if (savedSort) sortMode = savedSort;
             renderMapRows();
             renderGarage();
             refreshBigMaps();
