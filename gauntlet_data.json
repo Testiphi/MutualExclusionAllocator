@@ -282,7 +282,7 @@
       "小地图": "富豪之旅",
       "has_special_route": false,
       "五区": {
-        "理论": [{"cars":[{"name":"r兔"}],"time":19.6},{"cars":[{"name":"银电"}],"time":19.7},{"cars":[{"name":"21c"}],"time":19.9},{"cars":[{"name":"c2"}],"time":20.0}],
+        "理论": [{"cars":[{"name":"r兔"}],"time":19.6},{"cars":[{"name":"银电"}],"time":19.7},{"cars":[{"name":"21c"}],"time":19.94},{"cars":[{"name":"c2"}],"time":20.09}],
         "高手": [{"cars":[{"name":"r兔","stars":6}],"time":19.6},{"cars":[{"name":"21c","stars":6}],"time":19.9},{"cars":[{"name":"c2","stars":6}],"time":20.0},{"cars":[{"name":"白龙","stars":6}],"time":null},{"cars":[{"name":"杰弟","stars":6}],"time":null},{"cars":[{"name":"肥龙","stars":6}],"time":null},{"cars":[{"name":"速尾","stars":6}],"time":null},{"cars":[{"name":"法拉第","stars":6}],"time":null},{"cars":[{"name":"fp1","stars":6}],"time":null},{"cars":[{"name":"9x8","stars":6}],"time":null},{"cars":[{"name":"英灵殿","stars":6}],"time":null},{"cars":[{"name":"纳兰","stars":6}],"time":null},{"cars":[{"name":"火山","stars":6}],"time":null}],
         "普通": [{"cars":[{"name":"r兔"}]},{"cars":[{"name":"21c"}]},{"cars":[{"name":"c2"}]},{"cars":[{"name":"白龙"}]},{"cars":[{"name":"杰弟"}]},{"cars":[{"name":"肥龙"}]},{"cars":[{"name":"速尾"}]},{"cars":[{"name":"法拉第"}]},{"cars":[{"name":"fp1"}]},{"cars":[{"name":"9x8"}]},{"cars":[{"name":"英灵殿"}]},{"cars":[{"name":"纳兰"}]},{"cars":[{"name":"火山"}]}],
         "自动": [{"cars":[{"name":"r兔"}]},{"cars":[{"name":"21c"}]},{"cars":[{"name":"c2"}]},{"cars":[{"name":"白龙"}]},{"cars":[{"name":"杰弟"}]},{"cars":[{"name":"速尾"}]},{"cars":[{"name":"fp1"}]},{"cars":[{"name":"9x8"}]}]
@@ -765,7 +765,7 @@
       "小地图": "飞跃城市",
       "has_special_route": false,
       "五区": {
-        "理论": [{"cars":[{"name":"恶魔"}],"time":26.8},{"cars":[{"name":"杰皇"}],"time":27.0}],
+        "理论": [{"cars":[{"name":"恶魔"}],"time":26.8},{"cars":[{"name":"杰皇"}],"time":27.1}],
         "高手": [{"cars":[{"name":"恶魔","stars":6}],"time":26.8},{"cars":[{"name":"杰皇","stars":6}],"time":27.0},{"cars":[{"name":"f5r","stars":6}],"time":null},{"cars":[{"name":"r兔","stars":6}],"time":null},{"cars":[{"name":"玻璃","stars":6}],"time":null},{"cars":[{"name":"爱音","stars":6}],"time":null},{"cars":[{"name":"f5","stars":6}],"time":null},{"cars":[{"name":"cc850","stars":6}],"time":null},{"cars":[{"name":"杰哥","stars":6}],"time":null},{"cars":[{"name":"大超","stars":6}],"time":null},{"cars":[{"name":"狼崽","stars":6}],"time":null},{"cars":[{"name":"火山","stars":6}],"time":null}],
         "普通": [{"cars":[{"name":"恶魔"}]},{"cars":[{"name":"杰皇"}]},{"cars":[{"name":"f5r"}]},{"cars":[{"name":"r兔"}]},{"cars":[{"name":"玻璃"}]},{"cars":[{"name":"爱音"}]},{"cars":[{"name":"f5"}]},{"cars":[{"name":"cc850"}]},{"cars":[{"name":"杰哥"}]},{"cars":[{"name":"大超"}]},{"cars":[{"name":"狼崽"}]},{"cars":[{"name":"火山"}]}],
         "自动": [{"cars":[{"name":"r兔"}]},{"cars":[{"name":"玻璃"}]}]
@@ -910,7 +910,7 @@
       "小地图": "天旋地转",
       "has_special_route": false,
       "五区": {
-        "理论": [{"cars":[{"name":"r兔"}],"time":19.9},{"cars":[{"name":"恶魔"}],"time":20.2},{"cars":[{"name":"21c"}],"time":20.4},{"cars":[{"name":"杰弟"}],"time":20.6},{"cars":[{"name":"c2"}],"time":20.6},{"cars":[{"name":"玻璃"}],"time":20.7},{"cars":[{"name":"杰皇"}],"time":20.7},{"cars":[{"name":"大超"}],"time":20.7},{"cars":[{"name":"黑龙"}],"time":20.9}],
+        "理论": [{"cars":[{"name":"r兔"}],"time":19.7},{"cars":[{"name":"恶魔"}],"time":20.1},{"cars":[{"name":"21c"}],"time":20.4},{"cars":[{"name":"杰弟"}],"time":20.5},{"cars":[{"name":"c2"}],"time":20.6},{"cars":[{"name":"玻璃"}],"time":20.7},{"cars":[{"name":"杰皇"}],"time":20.7},{"cars":[{"name":"大超"}],"time":20.7},{"cars":[{"name":"黑龙"}],"time":20.9}],
         "高手": [{"cars":[{"name":"r兔","stars":6}],"time":19.9},{"cars":[{"name":"恶魔","stars":6}],"time":20.2},{"cars":[{"name":"21c","stars":6}],"time":20.4},{"cars":[{"name":"杰弟","stars":6}],"time":20.6},{"cars":[{"name":"c2","stars":6}],"time":20.6},{"cars":[{"name":"玻璃","stars":6}],"time":20.7},{"cars":[{"name":"爱音","stars":6}],"time":null},{"cars":[{"name":"白龙","stars":6}],"time":null},{"cars":[{"name":"fp1","stars":6}],"time":null},{"cars":[{"name":"秋王","stars":6}],"time":null},{"cars":[{"name":"9x8","stars":6}],"time":null},{"cars":[{"name":"英灵殿","stars":6}],"time":null},{"cars":[{"name":"火山","stars":6}],"time":null}],
         "普通": [{"cars":[{"name":"r兔"}]},{"cars":[{"name":"恶魔"}]},{"cars":[{"name":"21c"}]},{"cars":[{"name":"杰弟"}]},{"cars":[{"name":"c2"}]},{"cars":[{"name":"玻璃"}]},{"cars":[{"name":"爱音"}]},{"cars":[{"name":"白龙"}]},{"cars":[{"name":"fp1"}]},{"cars":[{"name":"秋王"}]},{"cars":[{"name":"9x8"}]},{"cars":[{"name":"英灵殿"}]},{"cars":[{"name":"火山"}]}],
         "自动": [{"cars":[{"name":"r兔"}]},{"cars":[{"name":"21c"}]},{"cars":[{"name":"杰弟"}]},{"cars":[{"name":"c2"}]},{"cars":[{"name":"白龙"}]},{"cars":[{"name":"fp1"}]},{"cars":[{"name":"秋王"}]},{"cars":[{"name":"9x8"}]}]
