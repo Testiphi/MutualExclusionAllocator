@@ -715,9 +715,10 @@
     {
       "大地图": "海港博物馆",
       "小地图": "海洋爆冲",
-      "has_special_route": false,
+      "has_special_route": true,
+      "special_route_note": "跳图跑法",
       "五区": {
-        "理论": [{"cars":[{"name":"恶魔"}],"time":27.2},{"cars":[{"name":"杰皇"}],"time":27.6}],
+        "理论": [{"cars":[{"name":"r兔"}],"time":25.25,"sc":true},{"cars":[{"name":"杰皇"}],"time":25.53,"sc":true},{"cars":[{"name":"c2"}],"time":25.9,"sc":true},{"cars":[{"name":"f5"}],"time":26.52,"sc":true},{"cars":[{"name":"恶魔"}],"time":27.2},{"cars":[{"name":"杰皇"}],"time":27.6}],
         "高手": [{"cars":[{"name":"恶魔","stars":6}],"time":27.2},{"cars":[{"name":"杰皇","stars":6}],"time":27.6},{"cars":[{"name":"f5r","stars":6}],"time":null},{"cars":[{"name":"r兔","stars":6}],"time":null},{"cars":[{"name":"玻璃","stars":6}],"time":null},{"cars":[{"name":"爱音","stars":6}],"time":null},{"cars":[{"name":"f5","stars":6}],"time":null},{"cars":[{"name":"cc850","stars":6}],"time":null},{"cars":[{"name":"杰哥","stars":6}],"time":null},{"cars":[{"name":"大超","stars":6}],"time":null},{"cars":[{"name":"ssc","stars":6}],"time":null},{"cars":[{"name":"狼崽","stars":6}],"time":null},{"cars":[{"name":"火山","stars":6}],"time":null}],
         "普通": [{"cars":[{"name":"恶魔"}]},{"cars":[{"name":"杰皇"}]},{"cars":[{"name":"f5r"}]},{"cars":[{"name":"r兔"}]},{"cars":[{"name":"玻璃"}]},{"cars":[{"name":"爱音"}]},{"cars":[{"name":"f5"}]},{"cars":[{"name":"cc850"}]},{"cars":[{"name":"杰哥"}]},{"cars":[{"name":"大超"}]},{"cars":[{"name":"ssc"}]},{"cars":[{"name":"狼崽"}]},{"cars":[{"name":"火山"}]}],
         "自动": [{"cars":[{"name":"r兔"}]},{"cars":[{"name":"玻璃"}]}]
