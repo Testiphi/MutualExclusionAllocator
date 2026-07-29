@@ -72,7 +72,8 @@
     {
       "大地图": "凌空之巅",
       "小地图": "漂移回响",
-      "has_special_route": false,
+      "has_special_route": true,
+      "special_route_note": "滑栏杆",
       "五区": {
         "理论": [{"cars":[{"name":"r兔"}],"time":17.5},{"cars":[{"name":"21c"}],"time":18.2},{"cars":[{"name":"白龙"}],"time":18.3},{"cars":[{"name":"c2"}],"time":18.6},{"cars":[{"name":"秋王"}],"time":18.8},{"cars":[{"name":"9x8"}],"time":18.95},{"cars":[{"name":"sgt"}],"time":19.0},{"cars":[{"name":"万达"}],"time":19.15},{"cars":[{"name":"sf90"}],"time":19.199}],
         "高手": [{"cars":[{"name":"r兔","stars":6}],"time":17.5},{"cars":[{"name":"21c","stars":6}],"time":18.2},{"cars":[{"name":"白龙","stars":6}],"time":18.3},{"cars":[{"name":"秋王","stars":6}],"time":18.8},{"cars":[{"name":"sgt","stars":6}],"time":18.9},{"cars":[{"name":"sf90","stars":6}],"time":18.9},{"cars":[{"name":"9x8","stars":6}],"time":19.0},{"cars":[{"name":"fp1","stars":6}],"time":null},{"cars":[{"name":"火山","stars":6}],"time":null},{"cars":[{"name":"5n","stars":6}],"time":null}],
