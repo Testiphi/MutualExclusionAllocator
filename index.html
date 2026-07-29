@@ -872,6 +872,10 @@
         var entries = zone === 'zone4' ? found.zone4Entries : found.zone5Entries;
         var scScore = null;
         var normalScore = null;
+        var bestNormalScore = null;
+        var bestNormalDiff = Infinity;
+        var bestScScore = null;
+        var bestScDiff = Infinity;
         for (var ei = 0; ei < entries.length; ei++) {
             var entry = entries[ei];
             var cars = parseCarGroup(entry);
@@ -890,12 +894,25 @@
                 score = entry[1];
             }
             if (score == null) continue;
-            if (entry._raw && entry._raw.sc) {
-                scScore = score;
+            // 计算星级偏差，优先选精确匹配的条目
+            var entryStars = entry._raw?.cars?.[0]?.stars || 6;
+            var userStars = currentTier === '高手' ? getCarStars(carName) : 6;
+            var starDiff = Math.abs(entryStars - userStars);
+            var isSc = entry._raw && entry._raw.sc;
+            if (isSc) {
+                if (starDiff < bestScDiff || (starDiff === bestScDiff && score < bestScScore)) {
+                    bestScScore = score;
+                    bestScDiff = starDiff;
+                }
             } else {
-                normalScore = score;
+                if (starDiff < bestNormalDiff || (starDiff === bestNormalDiff && score < bestNormalScore)) {
+                    bestNormalScore = score;
+                    bestNormalDiff = starDiff;
+                }
             }
         }
+        normalScore = bestNormalScore;
+        scScore = bestScScore;
         // 特殊跑法开启时优先显示 sc 版本的成绩
         if (scOn && scScore != null) return scScore;
         return normalScore;
