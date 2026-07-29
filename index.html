@@ -771,6 +771,8 @@
 
     /** 获取某辆车的用户设定星级，未设置时取默认 */
     function getCarStars(carName) {
+        // 五区直接使用最高星级
+        if (currentZone === 'zone5') return getStarRange(carName).max;
         if (starsMap[carName] != null) return starsMap[carName];
         return getDefaultStar(carName);
     }
@@ -1204,17 +1206,20 @@
             const label = realName && searchQuery && realName.toLowerCase().includes(searchQuery.toLowerCase())
                 ? `${car} (${realName})`
                 : car;
-            // 星级 popover（按范围限制）
-            var range = getStarRange(car);
             var carStars = getCarStars(car);
             var starsHtml = '<span class="star-display" data-car="' + car + '">';
             starsHtml += '★' + carStars;
-            starsHtml += '<span class="star-popover" data-car="' + car + '">';
-            for (var si = range.min; si <= range.max; si++) {
-                var activeCls = si === carStars ? ' active-star' : '';
-                starsHtml += '<button class="star-opt' + activeCls + '" data-stars="' + si + '" data-car="' + car + '">' + si + '</button>';
+            // 四区才显示 popover
+            if (currentZone === 'zone4') {
+                var range = getStarRange(car);
+                starsHtml += '<span class="star-popover" data-car="' + car + '">';
+                for (var si = range.min; si <= range.max; si++) {
+                    var activeCls = si === carStars ? ' active-star' : '';
+                    starsHtml += '<button class="star-opt' + activeCls + '" data-stars="' + si + '" data-car="' + car + '">' + si + '</button>';
+                }
+                starsHtml += '</span>';
             }
-            starsHtml += '</span></span>';
+            starsHtml += '</span>';
             span.innerHTML = label + starsHtml;
             span.dataset.carNick = car;
             carGrid.appendChild(span);
