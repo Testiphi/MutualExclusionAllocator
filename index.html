@@ -636,6 +636,7 @@
         "风扇",
         "风龙",
         "黑龙",
+        "西安",
 ];
     const ZONE4_CARS = [
         "21c", "5n", "600lt", "9x8", "c2",
@@ -644,7 +645,7 @@
         "复仇", "大超", "小牛", "恶魔", "杰哥",
         "法拉第", "火山", "冰山", "狼崽", "狼王", "玻璃",
         "秋王", "肥龙", "英灵殿", "莫斯勒",
-        "速尾", "风扇",
+        "速尾", "风扇", "白龙",
         "爱音"
     ];
 
@@ -754,6 +755,8 @@
         '黑龙':   { min: 5, default: 6 },
         '银电':   { min: 6, default: 6 },
         '霓虹gtr':{ min: 6, default: 6 },
+        '西安':   { min: 6, default: 6 },
+        '白龙':   { min: 6, default: 6 },
         '风扇':   { min: 5, max: 5, default: 5 },
         '火山':   { min: 5, max: 5, default: 5 },
         '5n':     { min: 4, max: 4, default: 4 },
@@ -949,12 +952,18 @@
      * @param {string} query - 搜索关键字
      * @returns {string[]} 过滤结果
      */
+    /** 昵称别名映射：不同叫法指向同一辆车 */
+    const NICKNAME_ALIASES = {
+        '第六元素': '六子',
+    };
+
     function filterBySearch(carList, query) {
         if (!query) return [...carList];
         const q = query.toLowerCase();
         return carList.filter(car =>
             car.includes(query) ||
-            (nickToName[car] && nickToName[car].toLowerCase().includes(q))
+            (nickToName[car] && nickToName[car].toLowerCase().includes(q)) ||
+            NICKNAME_ALIASES[query] === car
         );
     }
 
