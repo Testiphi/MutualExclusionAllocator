@@ -960,11 +960,15 @@
     function filterBySearch(carList, query) {
         if (!query) return [...carList];
         const q = query.toLowerCase();
-        return carList.filter(car =>
-            car.includes(query) ||
-            (nickToName[car] && nickToName[car].toLowerCase().includes(q)) ||
-            NICKNAME_ALIASES[query] === car
-        );
+        return carList.filter(car => {
+            if (car.includes(query)) return true;
+            if (nickToName[car] && nickToName[car].toLowerCase().includes(q)) return true;
+            // 别名匹配：查所有指向此车的别名键
+            for (var aliasKey in NICKNAME_ALIASES) {
+                if (NICKNAME_ALIASES[aliasKey] === car && aliasKey.includes(query)) return true;
+            }
+            return false;
+        });
     }
 
     /**
