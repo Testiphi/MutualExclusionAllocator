@@ -697,19 +697,48 @@
     }
 
     /**
-     * 根据用户星级调整成绩。
-     * 如果 entry 的星级与用户一致则返回原时间；
-     * 否则以 entry 的星级为基准，对每缺的一星施加惩罚。
+     * 给定某车在一条赛道上所有星级的成绩数据点，
+     * 返回用户当前星级下最合理的成绩。
+     *
+     * 策略：
+     *  - 有精确匹配 → 直接返回
+     *  - 已知两级之间的星级 → 线性插值
+     *  - 未覆盖的星级（如低于最低已知数据）→ 用最接近的数据点 + 惩罚公式外推
      */
-    function adjustTimeByStars(entry, carName) {
-        if (!entry || !entry._raw) return null;
-        const baseTime = entry._raw.time;
-        if (baseTime == null) return null;
-        const userStars = getCarStars(carName);
-        const entryStars = entry._raw.cars?.[0]?.stars || 6;
-        if (userStars >= entryStars) return baseTime;
-        const diff = entryStars - userStars;
-        return +(baseTime * (1 + STAR_PENALTY_PER_STAR * diff)).toFixed(3);
+    function getStarAdjustedScore(dataPoints, userStars) {
+        if (!dataPoints || dataPoints.length === 0) return null;
+        // 按星级排序
+        var sorted = dataPoints.slice().sort(function(a, b) { return a.stars - b.stars; });
+        // 精确匹配
+        for (var i = 0; i < sorted.length; i++) {
+            if (sorted[i].stars === userStars) return sorted[i].time;
+        }
+        // 找到包围 userStars 的两个数据点
+        var lower = null, upper = null;
+        for (var i = 0; i < sorted.length; i++) {
+            if (sorted[i].stars < userStars) {
+                if (!lower || sorted[i].stars > lower.stars) lower = sorted[i];
+            } else if (sorted[i].stars > userStars) {
+                if (!upper || sorted[i].stars < upper.stars) upper = sorted[i];
+            }
+        }
+        // 有上下界 → 线性插值
+        if (lower && upper) {
+            var ratio = (userStars - lower.stars) / (upper.stars - lower.stars);
+            return +(lower.time + (upper.time - lower.time) * ratio).toFixed(3);
+        }
+        // 只有下界（userStars > 所有已知）→ 用最接近的已知点 + 惩罚倒数
+        if (lower) {
+            var diff = userStars - lower.stars;
+            // 更高星应更快，除以 (1 + penalty * diff)
+            return +(lower.time / (1 + STAR_PENALTY_PER_STAR * diff)).toFixed(3);
+        }
+        // 只有上界（userStars < 所有已知）→ 用最接近的已知点 + 惩罚
+        if (upper) {
+            var diff = upper.stars - userStars;
+            return +(upper.time * (1 + STAR_PENALTY_PER_STAR * diff)).toFixed(3);
+        }
+        return null;
     }
 
     // ========================== 工具函数 ==========================
@@ -738,13 +767,25 @@
         const tierData = track[zone]?.[currentTier];
         if (!tierData || !Array.isArray(tierData)) return [];
         let entries = tierData.map(normalizeEntry);
-        // 高手档按（星级调整后）time 升序，time=null 排末尾
+        // 高手档按星级调整后的 time 升序
+        // 对同一车的多星级条目，取用户实际星级调整值
         if (currentTier === '高手') {
-            entries.sort((a, b) => {
-                const carA = a._raw?.cars?.[0]?.name || a[0];
-                const carB = b._raw?.cars?.[0]?.name || b[0];
-                const ta = adjustTimeByStars(a, carA);
-                const tb = adjustTimeByStars(b, carB);
+            // 先构建每车的所有数据点
+            var carDataPoints = {};
+            for (var ei = 0; ei < entries.length; ei++) {
+                var e = entries[ei];
+                if (!e._raw || e._raw.time == null) continue;
+                var car = e._raw.cars?.[0]?.name || e[0];
+                var star = e._raw.cars?.[0]?.stars || 6;
+                if (!carDataPoints[car]) carDataPoints[car] = [];
+                carDataPoints[car].push({ stars: star, time: e._raw.time });
+            }
+            entries.sort(function(a, b) {
+                var carA = a._raw?.cars?.[0]?.name || a[0];
+                var carB = b._raw?.cars?.[0]?.name || b[0];
+                var ta = null, tb = null;
+                if (carDataPoints[carA]) ta = getStarAdjustedScore(carDataPoints[carA], getCarStars(carA));
+                if (carDataPoints[carB]) tb = getStarAdjustedScore(carDataPoints[carB], getCarStars(carB));
                 if (ta == null && tb == null) return 0;
                 if (ta == null) return 1;
                 if (tb == null) return -1;
@@ -870,49 +911,33 @@
         var scState = specialRouteEnabled[mapKey];
         var scOn = scState !== 'off';  // undefined/'all'/type=开, 'off'=关
         var entries = zone === 'zone4' ? found.zone4Entries : found.zone5Entries;
-        var scScore = null;
-        var normalScore = null;
-        var bestNormalScore = null;
-        var bestNormalDiff = Infinity;
-        var bestScScore = null;
-        var bestScDiff = Infinity;
+        var scDataPoints = [];
+        var normalDataPoints = [];
         for (var ei = 0; ei < entries.length; ei++) {
             var entry = entries[ei];
             var cars = parseCarGroup(entry);
             if (!cars.includes(carName)) continue;
             // 跳过不匹配的 sc 类型
             if (entry._raw && entry._raw.sc && scState !== 'all' && scState !== undefined && entry._raw.sc_type && entry._raw.sc_type !== scState) continue;
-            var score = null;
-            if (entry._raw && entry._raw.time != null) {
-                // 高手档考虑星级调整
-                if (currentTier === '高手') {
-                    score = adjustTimeByStars(entry, carName);
-                } else {
-                    score = entry._raw.time;
-                }
-            } else if (Array.isArray(entry) && entry.length > 1) {
-                score = entry[1];
-            }
-            if (score == null) continue;
-            // 计算星级偏差，优先选精确匹配的条目
-            var entryStars = entry._raw?.cars?.[0]?.stars || 6;
-            var userStars = currentTier === '高手' ? getCarStars(carName) : 6;
-            var starDiff = Math.abs(entryStars - userStars);
-            var isSc = entry._raw && entry._raw.sc;
-            if (isSc) {
-                if (starDiff < bestScDiff || (starDiff === bestScDiff && score < bestScScore)) {
-                    bestScScore = score;
-                    bestScDiff = starDiff;
-                }
+            if (!entry._raw || entry._raw.time == null) continue;
+            var entryStars = entry._raw.cars?.[0]?.stars || 6;
+            if (entry._raw.sc) {
+                scDataPoints.push({ stars: entryStars, time: entry._raw.time });
             } else {
-                if (starDiff < bestNormalDiff || (starDiff === bestNormalDiff && score < bestNormalScore)) {
-                    bestNormalScore = score;
-                    bestNormalDiff = starDiff;
-                }
+                normalDataPoints.push({ stars: entryStars, time: entry._raw.time });
             }
         }
-        normalScore = bestNormalScore;
-        scScore = bestScScore;
+        var normalScore = null;
+        var scScore = null;
+        if (currentTier === '高手') {
+            var userStars = getCarStars(carName);
+            if (normalDataPoints.length > 0) normalScore = getStarAdjustedScore(normalDataPoints, userStars);
+            if (scDataPoints.length > 0) scScore = getStarAdjustedScore(scDataPoints, userStars);
+        } else {
+            // 理论档：用最高星数据（默认满星）
+            normalScore = normalDataPoints.length > 0 ? normalDataPoints.reduce(function(a,b){return a.stars>b.stars?a:b}).time : null;
+            scScore = scDataPoints.length > 0 ? scDataPoints.reduce(function(a,b){return a.stars>b.stars?a:b}).time : null;
+        }
         // 特殊跑法开启时优先显示 sc 版本的成绩
         if (scOn && scScore != null) return scScore;
         return normalScore;
