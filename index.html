@@ -666,14 +666,74 @@
 
     // ========================== 星级自定义 ==========================
 
-    /** 用户为每辆车设定的星级 1-6，默认 6★ */
+    /**
+     * 每辆车的星级规则。
+     * - min: 最低可用星级（上下限均适用）
+     * - zone4Max: 四区模式最高可用星级（未指定则 6）
+     * - default: 默认星级（未设 starsMap 时使用）
+     */
+    const CAR_STAR_RULES = {
+        '恶魔':   { min: 1, zone4Max: 2, default: 1 },
+        '杰哥':   { min: 1, default: 4 },
+        'ssc':    { min: 1, zone4Max: 5, default: 3 },
+        'f5':     { min: 1, zone4Max: 3, default: 3 },
+        '玻璃':   { min: 1, zone4Max: 3, default: 1 },
+        '大超':   { min: 1, zone4Max: 3, default: 1 },
+        '莫斯勒': { min: 1, zone4Max: 3, default: 2 },
+        '爱音':   { min: 1, zone4Max: 4, default: 3 },
+        'c2':     { min: 3, default: 3 },
+        '21c':    { min: 3, default: 3 },
+        '肥龙':   { min: 4, default: 6 },
+        'fp1':    { min: 4, default: 6 },
+        '速尾':   { min: 4, default: 6 },
+        '秋王':   { min: 4, default: 5 },
+        'sf90':   { min: 4, default: 6 },
+        '狼王':   { min: 6, zone4Max: 6, default: 6 },
+        '塞纳':   { min: 6, default: 6 },
+        '万达':   { min: 6, default: 6 },
+        '9x8':    { min: 5, default: 6 },
+        '复仇':   { min: 5, default: 6 },
+        '冰山':   { min: 4, default: 4 },
+        'ts900':  { min: 5, default: 6 },
+        'urs':    { min: 4, default: 6 },
+        '法拉第': { min: 6, default: 6 },
+        '英灵殿': { min: 6, default: 6 },
+        '小牛':   { min: 6, default: 6 },
+        '狼崽':   { min: 6, default: 6 },
+        'fe3':    { min: 6, default: 6 },
+        '600lt':  { min: 6, default: 6 },
+        'sgt':    { min: 6, default: 6 },
+        '风扇':   { min: 6, default: 6 },
+        '火山':   { min: 6, default: 6 },
+        '5n':     { min: 6, default: 6 },
+    };
+
+    /** 获取某辆车的星级规则，未配置则无限制 */
+    function getStarRule(carName) {
+        return CAR_STAR_RULES[carName] || null;
+    }
+
+    /** 获取某辆车的当前有效星级范围 */
+    function getStarRange(carName) {
+        var rule = getStarRule(carName);
+        if (!rule) return { min: 1, max: 6 };
+        var max = 6;
+        if (currentZone === 'zone4' && rule.zone4Max != null) {
+            max = rule.zone4Max;
+        }
+        return { min: rule.min || 1, max: Math.max(max, rule.min || 1) };
+    }
+
+    /** 获取某辆车的默认星级 */
+    function getDefaultStar(carName) {
+        var rule = getStarRule(carName);
+        if (rule && rule.default != null) return rule.default;
+        return 6;
+    }
+
+    /** 用户为每辆车设定的星级映射（持久化） */
     let starsMap = {};
 
-    /**
-     * 每缺一星的成绩惩罚比例。
-     * 例: 0.005 表示每缺一星 +0.5% 的时间。
-     * 可根据实际数据调整。
-     */
     const STAR_PENALTY_PER_STAR = 0.005;
 
     /** 加载已保存的星级映射 */
@@ -691,9 +751,19 @@
         api.savePref(APP_CONFIG.storageKeys.starMap, starsMap);
     }
 
-    /** 获取某辆车的用户设定星级，默认 6 */
+    /** 获取某辆车的用户设定星级，未设置时取默认 */
     function getCarStars(carName) {
-        return starsMap[carName] || 6;
+        if (starsMap[carName] != null) return starsMap[carName];
+        return getDefaultStar(carName);
+    }
+
+    /** 设置星级，自动钳位到有效范围 */
+    function setCarStars(carName, stars) {
+        var range = getStarRange(carName);
+        var clamped = Math.max(range.min, Math.min(range.max, stars));
+        starsMap[carName] = clamped;
+        saveStarsMap();
+        return clamped;
     }
 
     /**
@@ -1116,12 +1186,13 @@
             const label = realName && searchQuery && realName.toLowerCase().includes(searchQuery.toLowerCase())
                 ? `${car} (${realName})`
                 : car;
-            // 星级 popover
-            const carStars = getCarStars(car);
+            // 星级 popover（按范围限制）
+            var range = getStarRange(car);
+            var carStars = getCarStars(car);
             var starsHtml = '<span class="star-display" data-car="' + car + '">';
             starsHtml += '★' + carStars;
             starsHtml += '<span class="star-popover" data-car="' + car + '">';
-            for (var si = 1; si <= 6; si++) {
+            for (var si = range.min; si <= range.max; si++) {
                 var activeCls = si === carStars ? ' active-star' : '';
                 starsHtml += '<button class="star-opt' + activeCls + '" data-stars="' + si + '" data-car="' + car + '">' + si + '</button>';
             }
@@ -1658,8 +1729,7 @@
                 const car = optBtn.dataset.car;
                 const stars = parseInt(optBtn.dataset.stars, 10);
                 if (car && stars >= 1 && stars <= 6) {
-                    starsMap[car] = stars;
-                    saveStarsMap();
+                    setCarStars(car, stars);
                     renderCarTags();
                     computeAndDisplay();
                 }
