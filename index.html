@@ -213,6 +213,23 @@
             flex-wrap: wrap;
             gap: 10px;
         }
+        .zone-hint {
+            display: none;
+            margin: -6px 0 12px 0;
+            padding: 8px 14px;
+            background: #1c2333;
+            border: 1px solid #e3b341;
+            border-radius: 8px;
+            color: #e3b341;
+            font-size: 0.8rem;
+            line-height: 1.4;
+        }
+        .zone-hint.show {
+            display: block;
+        }
+        .zone-hint::before {
+            content: '⚠️ ';
+        }
         .garage-header h2 {
             margin: 0;
             font-size: 1.2rem;
@@ -493,6 +510,7 @@
                 <span class="garage-btn" id="sortBtn">默认</span>
             </div>
         </div>
+        <div class="zone-hint" id="zoneHint">星级代表加速所改装的星级，仅作为参考</div>
         <input class="garage-search" id="garageSearch" type="text" placeholder="搜索车辆(支持昵称/真名)..." autocomplete="off">
         <div class="class-filter" id="classFilter">
             <span class="class-filter-btn active" data-class="">全部</span>
@@ -1813,6 +1831,12 @@
     }
 
     // 四区/五区切换
+    /** 更新四区提示的显隐 */
+    function updateZoneHint() {
+        var hint = document.getElementById('zoneHint');
+        if (hint) hint.classList.toggle('show', currentZone === 'zone4');
+    }
+
     function initZoneToggle() {
         const labels = document.querySelectorAll('#zoneToggle label');
         labels.forEach(label => {
@@ -1825,6 +1849,9 @@
                 labels.forEach(l => {
                     l.className = l.dataset.zone === currentZone ? 'active' : 'inactive';
                 });
+                // 四区提示显示切换
+                var hint = document.getElementById('zoneHint');
+                if (hint) hint.classList.toggle('show', currentZone === 'zone4');
                 // 切换到四区时，清除不在四区车池里的车
                 if (currentZone === 'zone4') {
                     let changed = false;
@@ -1882,6 +1909,7 @@
             bindEvents();
             initTierToggle();
             initZoneToggle();
+            updateZoneHint();
             updateSubtitle();
             computeAndDisplay();
         } catch (err) {
