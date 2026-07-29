@@ -26,6 +26,7 @@ const APP_CONFIG = {
     garage: 'garageCars',
     zoneMode: 'zoneMode',
     sortMode: 'sortMode',
+    starMap: 'starsMap',
   },
 
   // ---- 算法参数 ----

@@ -76,6 +76,19 @@
             cursor: not-allowed;
             border-color: #21262d;
         }
+        .star-badge {
+            display: inline-block;
+            margin-left: 3px;
+            font-size: 0.7rem;
+            color: #e3b341;
+            cursor: pointer;
+            padding: 0 2px;
+            user-select: none;
+        }
+        .star-badge:hover {
+            color: #f0c94b;
+            text-shadow: 0 0 4px rgba(227,179,65,0.4);
+        }
         /* ===== 副标题 ===== */
         .sub {
             color: #6e7681;
@@ -609,6 +622,54 @@
     // 特殊跑法开关: mapKey('大地图/小地图') → true/false
     let specialRouteEnabled = {};
 
+    // ========================== 星级自定义 ==========================
+
+    /** 用户为每辆车设定的星级 1-6，默认 6★ */
+    let starsMap = {};
+
+    /**
+     * 每缺一星的成绩惩罚比例。
+     * 例: 0.005 表示每缺一星 +0.5% 的时间。
+     * 可根据实际数据调整。
+     */
+    const STAR_PENALTY_PER_STAR = 0.005;
+
+    /** 加载已保存的星级映射 */
+    function loadStarsMap() {
+        try {
+            const saved = api.loadPref(APP_CONFIG.storageKeys.starMap);
+            if (saved && typeof saved === 'object' && !Array.isArray(saved)) {
+                starsMap = saved;
+            }
+        } catch (e) { /* 静默忽略 */ }
+    }
+
+    /** 保存星级映射 */
+    function saveStarsMap() {
+        api.savePref(APP_CONFIG.storageKeys.starMap, starsMap);
+    }
+
+    /** 获取某辆车的用户设定星级，默认 6 */
+    function getCarStars(carName) {
+        return starsMap[carName] || 6;
+    }
+
+    /**
+     * 根据用户星级调整成绩。
+     * 如果 entry 的星级与用户一致则返回原时间；
+     * 否则以 entry 的星级为基准，对每缺的一星施加惩罚。
+     */
+    function adjustTimeByStars(entry, carName) {
+        if (!entry || !entry._raw) return null;
+        const baseTime = entry._raw.time;
+        if (baseTime == null) return null;
+        const userStars = getCarStars(carName);
+        const entryStars = entry._raw.cars?.[0]?.stars || 6;
+        if (userStars >= entryStars) return baseTime;
+        const diff = entryStars - userStars;
+        return +(baseTime * (1 + STAR_PENALTY_PER_STAR * diff)).toFixed(3);
+    }
+
     // ========================== 工具函数 ==========================
 
     /**
@@ -635,11 +696,13 @@
         const tierData = track[zone]?.[currentTier];
         if (!tierData || !Array.isArray(tierData)) return [];
         let entries = tierData.map(normalizeEntry);
-        // 高手档按 time 升序（小=快排前面），time=null 排末尾
+        // 高手档按（星级调整后）time 升序，time=null 排末尾
         if (currentTier === '高手') {
             entries.sort((a, b) => {
-                const ta = a._raw?.time;
-                const tb = b._raw?.time;
+                const carA = a._raw?.cars?.[0]?.name || a[0];
+                const carB = b._raw?.cars?.[0]?.name || b[0];
+                const ta = adjustTimeByStars(a, carA);
+                const tb = adjustTimeByStars(b, carB);
                 if (ta == null && tb == null) return 0;
                 if (ta == null) return 1;
                 if (tb == null) return -1;
@@ -774,8 +837,16 @@
             // 跳过不匹配的 sc 类型
             if (entry._raw && entry._raw.sc && scState !== 'all' && scState !== undefined && entry._raw.sc_type && entry._raw.sc_type !== scState) continue;
             var score = null;
-            if (entry._raw && entry._raw.time != null) score = entry._raw.time;
-            else if (Array.isArray(entry) && entry.length > 1) score = entry[1];
+            if (entry._raw && entry._raw.time != null) {
+                // 高手档考虑星级调整
+                if (currentTier === '高手') {
+                    score = adjustTimeByStars(entry, carName);
+                } else {
+                    score = entry._raw.time;
+                }
+            } else if (Array.isArray(entry) && entry.length > 1) {
+                score = entry[1];
+            }
             if (score == null) continue;
             if (entry._raw && entry._raw.sc) {
                 scScore = score;
@@ -958,9 +1029,12 @@
             span.className = 'car-tag' + (selectedCars.has(car) ? ' selected' : '');
             // 搜索匹配真车名时显示后缀
             const realName = nickToName[car];
-            span.textContent = realName && searchQuery && realName.toLowerCase().includes(searchQuery.toLowerCase())
+            const label = realName && searchQuery && realName.toLowerCase().includes(searchQuery.toLowerCase())
                 ? `${car} (${realName})`
                 : car;
+            // 星级显示
+            const carStars = getCarStars(car);
+            span.innerHTML = `${label} <span class="star-badge" data-car="${car}">★${carStars}</span>`;
             span.dataset.carNick = car;
             carGrid.appendChild(span);
         });
@@ -1338,10 +1412,12 @@
                     const scoreHtml = score !== null && score !== undefined
                         ? `<div class="result-score">⏱ ${score}</div>`
                         : '';
+                    const starLevel = getCarStars(car);
+                    const starHtml = starLevel < 6 ? `<span style="color:#e3b341;font-size:0.7rem;"> (★${starLevel})</span>` : '';
                     html += `<div class="result-item">
                         <div class="result-map">${small}</div>
                         <div class="result-bigmap">${big}</div>
-                        <div class="result-car">${car}</div>
+                        <div class="result-car">${car}${starHtml}</div>
                         ${scoreHtml}
                         <div class="priority-badge">⭐ 优先级 ${prio}</div>
                     </div>`;
@@ -1485,6 +1561,22 @@
         // 车库标签点击使用事件委托（避免每个标签绑定独立监听器）
         carGrid.addEventListener('click', onCarTagClick);
 
+        // 星级点击（通过事件委托处理 star-badge 点击）
+        carGrid.addEventListener('click', function(e) {
+            const badge = e.target.closest('.star-badge');
+            if (!badge) return;
+            e.stopPropagation(); // 阻止触发 onCarTagClick
+            const car = badge.dataset.car;
+            if (!car) return;
+            // 循环星级: 1→2→3→4→5→6→1
+            const current = getCarStars(car);
+            const next = current >= 6 ? 1 : current + 1;
+            starsMap[car] = next;
+            saveStarsMap();
+            renderCarTags();
+            computeAndDisplay();
+        });
+
         const searchInput = document.getElementById('garageSearch');
         searchInput.addEventListener('input', () => {
             searchQuery = searchInput.value.trim();
@@ -1592,6 +1684,7 @@
             }
 
             await loadGarage();        // 加载车库（现在 zone5Cars/zone4Cars 已就绪）
+            loadStarsMap();             // 加载星级
             // 恢复排序模式
             const savedSort = api.loadPref(APP_CONFIG.storageKeys.sortMode);
             if (savedSort) sortMode = savedSort;
