@@ -628,10 +628,9 @@
     {
       "大地图": "沙漠迷雾",
       "小地图": "岛屿幻想",
-      "has_special_route": true,
-      "special_route_note": "低 pf",
+      "has_special_route": false,
       "五区": {
-        "理论": [{"cars":[{"name":"恶魔"}],"time":20.6},{"cars":[{"name":"f5r"}],"time":21.2,"sc":true,"sc_note":"低 pf"},{"cars":[{"name":"f5r"}],"time":21.6},{"cars":[{"name":"玻璃"}],"time":21.75},{"cars":[{"name":"玻璃"}],"time":21.8},{"cars":[{"name":"f5"}],"time":21.8},{"cars":[{"name":"r兔"}],"time":21.9},{"cars":[{"name":"杰皇"}],"time":22.2},{"cars":[{"name":"杰弟"}],"time":22.2},{"cars":[{"name":"9x8"}],"time":22.4},{"cars":[{"name":"sf90"}],"time":22.5},{"cars":[{"name":"fp1"}],"time":22.5},{"cars":[{"name":"007s"}],"time":22.8}],
+        "理论": [{"cars":[{"name":"恶魔"}],"time":20.6},{"cars":[{"name":"f5r"}],"time":21.6},{"cars":[{"name":"玻璃"}],"time":21.75},{"cars":[{"name":"玻璃"}],"time":21.8},{"cars":[{"name":"f5"}],"time":21.8},{"cars":[{"name":"r兔"}],"time":21.9},{"cars":[{"name":"杰皇"}],"time":22.2},{"cars":[{"name":"杰弟"}],"time":22.2},{"cars":[{"name":"9x8"}],"time":22.4},{"cars":[{"name":"sf90"}],"time":22.5},{"cars":[{"name":"fp1"}],"time":22.5},{"cars":[{"name":"007s"}],"time":22.8}],
         "高手": [{"cars":[{"name":"恶魔","stars":6}],"time":20.6},{"cars":[{"name":"玻璃","stars":6}],"time":21.8},{"cars":[{"name":"f5","stars":6}],"time":21.8},{"cars":[{"name":"r兔","stars":6}],"time":21.9},{"cars":[{"name":"9x8","stars":6}],"time":22.4},{"cars":[{"name":"fp1","stars":6}],"time":22.5},{"cars":[{"name":"sf90","stars":6}],"time":22.5},{"cars":[{"name":"爱音","stars":6}],"time":null},{"cars":[{"name":"塞纳","stars":6}],"time":null},{"cars":[{"name":"万达","stars":6}],"time":null},{"cars":[{"name":"5n","stars":6}],"time":null}],
         "普通": [{"cars":[{"name":"恶魔"}]},{"cars":[{"name":"r兔"}]},{"cars":[{"name":"玻璃"}]},{"cars":[{"name":"f5"}]},{"cars":[{"name":"爱音"}]},{"cars":[{"name":"9x8"}]},{"cars":[{"name":"fp1"}]},{"cars":[{"name":"sf90"}]},{"cars":[{"name":"塞纳"}]},{"cars":[{"name":"万达"}]},{"cars":[{"name":"5n"}]}],
         "自动": [{"cars":[{"name":"r兔"}]},{"cars":[{"name":"9x8"}]},{"cars":[{"name":"fp1"}]},{"cars":[{"name":"sf90"}]},{"cars":[{"name":"万达"}]}]
@@ -1168,10 +1167,9 @@
     {
       "大地图": "雄鹰之城",
       "小地图": "前往码头",
-      "has_special_route": true,
-      "special_route_note": "低 pf",
+      "has_special_route": false,
       "五区": {
-        "理论": [{"cars":[{"name":"f5r"}],"time":28.1,"sc":true,"sc_note":"低 pf"},{"cars":[{"name":"恶魔"}],"time":28.2},{"cars":[{"name":"f5r"}],"time":28.5},{"cars":[{"name":"玻璃"}],"time":28.6},{"cars":[{"name":"r兔"}],"time":28.8},{"cars":[{"name":"f5"}],"time":29.2},{"cars":[{"name":"杰皇"}],"time":29.6},{"cars":[{"name":"杰弟"}],"time":29.7},{"cars":[{"name":"fp1"}],"time":30.2},{"cars":[{"name":"c2"}],"time":30.3}],
+        "理论": [{"cars":[{"name":"恶魔"}],"time":28.2},{"cars":[{"name":"f5r"}],"time":28.5},{"cars":[{"name":"玻璃"}],"time":28.6},{"cars":[{"name":"r兔"}],"time":28.8},{"cars":[{"name":"f5"}],"time":29.2},{"cars":[{"name":"杰皇"}],"time":29.6},{"cars":[{"name":"杰弟"}],"time":29.7},{"cars":[{"name":"fp1"}],"time":30.2},{"cars":[{"name":"c2"}],"time":30.3}],
         "高手": [{"cars":[{"name":"恶魔","stars":6}],"time":28.2},{"cars":[{"name":"玻璃","stars":6}],"time":28.6},{"cars":[{"name":"f5","stars":6}],"time":29.2},{"cars":[{"name":"杰弟","stars":6}],"time":29.7},{"cars":[{"name":"fp1","stars":6}],"time":30.2},{"cars":[{"name":"爱音","stars":6}],"time":null},{"cars":[{"name":"9x8","stars":6}],"time":null},{"cars":[{"name":"塞纳","stars":6}],"time":null},{"cars":[{"name":"sf90","stars":6}],"time":null},{"cars":[{"name":"西安"}]},{"cars":[{"name":"万达","stars":6}],"time":null},{"cars":[{"name":"5n","stars":6}],"time":null}],
         "普通": [{"cars":[{"name":"恶魔"}]},{"cars":[{"name":"玻璃"}]},{"cars":[{"name":"爱音"}]},{"cars":[{"name":"f5"}]},{"cars":[{"name":"杰弟"}]},{"cars":[{"name":"fp1"}]},{"cars":[{"name":"9x8"}]},{"cars":[{"name":"塞纳"}]},{"cars":[{"name":"sf90"}]},{"cars":[{"name":"西安"}]},{"cars":[{"name":"万达"}]},{"cars":[{"name":"5n"}]}],
         "自动": [{"cars":[{"name":"杰弟"}]},{"cars":[{"name":"fp1"}]},{"cars":[{"name":"9x8"}]},{"cars":[{"name":"sf90"}]},{"cars":[{"name":"西安"}]},{"cars":[{"name":"万达"}]}]
