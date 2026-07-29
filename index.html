@@ -700,12 +700,12 @@
         '英灵殿': { min: 6, default: 6 },
         '小牛':   { min: 6, default: 6 },
         '狼崽':   { min: 6, default: 6 },
-        'fe3':    { min: 6, default: 6 },
-        '600lt':  { min: 6, default: 6 },
+        'fe3':    { min: 5, max: 5, default: 5 },
+        '600lt':  { min: 5, max: 5, default: 5 },
         'sgt':    { min: 6, default: 6 },
-        '风扇':   { min: 6, default: 6 },
-        '火山':   { min: 6, default: 6 },
-        '5n':     { min: 6, default: 6 },
+        '风扇':   { min: 5, max: 5, default: 5 },
+        '火山':   { min: 5, max: 5, default: 5 },
+        '5n':     { min: 4, max: 4, default: 4 },
     };
 
     /** 获取某辆车的星级规则，未配置则无限制 */
@@ -717,7 +717,7 @@
     function getStarRange(carName) {
         var rule = getStarRule(carName);
         if (!rule) return { min: 1, max: 6 };
-        var max = 6;
+        var max = rule.max || 6;
         if (currentZone === 'zone4' && rule.zone4Max != null) {
             max = rule.zone4Max;
         }
