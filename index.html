@@ -76,18 +76,60 @@
             cursor: not-allowed;
             border-color: #21262d;
         }
-        .star-badge {
+        .star-display {
             display: inline-block;
             margin-left: 3px;
             font-size: 0.7rem;
             color: #e3b341;
             cursor: pointer;
-            padding: 0 2px;
+            padding: 1px 4px;
             user-select: none;
+            position: relative;
+            border-radius: 4px;
         }
-        .star-badge:hover {
+        .star-display:hover {
+            background: #21262d;
+        }
+        .star-popover {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 100;
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 8px;
+            padding: 4px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+            white-space: nowrap;
+        }
+        .star-popover.show {
+            display: flex;
+            gap: 2px;
+        }
+        .star-opt {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            border: none;
+            background: transparent;
+            color: #6e7681;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all .12s;
+        }
+        .star-opt:hover {
+            background: #30363d;
+            color: #e3b341;
+        }
+        .star-opt.active-star {
+            background: #1f3a5f;
             color: #f0c94b;
-            text-shadow: 0 0 4px rgba(227,179,65,0.4);
+            font-weight: 600;
         }
         /* ===== 副标题 ===== */
         .sub {
@@ -1032,9 +1074,17 @@
             const label = realName && searchQuery && realName.toLowerCase().includes(searchQuery.toLowerCase())
                 ? `${car} (${realName})`
                 : car;
-            // 星级显示
+            // 星级 popover
             const carStars = getCarStars(car);
-            span.innerHTML = `${label} <span class="star-badge" data-car="${car}">★${carStars}</span>`;
+            var starsHtml = '<span class="star-display" data-car="' + car + '">';
+            starsHtml += '★' + carStars;
+            starsHtml += '<span class="star-popover" data-car="' + car + '">';
+            for (var si = 1; si <= 6; si++) {
+                var activeCls = si === carStars ? ' active-star' : '';
+                starsHtml += '<button class="star-opt' + activeCls + '" data-stars="' + si + '" data-car="' + car + '">' + si + '</button>';
+            }
+            starsHtml += '</span></span>';
+            span.innerHTML = label + starsHtml;
             span.dataset.carNick = car;
             carGrid.appendChild(span);
         });
@@ -1558,24 +1608,50 @@
             computeAndDisplay();
         });
 
-        // 车库标签点击使用事件委托（避免每个标签绑定独立监听器）
-        carGrid.addEventListener('click', onCarTagClick);
-
-        // 星级点击（通过事件委托处理 star-badge 点击）
+        // 统一的车库点击处理：选中车 vs 星级 popover
         carGrid.addEventListener('click', function(e) {
-            const badge = e.target.closest('.star-badge');
-            if (!badge) return;
-            e.stopPropagation(); // 阻止触发 onCarTagClick
-            const car = badge.dataset.car;
-            if (!car) return;
-            // 循环星级: 1→2→3→4→5→6→1
-            const current = getCarStars(car);
-            const next = current >= 6 ? 1 : current + 1;
-            starsMap[car] = next;
-            saveStarsMap();
-            renderCarTags();
-            computeAndDisplay();
+            // 星级 popover 按钮点击
+            const optBtn = e.target.closest('.star-opt');
+            if (optBtn) {
+                const car = optBtn.dataset.car;
+                const stars = parseInt(optBtn.dataset.stars, 10);
+                if (car && stars >= 1 && stars <= 6) {
+                    starsMap[car] = stars;
+                    saveStarsMap();
+                    renderCarTags();
+                    computeAndDisplay();
+                }
+                return;
+            }
+            // 星级显示按钮点击 → 切换 popover 显隐
+            const display = e.target.closest('.star-display');
+            if (display) {
+                const popover = display.querySelector('.star-popover');
+                if (popover) {
+                    const isOpen = popover.classList.contains('show');
+                    // 关闭其他所有 popover
+                    document.querySelectorAll('.star-popover.show').forEach(function(p) { p.classList.remove('show'); });
+                    if (!isOpen) {
+                        popover.classList.add('show');
+                    }
+                }
+                return;
+            }
+            // 普通标签点击 → 切换选中
+            const tag = e.target.closest('.car-tag');
+            if (tag && tag.dataset.carNick) {
+                onCarTagClick(e);
+            }
         });
+
+        // 点击页面其他地方关闭所有 popover
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.star-display') && !e.target.closest('.star-popover')) {
+                document.querySelectorAll('.star-popover.show').forEach(function(p) { p.classList.remove('show'); });
+            }
+        });
+
+        // 方案下拉切换恢复计算结果（已有，保留）
 
         const searchInput = document.getElementById('garageSearch');
         searchInput.addEventListener('input', () => {
