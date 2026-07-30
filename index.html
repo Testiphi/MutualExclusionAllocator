@@ -1647,8 +1647,9 @@
                     const scoreHtml = score !== null && score !== undefined
                         ? `<div class="result-score">⏱ ${score}</div>`
                         : '';
+                    // 理论档不显示星级（默认满星）
                     const starLevel = getCarStars(car);
-                    const starHtml = starLevel < 6 ? `<span style="color:#e3b341;font-size:0.7rem;"> (★${starLevel})</span>` : '';
+                    const starHtml = (currentTier !== '理论' && starLevel < 6) ? `<span style="color:#e3b341;font-size:0.7rem;"> (★${starLevel})</span>` : '';
                     html += `<div class="result-item">
                         <div class="result-map">${small}</div>
                         <div class="result-bigmap">${big}</div>
