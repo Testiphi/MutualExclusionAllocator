@@ -1880,7 +1880,12 @@
         const tierInfo = RACE_DATA?.tier_info?.[currentTier];
         const sub = document.querySelector('.sub');
         if (sub && tierInfo) {
-            sub.textContent = tierInfo.desc;
+            let desc = tierInfo.desc;
+            // 理论档在四区模式下显示不同描述
+            if (currentTier === '理论' && currentZone === 'zone4') {
+                desc = '顶级特改理论成绩，默认最优解，含特殊跑法';
+            }
+            sub.textContent = desc;
         }
     }
 
@@ -1918,6 +1923,7 @@
                     if (changed) saveGarage();
                 }
                 // 重渲染
+                updateSubtitle();
                 renderGarage();
                 computeAndDisplay();
             });
