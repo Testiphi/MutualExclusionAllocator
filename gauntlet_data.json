@@ -32,7 +32,7 @@
         "自动": [{"cars":[{"name":"西安"}]}]
       },
       "四区": {
-        "理论": [{"cars":[{"name":"恶魔"}],"time":38.13},{"cars":[{"name":"f5"}],"time":38.97},{"cars":[{"name":"莫斯勒"}],"time":39.47}],
+        "理论": [{"cars":[{"name":"恶魔"}],"time":38.13},{"cars":[{"name":"杰哥"}],"time":38.79},{"cars":[{"name":"f5"}],"time":38.97},{"cars":[{"name":"莫斯勒"}],"time":39.47}],
         "高手": [{"cars":[{"name":"恶魔","stars":1}],"time":39.09},{"cars":[{"name":"杰哥","stars":4}],"time":39.89},{"cars":[{"name":"杰哥","stars":3}],"time":39.99},{"cars":[{"name":"恶魔","stars":6}]},{"cars":[{"name":"爱音","stars":6}]},{"cars":[{"name":"玻璃","stars":6}]},{"cars":[{"name":"杰哥","stars":6}]},{"cars":[{"name":"f5","stars":6}]},{"cars":[{"name":"莫斯勒","stars":6}]},{"cars":[{"name":"ssc","stars":6}]},{"cars":[{"name":"大超","stars":6}]},{"cars":[{"name":"复仇","stars":6}]},{"cars":[{"name":"狼崽","stars":6}]},{"cars":[{"name":"火山","stars":6}]}],
         "普通": [{"cars":[{"name":"恶魔"}]},{"cars":[{"name":"爱音"}]},{"cars":[{"name":"玻璃"}]},{"cars":[{"name":"杰哥"}]},{"cars":[{"name":"f5"}]},{"cars":[{"name":"莫斯勒"}]},{"cars":[{"name":"ssc"}]},{"cars":[{"name":"大超"}]},{"cars":[{"name":"复仇"}]},{"cars":[{"name":"狼崽"}]},{"cars":[{"name":"火山"}]}],
         "自动": []
@@ -119,7 +119,7 @@
         "自动": [{"cars":[{"name":"r兔"}]},{"cars":[{"name":"c2"}]},{"cars":[{"name":"白龙"}]},{"cars":[{"name":"21c"}]},{"cars":[{"name":"杰弟"}]},{"cars":[{"name":"速尾"}]},{"cars":[{"name":"秋王"}]},{"cars":[{"name":"小牛"}]}]
       },
       "四区": {
-        "理论": [{"cars":[{"name":"肥龙"}],"time":26.25},{"cars":[{"name":"速尾"}],"time":26.69},{"cars":[{"name":"法拉第"}],"time":27.49}],
+        "理论": [{"cars":[{"name":"肥龙"}],"time":26.25},{"cars":[{"name":"杰哥"}],"time":26.49},{"cars":[{"name":"速尾"}],"time":26.69},{"cars":[{"name":"法拉第"}],"time":27.49}],
         "高手": [{"cars":[{"name":"肥龙","stars":6}]},{"cars":[{"name":"c2","stars":6}]},{"cars":[{"name":"21c","stars":6}]},{"cars":[{"name":"速尾","stars":6}]},{"cars":[{"name":"ssc","stars":6}]},{"cars":[{"name":"秋王","stars":6}]},{"cars":[{"name":"狼崽","stars":6}]},{"cars":[{"name":"火山","stars":6}]},{"cars":[{"name":"小牛","stars":6}]}],
         "普通": [{"cars":[{"name":"肥龙"}]},{"cars":[{"name":"c2"}]},{"cars":[{"name":"21c"}]},{"cars":[{"name":"速尾"}]},{"cars":[{"name":"ssc"}]},{"cars":[{"name":"秋王"}]},{"cars":[{"name":"狼崽"}]},{"cars":[{"name":"火山"}]},{"cars":[{"name":"小牛"}]}],
         "自动": [{"cars":[{"name":"c2"}]},{"cars":[{"name":"21c"}]},{"cars":[{"name":"速尾"}]},{"cars":[{"name":"秋王"}]},{"cars":[{"name":"小牛"}]}]
