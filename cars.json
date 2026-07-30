@@ -72,7 +72,8 @@
     "爱音": "Tushek Aeon E",
     "冰山": "Icona Vulcano Spyder",
     "西安": "Lamborghini Sián FKP 37",
-    "dose": "Ferrante Design Elytron"
+    "dose": "Ferrante Design Elytron",
+    "陀飞轮": "Bugatti Tourbillon"
   },
   "cars": [
     {
@@ -3205,6 +3206,16 @@
       "acceleration": 85.29,
       "handling": 70.13,
       "nitro": 75.09
+    },
+    {
+      "title": "Bugatti Tourbillon",
+      "score": 5676,
+      "class": "R",
+      "max_speed": 492.8,
+      "acceleration": 85.24,
+      "handling": 70.17,
+      "nitro": 48.98,
+      "nickname": "陀飞轮"
     }
   ]
 }
