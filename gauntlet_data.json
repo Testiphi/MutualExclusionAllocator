@@ -1306,7 +1306,7 @@
         "自动": [{"cars":[{"name":"21c"}]},{"cars":[{"name":"r兔"}]},{"cars":[{"name":"白龙"}]},{"cars":[{"name":"c2"}]},{"cars":[{"name":"秋王"}]},{"cars":[{"name":"fp1"}]},{"cars":[{"name":"sf90"}]},{"cars":[{"name":"9x8"}]},{"cars":[{"name":"万达"}]},{"cars":[{"name":"六子"}]}]
       },
       "四区": {
-        "理论": [{"cars":[{"name":"21c"}],"time":23.13}],
+        "理论": [{"cars":[{"name":"21c"}],"time":22.35,"sc":true,"sc_type":"跳船跑法"},{"cars":[{"name":"21c"}],"time":23.13}],
         "高手": [{"cars":[{"name":"21c","stars":6}]},{"cars":[{"name":"c2","stars":6}]},{"cars":[{"name":"秋王","stars":6}]},{"cars":[{"name":"法拉第","stars":6}]},{"cars":[{"name":"fp1","stars":6}]},{"cars":[{"name":"sf90","stars":6}]},{"cars":[{"name":"9x8","stars":6}]},{"cars":[{"name":"万达","stars":6}]},{"cars":[{"name":"六子","stars":6}]}],
         "普通": [{"cars":[{"name":"21c"}]},{"cars":[{"name":"c2"}]},{"cars":[{"name":"秋王"}]},{"cars":[{"name":"法拉第"}]},{"cars":[{"name":"fp1"}]},{"cars":[{"name":"sf90"}]},{"cars":[{"name":"9x8"}]},{"cars":[{"name":"万达"}]},{"cars":[{"name":"六子"}]}],
         "自动": [{"cars":[{"name":"21c"}]},{"cars":[{"name":"c2"}]},{"cars":[{"name":"秋王"}]},{"cars":[{"name":"fp1"}]},{"cars":[{"name":"sf90"}]},{"cars":[{"name":"9x8"}]},{"cars":[{"name":"万达"}]},{"cars":[{"name":"六子"}]}]
