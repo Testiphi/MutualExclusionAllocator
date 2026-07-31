@@ -362,7 +362,7 @@
       },
       "四区": {
         "理论": [{"cars":[{"name":"爱音"}],"time":21.46},{"cars":[{"name":"fp1"}]},{"cars":[{"name":"er9"}]},{"cars":[{"name":"9x8"}]},{"cars":[{"name":"秋王"}]},{"cars":[{"name":"c2"}]},{"cars":[{"name":"21c"}]},{"cars":[{"name":"万达"}]},{"cars":[{"name":"sf90"}]},{"cars":[{"name":"塞纳"}]},{"cars":[{"name":"火山"}]}],
-        "高手": [{"cars":[{"name":"fp1","stars":6}]},{"cars":[{"name":"er9","stars":6}]},{"cars":[{"name":"9x8","stars":6}]},{"cars":[{"name":"爱音","stars":6}]},{"cars":[{"name":"秋王","stars":6}]},{"cars":[{"name":"c2","stars":6}]},{"cars":[{"name":"21c","stars":6}]},{"cars":[{"name":"万达","stars":6}]},{"cars":[{"name":"sf90","stars":6}]},{"cars":[{"name":"塞纳","stars":6}]},{"cars":[{"name":"火山","stars":6}]}],
+        "高手": [{"cars":[{"name":"fp1","stars":6}]},{"cars":[{"name":"er9","stars":6}]},{"cars":[{"name":"9x8","stars":6}]},{"cars":[{"name":"爱音","stars":6}]},{"cars":[{"name":"秋王","stars":6}]},{"cars":[{"name":"c2","stars":6}]},{"cars":[{"name":"21c","stars":6}]},{"cars":[{"name":"万达","stars":6}]},{"cars":[{"name":"sf90","stars":6}]},{"cars":[{"name":"塞纳","stars":6}]},{"cars":[{"name":"火山","stars":6}]},{"cars":[{"name":"爱音","stars":4}],"time":21.65}],
         "普通": [{"cars":[{"name":"fp1"}]},{"cars":[{"name":"er9"}]},{"cars":[{"name":"9x8"}]},{"cars":[{"name":"爱音"}]},{"cars":[{"name":"秋王"}]},{"cars":[{"name":"c2"}]},{"cars":[{"name":"21c"}]},{"cars":[{"name":"万达"}]},{"cars":[{"name":"sf90"}]},{"cars":[{"name":"塞纳"}]},{"cars":[{"name":"火山"}]}],
         "自动": [{"cars":[{"name":"fp1"}]},{"cars":[{"name":"9x8"}]},{"cars":[{"name":"秋王"}]},{"cars":[{"name":"c2"}]},{"cars":[{"name":"21c"}]},{"cars":[{"name":"万达"}]},{"cars":[{"name":"sf90"}]}]
       }
@@ -1195,7 +1195,8 @@
     {
       "大地图": "西部牧场",
       "小地图": "铁道迷",
-      "has_special_route": false,
+      "has_special_route": true,
+      "special_route_note": "滑栏杆",
       "五区": {
         "理论": [{"cars":[{"name":"r兔"}],"time":21.5},{"cars":[{"name":"杰皇"}],"time":21.9},{"cars":[{"name":"陀飞轮"}],"time":21.95,"sc":true,"sc_type":"滑栏杆"},{"cars":[{"name":"21c"}],"time":22.1},{"cars":[{"name":"黑龙"}],"time":22.1},{"cars":[{"name":"玻璃"}],"time":22.2},{"cars":[{"name":"c2"}],"time":22.2},{"cars":[{"name":"白龙"}],"time":22.4},{"cars":[{"name":"肥龙"}],"time":22.4},{"cars":[{"name":"猫头鹰"}],"time":22.4},{"cars":[{"name":"ssc"}],"time":22.5},{"cars":[{"name":"大超"}],"time":22.5}],
         "高手": [{"cars":[{"name":"r兔","stars":6}]},{"cars":[{"name":"21c","stars":6}]},{"cars":[{"name":"黑龙","stars":6}]},{"cars":[{"name":"c2","stars":6}]},{"cars":[{"name":"肥龙","stars":6}]},{"cars":[{"name":"白龙","stars":6}]},{"cars":[{"name":"爱音","stars":6}]},{"cars":[{"name":"杰弟","stars":6}]},{"cars":[{"name":"法拉第","stars":6}]},{"cars":[{"name":"att","stars":6}]},{"cars":[{"name":"狼崽","stars":6}]},{"cars":[{"name":"纳兰","stars":6}]},{"cars":[{"name":"火山","stars":6}]}],
@@ -1204,7 +1205,7 @@
       },
       "四区": {
         "理论": [{"cars":[{"name":"c2"}],"time":22.52,"sc":true,"sc_type":"滑栏杆"},{"cars":[{"name":"爱音"}],"time":22.39},{"cars":[{"name":"肥龙"}],"time":22.54,"sc":true,"sc_type":"滑栏杆"},{"cars":[{"name":"21c"}],"time":22.57,"sc":true,"sc_type":"滑栏杆"},{"cars":[{"name":"21c"}],"time":22.69},{"cars":[{"name":"c2"}],"time":22.78}],
-        "高手": [{"cars":[{"name":"c2","stars":6}]},{"cars":[{"name":"肥龙","stars":6}]},{"cars":[{"name":"21c","stars":6}]},{"cars":[{"name":"法拉第","stars":6}]},{"cars":[{"name":"速尾","stars":6}]},{"cars":[{"name":"fp1","stars":6}]},{"cars":[{"name":"9x8","stars":6}]},{"cars":[{"name":"狼崽","stars":6}]},{"cars":[{"name":"火山","stars":6}]}],
+        "高手": [{"cars":[{"name":"c2","stars":6}]},{"cars":[{"name":"肥龙","stars":6}]},{"cars":[{"name":"21c","stars":6}]},{"cars":[{"name":"法拉第","stars":6}]},{"cars":[{"name":"速尾","stars":6}]},{"cars":[{"name":"fp1","stars":6}]},{"cars":[{"name":"9x8","stars":6}]},{"cars":[{"name":"狼崽","stars":6}]},{"cars":[{"name":"火山","stars":6}]},{"cars":[{"name":"c2","stars":6}],"time":22.6,"sc":true}],
         "普通": [{"cars":[{"name":"c2"}]},{"cars":[{"name":"21c"}]},{"cars":[{"name":"肥龙"}]},{"cars":[{"name":"法拉第"}]},{"cars":[{"name":"速尾"}]},{"cars":[{"name":"fp1"}]},{"cars":[{"name":"9x8"}]},{"cars":[{"name":"狼崽"}]},{"cars":[{"name":"火山"}]}],
         "自动": [{"cars":[{"name":"c2"}]},{"cars":[{"name":"21c"}]},{"cars":[{"name":"速尾"}]},{"cars":[{"name":"fp1"}]},{"cars":[{"name":"9x8"}]}]
       }
