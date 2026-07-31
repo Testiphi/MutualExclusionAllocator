@@ -3187,7 +3187,9 @@
       "acceleration": 85.24,
       "handling": 56.39,
       "nitro": 47.19,
-      "nickname": "dose"
+      "nickname": "dose",
+      "nitro_speed": 477,
+      "air_speed": 585
     },
     {
       "title": "Pagani Codalunga",
