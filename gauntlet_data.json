@@ -498,7 +498,7 @@
       },
       "四区": {
         "理论": [{"cars":[{"name":"f5"}]},{"cars":[{"name":"杰哥"}]},{"cars":[{"name":"ssc"}]},{"cars":[{"name":"爱音"}]},{"cars":[{"name":"肥龙"}]},{"cars":[{"name":"速尾"}],"time":33.79},{"cars":[{"name":"att"}]},{"cars":[{"name":"狼崽"}]},{"cars":[{"name":"火山"}]}],
-        "高手": [{"cars":[{"name":"f5","stars":null}]},{"cars":[{"name":"杰哥","stars":6}]},{"cars":[{"name":"ssc","stars":null}]},{"cars":[{"name":"爱音","stars":null}]},{"cars":[{"name":"肥龙","stars":6}]},{"cars":[{"name":"速尾","stars":6}]},{"cars":[{"name":"att","stars":6}]},{"cars":[{"name":"狼崽","stars":6}]},{"cars":[{"name":"火山","stars":6}]}],
+        "高手": [{"cars":[{"name":"f5","stars":null}]},{"cars":[{"name":"杰哥","stars":6}]},{"cars":[{"name":"ssc","stars":2}],"time":34.3},{"cars":[{"name":"爱音","stars":null}]},{"cars":[{"name":"肥龙","stars":6}]},{"cars":[{"name":"速尾","stars":6}]},{"cars":[{"name":"att","stars":6}]},{"cars":[{"name":"狼崽","stars":6}]},{"cars":[{"name":"火山","stars":6}]}],
         "普通": [{"cars":[{"name":"f5"}]},{"cars":[{"name":"杰哥"}]},{"cars":[{"name":"ssc"}]},{"cars":[{"name":"爱音"}]},{"cars":[{"name":"肥龙"}]},{"cars":[{"name":"速尾"}]},{"cars":[{"name":"att"}]},{"cars":[{"name":"狼崽"}]},{"cars":[{"name":"火山"}]}],
         "自动": [{"cars":[{"name":"速尾"}]}]
       }
@@ -578,7 +578,7 @@
       "has_special_route": false,
       "五区": {
         "理论": [{"cars":[{"name":"恶魔"}],"time":31.4},{"cars":[{"name":"f5r"}],"time":32.1},{"cars":[{"name":"杰皇"}],"time":32.3},{"cars":[{"name":"f5"}],"time":32.9},{"cars":[{"name":"ssc"}],"time":33.4}],
-        "高手": [{"cars":[{"name":"恶魔","stars":6}]},{"cars":[{"name":"杰皇","stars":6}]},{"cars":[{"name":"f5","stars":6}]},{"cars":[{"name":"ssc","stars":6}]},{"cars":[{"name":"r兔","stars":6}]},{"cars":[{"name":"玻璃","stars":6}]},{"cars":[{"name":"爱音","stars":6}]},{"cars":[{"name":"杰哥","stars":6}]},{"cars":[{"name":"黑龙","stars":6}]},{"cars":[{"name":"肥龙","stars":6}]},{"cars":[{"name":"速尾","stars":6}]},{"cars":[{"name":"狼崽","stars":6}]},{"cars":[{"name":"火山","stars":6}]},{"cars":[{"name":"5n","stars":6}]}],
+        "高手": [{"cars":[{"name":"恶魔","stars":6}]},{"cars":[{"name":"杰皇","stars":6}]},{"cars":[{"name":"f5","stars":6}]},{"cars":[{"name":"ssc","stars":6}],"time":34.09},{"cars":[{"name":"r兔","stars":6}]},{"cars":[{"name":"玻璃","stars":6}]},{"cars":[{"name":"爱音","stars":6}]},{"cars":[{"name":"杰哥","stars":6}]},{"cars":[{"name":"黑龙","stars":6}]},{"cars":[{"name":"肥龙","stars":6}]},{"cars":[{"name":"速尾","stars":6}]},{"cars":[{"name":"狼崽","stars":6}]},{"cars":[{"name":"火山","stars":6}]},{"cars":[{"name":"5n","stars":6}]}],
         "普通": [{"cars":[{"name":"杰皇"}]},{"cars":[{"name":"恶魔"}]},{"cars":[{"name":"f5"}]},{"cars":[{"name":"r兔"}]},{"cars":[{"name":"玻璃"}]},{"cars":[{"name":"爱音"}]},{"cars":[{"name":"杰哥"}]},{"cars":[{"name":"ssc"}]},{"cars":[{"name":"黑龙"}]},{"cars":[{"name":"肥龙"}]},{"cars":[{"name":"速尾"}]},{"cars":[{"name":"狼崽"}]},{"cars":[{"name":"火山"}]},{"cars":[{"name":"5n"}]}],
         "自动": [{"cars":[{"name":"r兔"}]},{"cars":[{"name":"速尾"}]}]
       },
@@ -687,7 +687,7 @@
       },
       "四区": {
         "理论": [{"cars":[{"name":"ssc"}]},{"cars":[{"name":"爱音"}]},{"cars":[{"name":"肥龙"}],"time":31.19},{"cars":[{"name":"复仇"}]},{"cars":[{"name":"速尾"}]},{"cars":[{"name":"狼崽"}]},{"cars":[{"name":"火山"}]}],
-        "高手": [{"cars":[{"name":"杰哥","stars":6}],"time":30.71},{"cars":[{"name":"ssc","stars":null}]},{"cars":[{"name":"爱音","stars":null}]},{"cars":[{"name":"肥龙","stars":6}]},{"cars":[{"name":"复仇","stars":6}]},{"cars":[{"name":"速尾","stars":6}]},{"cars":[{"name":"狼崽","stars":6}]},{"cars":[{"name":"火山","stars":6}]}],
+        "高手": [{"cars":[{"name":"杰哥","stars":6}],"time":30.71},{"cars":[{"name":"ssc","stars":2}],"time":31.69},{"cars":[{"name":"爱音","stars":null}]},{"cars":[{"name":"肥龙","stars":6}]},{"cars":[{"name":"复仇","stars":6}]},{"cars":[{"name":"速尾","stars":6}]},{"cars":[{"name":"狼崽","stars":6}]},{"cars":[{"name":"火山","stars":6}]}],
         "普通": [{"cars":[{"name":"杰哥"}]},{"cars":[{"name":"ssc"}]},{"cars":[{"name":"爱音"}]},{"cars":[{"name":"肥龙"}]},{"cars":[{"name":"复仇"}]},{"cars":[{"name":"速尾"}]},{"cars":[{"name":"狼崽"}]},{"cars":[{"name":"火山"}]}],
         "自动": [{"cars":[{"name":"速尾"}]}]
       }
@@ -1101,7 +1101,7 @@
       },
       "四区": {
         "理论": [{"cars":[{"name":"恶魔"}],"time":34.55},{"cars":[{"name":"莫斯勒"}],"time":36.06}],
-        "高手": [{"cars":[{"name":"恶魔","stars":null}]},{"cars":[{"name":"爱音","stars":null}]},{"cars":[{"name":"f5","stars":null}]},{"cars":[{"name":"玻璃","stars":null}]},{"cars":[{"name":"杰哥","stars":6}]},{"cars":[{"name":"ssc","stars":null}]},{"cars":[{"name":"复仇","stars":6}]},{"cars":[{"name":"速尾","stars":6}]},{"cars":[{"name":"狼崽","stars":6}]},{"cars":[{"name":"火山","stars":6}]},{"cars":[{"name":"玻璃","stars":1}],"time":36.4},{"cars":[{"name":"玻璃","stars":3}],"time":36.19}],
+        "高手": [{"cars":[{"name":"恶魔","stars":null}]},{"cars":[{"name":"爱音","stars":null}]},{"cars":[{"name":"f5","stars":null}]},{"cars":[{"name":"玻璃","stars":null}]},{"cars":[{"name":"杰哥","stars":6}]},{"cars":[{"name":"ssc","stars":2}],"time":36.94},{"cars":[{"name":"复仇","stars":6}]},{"cars":[{"name":"速尾","stars":6}]},{"cars":[{"name":"狼崽","stars":6}]},{"cars":[{"name":"火山","stars":6}]},{"cars":[{"name":"玻璃","stars":1}],"time":36.4},{"cars":[{"name":"玻璃","stars":3}],"time":36.19}],
         "普通": [{"cars":[{"name":"恶魔"}]},{"cars":[{"name":"爱音"}]},{"cars":[{"name":"f5"}]},{"cars":[{"name":"玻璃"}]},{"cars":[{"name":"杰哥"}]},{"cars":[{"name":"ssc"}]},{"cars":[{"name":"复仇"}]},{"cars":[{"name":"速尾"}]},{"cars":[{"name":"狼崽"}]},{"cars":[{"name":"火山"}]}],
         "自动": [{"cars":[{"name":"玻璃"}]},{"cars":[{"name":"速尾"}]}]
       }
@@ -1187,7 +1187,7 @@
       },
       "四区": {
         "理论": [{"cars":[{"name":"杰哥"}]},{"cars":[{"name":"f5"}]},{"cars":[{"name":"爱音"}]},{"cars":[{"name":"玻璃"}]},{"cars":[{"name":"莫斯勒"}]},{"cars":[{"name":"ssc"}]},{"cars":[{"name":"速尾"}]},{"cars":[{"name":"狼崽"}]},{"cars":[{"name":"火山"}]}],
-        "高手": [{"cars":[{"name":"杰哥","stars":6}]},{"cars":[{"name":"f5","stars":null}]},{"cars":[{"name":"爱音","stars":null}]},{"cars":[{"name":"玻璃","stars":null}]},{"cars":[{"name":"莫斯勒","stars":6}]},{"cars":[{"name":"ssc","stars":null}]},{"cars":[{"name":"速尾","stars":6}]},{"cars":[{"name":"狼崽","stars":6}]},{"cars":[{"name":"火山","stars":6}]}],
+        "高手": [{"cars":[{"name":"杰哥","stars":6}]},{"cars":[{"name":"f5","stars":null}]},{"cars":[{"name":"爱音","stars":null}]},{"cars":[{"name":"玻璃","stars":null}]},{"cars":[{"name":"莫斯勒","stars":6}]},{"cars":[{"name":"ssc","stars":2}],"time":31.45},{"cars":[{"name":"速尾","stars":6}]},{"cars":[{"name":"狼崽","stars":6}]},{"cars":[{"name":"火山","stars":6}]}],
         "普通": [{"cars":[{"name":"杰哥"}]},{"cars":[{"name":"f5"}]},{"cars":[{"name":"爱音"}]},{"cars":[{"name":"玻璃"}]},{"cars":[{"name":"莫斯勒"}]},{"cars":[{"name":"ssc"}]},{"cars":[{"name":"速尾"}]},{"cars":[{"name":"狼崽"}]},{"cars":[{"name":"火山"}]}],
         "自动": [{"cars":[{"name":"玻璃"}]},{"cars":[{"name":"速尾"}]}]
       }
