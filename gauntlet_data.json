@@ -430,7 +430,7 @@
       },
       "四区": {
         "理论": [{"cars":[{"name":"莫斯勒"}],"time":25.89},{"cars":[{"name":"爱音"}],"time":25.29},{"cars":[{"name":"9x8"}],"time":26.19},{"cars":[{"name":"杰哥"}],"time":25.49}],
-        "高手": [{"cars":[{"name":"杰哥","stars":6}],"time":25.69},{"cars":[{"name":"杰哥","stars":4}],"time":25.89},{"cars":[{"name":"玻璃","stars":1}],"time":26.15},{"cars":[{"name":"爱音","stars":null}]},{"cars":[{"name":"玻璃","stars":null}]},{"cars":[{"name":"f5","stars":null}]},{"cars":[{"name":"21c","stars":6}]},{"cars":[{"name":"c2","stars":6}]},{"cars":[{"name":"9x8","stars":6}]},{"cars":[{"name":"狼崽","stars":6}]},{"cars":[{"name":"火山","stars":6}]}],
+        "高手": [{"cars":[{"name":"杰哥","stars":6}],"time":25.69},{"cars":[{"name":"杰哥","stars":4}],"time":25.89},{"cars":[{"name":"玻璃","stars":1}],"time":26.15},{"cars":[{"name":"爱音","stars":null}]},{"cars":[{"name":"玻璃","stars":null}]},{"cars":[{"name":"f5","stars":null}]},{"cars":[{"name":"21c","stars":6}]},{"cars":[{"name":"c2","stars":6}]},{"cars":[{"name":"9x8","stars":6}]},{"cars":[{"name":"狼崽","stars":6}]},{"cars":[{"name":"火山","stars":6}]},{"time":26.69,"stars":null,"sc":false,"sc_type":null,"cars":[{"name":"fp1","stars":5}]}],
         "普通": [{"cars":[{"name":"爱音"}]},{"cars":[{"name":"杰哥"}]},{"cars":[{"name":"玻璃"}]},{"cars":[{"name":"f5"}]},{"cars":[{"name":"21c"}]},{"cars":[{"name":"c2"}]},{"cars":[{"name":"9x8"}]},{"cars":[{"name":"狼崽"}]},{"cars":[{"name":"火山"}]}],
         "自动": [{"cars":[{"name":"玻璃"}]},{"cars":[{"name":"21c"}]},{"cars":[{"name":"c2"}]},{"cars":[{"name":"9x8"}]}]
       }
