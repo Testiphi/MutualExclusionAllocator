@@ -67,7 +67,7 @@
         "自动": [{"cars":[{"name":"r兔"}]},{"cars":[{"name":"杰弟"}]},{"cars":[{"name":"c2"}]},{"cars":[{"name":"21c"}]},{"cars":[{"name":"白龙"}]},{"cars":[{"name":"速尾"}]},{"cars":[{"name":"fp1"}]},{"cars":[{"name":"sf90"}]},{"cars":[{"name":"9x8"}]}]
       },
       "四区": {
-        "理论": [{"cars":[{"name":"速尾"}],"time":18.07},{"cars":[{"name":"sgt"}],"time":18.39},{"time":17.84,"stars":null,"sc":false,"sc_type":null,"cars":[{"name":"杰哥"}]}],
+        "理论": [{"cars":[{"name":"速尾"}],"time":18.07},{"cars":[{"name":"sgt"}],"time":18.39},{"time":17.84,"stars":null,"sc":false,"sc_type":null,"cars":[{"name":"杰哥"}]},{"cars":[{"name":"爱音"}],"time":17.45}],
         "高手": [{"cars":[{"name":"爱音","stars":null}]},{"cars":[{"name":"c2","stars":6}]},{"cars":[{"name":"肥龙","stars":6}]},{"cars":[{"name":"速尾","stars":6}]},{"cars":[{"name":"fp1","stars":6}]},{"cars":[{"name":"9x8","stars":6}]},{"cars":[{"name":"sf90","stars":6}]},{"cars":[{"name":"火山","stars":6}]}],
         "普通": [{"cars":[{"name":"爱音"}]},{"cars":[{"name":"c2","stars":6}]},{"cars":[{"name":"肥龙","stars":6}]},{"cars":[{"name":"速尾","stars":6}]},{"cars":[{"name":"fp1","stars":6}]},{"cars":[{"name":"9x8","stars":6}]},{"cars":[{"name":"sf90","stars":6}]},{"cars":[{"name":"火山","stars":6}]}],
         "自动": [{"cars":[{"name":"c2"}]},{"cars":[{"name":"速尾"}]},{"cars":[{"name":"fp1"}]},{"cars":[{"name":"9x8"}]},{"cars":[{"name":"sf90"}]}]
@@ -560,9 +560,9 @@
       "小地图": "急速之争",
       "has_special_route": false,
       "五区": {
-        "理论": [{"cars":[{"name":"恶魔"}],"time":31.4},{"cars":[{"name":"f5r"}],"time":32.1},{"cars":[{"name":"杰皇"}],"time":32.3},{"cars":[{"name":"f5"}],"time":32.9},{"cars":[{"name":"ssc"}],"time":33.4},{"time":33.14,"stars":null,"sc":false,"sc_type":null,"cars":[{"name":"银电"}]}],
-        "高手": [{"cars":[{"name":"恶魔","stars":6}]},{"cars":[{"name":"杰皇","stars":6}]},{"cars":[{"name":"f5","stars":6}]},{"cars":[{"name":"ssc","stars":6}],"time":34.09},{"cars":[{"name":"r兔","stars":6}]},{"cars":[{"name":"玻璃","stars":6}]},{"cars":[{"name":"爱音","stars":6}]},{"cars":[{"name":"杰哥","stars":6}]},{"cars":[{"name":"黑龙","stars":6}]},{"cars":[{"name":"肥龙","stars":6}]},{"cars":[{"name":"速尾","stars":6}]},{"cars":[{"name":"狼崽","stars":6}]},{"cars":[{"name":"火山","stars":6}]},{"cars":[{"name":"5n","stars":6}]}],
-        "普通": [{"cars":[{"name":"恶魔","stars":6}]},{"cars":[{"name":"杰皇","stars":6}]},{"cars":[{"name":"f5","stars":6}]},{"cars":[{"name":"ssc","stars":6}]},{"cars":[{"name":"r兔","stars":6}]},{"cars":[{"name":"玻璃","stars":6}]},{"cars":[{"name":"爱音","stars":6}]},{"cars":[{"name":"杰哥","stars":6}]},{"cars":[{"name":"黑龙","stars":6}]},{"cars":[{"name":"肥龙","stars":6}]},{"cars":[{"name":"速尾","stars":6}]},{"cars":[{"name":"狼崽","stars":6}]},{"cars":[{"name":"火山","stars":6}]},{"cars":[{"name":"5n","stars":6}]}],
+        "理论": [{"cars":[{"name":"恶魔"}],"time":31.4},{"cars":[{"name":"f5r"}],"time":32.1},{"cars":[{"name":"杰皇"}],"time":32.3},{"cars":[{"name":"f5"}],"time":32.9},{"cars":[{"name":"ssc"}],"time":33.4},{"time":33.14,"stars":null,"sc":false,"sc_type":null,"cars":[{"name":"银电"}]},{"cars":[{"name":"21c"}],"time":33.69}],
+        "高手": [{"cars":[{"name":"恶魔","stars":6}]},{"cars":[{"name":"杰皇","stars":6}]},{"cars":[{"name":"f5","stars":6}]},{"cars":[{"name":"ssc","stars":6}],"time":34.09},{"cars":[{"name":"r兔","stars":6}]},{"cars":[{"name":"玻璃","stars":6}]},{"cars":[{"name":"爱音","stars":6}]},{"cars":[{"name":"杰哥","stars":6}]},{"cars":[{"name":"黑龙","stars":6}]},{"cars":[{"name":"肥龙","stars":6}]},{"cars":[{"name":"速尾","stars":6}]},{"cars":[{"name":"狼崽","stars":6}]},{"cars":[{"name":"火山","stars":6}]},{"cars":[{"name":"5n","stars":6}]},{"cars":[{"name":"21c","stars":6}],"time":33.89}],
+        "普通": [{"cars":[{"name":"恶魔","stars":6}]},{"cars":[{"name":"杰皇","stars":6}]},{"cars":[{"name":"f5","stars":6}]},{"cars":[{"name":"ssc","stars":6}]},{"cars":[{"name":"r兔","stars":6}]},{"cars":[{"name":"玻璃","stars":6}]},{"cars":[{"name":"爱音","stars":6}]},{"cars":[{"name":"杰哥","stars":6}]},{"cars":[{"name":"黑龙","stars":6}]},{"cars":[{"name":"肥龙","stars":6}]},{"cars":[{"name":"速尾","stars":6}]},{"cars":[{"name":"狼崽","stars":6}]},{"cars":[{"name":"火山","stars":6}]},{"cars":[{"name":"5n","stars":6}]},{"cars":[{"name":"21c","stars":6}]}],
         "自动": [{"cars":[{"name":"r兔"}]},{"cars":[{"name":"速尾"}]}]
       },
       "四区": {
