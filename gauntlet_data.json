@@ -716,10 +716,10 @@
       "小地图": "蜿蜒之路",
       "has_special_route": false,
       "五区": {
-        "理论": [{"cars":[{"name":"恶魔"}],"time":34.9},{"cars":[{"name":"f5r"}],"time":35.7},{"cars":[{"name":"杰皇"}],"time":36.1},{"cars":[{"name":"玻璃"}],"time":36.6},{"cars":[{"name":"f5"}],"time":36.6},{"cars":[{"name":"r兔"}],"time":37.1},{"cars":[{"name":"莫斯勒"}],"time":37.6},{"time":41.14,"stars":null,"sc":false,"sc_type":null,"cars":[{"name":"塞纳"}]},{"time":36.45,"stars":null,"sc":false,"sc_type":null,"cars":[{"name":"陀飞轮","stars":null}]}],
-        "高手": [{"cars":[{"name":"恶魔","stars":6}]},{"cars":[{"name":"杰皇","stars":6}]},{"cars":[{"name":"玻璃","stars":6}]},{"cars":[{"name":"f5","stars":6}]},{"cars":[{"name":"r兔","stars":6}]},{"cars":[{"name":"爱音","stars":6}]},{"cars":[{"name":"杰哥","stars":6}]},{"cars":[{"name":"肥龙","stars":6}]},{"cars":[{"name":"fp1","stars":6}]},{"cars":[{"name":"西安","stars":6}]},{"cars":[{"name":"狼崽","stars":6}]},{"cars":[{"name":"火山","stars":6}]}],
+        "理论": [{"cars":[{"name":"恶魔"}],"time":34.9},{"cars":[{"name":"f5r"}],"time":35.7},{"cars":[{"name":"杰皇"}],"time":36.1},{"cars":[{"name":"玻璃"}],"time":36.6},{"cars":[{"name":"f5"}],"time":36.6},{"cars":[{"name":"r兔"}],"time":37.1},{"cars":[{"name":"莫斯勒"}],"time":37.6},{"time":39.69,"stars":null,"sc":false,"sc_type":null,"cars":[{"name":"塞纳"}]},{"time":36.45,"stars":null,"sc":false,"sc_type":null,"cars":[{"name":"陀飞轮","stars":null}]}],
+        "高手": [{"cars":[{"name":"恶魔","stars":6}]},{"cars":[{"name":"杰皇","stars":6}]},{"cars":[{"name":"玻璃","stars":6}]},{"cars":[{"name":"f5","stars":6}]},{"cars":[{"name":"r兔","stars":6}]},{"cars":[{"name":"爱音","stars":6}]},{"cars":[{"name":"杰哥","stars":6}]},{"cars":[{"name":"肥龙","stars":6}]},{"cars":[{"name":"fp1","stars":6}]},{"cars":[{"name":"西安","stars":6}]},{"cars":[{"name":"狼崽","stars":6}]},{"cars":[{"name":"火山","stars":6}]},{"cars":[{"name":"塞纳","stars":6}],"time":40.1}],
         "普通": [{"cars":[{"name":"恶魔"}]},{"cars":[{"name":"杰皇"}]},{"cars":[{"name":"玻璃"}]},{"cars":[{"name":"f5"}]},{"cars":[{"name":"爱音"}]},{"cars":[{"name":"r兔"}]},{"cars":[{"name":"杰哥"}]},{"cars":[{"name":"肥龙"}]},{"cars":[{"name":"fp1"}]},{"cars":[{"name":"西安"}]},{"cars":[{"name":"狼崽"}]},{"cars":[{"name":"火山"}]}],
-        "自动": [{"cars":[{"name":"玻璃"}]},{"cars":[{"name":"r兔"}]},{"cars":[{"name":"fp1"}]},{"cars":[{"name":"西安"}]}]
+        "自动": [{"cars":[{"name":"玻璃"}]},{"cars":[{"name":"r兔"}]},{"cars":[{"name":"fp1"}]},{"cars":[{"name":"西安"}]},{"cars":[{"name":"塞纳"}]}]
       },
       "四区": {
         "理论": [{"cars":[{"name":"f5"}],"time":38.18}],
