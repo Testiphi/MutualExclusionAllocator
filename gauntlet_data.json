@@ -1420,7 +1420,7 @@
       "小地图": "碎石山路",
       "has_special_route": false,
       "五区": {
-        "理论": [{"cars":[{"name":"恶魔"}],"time":24.85},{"cars":[{"name":"r兔"}],"time":25.19}],
+        "理论": [{"cars":[{"name":"恶魔"}],"time":24.85},{"cars":[{"name":"r兔"}],"time":25.19},{"cars":[{"name":"杰哥"}],"time":26.09},{"cars":[{"name":"ssc"}],"time":26.49}],
         "高手": [{"cars":[{"name":"恶魔","stars":6}]},{"cars":[{"name":"r兔","stars":6}]},{"cars":[{"name":"21c","stars":1}],"time":29.43},{"time":26.69,"stars":null,"sc":false,"sc_type":null,"cars":[{"name":"ssc","stars":6}]}],
         "普通": [{"cars":[{"name":"恶魔","stars":6}]},{"cars":[{"name":"r兔","stars":6}]},{"cars":[{"name":"21c","stars":1}]},{"cars":[{"name":"ssc","stars":6}]}],
         "自动": []
