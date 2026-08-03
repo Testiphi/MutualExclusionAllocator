@@ -31,19 +31,78 @@ def car_combo_key(c):
     """(车名, 星级) — 高手档拆星级; None 星显示纯车名"""
     return (c['name'], c.get('stars'))
 
-def sort_key(k):
-    name, stars = k
-    return (name, stars if stars is not None else 0)
+# ---------- 列排序: 数据量优先, 其次平均速度, 无数据车按名字排右侧 ----------
 
-def build_pivot_sheet(ws, zone, tier, with_stars, show_check=False):
-    """透视表: 行=赛道, 列=车辆"""
+def compute_car_stats(zone):
+    """每车: (覆盖赛道数, 平均相对速度)
+    数据源: 理论+高手档 非sc 有time条目, 同一赛道取该车最快成绩
+    相对速度 = 赛道最快成绩 / 该车成绩 (1.0 = 该赛道最快, 越小越慢)
+    """
+    # 先算每条赛道在该区的最快非sc成绩
+    track_fastest = {}
+    for t in d['tracks']:
+        best = None
+        for tier in ('理论', '高手'):
+            for e in t.get(zone, {}).get(tier, []):
+                if e.get('sc') or e.get('time') is None:
+                    continue
+                if best is None or e['time'] < best:
+                    best = e['time']
+        if best is not None:
+            track_fastest[(t['大地图'], t['小地图'])] = best
+    # 每车每赛道最快成绩
+    car_best = {}  # car -> {track_key: best_time}
+    for t in d['tracks']:
+        tk = (t['大地图'], t['小地图'])
+        for tier in ('理论', '高手'):
+            for e in t.get(zone, {}).get(tier, []):
+                if e.get('sc') or e.get('time') is None:
+                    continue
+                tm = e['time']
+                for c in e.get('cars', []):
+                    n = c['name']
+                    if tk not in car_best.setdefault(n, {}) or tm < car_best[n][tk]:
+                        car_best[n][tk] = tm
+    stats = {}
+    for n, tracks in car_best.items():
+        ratios = [track_fastest[tk] / tm for tk, tm in tracks.items() if tk in track_fastest]
+        stats[n] = (len(tracks), sum(ratios) / len(ratios) if ratios else 0.0)
+    return stats
+
+def order_combos(combos, stats):
+    """列序: 车名按 (数据量↓, 速度↓, 名字) 排, 同车不同星聚在一起按星级升序
+    None 星(纯车名)放该车组末尾
+    """
+    names = {n for n, s in combos}
+    def key(n):
+        cnt, spd = stats.get(n, (0, 0.0))
+        return (-cnt, -spd, n)
+    ranked = sorted(names, key=key)
+    cols = []
+    for n in ranked:
+        stars = sorted({s for nn, s in combos if nn == n}, key=lambda s: (s is None, s if s is not None else 0))
+        for s in stars:
+            cols.append((n, s))
+    return cols
+
+def build_pivot_sheet(ws, zone, tier, with_stars, show_check=False, stats=None, preset_cols=None):
+    """透视表: 行=赛道, 列=车辆
+    stats: compute_car_stats(zone) 结果, 用于数据量+速度排序
+    preset_cols: 指定列序 (普通档镜像高手档)
+    """
     # 收集列 (含 sc-only 车, 主表留空, 成绩见特殊跑法表)
     combos = set()
     for t in d['tracks']:
         for e in t.get(zone, {}).get(tier, []):
             for c in e.get('cars', []):
                 combos.add(car_combo_key(c))
-    cols = sorted(combos, key=sort_key)
+    if preset_cols is not None:
+        # 普通档镜像高手档列序; 防御: 万一有差异, 多余列按名字追加尾部
+        cols = [k for k in preset_cols if k in combos]
+        extra = sorted([k for k in combos if k not in preset_cols], key=lambda k: (k[0], k[1] if k[1] is not None else 0))
+        cols += extra
+    else:
+        cols = order_combos(combos, stats)
 
     # 表头
     ws.cell(1, 1, '大地图')
@@ -119,7 +178,7 @@ def build_pivot_sheet(ws, zone, tier, with_stars, show_check=False):
         ws.column_dimensions[get_column_letter(j)].width = 7.5
     ws.freeze_panes = 'C2'
     ws.auto_filter.ref = f'A1:{get_column_letter(len(cols)+2)}{r-1}'
-    return len(cols)
+    return cols
 
 def build_sc_sheet(ws):
     """特殊跑法 明细式"""
@@ -167,10 +226,15 @@ wb.remove(default)
 
 stats = {}
 for zone in ['五区', '四区']:
+    car_stats = compute_car_stats(zone)
+    high_cols = None
     for tier, show in [('理论', False), ('高手', False), ('普通', True), ('自动', True)]:
         ws = wb.create_sheet(f'{zone}_{tier}')
-        ncols = build_pivot_sheet(ws, zone, tier, with_stars=(tier == '高手'), show_check=show)
-        stats[f'{zone}_{tier}'] = ncols
+        preset = high_cols if tier == '普通' else None
+        cols = build_pivot_sheet(ws, zone, tier, with_stars=(tier == '高手'), show_check=show, stats=car_stats, preset_cols=preset)
+        if tier == '高手':
+            high_cols = cols
+        stats[f'{zone}_{tier}'] = len(cols)
 
 ws = wb.create_sheet('特殊跑法')
 sc_n = build_sc_sheet(ws)
