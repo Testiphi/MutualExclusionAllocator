@@ -1318,13 +1318,13 @@
       "小地图": "赛博幻影",
       "has_special_route": false,
       "五区": {
-        "理论": [{"cars":[{"name":"杰皇"}],"time":29.5}],
+        "理论": [{"cars":[{"name":"杰皇"}],"time":29.5},{"cars":[{"name":"杰哥"}],"time":30.49}],
         "高手": [{"cars":[{"name":"杰皇","stars":6}]},{"cars":[{"name":"f5r","stars":6}]},{"cars":[{"name":"r兔","stars":6}]},{"cars":[{"name":"玻璃","stars":6}]},{"cars":[{"name":"f5","stars":6}]},{"cars":[{"name":"爱音","stars":6}]},{"cars":[{"name":"杰哥","stars":6}]},{"cars":[{"name":"cc850","stars":6}]},{"cars":[{"name":"ssc","stars":6}]},{"cars":[{"name":"狼崽","stars":6}]},{"cars":[{"name":"火山","stars":6}]},{"time":31.09,"stars":null,"sc":false,"sc_type":null,"cars":[{"name":"杰皇","stars":1}]}],
         "普通": [{"cars":[{"name":"杰皇","stars":6}]},{"cars":[{"name":"f5r","stars":6}]},{"cars":[{"name":"r兔","stars":6}]},{"cars":[{"name":"玻璃","stars":6}]},{"cars":[{"name":"f5","stars":6}]},{"cars":[{"name":"爱音","stars":6}]},{"cars":[{"name":"杰哥","stars":6}]},{"cars":[{"name":"cc850","stars":6}]},{"cars":[{"name":"ssc","stars":6}]},{"cars":[{"name":"狼崽","stars":6}]},{"cars":[{"name":"火山","stars":6}]},{"cars":[{"name":"杰皇","stars":1}]}],
         "自动": [{"cars":[{"name":"r兔"}]}]
       },
       "四区": {
-        "理论": [{"cars":[{"name":"杰哥"}]},{"cars":[{"name":"f5"}]},{"cars":[{"name":"ssc"}]},{"cars":[{"name":"莫斯勒"}]},{"cars":[{"name":"狼崽"}]},{"cars":[{"name":"火山"}]}],
+        "理论": [{"cars":[{"name":"杰哥"}],"time":30.89},{"cars":[{"name":"f5"}]},{"cars":[{"name":"ssc"}]},{"cars":[{"name":"莫斯勒"}]},{"cars":[{"name":"狼崽"}]},{"cars":[{"name":"火山"}]}],
         "高手": [{"cars":[{"name":"杰哥","stars":6}]},{"cars":[{"name":"f5","stars":null}]},{"cars":[{"name":"ssc","stars":null}]},{"cars":[{"name":"莫斯勒","stars":6}]},{"cars":[{"name":"狼崽","stars":6}]},{"cars":[{"name":"火山","stars":6}]}],
         "普通": [{"cars":[{"name":"杰哥","stars":6}]},{"cars":[{"name":"f5"}]},{"cars":[{"name":"ssc"}]},{"cars":[{"name":"莫斯勒","stars":6}]},{"cars":[{"name":"狼崽","stars":6}]},{"cars":[{"name":"火山","stars":6}]}],
         "自动": []
@@ -1335,13 +1335,13 @@
       "小地图": "集装箱风暴",
       "has_special_route": false,
       "五区": {
-        "理论": [{"cars":[{"name":"杰皇"}],"time":21.75}],
+        "理论": [{"cars":[{"name":"杰皇"}],"time":21.75},{"cars":[{"name":"恶魔"}],"time":21.99},{"cars":[{"name":"f5r"}],"time":21.8},{"cars":[{"name":"杰哥"}],"time":22.39}],
         "高手": [{"cars":[{"name":"杰皇","stars":6}],"time":22.05},{"cars":[{"name":"f5r","stars":6}]},{"cars":[{"name":"玻璃","stars":6}]},{"cars":[{"name":"爱音","stars":6}]},{"cars":[{"name":"f5","stars":6}]},{"cars":[{"name":"cc850","stars":6}]},{"cars":[{"name":"杰哥","stars":6}]},{"cars":[{"name":"莫斯勒","stars":6}]},{"cars":[{"name":"狼崽","stars":6}]},{"cars":[{"name":"火山","stars":6}]}],
         "普通": [{"cars":[{"name":"杰皇","stars":6}]},{"cars":[{"name":"f5r","stars":6}]},{"cars":[{"name":"玻璃","stars":6}]},{"cars":[{"name":"爱音","stars":6}]},{"cars":[{"name":"f5","stars":6}]},{"cars":[{"name":"cc850","stars":6}]},{"cars":[{"name":"杰哥","stars":6}]},{"cars":[{"name":"莫斯勒","stars":6}]},{"cars":[{"name":"狼崽","stars":6}]},{"cars":[{"name":"火山","stars":6}]}],
         "自动": [{"cars":[{"name":"玻璃"}]}]
       },
       "四区": {
-        "理论": [{"cars":[{"name":"爱音"}]},{"cars":[{"name":"杰哥"}]},{"cars":[{"name":"f5"}]},{"cars":[{"name":"玻璃"}]},{"cars":[{"name":"ssc"}]},{"cars":[{"name":"莫斯勒"}]},{"cars":[{"name":"狼崽"}]},{"cars":[{"name":"火山"}]}],
+        "理论": [{"cars":[{"name":"爱音"}]},{"cars":[{"name":"杰哥"}],"time":22.79},{"cars":[{"name":"f5"}],"time":22.83},{"cars":[{"name":"玻璃"}]},{"cars":[{"name":"ssc"}]},{"cars":[{"name":"莫斯勒"}]},{"cars":[{"name":"狼崽"}]},{"cars":[{"name":"火山"}]}],
         "高手": [{"cars":[{"name":"爱音","stars":null}]},{"cars":[{"name":"杰哥","stars":6}]},{"cars":[{"name":"f5","stars":null}]},{"cars":[{"name":"玻璃","stars":null}]},{"cars":[{"name":"ssc","stars":null}]},{"cars":[{"name":"莫斯勒","stars":6}]},{"cars":[{"name":"狼崽","stars":6}]},{"cars":[{"name":"火山","stars":6}]},{"time":23.5,"stars":null,"sc":false,"sc_type":null,"cars":[{"name":"肥龙","stars":5}]}],
         "普通": [{"cars":[{"name":"爱音"}]},{"cars":[{"name":"杰哥","stars":6}]},{"cars":[{"name":"f5"}]},{"cars":[{"name":"玻璃"}]},{"cars":[{"name":"ssc"}]},{"cars":[{"name":"莫斯勒","stars":6}]},{"cars":[{"name":"狼崽","stars":6}]},{"cars":[{"name":"火山","stars":6}]},{"cars":[{"name":"肥龙","stars":5}]}],
         "自动": [{"cars":[{"name":"玻璃"}]}]
