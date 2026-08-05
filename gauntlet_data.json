@@ -1369,7 +1369,7 @@
       "小地图": "疾风原野",
       "has_special_route": false,
       "五区": {
-        "理论": [{"cars":[{"name":"杰皇"}],"time":58.99}],
+        "理论": [{"cars":[{"name":"杰皇"}],"time":58.89},{"cars":[{"name":"杰哥"}],"time":60.79}],
         "高手": [{"cars":[{"name":"杰皇","stars":6}]}],
         "普通": [{"cars":[{"name":"杰皇","stars":6}]}],
         "自动": []
@@ -1420,7 +1420,7 @@
       "小地图": "碎石山路",
       "has_special_route": false,
       "五区": {
-        "理论": [{"cars":[{"name":"恶魔"}],"time":24.85},{"cars":[{"name":"r兔"}],"time":25.19},{"cars":[{"name":"杰哥"}],"time":25.79},{"cars":[{"name":"ssc"}],"time":26.49},{"cars":[{"name":"21c"}],"time":25.89},{"cars":[{"name":"风龙"}],"time":25.95},{"cars":[{"name":"cc850"}],"time":25.69}],
+        "理论": [{"cars":[{"name":"恶魔"}],"time":24.85},{"cars":[{"name":"r兔"}],"time":25.19},{"cars":[{"name":"杰哥"}],"time":25.79},{"cars":[{"name":"ssc"}],"time":26.49},{"cars":[{"name":"21c"}],"time":25.89},{"cars":[{"name":"风龙"}],"time":25.95},{"cars":[{"name":"cc850"}],"time":25.69},{"cars":[{"name":"杰皇"}],"time":25.29},{"cars":[{"name":"f5"}],"time":25.59}],
         "高手": [{"cars":[{"name":"恶魔","stars":6}]},{"cars":[{"name":"r兔","stars":6}],"time":25.99},{"cars":[{"name":"21c","stars":1}],"time":29.43},{"time":26.69,"stars":null,"sc":false,"sc_type":null,"cars":[{"name":"ssc","stars":6}]},{"cars":[{"name":"21c","stars":6}],"time":26.09},{"cars":[{"name":"风龙","stars":6}],"time":26.29}],
         "普通": [{"cars":[{"name":"恶魔","stars":6}]},{"cars":[{"name":"r兔","stars":6}]},{"cars":[{"name":"21c","stars":1}]},{"cars":[{"name":"ssc","stars":6}]},{"cars":[{"name":"21c","stars":6}]},{"cars":[{"name":"风龙","stars":6}]}],
         "自动": []
