@@ -15,7 +15,7 @@
         "自动": [{"cars":[{"name":"r兔"}]},{"cars":[{"name":"杰弟"}]},{"cars":[{"name":"秋王"}]},{"cars":[{"name":"fp1"}]},{"cars":[{"name":"9x8"}]},{"cars":[{"name":"sf90"}]},{"cars":[{"name":"c2"}]},{"cars":[{"name":"白龙"}]}]
       },
       "四区": {
-        "理论": [{"cars":[{"name":"9x8"}],"time":16.9,"sc":true,"sc_type":"跳图"},{"cars":[{"name":"帕梅"}],"time":18.9,"sc":true,"sc_type":"跳图"},{"cars":[{"name":"9x8"}],"time":18.966}],
+        "理论": [{"cars":[{"name":"9x8"}],"time":16.9,"sc":true,"sc_type":"跳图"},{"cars":[{"name":"帕梅"}],"time":18.9,"sc":true,"sc_type":"跳图"},{"cars":[{"name":"9x8"}],"time":18.966},{"cars":[{"name":"秋王"}],"time":19.15}],
         "高手": [{"cars":[{"name":"9x8","stars":6}],"time":17.1},{"cars":[{"name":"万达","stars":6}]},{"cars":[{"name":"秋王","stars":6}]},{"cars":[{"name":"fp1","stars":6}]},{"cars":[{"name":"sf90","stars":6}]},{"cars":[{"name":"sgt","stars":6}]},{"cars":[{"name":"5n","stars":6}]}],
         "普通": [{"cars":[{"name":"9x8","stars":6}]},{"cars":[{"name":"万达","stars":6}]},{"cars":[{"name":"秋王","stars":6}]},{"cars":[{"name":"fp1","stars":6}]},{"cars":[{"name":"sf90","stars":6}]},{"cars":[{"name":"sgt","stars":6}]},{"cars":[{"name":"5n","stars":6}]}],
         "自动": [{"cars":[{"name":"9x8"}]},{"cars":[{"name":"万达"}]},{"cars":[{"name":"秋王"}]},{"cars":[{"name":"fp1"}]},{"cars":[{"name":"sf90"}]}]
@@ -84,7 +84,7 @@
         "自动": [{"cars":[{"name":"r兔"}]},{"cars":[{"name":"21c"}]},{"cars":[{"name":"白龙"}]},{"cars":[{"name":"杰弟"}]},{"cars":[{"name":"9x8"}]},{"cars":[{"name":"秋王"}]},{"cars":[{"name":"万达"}]},{"cars":[{"name":"小牛"}]}]
       },
       "四区": {
-        "理论": [{"cars":[{"name":"9x8"}],"time":17.98},{"cars":[{"name":"秋王"}]},{"cars":[{"name":"sgt"}]},{"cars":[{"name":"万达"}]},{"cars":[{"name":"小牛"}]},{"cars":[{"name":"5n"}]}],
+        "理论": [{"cars":[{"name":"9x8"}],"time":17.98},{"cars":[{"name":"秋王"}],"time":17.99},{"cars":[{"name":"sgt"}]},{"cars":[{"name":"万达"}]},{"cars":[{"name":"小牛"}]},{"cars":[{"name":"5n"}]}],
         "高手": [{"cars":[{"name":"9x8","stars":6}],"time":17.9},{"cars":[{"name":"秋王","stars":6}]},{"cars":[{"name":"sgt","stars":6}]},{"cars":[{"name":"万达","stars":6}]},{"cars":[{"name":"小牛","stars":6}]},{"cars":[{"name":"5n","stars":6}]}],
         "普通": [{"cars":[{"name":"9x8","stars":6}]},{"cars":[{"name":"秋王","stars":6}]},{"cars":[{"name":"sgt","stars":6}]},{"cars":[{"name":"万达","stars":6}]},{"cars":[{"name":"小牛","stars":6}]},{"cars":[{"name":"5n","stars":6}]}],
         "自动": [{"cars":[{"name":"9x8"}]},{"cars":[{"name":"秋王"}]},{"cars":[{"name":"万达"}]},{"cars":[{"name":"小牛"}]}]
@@ -154,7 +154,7 @@
         "自动": [{"cars":[{"name":"21c"}]},{"cars":[{"name":"r兔"}]},{"cars":[{"name":"白龙"}]},{"cars":[{"name":"c2"}]},{"cars":[{"name":"秋王"}]},{"cars":[{"name":"fp1"}]},{"cars":[{"name":"sf90"}]},{"cars":[{"name":"9x8"}]},{"cars":[{"name":"万达"}]},{"cars":[{"name":"六子"}]}]
       },
       "四区": {
-        "理论": [{"cars":[{"name":"21c"}],"time":22.35,"sc":true,"sc_type":"跳船跑法"},{"cars":[{"name":"21c"}],"time":23.13}],
+        "理论": [{"cars":[{"name":"21c"}],"time":22.35,"sc":true,"sc_type":"跳船跑法"},{"cars":[{"name":"21c"}],"time":23.13},{"cars":[{"name":"秋王"}],"time":22.39,"sc":true,"sc_type":"跳船跑法"}],
         "高手": [{"cars":[{"name":"21c","stars":6}]},{"cars":[{"name":"c2","stars":6}]},{"cars":[{"name":"秋王","stars":6}]},{"cars":[{"name":"法拉第","stars":6}]},{"cars":[{"name":"fp1","stars":6}]},{"cars":[{"name":"sf90","stars":6}]},{"cars":[{"name":"9x8","stars":6}]},{"cars":[{"name":"万达","stars":6}]},{"cars":[{"name":"六子","stars":6}]}],
         "普通": [{"cars":[{"name":"21c","stars":6}]},{"cars":[{"name":"c2","stars":6}]},{"cars":[{"name":"秋王","stars":6}]},{"cars":[{"name":"法拉第","stars":6}]},{"cars":[{"name":"fp1","stars":6}]},{"cars":[{"name":"sf90","stars":6}]},{"cars":[{"name":"9x8","stars":6}]},{"cars":[{"name":"万达","stars":6}]},{"cars":[{"name":"六子","stars":6}]}],
         "自动": [{"cars":[{"name":"21c"}]},{"cars":[{"name":"c2"}]},{"cars":[{"name":"秋王"}]},{"cars":[{"name":"fp1"}]},{"cars":[{"name":"sf90"}]},{"cars":[{"name":"9x8"}]},{"cars":[{"name":"万达"}]},{"cars":[{"name":"六子"}]}]
@@ -514,7 +514,7 @@
         "自动": [{"cars":[{"name":"白龙"}]},{"cars":[{"name":"r兔"}]},{"cars":[{"name":"秋王"}]},{"cars":[{"name":"9x8"}]},{"cars":[{"name":"sf90"}]},{"cars":[{"name":"六子"}]}]
       },
       "四区": {
-        "理论": [{"cars":[{"name":"9x8"}],"time":18.99},{"cars":[{"name":"白龙"}]},{"cars":[{"name":"秋王"}]},{"cars":[{"name":"sf90"}]},{"cars":[{"name":"sgt"}],"time":19.3},{"cars":[{"name":"att"}]},{"cars":[{"name":"火山"}]},{"cars":[{"name":"六子"}]},{"cars":[{"name":"5n"}]}],
+        "理论": [{"cars":[{"name":"9x8"}],"time":18.99},{"cars":[{"name":"白龙"}]},{"cars":[{"name":"秋王"}],"time":19.29},{"cars":[{"name":"sf90"}]},{"cars":[{"name":"sgt"}],"time":19.3},{"cars":[{"name":"att"}]},{"cars":[{"name":"火山"}]},{"cars":[{"name":"六子"}]},{"cars":[{"name":"5n"}]}],
         "高手": [{"cars":[{"name":"9x8","stars":6}],"time":18.9},{"cars":[{"name":"白龙","stars":6}]},{"cars":[{"name":"秋王","stars":6}]},{"cars":[{"name":"sf90","stars":6}]},{"cars":[{"name":"sgt","stars":6}]},{"cars":[{"name":"att","stars":6}]},{"cars":[{"name":"火山","stars":6}]},{"cars":[{"name":"六子","stars":6}]},{"cars":[{"name":"5n","stars":6}]}],
         "普通": [{"cars":[{"name":"9x8","stars":6}]},{"cars":[{"name":"白龙","stars":6}]},{"cars":[{"name":"秋王","stars":6}]},{"cars":[{"name":"sf90","stars":6}]},{"cars":[{"name":"sgt","stars":6}]},{"cars":[{"name":"att","stars":6}]},{"cars":[{"name":"火山","stars":6}]},{"cars":[{"name":"六子","stars":6}]},{"cars":[{"name":"5n","stars":6}]}],
         "自动": [{"cars":[{"name":"9x8"}]},{"cars":[{"name":"白龙"}]},{"cars":[{"name":"秋王"}]},{"cars":[{"name":"sf90"}]}]
@@ -739,7 +739,7 @@
         "自动": [{"cars":[{"name":"21c"}]},{"cars":[{"name":"白龙"}]},{"cars":[{"name":"c2"}]},{"cars":[{"name":"杰弟"}]},{"cars":[{"name":"秋王"}]},{"cars":[{"name":"9x8"}]},{"cars":[{"name":"六子"}]}]
       },
       "四区": {
-        "理论": [{"cars":[{"name":"21c"}],"time":22.45},{"cars":[{"name":"9x8"}],"time":22.3}],
+        "理论": [{"cars":[{"name":"21c"}],"time":22.45},{"cars":[{"name":"9x8"}],"time":22.3},{"cars":[{"name":"秋王"}],"time":22.19}],
         "高手": [{"cars":[{"name":"秋王","stars":6}]},{"cars":[{"name":"9x8","stars":6}]},{"cars":[{"name":"万达","stars":6}]},{"cars":[{"name":"sgt","stars":6}]},{"cars":[{"name":"塞纳","stars":6}]},{"cars":[{"name":"火山","stars":6}]},{"cars":[{"name":"六子","stars":6}]}],
         "普通": [{"cars":[{"name":"秋王","stars":6}]},{"cars":[{"name":"9x8","stars":6}]},{"cars":[{"name":"万达","stars":6}]},{"cars":[{"name":"sgt","stars":6}]},{"cars":[{"name":"塞纳","stars":6}]},{"cars":[{"name":"火山","stars":6}]},{"cars":[{"name":"六子","stars":6}]}],
         "自动": [{"cars":[{"name":"秋王"}]},{"cars":[{"name":"9x8"}]},{"cars":[{"name":"万达"}]},{"cars":[{"name":"六子"}]}]
@@ -1238,7 +1238,7 @@
         "自动": [{"cars":[{"name":"r兔"}]},{"cars":[{"name":"白龙"}]},{"cars":[{"name":"秋王"}]},{"cars":[{"name":"9x8"}]},{"cars":[{"name":"21c"}]},{"cars":[{"name":"sf90"}]},{"cars":[{"name":"fp1"}]}]
       },
       "四区": {
-        "理论": [{"cars":[{"name":"肥龙"}],"time":18.69,"sc":true},{"cars":[{"name":"万达"}],"time":19.4},{"cars":[{"name":"万达"}],"time":19.15,"sc":true},{"cars":[{"name":"9x8"}],"time":19.19},{"cars":[{"name":"9x8"}],"time":18.95,"sc":true},{"cars":[{"name":"sgt"}],"time":19.39},{"cars":[{"name":"sgt"}],"time":19.0,"sc":true}],
+        "理论": [{"cars":[{"name":"肥龙"}],"time":18.69,"sc":true},{"cars":[{"name":"万达"}],"time":19.4},{"cars":[{"name":"万达"}],"time":19.15,"sc":true},{"cars":[{"name":"9x8"}],"time":19.19},{"cars":[{"name":"9x8"}],"time":18.95,"sc":true},{"cars":[{"name":"sgt"}],"time":19.39},{"cars":[{"name":"sgt"}],"time":19.0,"sc":true},{"cars":[{"name":"秋王"}],"time":19.35},{"cars":[{"name":"秋王"}],"time":18.99,"sc":true}],
         "高手": [{"cars":[{"name":"秋王","stars":6}]},{"cars":[{"name":"9x8","stars":6}]},{"cars":[{"name":"肥龙","stars":6}]},{"cars":[{"name":"sgt","stars":6}]},{"cars":[{"name":"sf90","stars":6}]},{"cars":[{"name":"fp1","stars":6}]},{"cars":[{"name":"火山","stars":6}]},{"cars":[{"name":"5n","stars":6}]},{"cars":[{"name":"sgt","stars":6}],"time":18.9,"sc":true},{"cars":[{"name":"9x8","stars":6}],"time":19.0,"sc":true}],
         "普通": [{"cars":[{"name":"秋王","stars":6}]},{"cars":[{"name":"9x8","stars":6}]},{"cars":[{"name":"肥龙","stars":6}]},{"cars":[{"name":"sgt","stars":6}]},{"cars":[{"name":"sf90","stars":6}]},{"cars":[{"name":"fp1","stars":6}]},{"cars":[{"name":"火山","stars":6}]},{"cars":[{"name":"5n","stars":6}]}],
         "自动": [{"cars":[{"name":"秋王"}]},{"cars":[{"name":"9x8"}]},{"cars":[{"name":"sf90"}]},{"cars":[{"name":"fp1"}]}]
