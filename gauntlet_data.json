@@ -1369,7 +1369,7 @@
       "小地图": "疾风原野",
       "has_special_route": false,
       "五区": {
-        "理论": [{"cars":[{"name":"杰皇"}],"time":58.89},{"cars":[{"name":"杰哥"}],"time":62.29},{"cars":[{"name":"玻璃"}],"time":61.2},{"cars":[{"name":"f5r"}],"time":58.79},{"cars":[{"name":"f5"}],"time":61.29}],
+        "理论": [{"cars":[{"name":"杰皇"}],"time":58.89},{"cars":[{"name":"杰哥"}],"time":60.79},{"cars":[{"name":"玻璃"}],"time":61.2},{"cars":[{"name":"f5r"}],"time":58.79},{"cars":[{"name":"f5"}],"time":61.29}],
         "高手": [{"cars":[{"name":"杰皇","stars":6}]},{"cars":[{"name":"f5","stars":3}],"time":64.69},{"cars":[{"name":"玻璃","stars":2}],"time":65.39},{"cars":[{"name":"恶魔","stars":1}],"time":64.79}],
         "普通": [{"cars":[{"name":"杰皇","stars":6}]},{"cars":[{"name":"f5","stars":3}]},{"cars":[{"name":"玻璃","stars":2}]},{"cars":[{"name":"恶魔","stars":1}]}],
         "自动": []
@@ -1403,7 +1403,7 @@
       "小地图": "岩石地带",
       "has_special_route": false,
       "五区": {
-        "理论": [{"cars":[{"name":"杰皇"}],"time":24.55},{"cars":[{"name":"f5"}],"time":25.49},{"cars":[{"name":"f5r"}],"time":24.79},{"time":25.39,"stars":null,"sc":false,"sc_type":null,"cars":[{"name":"银电"}]},{"cars":[{"name":"玻璃"}],"time":25.29},{"cars":[{"name":"杰哥"}],"time":25.79}],
+        "理论": [{"cars":[{"name":"杰皇"}],"time":24.55},{"cars":[{"name":"f5"}],"time":25.29},{"cars":[{"name":"f5r"}],"time":24.79},{"time":25.39,"stars":null,"sc":false,"sc_type":null,"cars":[{"name":"银电"}]},{"cars":[{"name":"玻璃"}],"time":25.29},{"cars":[{"name":"杰哥"}],"time":25.79}],
         "高手": [{"cars":[{"name":"杰皇","stars":6}]}],
         "普通": [{"cars":[{"name":"杰皇","stars":6}]}],
         "自动": []
