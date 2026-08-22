@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 """对比 gauntlet_data.xlsx(基准) 与 gauntlet_data.user.xlsx(用户版), 输出所有差异"""
-import sys
+import sys, os
 sys.stdout.reconfigure(encoding='utf-8')
 import openpyxl
 
-BASE = 'C:/Users/asus/.openclaw/workspace/tasks/mutex-alloc/repo/gauntlet_data.xlsx'
-USER = 'C:/Users/asus/.openclaw/workspace/tasks/mutex-alloc/repo/gauntlet_data.user.xlsx'
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+BASE = os.path.join(SCRIPT_DIR, 'gauntlet_data.xlsx')
+USER = os.path.join(SCRIPT_DIR, 'gauntlet_data.user.xlsx')
 
 wb_b = openpyxl.load_workbook(BASE)
 wb_u = openpyxl.load_workbook(USER)

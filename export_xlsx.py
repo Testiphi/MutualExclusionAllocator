@@ -6,14 +6,15 @@
 - 格 = 成绩(秒), 无数据留空; 普通/自动档填 ✓ 表示该车可用
 - 特殊跑法 = 明细式 (大地图/小地图/车辆/星级/区-档/成绩/类型)
 """
-import json, sys
+import json, sys, os
 sys.stdout.reconfigure(encoding='utf-8')
 import openpyxl
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from openpyxl.utils import get_column_letter
 
-JSON = 'C:/Users/asus/.openclaw/workspace/tasks/mutex-alloc/repo/gauntlet_data.json'
-XLSX = 'C:/Users/asus/.openclaw/workspace/tasks/mutex-alloc/repo/gauntlet_data.xlsx'
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+JSON = os.path.join(SCRIPT_DIR, 'gauntlet_data.json')
+XLSX = os.path.join(SCRIPT_DIR, 'gauntlet_data.xlsx')
 
 d = json.load(open(JSON, encoding='utf-8'))
 
