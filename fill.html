@@ -119,6 +119,19 @@
         return R_MAIN[car] || info['类'];
     }
 
+    function zonePool(z) {
+        // 该区出现过条目的车集合（R级五区专属车在四区自动排除）
+        const pool = new Set();
+        for (const t of DATA.tracks) {
+            for (const tier2 of ['理论', '高手', '普通', '自动']) {
+                for (const e of t[z]?.[tier2] || []) {
+                    for (const c of e.cars) pool.add(c['name']);
+                }
+            }
+        }
+        return pool;
+    }
+
     function zoneBest(z, tk) {
         let best = Infinity;
         for (const t of DATA.tracks) {
@@ -213,9 +226,12 @@
         }
         // 理论档: 图型维度车在本档完全无条目 → 一并列出（提交时新建条目）
         if (tier === '理论') {
+            const pool = zonePool(zone);
             const present = new Set();
             for (const e of tierEntries) if (!e.sc) for (const c of e.cars) present.add(c.name);
             for (const car of classDimMembers()[type] || []) {
+                // 该区车池外的不列（如 四区 不含 小蜥蜴/陀飞轮/300+/f5r 等五区专属R级）
+                if (!pool.has(car)) continue;
                 if (!withTimeCar.has(car) && !present.has(car)) pushTarget(car, null, false);
             }
         }
