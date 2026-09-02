@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>成绩建议审核 · 管理员</title>
+    <script src="config.js"></script>
+    <script src="api.js"></script>
+    <style>
+        * { box-sizing: border-box; font-family: system-ui, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif; }
+        body { background: #0d1117; margin: 0; min-height: 100vh; padding: 12px; color: #e6edf3; }
+        .card { max-width: 760px; margin: 0 auto; background: #161b22; border: 1px solid #21262d; border-radius: 14px; padding: 16px; }
+        h1 { font-size: 1.25rem; margin: 0 0 4px; font-weight: 600; }
+        .sub { color: #8b949e; font-size: .82rem; margin: 0 0 12px; }
+        .inputbox { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+        textarea { background: #0d1117; border: 1px solid #30363d; color: #e6edf3; border-radius: 8px; padding: 8px; font-size: .8rem; min-height: 70px; resize: vertical; font-family: monospace; }
+        .rowbtns { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+        .btn { background: #1f6feb; color: #fff; border: none; border-radius: 8px; padding: 6px 14px; font-size: .85rem; cursor: pointer; }
+        .btn.green { background: #238636; }
+        .btn.gray { background: #21262d; color: #8b949e; }
+        .stat { font-size: .82rem; color: #8b949e; }
+        .mapname { font-size: .8rem; color: #58a6ff; margin: 14px 2px 6px; font-weight: 600; }
+        .item { background: #0d1117; border: 1px solid #21262d; border-left: 3px solid #30363d; border-radius: 8px; padding: 8px 10px; margin-bottom: 6px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+        .item.conflict { border-left-color: #d29922; background: rgba(210,153,34,.06); }
+        .item.acc { border-left-color: #3fb950; opacity: .75; }
+        .item.rej { border-left-color: #30363d; opacity: .4; }
+        .chips { display: flex; gap: 4px; flex-wrap: wrap; }
+        .chip { font-size: .7rem; border-radius: 6px; padding: 1px 7px; }
+        .chip.z { background: rgba(88,166,255,.15); color: #58a6ff; }
+        .chip.t { background: rgba(210,153,34,.15); color: #d29922; }
+        .chip.new { background: rgba(63,185,80,.15); color: #3fb950; }
+        .chip.mod { background: rgba(88,166,255,.15); color: #58a6ff; }
+        .chip.slow { background: rgba(248,81,73,.2); color: #f85149; }
+        .chip.src { background: #21262d; color: #8b949e; }
+        .main { flex: 1; min-width: 200px; font-size: .9rem; }
+        .main .trk { font-weight: 600; }
+        .old { color: #8b949e; text-decoration: line-through; }
+        .new { color: #3fb950; font-weight: 600; }
+        .new.slowv { color: #f85149; }
+        .act { display: flex; gap: 6px; }
+        .act button { border: 1px solid #30363d; background: transparent; color: #8b949e; border-radius: 6px; padding: 4px 10px; font-size: .8rem; cursor: pointer; }
+        .act button.y { color: #3fb950; }
+        .act button.y.on { background: #238636; border-color: #238636; color: #fff; }
+        .act button.n { color: #f85149; }
+        .act button.n.on { background: #da3633; border-color: #da3633; color: #fff; }
+        .empty { color: #8b949e; text-align: center; padding: 30px; }
+        #toast { position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%); background: #238636; color: #fff; padding: 8px 16px; border-radius: 8px; font-size: .85rem; display: none; }
+    </style>
+</head>
+<body>
+<div class="card">
+    <h1>🔍 成绩建议审核</h1>
+    <p class="sub">粘贴或上传网友发回的「建议 JSON」（可多个文件），逐条 ✓接受 / ✗拒绝。同一格多人建议不同值会自动归为冲突组，只能接受其中一条。审核结果导出后由回代脚本应用。</p>
+    <div class="inputbox">
+        <textarea id="pasteBox" placeholder="粘贴建议 JSON 文本…（可连续粘贴多份，每份用空行隔开或直接多次粘贴）"></textarea>
+        <div class="rowbtns">
+            <button class="btn" id="parseBtn">解析粘贴内容</button>
+            <label class="btn gray" style="cursor:pointer">📁 上传建议文件…<input type="file" id="fileInput" accept=".json,application/json" multiple style="display:none"></label>
+            <span class="stat" id="stat"></span>
+        </div>
+    </div>
+    <div style="margin-bottom:10px; display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+        <button class="btn green" id="allAccBtn">全部接受</button>
+        <button class="btn" id="exportBtn">📤 导出已接受建议</button>
+        <span class="stat" id="stat2"></span>
+    </div>
+    <div id="list"><div class="empty">尚无建议数据 — 先粘贴或上传 JSON</div></div>
+</div>
+<div id="toast"></div>
+<script>
+(() => {
+    const LS_KEY = 'reviewState_' + location.pathname;
+    let items = [];          // {id, src, zone, tier, track, car, stars, old, new, conflict}
+    let decisions = {};      // id -> 'acc' | 'rej'
+    const $ = s => document.querySelector(s);
+
+    function toast(msg, ok = true) {
+        const el = $('#toast');
+        el.textContent = msg;
+        el.style.background = ok ? '#238636' : '#da3633';
+        el.style.display = 'block';
+        clearTimeout(el._t); el._t = setTimeout(() => el.style.display = 'none', 1800);
+    }
+    const starsStr = s => s == null ? '' : '★' + s;
+    const cellOf = p => `${p.zone}|${p.tier}|${p.track}|${p.car}|${p.stars}`;
+
+    function saveState() { api.savePref(LS_KEY, { items, decisions }); }
+
+    function loadState() {
+        const s = api.loadPref(LS_KEY, null);
+        if (s && s.items) { items = s.items; decisions = s.decisions || {}; }
+    }
+
+    function validatePayload(obj) {
+        if (!obj || !Array.isArray(obj.proposals)) throw new Error('缺少 proposals 数组');
+        for (const p of obj.proposals) {
+            if (!['五区', '四区'].includes(p.zone)) throw new Error('zone 非法: ' + p.zone);
+            if (!['理论', '高手'].includes(p.tier)) throw new Error('tier 非法: ' + p.tier);
+            if (!p.track || !p.car) throw new Error('track/car 缺失');
+            if (typeof p.new !== 'number' || p.new <= 0) throw new Error('new 非法: ' + p.new);
+        }
+    }
+
+    function ingest(text, srcName) {
+        const obj = JSON.parse(text);           // 抛错由调用方处理
+        validatePayload(obj);
+        let added = 0;
+        for (const p of obj.proposals) {
+            // 同源同格同值才去重; 同格不同值保留（归冲突组, 由管理员定夺）
+            const dup = items.find(x => x.src === srcName && cellOf(x) === cellOf(p) && x.new === p.new);
+            if (dup) continue;
+            items.push({ id: items.length + 1, src: srcName, ...p });
+            added++;
+        }
+        return added;
+    }
+
+    function markConflicts() {
+        // 同格多建议且 new 值不同 → 冲突组; 同格同值 → 保留一条
+        const byCell = {};
+        for (const it of items) (byCell[cellOf(it)] = byCell[cellOf(it)] || []).push(it);
+        const keep = [];
+        for (const cell in byCell) {
+            const group = byCell[cell];
+            const vals = new Set(group.map(g => g.new));
+            if (vals.size === 1) {
+                keep.push(group[0]);
+            } else {
+                for (const g of group) { g.conflict = true; keep.push(g); }
+            }
+        }
+        items = keep;
+        // 冲突组: 只允许一条 acc — 若已有 acc, 其余强制 rej
+        const byCell2 = {};
+        for (const it of items) (byCell2[cellOf(it)] = byCell2[cellOf(it)] || []).push(it);
+        for (const cell in byCell2) {
+            const g = byCell2[cell];
+            if (g.length > 1) {
+                const acc = g.find(x => decisions[x.id] === 'acc');
+                if (acc) for (const x of g) if (x !== acc && decisions[x.id] !== 'acc') decisions[x.id] = 'rej';
+            }
+        }
+    }
+
+    function render() {
+        const list = $('#list');
+        if (!items.length) {
+            list.innerHTML = '<div class="empty">尚无建议数据 — 先粘贴或上传 JSON</div>';
+            $('#stat2').textContent = '';
+            return;
+        }
+        const accepted = items.filter(x => decisions[x.id] === 'acc').length;
+        const pending = items.filter(x => !decisions[x.id]).length;
+        $('#stat').textContent = `共 ${items.length} 条`;
+        $('#stat2').textContent = `已接受 ${accepted} / 拒绝 ${items.length - accepted - pending} / 待定 ${pending}`;
+
+        list.innerHTML = '';
+        const order = {};
+        items.forEach((it, i) => order[it.track] = order[it.track] ?? i);
+        const sorted = items.slice().sort((a, b) => order[a.track] - order[b.track]);
+        let curMap = null, curTrk = null, groupEl = null, trkEl = null;
+        for (const it of sorted) {
+            if (it.track !== curTrk) {
+                curTrk = it.track;
+                if (!groupEl) { groupEl = document.createElement('div'); list.appendChild(groupEl); }
+                const mn = document.createElement('div');
+                mn.className = 'mapname';
+                mn.textContent = it.track + '（' + (it.zone === '五区' ? '五区' : '四区') + '）';
+                groupEl.appendChild(mn);
+                trkEl = groupEl;
+            }
+            const div = document.createElement('div');
+            div.className = 'item' + (it.conflict ? ' conflict' : '') +
+                (decisions[it.id] === 'acc' ? ' acc' : decisions[it.id] === 'rej' ? ' rej' : '');
+            const isNew = it.old == null;
+            const slower = !isNew && it.new > it.old;
+            const chips =
+                `<span class="chip z">${it.zone}</span><span class="chip t">${it.tier}</span>` +
+                (isNew ? '<span class="chip new">填空</span>' : '<span class="chip mod">改值</span>') +
+                (slower ? '<span class="chip slow">比现有慢</span>' : '') +
+                (it.conflict ? '<span class="chip" style="color:#d29922;background:rgba(210,153,34,.15)">冲突</span>' : '') +
+                `<span class="chip src">${it.src}</span>`;
+            const val = isNew
+                ? `<span class="new">${it.new}</span>`
+                : `<span class="old">${it.old}</span> → <span class="new${slower ? ' slowv' : ''}">${it.new}</span>`;
+            div.innerHTML =
+                `<div class="chips">${chips}</div>` +
+                `<div class="main"><span class="trk">${it.car}${starsStr(it.stars)}</span>　${val}</div>` +
+                `<div class="act"><button class="y${decisions[it.id] === 'acc' ? ' on' : ''}">✓ 接受</button><button class="n${decisions[it.id] === 'rej' ? ' on' : ''}">✗ 拒绝</button></div>`;
+            const accBtn = div.querySelector('.y'), rejBtn = div.querySelector('.n');
+            accBtn.onclick = () => { decisions[it.id] = 'acc'; markConflicts(); saveState(); render(); };
+            rejBtn.onclick = () => { decisions[it.id] = 'rej'; markConflicts(); saveState(); render(); };
+            trkEl.appendChild(div);
+        }
+    }
+
+    $('#parseBtn').onclick = () => {
+        const text = $('#pasteBox').value.trim();
+        if (!text) { toast('先粘贴内容', false); return; }
+        try {
+            ingest(text, '粘贴' + (Object.keys(items).length ? '' : '①'));
+            markConflicts(); saveState(); render();
+            toast('解析成功');
+            $('#pasteBox').value = '';
+        } catch (e) { toast('解析失败: ' + e.message, false); }
+    };
+
+    $('#fileInput').onchange = async (ev) => {
+        for (const f of ev.target.files) {
+            try { ingest(await f.text(), f.name); }
+            catch (e) { toast(`${f.name} 解析失败: ${e.message}`, false); }
+        }
+        markConflicts(); saveState(); render();
+        ev.target.value = '';
+    };
+
+    $('#allAccBtn').onclick = () => {
+        if (!items.length) return;
+        for (const it of items) decisions[it.id] = 'acc';
+        markConflicts(); saveState(); render();
+    };
+
+    $('#exportBtn').onclick = () => {
+        const acc = items.filter(x => decisions[x.id] === 'acc');
+        if (!acc.length) { toast('还没有接受任何建议', false); return; }
+        const out = {
+            version: 1, generatedBy: 'review.html', count: acc.length,
+            proposals: acc.map(x => ({ zone: x.zone, tier: x.tier, track: x.track, car: x.car, stars: x.stars, old: x.old, new: x.new }))
+        };
+        const text = JSON.stringify(out, null, 2);
+        const blob = new Blob([text], { type: 'application/json' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'accepted_suggestions.json';
+        a.click();
+        if (navigator.clipboard) navigator.clipboard.writeText(text).then(() => toast(`已导出 ${acc.length} 条 → accepted_suggestions.json`)).catch(() => toast('已导出文件'));
+        else toast('已导出文件');
+    };
+
+    loadState();
+    if (items.length) render();
+})();
+</script>
+</body>
+</html>

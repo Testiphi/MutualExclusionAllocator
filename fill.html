@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>擂台成绩填写 · 建议模式</title>
+    <script src="config.js"></script>
+    <script src="api.js"></script>
+    <style>
+        * { box-sizing: border-box; font-family: system-ui, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif; }
+        body { background: #0d1117; margin: 0; min-height: 100vh; padding: 12px; color: #e6edf3; }
+        .card { max-width: 720px; margin: 0 auto; background: #161b22; border: 1px solid #21262d; border-radius: 14px; padding: 16px; }
+        h1 { font-size: 1.25rem; margin: 0 0 4px; font-weight: 600; }
+        .sub { color: #8b949e; font-size: .82rem; margin: 0 0 12px; line-height: 1.5; }
+        .toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 10px; }
+        .tg { display: inline-flex; background: #21262d; border-radius: 8px; overflow: hidden; }
+        .tg button { background: transparent; border: none; color: #8b949e; padding: 6px 14px; font-size: .85rem; cursor: pointer; }
+        .tg button.on { background: #1f6feb; color: #fff; }
+        .stat { font-size: .82rem; color: #8b949e; margin-left: auto; }
+        .btn { background: #238636; color: #fff; border: none; border-radius: 8px; padding: 6px 12px; font-size: .85rem; cursor: pointer; }
+        .btn.ghost { background: transparent; border: 1px solid #30363d; color: #8b949e; }
+        .mapgroup { margin-bottom: 12px; }
+        .mapname { font-size: .8rem; color: #58a6ff; margin: 10px 2px 4px; font-weight: 600; }
+        .trk { background: #0d1117; border: 1px solid #21262d; border-radius: 10px; margin-bottom: 6px; overflow: hidden; }
+        .trk-hd { display: flex; align-items: center; gap: 8px; padding: 10px 12px; cursor: pointer; }
+        .trk-hd .name { font-size: .95rem; font-weight: 500; }
+        .trk-hd .cnt { font-size: .72rem; color: #8b949e; background: #21262d; border-radius: 10px; padding: 1px 8px; }
+        .trk-hd .cnt.ok { color: #3fb950; background: rgba(63,185,80,.12); }
+        .trk-hd .cnt.bad { color: #d29922; background: rgba(210,153,34,.12); }
+        .trk-hd .arrow { margin-left: auto; color: #8b949e; }
+        .trk-body { display: none; border-top: 1px solid #21262d; }
+        .trk.open .trk-body { display: block; }
+        .trk-body .row { display: flex; align-items: center; gap: 8px; padding: 7px 12px; border-bottom: 1px solid #161b22; }
+        .trk-body .row:last-child { border-bottom: none; }
+        .row .car { width: 96px; flex-shrink: 0; font-size: .9rem; }
+        .row .car small { color: #8b949e; font-size: .72rem; }
+        .row .val { flex: 1; color: #8b949e; font-size: .85rem; text-align: right; }
+        .row .val.has { color: #e6edf3; }
+        .row input { width: 90px; background: #21262d; border: 1px solid #30363d; color: #e6edf3; border-radius: 6px; padding: 5px 8px; font-size: .9rem; text-align: right; }
+        .row input.dirty { border-color: #d29922; background: rgba(210,153,34,.12); }
+        .row .diff { font-size: .75rem; width: 64px; text-align: left; }
+        .diff.up { color: #3fb950; }
+        .diff.down { color: #f85149; }
+        .note { color: #8b949e; font-size: .75rem; padding: 8px 2px 0; }
+        #toast { position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%); background: #238636; color: #fff; padding: 8px 16px; border-radius: 8px; font-size: .85rem; display: none; }
+        .loading { color: #8b949e; text-align: center; padding: 40px; }
+    </style>
+</head>
+<body>
+<div class="card">
+    <h1>🏁 擂台成绩填写</h1>
+    <p class="sub">向管理员提交成绩建议：可补空白成绩、可提议修改已有成绩（会标注快/慢）。<br>不开放：删除成绩、特殊跑法、新增车辆。你的建议只有被管理员逐条接受后才会生效。</p>
+    <div class="toolbar">
+        <div class="tg" id="zoneTg">
+            <button data-z="五区" class="on">五区</button><button data-z="四区">四区</button>
+        </div>
+        <div class="tg" id="tierTg">
+            <button data-t="理论" class="on">理论</button><button data-t="高手">高手</button>
+        </div>
+        <span class="stat" id="stat">加载中…</span>
+    </div>
+    <div style="margin-bottom:10px; display:flex; gap:8px;">
+        <button class="btn" id="exportBtn">📤 导出建议</button>
+        <button class="btn ghost" id="clearBtn">清空我的填写</button>
+    </div>
+    <div id="mapList"><div class="loading">数据加载中…</div></div>
+    <p class="note">注：仅显示数据中已有的车辆；新增/删除车辆由管理员维护。填写自动暂存在本机浏览器，导出 JSON 后发回给管理员即可。</p>
+</div>
+<div id="toast"></div>
+<script>
+(() => {
+    const LS_KEY = 'fillDraft_' + location.pathname;
+    let DATA = null;                 // gauntlet_data.json
+    let zone = '五区', tier = '理论';
+    let dirty = {};                  // "track|car|stars" -> 新值(字符串)
+    let openSet = new Set();         // 展开的赛道
+
+    const $ = s => document.querySelector(s);
+
+    function toast(msg) {
+        const el = $('#toast'); el.textContent = msg; el.style.display = 'block';
+        clearTimeout(el._t); el._t = setTimeout(() => el.style.display = 'none', 1600);
+    }
+    function starsKey(s) { return s == null ? '' : '★' + s; }
+    function cellKey(z, t, track, car, stars) { return z + '|' + t + '|' + track + '|' + car + '|' + stars; }
+
+    async function init() {
+        try {
+            DATA = await api.getRaceData();
+            const saved = api.loadPref(LS_KEY, null);
+            if (saved && saved.dirty) dirty = saved.dirty;
+            bindToggles();
+            render();
+        } catch (e) {
+            $('#mapList').innerHTML = `<div class="loading">加载失败: ${e.message}<br>请确认 gauntlet_data.json 可访问</div>`;
+        }
+    }
+
+    function bindToggles() {
+        document.querySelectorAll('#zoneTg button').forEach(b => b.onclick = () => {
+            zone = b.dataset.z;
+            document.querySelectorAll('#zoneTg button').forEach(x => x.classList.toggle('on', x === b));
+            render();
+        });
+        document.querySelectorAll('#tierTg button').forEach(b => b.onclick = () => {
+            tier = b.dataset.t;
+            document.querySelectorAll('#tierTg button').forEach(x => x.classList.toggle('on', x === b));
+            render();
+        });
+        $('#exportBtn').onclick = exportJson;
+        $('#clearBtn').onclick = () => { dirty = {}; openSet.clear(); save(); render(); toast('已清空'); };
+    }
+
+    function save() { api.savePref(LS_KEY, { dirty, v: 1 }); }
+
+    /** 收集某赛道可编辑条目（非 sc） */
+    function editableEntries(track) {
+        const list = track[zone]?.[tier] || [];
+        const out = [];
+        for (const e of list) {
+            if (e.sc) continue;                       // 特殊跑法不开放
+            for (const c of e.cars) {
+                out.push({ car: c.name, stars: c.stars ?? null, old: e.time ?? null, key: cellKey(zone, tier, track['小地图'], c.name, c.stars ?? null) });
+            }
+        }
+        return out;
+    }
+
+    function findEntry(track, z, t, car, stars) {
+        if (!track) return null;
+        const list = track[z]?.[t] || [];
+        for (const e of list) {
+            if (e.sc) continue;
+            for (const c of e.cars) {
+                if (c.name === car && (c.stars ?? null) === stars) return e;
+            }
+        }
+        return null;
+    }
+
+    function statLine() {
+        let fill = 0, mod = 0;
+        for (const k in dirty) {
+            const p = k.split('|');
+            const track = DATA.tracks.find(t => t['小地图'] === p[2]);
+            const stars = p[4] === '' ? null : p[4];
+            const e = findEntry(track, p[0], p[1], p[3], stars);
+            if (e && e.time == null) fill++; else mod++;
+        }
+        const n = Object.keys(dirty).length;
+        return n ? `${n} 条建议（填 ${fill} / 改 ${mod}）` : '无改动';
+    }
+
+    function render() {
+        $('#stat').textContent = statLine();
+        const box = $('#mapList');
+        box.innerHTML = '';
+        let curMap = null, groupEl = null;
+        for (const t of DATA.tracks) {
+            const entries = editableEntries(t);
+            if (entries.length === 0) continue;
+            if (t['大地图'] !== curMap) {
+                curMap = t['大地图'];
+                groupEl = document.createElement('div');
+                groupEl.className = 'mapgroup';
+                const mn = document.createElement('div');
+                mn.className = 'mapname'; mn.textContent = curMap;
+                groupEl.appendChild(mn);
+                box.appendChild(groupEl);
+            }
+            const tk = t['小地图'];
+            const empties = entries.filter(x => x.old == null);
+            const dirt = entries.filter(x => dirty[x.key]).length;
+            const trk = document.createElement('div');
+            trk.className = 'trk' + (openSet.has(tk) ? ' open' : '');
+            const hd = document.createElement('div');
+            hd.className = 'trk-hd';
+            hd.innerHTML = `<span class="name">${tk}</span>` +
+                (empties.length ? `<span class="cnt bad">${empties.length} 空</span>` : `<span class="cnt ok">齐</span>`) +
+                (dirt ? `<span class="cnt" style="color:#d29922">已改 ${dirt}</span>` : '') +
+                `<span class="arrow">▾</span>`;
+            hd.onclick = () => { openSet.has(tk) ? openSet.delete(tk) : openSet.add(tk); render(); };
+            trk.appendChild(hd);
+            const body = document.createElement('div');
+            body.className = 'trk-body';
+            for (const x of entries) {
+                const row = document.createElement('div');
+                row.className = 'row';
+                const dirtyVal = dirty[x.key];
+                const input = document.createElement('input');
+                input.type = 'number'; input.min = '0'; input.step = '0.01'; input.placeholder = x.old == null ? '填成绩' : '';
+                if (dirtyVal !== undefined) { input.value = dirtyVal; input.classList.add('dirty'); }
+                input.oninput = () => {
+                    const v = input.value.trim();
+                    if (v === '') { delete dirty[x.key]; input.classList.remove('dirty'); }
+                    else if (!isNaN(+v) && +v > 0) { dirty[x.key] = String(+v); input.classList.add('dirty'); }
+                    save(); $('#stat').textContent = statLine();
+                };
+                const oldV = x.old == null ? '<span style="color:#30363d">— 空</span>' : `<span class="has">${x.old}</span>`;
+                const diff = dirtyVal !== undefined && x.old != null
+                    ? (+dirtyVal < x.old ? `<span class="diff up">更快</span>` : +dirtyVal > x.old ? `<span class="diff down">更慢</span>` : `<span class="diff"></span>`)
+                    : '<span class="diff"></span>';
+                row.innerHTML = `<span class="car">${x.car}${starsKey(x.stars) ? `<small>${starsKey(x.stars)}</small>` : ''}</span>`;
+                const valSpan = document.createElement('span');
+                valSpan.className = 'val'; valSpan.innerHTML = oldV;
+                row.appendChild(valSpan);
+                row.appendChild(input);
+                row.insertAdjacentHTML('beforeend', diff);
+                body.appendChild(row);
+            }
+            trk.appendChild(body);
+            groupEl.appendChild(trk);
+        }
+    }
+
+    function exportJson() {
+        const keys = Object.keys(dirty);
+        if (!keys.length) { toast('还没有任何改动'); return; }
+        const proposals = [];
+        for (const k of keys) {
+            const p = k.split('|');
+            const z = p[0], t = p[1], trackName = p[2], car = p[3];
+            const stars = p[4] === '' ? null : p[4];
+            const track = DATA.tracks.find(x => x['小地图'] === trackName);
+            const e = findEntry(track, z, t, car, stars);
+            proposals.push({
+                zone: z, tier: t, track: trackName, car, stars,
+                old: e && e.time != null ? e.time : null,
+                new: +dirty[k]
+            });
+        }
+        const out = { version: 1, generatedBy: 'fill.html', count: proposals.length, proposals };
+        const text = JSON.stringify(out, null, 2);
+        const blob = new Blob([text], { type: 'application/json' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'my_suggestions.json';
+        a.click();
+        // 同时复制到剪贴板（失败静默）
+        if (navigator.clipboard) navigator.clipboard.writeText(text).then(() => toast('已导出 + 复制到剪贴板')).catch(() => toast('已导出文件'));
+        else toast('已导出文件');
+    }
+
+    init();
+})();
+</script>
+</body>
+</html>
