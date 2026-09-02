@@ -1,6 +1,6 @@
 {
   "_comment": "A9 国服全量车辆数据 (整合自 a9mmgj.top + asec.tools)",
-  "_source": "Asphalt9_car_data.csv (a9mmgj.top) + asec_cars.csv (asec.tools)",
+  "_source": "本地归档: 数据源/国服_a9mmgj_top.csv (a9mmgj.top, 目前使用) + 数据源/国际服_asec_tools.csv (asec.tools, 备用)",
   "_nickname_map": {
     "007s": "Glickenhaus 007S",
     "21c": "Czinger 21C",
