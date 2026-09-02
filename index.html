@@ -889,8 +889,9 @@
      */
     function normalizeEntry(entry) {
         if (entry && entry.cars) {
-            const names = entry.cars.map(c => c.name);
-            const result = [names[0]];  // 主车名
+            // 2026-09-02: 数据已确认全单车条目（多选一格式余留删除），取首车即可
+            if (entry.cars.length > 1) console.warn('多车条目不再支持:', entry);
+            const result = [entry.cars[0].name];  // 车名
             if (entry.time != null) result.push(entry.time);
             result._raw = entry;  // 挂载原始对象供后续读取
             return result;
