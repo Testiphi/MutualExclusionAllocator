@@ -3,15 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>擂台成绩填写 · 建议模式</title>
+    <title>成绩填写</title>
     <script src="config.js"></script>
     <script src="api.js"></script>
     <style>
         * { box-sizing: border-box; font-family: system-ui, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif; }
         body { background: #0d1117; margin: 0; min-height: 100vh; padding: 12px; color: #e6edf3; }
         .card { max-width: 720px; margin: 0 auto; background: #161b22; border: 1px solid #21262d; border-radius: 14px; padding: 16px; }
-        h1 { font-size: 1.25rem; margin: 0 0 4px; font-weight: 600; }
-        .sub { color: #8b949e; font-size: .82rem; margin: 0 0 12px; line-height: 1.5; }
+        h1 { font-size: 1.25rem; margin: 0 0 12px; font-weight: 600; }
         .toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 10px; }
         .tg { display: inline-flex; background: #21262d; border-radius: 8px; overflow: hidden; }
         .tg button { background: transparent; border: none; color: #8b949e; padding: 6px 14px; font-size: .85rem; cursor: pointer; }
@@ -19,37 +18,29 @@
         .stat { font-size: .82rem; color: #8b949e; margin-left: auto; }
         .btn { background: #238636; color: #fff; border: none; border-radius: 8px; padding: 6px 12px; font-size: .85rem; cursor: pointer; }
         .btn.ghost { background: transparent; border: 1px solid #30363d; color: #8b949e; }
-        .mapgroup { margin-bottom: 12px; }
         .mapname { font-size: .8rem; color: #58a6ff; margin: 10px 2px 4px; font-weight: 600; }
         .trk { background: #0d1117; border: 1px solid #21262d; border-radius: 10px; margin-bottom: 6px; overflow: hidden; }
         .trk-hd { display: flex; align-items: center; gap: 8px; padding: 10px 12px; cursor: pointer; }
         .trk-hd .name { font-size: .95rem; font-weight: 500; }
-        .trk-hd .cnt { font-size: .72rem; color: #8b949e; background: #21262d; border-radius: 10px; padding: 1px 8px; }
-        .trk-hd .cnt.ok { color: #3fb950; background: rgba(63,185,80,.12); }
-        .trk-hd .cnt.bad { color: #d29922; background: rgba(210,153,34,.12); }
         .trk-hd .arrow { margin-left: auto; color: #8b949e; }
         .trk-body { display: none; border-top: 1px solid #21262d; }
         .trk.open .trk-body { display: block; }
-        .trk-body .row { display: flex; align-items: center; gap: 8px; padding: 7px 12px; border-bottom: 1px solid #161b22; }
-        .trk-body .row:last-child { border-bottom: none; }
+        .row { display: flex; align-items: center; gap: 8px; padding: 7px 12px; border-bottom: 1px solid #161b22; }
+        .row:last-child { border-bottom: none; }
         .row .car { width: 96px; flex-shrink: 0; font-size: .9rem; }
         .row .car small { color: #8b949e; font-size: .72rem; }
         .row .val { flex: 1; color: #8b949e; font-size: .85rem; text-align: right; }
         .row .val.has { color: #e6edf3; }
         .row input { width: 90px; background: #21262d; border: 1px solid #30363d; color: #e6edf3; border-radius: 6px; padding: 5px 8px; font-size: .9rem; text-align: right; }
         .row input.dirty { border-color: #d29922; background: rgba(210,153,34,.12); }
-        .row .diff { font-size: .75rem; width: 64px; text-align: left; }
-        .diff.up { color: #3fb950; }
-        .diff.down { color: #f85149; }
-        .note { color: #8b949e; font-size: .75rem; padding: 8px 2px 0; }
+        .empty { color: #8b949e; text-align: center; padding: 30px; font-size: .85rem; }
         #toast { position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%); background: #238636; color: #fff; padding: 8px 16px; border-radius: 8px; font-size: .85rem; display: none; }
         .loading { color: #8b949e; text-align: center; padding: 40px; }
     </style>
 </head>
 <body>
 <div class="card">
-    <h1>🏁 擂台成绩填写</h1>
-    <p class="sub">向管理员提交成绩建议：可补空白成绩、可提议修改已有成绩（会标注快/慢）。<br>⭐ = 推荐优先补（同类车在此图已有好成绩）；○可补 = 一般；无标记 = 看心情。不开放：删除成绩、特殊跑法、新增车辆。</p>
+    <h1>🏁 成绩填写</h1>
     <div class="toolbar">
         <div class="tg" id="zoneTg">
             <button data-z="五区" class="on">五区</button><button data-z="四区">四区</button>
@@ -57,34 +48,34 @@
         <div class="tg" id="tierTg">
             <button data-t="理论" class="on">理论</button><button data-t="高手">高手</button>
         </div>
-        <span class="stat" id="stat">加载中…</span>
+        <span class="stat" id="stat"></span>
     </div>
     <div style="margin-bottom:10px; display:flex; gap:8px;">
         <button class="btn" id="exportBtn">📤 导出建议</button>
-        <button class="btn ghost" id="clearBtn">清空我的填写</button>
+        <button class="btn ghost" id="clearBtn">清空</button>
     </div>
-    <div id="mapList"><div class="loading">数据加载中…</div></div>
-    <p class="note">注：仅显示数据中已有的车辆；新增/删除车辆由管理员维护。填写自动暂存在本机浏览器，导出 JSON 后发回给管理员即可。</p>
+    <div id="mapList"><div class="loading">…</div></div>
 </div>
 <div id="toast"></div>
 <script>
 (() => {
     const LS_KEY = 'fillDraft_' + location.pathname;
-    let DATA = null;                 // gauntlet_data.json
-    let CLASSES = null;              // car_classes.json (推荐逻辑)
+    let DATA = null;
+    let CLASSES = null;
     let zone = '五区', tier = '理论';
-    let dirty = {};                  // "track|car|stars" -> 新值(字符串)
-    let openSet = new Set();         // 展开的赛道
-    const REC_X = 0.15, REC_SHORT = 24, REC_LONG = 45;
+    let dirty = {};
+    let openSet = new Set();
+    const REC_SHORT = 24, REC_LONG = 45;
 
     const $ = s => document.querySelector(s);
+    const starsKey = s => s == null ? '' : '★' + s;
+    const cellKey = (z, t, track, car, stars) => z + '|' + t + '|' + track + '|' + car + '|' + stars;
 
     function toast(msg) {
         const el = $('#toast'); el.textContent = msg; el.style.display = 'block';
         clearTimeout(el._t); el._t = setTimeout(() => el.style.display = 'none', 1600);
     }
-    function starsKey(s) { return s == null ? '' : '★' + s; }
-    function cellKey(z, t, track, car, stars) { return z + '|' + t + '|' + track + '|' + car + '|' + stars; }
+    function save() { api.savePref(LS_KEY, { dirty, v: 1 }); }
 
     async function init() {
         try {
@@ -92,16 +83,13 @@
             try {
                 const r = await fetch('car_classes.json');
                 if (r.ok) CLASSES = (await r.json()).cars;
-            } catch (e) { /* 推荐逻辑不可用, 页面降级为纯填写 */ }
+            } catch (e) { /* 无画像数据时页面为空 */ }
             const saved = api.loadPref(LS_KEY, null);
             if (saved && saved.dirty) dirty = saved.dirty;
             bindToggles();
             render();
         } catch (e) {
-            const fileHint = location.protocol === 'file:'
-                ? '<br><b style="color:#d29922">不能直接双击打开（浏览器禁止 file:// 读取数据文件）</b>'
-                : '<br><b style="color:#d29922">数据文件与页面不在同一地址，无法读取</b>';
-            $('#mapList').innerHTML = `<div class="loading">加载失败: ${e.message}${fileHint}<br><br>正确打开方式：<br>① 手机/电脑访问已部署的链接（发给你的人会给你）<br>② 或本地临时服务器：在该目录运行 <code style="background:#21262d;padding:2px 6px">python -m http.server</code> 后访问 localhost:8000/fill.html</div>`;
+            $('#mapList').innerHTML = `<div class="empty">加载失败: ${e.message}</div>`;
         }
     }
 
@@ -120,125 +108,90 @@
         $('#clearBtn').onclick = () => { dirty = {}; openSet.clear(); save(); render(); toast('已清空'); };
     }
 
-    function save() { api.savePref(LS_KEY, { dirty, v: 1 }); }
+    // ===== 地图主导维度（规则与回测原型一致: 每图每区, 维度≥2辆有成绩, 平均差距最小者为图型）=====
+    const R_MAIN = { '玻璃': '超高速', '陀飞轮': '超高速', '杰皇': '超高速', 'f5r': '超高速', '300+': '超高速', '银电': '超高速', '小蜥蜴': '三维车' };
+    const DIMS = ['三维车', '高速加速', '高速', '超高速'];
 
-    /** 收集某赛道可编辑条目（非 sc），空格按推荐分级排序 */
-    function editableEntries(track) {
-        const list = track[zone]?.[tier] || [];
-        const out = [];
-        const tk = track['小地图'];
-        for (const e of list) {
-            if (e.sc) continue;                       // 特殊跑法不开放
-            for (const c of e.cars) {
-                out.push({
-                    car: c.name, stars: c.stars ?? null,
-                    old: e.time ?? null,
-                    key: cellKey(zone, tier, tk, c.name, c.stars ?? null),
-                    rec: e.time == null ? recLevel(tk, c.name) : null
-                });
-            }
-        }
-        // 空格优先: 强推 > 一般 > 无推荐; 有值保持原序
-        const order = { strong: 0, weak: 1, none: 2 };
-        return out.sort((a, b) => {
-            const ra = a.old == null ? (order[a.rec] ?? 2) : 9;
-            const rb = b.old == null ? (order[b.rec] ?? 2) : 9;
-            return ra - rb;
-        });
+    function dimOf(car) {
+        const info = CLASSES && CLASSES[car];
+        if (!info) return null;
+        if (car === 'r兔' || car === '恶魔' || car === '大超') return null;
+        return R_MAIN[car] || info['类'];
     }
 
-    // ============ 推荐引擎（规则与 _reco_backtest_0902.py 一致）============
-    const R_MAIN = { '玻璃': '超高速', '陀飞轮': '超高速', '杰皇': '超高速', 'f5r': '超高速', '300+': '超高速', '银电': '超高速', '小蜥蜴': '三维车' };
-
-    function trackBest(tk) {
+    function zoneBest(z, tk) {
         let best = Infinity;
         for (const t of DATA.tracks) {
             if (t['小地图'] !== tk) continue;
-            for (const z of ['五区', '四区']) {
-                for (const tier2 of ['理论', '高手']) {
-                    for (const e of t[z]?.[tier2] || []) {
-                        if (!e.sc && e.time != null && e.time < best) best = e.time;
-                    }
+            for (const tier2 of ['理论', '高手']) {
+                for (const e of t[z]?.[tier2] || []) {
+                    if (!e.sc && e.time != null && e.time < best) best = e.time;
                 }
             }
         }
         return best;
     }
 
-    function classOnboard(tk, className) {
-        if (!CLASSES) return false;
-        const best = trackBest(tk);
-        if (!isFinite(best)) return false;
-        const members = Object.entries(CLASSES)
-            .filter(([car, info]) => (R_MAIN[car] || info['类']) === className && info['类'] !== 'R级' && info['类'] !== '大超')
-            .map(([car]) => car);
-        for (const car of members) {
-            for (const t of DATA.tracks) {
-                if (t['小地图'] !== tk) continue;
-                for (const z of ['五区', '四区']) {
-                    for (const tier2 of ['理论', '高手']) {
-                        for (const e of t[z]?.[tier2] || []) {
-                            if (!e.sc && e.time != null && e.time <= best * (1 + REC_X)) {
-                                for (const c of e.cars) {
-                                    if (c.name === car) return true;
-                                }
-                            }
-                        }
+    function mapTypeOf(z, tk) {
+        const best = zoneBest(z, tk);
+        if (!isFinite(best)) return null;
+        // 每车每区取最快成绩, 按维度聚合
+        const carBest = {};
+        for (const t of DATA.tracks) {
+            if (t['小地图'] !== tk) continue;
+            for (const tier2 of ['理论', '高手']) {
+                for (const e of t[z]?.[tier2] || []) {
+                    if (e.sc || e.time == null) continue;
+                    for (const c of e.cars) {
+                        if (e.time < (carBest[c.name] ?? Infinity)) carBest[c.name] = e.time;
                     }
                 }
             }
         }
-        return false;
+        const dimTimes = {};
+        for (const car in carBest) {
+            const dm = dimOf(car);
+            if (dm) (dimTimes[dm] = dimTimes[dm] || []).push(carBest[car]);
+        }
+        let type = null, bestGap = Infinity;
+        for (const dm of DIMS) {
+            const ts = dimTimes[dm];
+            if (!ts || ts.length < 2) continue;
+            const gap = ts.reduce((a, b) => a + (b / best - 1), 0) / ts.length;
+            if (gap < bestGap) { bestGap = gap; type = dm; }
+        }
+        return type;
     }
 
-    function lengthOf(tk) {
-        const b = trackBest(tk);
-        return b < REC_SHORT ? '短' : (b > REC_LONG ? '长' : '中');
-    }
-
-    function recLevel(tk, car) {
-        if (!CLASSES) return 'none';
-        const info = CLASSES[car];
-        if (!info || info['类'] === '大超') return 'none';
-        if (car === 'r兔') return lengthOf(tk) === '短' ? 'strong' : 'weak';
-        if (car === '恶魔') return (lengthOf(tk) === '中' || lengthOf(tk) === '长') ? 'strong' : 'weak';
-        return classOnboard(tk, R_MAIN[car] || info['类']) ? 'strong' : 'none';
-    }
-    // ============ 推荐引擎 end ============
-
-    function findEntry(track, z, t, car, stars) {
-        if (!track) return null;
-        const list = track[z]?.[t] || [];
-        for (const e of list) {
+    // ===== 列表 =====
+    function shownEntries(track) {
+        const type = mapTypeOf(zone, track['小地图']);
+        if (!type) return [];
+        const out = [];
+        for (const e of track[zone]?.[tier] || []) {
             if (e.sc) continue;
             for (const c of e.cars) {
-                if (c.name === car && (c.stars ?? null) === stars) return e;
+                if (dimOf(c.name) !== type) continue;
+                out.push({ car: c.name, stars: c.stars ?? null, old: e.time ?? null, key: cellKey(zone, tier, track['小地图'], c.name, c.stars ?? null) });
             }
         }
-        return null;
+        return out;
     }
 
     function statLine() {
-        let fill = 0, mod = 0;
-        for (const k in dirty) {
-            const p = k.split('|');
-            const track = DATA.tracks.find(t => t['小地图'] === p[2]);
-            const stars = p[4] === '' ? null : p[4];
-            const e = findEntry(track, p[0], p[1], p[3], stars);
-            if (e && e.time == null) fill++; else mod++;
-        }
         const n = Object.keys(dirty).length;
-        return n ? `${n} 条建议（填 ${fill} / 改 ${mod}）` : '无改动';
+        return n ? `${n} 条建议` : '';
     }
 
     function render() {
         $('#stat').textContent = statLine();
         const box = $('#mapList');
         box.innerHTML = '';
-        let curMap = null, groupEl = null;
+        let curMap = null, groupEl = null, any = false;
         for (const t of DATA.tracks) {
-            const entries = editableEntries(t);
-            if (entries.length === 0) continue;
+            const entries = shownEntries(t);
+            if (!entries.length) continue;
+            any = true;
             if (t['大地图'] !== curMap) {
                 curMap = t['大地图'];
                 groupEl = document.createElement('div');
@@ -249,18 +202,11 @@
                 box.appendChild(groupEl);
             }
             const tk = t['小地图'];
-            const empties = entries.filter(x => x.old == null);
-            const strong = empties.filter(x => x.rec === 'strong').length;
-            const dirt = entries.filter(x => dirty[x.key]).length;
             const trk = document.createElement('div');
             trk.className = 'trk' + (openSet.has(tk) ? ' open' : '');
             const hd = document.createElement('div');
             hd.className = 'trk-hd';
-            hd.innerHTML = `<span class="name">${tk}</span>` +
-                (strong ? `<span class="cnt" style="color:#3fb950;background:rgba(63,185,80,.12)">⭐ ${strong}</span>` : '') +
-                (empties.length ? `<span class="cnt bad">${empties.length} 空</span>` : `<span class="cnt ok">齐</span>`) +
-                (dirt ? `<span class="cnt" style="color:#d29922">已改 ${dirt}</span>` : '') +
-                `<span class="arrow">▾</span>`;
+            hd.innerHTML = `<span class="name">${tk}</span><span class="arrow">▾</span>`;
             hd.onclick = () => { openSet.has(tk) ? openSet.delete(tk) : openSet.add(tk); render(); };
             trk.appendChild(hd);
             const body = document.createElement('div');
@@ -271,9 +217,6 @@
                 const dirtyVal = dirty[x.key];
                 const input = document.createElement('input');
                 input.type = 'number'; input.min = '0'; input.step = '0.01';
-                input.placeholder = x.old == null
-                    ? (x.rec === 'strong' ? '⭐ 推荐' : x.rec === 'weak' ? '可补' : '填')
-                    : '';
                 if (dirtyVal !== undefined) { input.value = dirtyVal; input.classList.add('dirty'); }
                 input.oninput = () => {
                     const v = input.value.trim();
@@ -281,33 +224,41 @@
                     else if (!isNaN(+v) && +v > 0) { dirty[x.key] = String(+v); input.classList.add('dirty'); }
                     save(); $('#stat').textContent = statLine();
                 };
-                const oldV = x.old == null ? '<span style="color:#30363d">— 空</span>' : `<span class="has">${x.old}</span>`;
-                const diff = dirtyVal !== undefined && x.old != null
-                    ? (+dirtyVal < x.old ? `<span class="diff up">更快</span>` : +dirtyVal > x.old ? `<span class="diff down">更慢</span>` : `<span class="diff"></span>`)
-                    : '<span class="diff"></span>';
-                row.innerHTML = `<span class="car">${x.car}${starsKey(x.stars) ? `<small>${starsKey(x.stars)}</small>` : ''}</span>`;
+                const carSpan = document.createElement('span');
+                carSpan.className = 'car';
+                carSpan.innerHTML = x.car + (starsKey(x.stars) ? `<small>${starsKey(x.stars)}</small>` : '');
                 const valSpan = document.createElement('span');
-                valSpan.className = 'val'; valSpan.innerHTML = oldV;
+                valSpan.className = 'val' + (x.old != null ? ' has' : '');
+                valSpan.textContent = x.old != null ? x.old : '';
+                row.appendChild(carSpan);
                 row.appendChild(valSpan);
                 row.appendChild(input);
-                row.insertAdjacentHTML('beforeend', diff);
                 body.appendChild(row);
             }
             trk.appendChild(body);
             groupEl.appendChild(trk);
         }
+        if (!any) box.innerHTML = '<div class="empty">—</div>';
     }
 
     function exportJson() {
         const keys = Object.keys(dirty);
-        if (!keys.length) { toast('还没有任何改动'); return; }
+        if (!keys.length) { toast('还没有改动'); return; }
         const proposals = [];
         for (const k of keys) {
             const p = k.split('|');
             const z = p[0], t = p[1], trackName = p[2], car = p[3];
             const stars = p[4] === '' ? null : p[4];
             const track = DATA.tracks.find(x => x['小地图'] === trackName);
-            const e = findEntry(track, z, t, car, stars);
+            let e = null;
+            if (track) {
+                for (const en of track[z]?.[t] || []) {
+                    if (en.sc) continue;
+                    for (const c of en.cars) {
+                        if (c.name === car && (c.stars ?? null) === stars) e = en;
+                    }
+                }
+            }
             proposals.push({
                 zone: z, tier: t, track: trackName, car, stars,
                 old: e && e.time != null ? e.time : null,
@@ -321,8 +272,7 @@
         a.href = URL.createObjectURL(blob);
         a.download = 'my_suggestions.json';
         a.click();
-        // 同时复制到剪贴板（失败静默）
-        if (navigator.clipboard) navigator.clipboard.writeText(text).then(() => toast('已导出 + 复制到剪贴板')).catch(() => toast('已导出文件'));
+        if (navigator.clipboard) navigator.clipboard.writeText(text).then(() => toast('已导出')).catch(() => toast('已导出文件'));
         else toast('已导出文件');
     }
 
