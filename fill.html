@@ -92,7 +92,10 @@
             bindToggles();
             render();
         } catch (e) {
-            $('#mapList').innerHTML = `<div class="loading">加载失败: ${e.message}<br>请确认 gauntlet_data.json 可访问</div>`;
+            const fileHint = location.protocol === 'file:'
+                ? '<br><b style="color:#d29922">不能直接双击打开（浏览器禁止 file:// 读取数据文件）</b>'
+                : '<br><b style="color:#d29922">数据文件与页面不在同一地址，无法读取</b>';
+            $('#mapList').innerHTML = `<div class="loading">加载失败: ${e.message}${fileHint}<br><br>正确打开方式：<br>① 手机/电脑访问已部署的链接（发给你的人会给你）<br>② 或本地临时服务器：在该目录运行 <code style="background:#21262d;padding:2px 6px">python -m http.server</code> 后访问 localhost:8000/fill.html</div>`;
         }
     }
 
