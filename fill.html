@@ -49,7 +49,7 @@
 <body>
 <div class="card">
     <h1>🏁 擂台成绩填写</h1>
-    <p class="sub">向管理员提交成绩建议：可补空白成绩、可提议修改已有成绩（会标注快/慢）。<br>不开放：删除成绩、特殊跑法、新增车辆。你的建议只有被管理员逐条接受后才会生效。</p>
+    <p class="sub">向管理员提交成绩建议：可补空白成绩、可提议修改已有成绩（会标注快/慢）。<br>⭐ = 推荐优先补（同类车在此图已有好成绩）；○可补 = 一般；无标记 = 看心情。不开放：删除成绩、特殊跑法、新增车辆。</p>
     <div class="toolbar">
         <div class="tg" id="zoneTg">
             <button data-z="五区" class="on">五区</button><button data-z="四区">四区</button>
@@ -71,9 +71,11 @@
 (() => {
     const LS_KEY = 'fillDraft_' + location.pathname;
     let DATA = null;                 // gauntlet_data.json
+    let CLASSES = null;              // car_classes.json (推荐逻辑)
     let zone = '五区', tier = '理论';
     let dirty = {};                  // "track|car|stars" -> 新值(字符串)
     let openSet = new Set();         // 展开的赛道
+    const REC_X = 0.15, REC_SHORT = 24, REC_LONG = 45;
 
     const $ = s => document.querySelector(s);
 
@@ -87,6 +89,10 @@
     async function init() {
         try {
             DATA = await api.getRaceData();
+            try {
+                const r = await fetch('car_classes.json');
+                if (r.ok) CLASSES = (await r.json()).cars;
+            } catch (e) { /* 推荐逻辑不可用, 页面降级为纯填写 */ }
             const saved = api.loadPref(LS_KEY, null);
             if (saved && saved.dirty) dirty = saved.dirty;
             bindToggles();
@@ -116,18 +122,89 @@
 
     function save() { api.savePref(LS_KEY, { dirty, v: 1 }); }
 
-    /** 收集某赛道可编辑条目（非 sc） */
+    /** 收集某赛道可编辑条目（非 sc），空格按推荐分级排序 */
     function editableEntries(track) {
         const list = track[zone]?.[tier] || [];
         const out = [];
+        const tk = track['小地图'];
         for (const e of list) {
             if (e.sc) continue;                       // 特殊跑法不开放
             for (const c of e.cars) {
-                out.push({ car: c.name, stars: c.stars ?? null, old: e.time ?? null, key: cellKey(zone, tier, track['小地图'], c.name, c.stars ?? null) });
+                out.push({
+                    car: c.name, stars: c.stars ?? null,
+                    old: e.time ?? null,
+                    key: cellKey(zone, tier, tk, c.name, c.stars ?? null),
+                    rec: e.time == null ? recLevel(tk, c.name) : null
+                });
             }
         }
-        return out;
+        // 空格优先: 强推 > 一般 > 无推荐; 有值保持原序
+        const order = { strong: 0, weak: 1, none: 2 };
+        return out.sort((a, b) => {
+            const ra = a.old == null ? (order[a.rec] ?? 2) : 9;
+            const rb = b.old == null ? (order[b.rec] ?? 2) : 9;
+            return ra - rb;
+        });
     }
+
+    // ============ 推荐引擎（规则与 _reco_backtest_0902.py 一致）============
+    const R_MAIN = { '玻璃': '超高速', '陀飞轮': '超高速', '杰皇': '超高速', 'f5r': '超高速', '300+': '超高速', '银电': '超高速', '小蜥蜴': '三维车' };
+
+    function trackBest(tk) {
+        let best = Infinity;
+        for (const t of DATA.tracks) {
+            if (t['小地图'] !== tk) continue;
+            for (const z of ['五区', '四区']) {
+                for (const tier2 of ['理论', '高手']) {
+                    for (const e of t[z]?.[tier2] || []) {
+                        if (!e.sc && e.time != null && e.time < best) best = e.time;
+                    }
+                }
+            }
+        }
+        return best;
+    }
+
+    function classOnboard(tk, className) {
+        if (!CLASSES) return false;
+        const best = trackBest(tk);
+        if (!isFinite(best)) return false;
+        const members = Object.entries(CLASSES)
+            .filter(([car, info]) => (R_MAIN[car] || info['类']) === className && info['类'] !== 'R级' && info['类'] !== '大超')
+            .map(([car]) => car);
+        for (const car of members) {
+            for (const t of DATA.tracks) {
+                if (t['小地图'] !== tk) continue;
+                for (const z of ['五区', '四区']) {
+                    for (const tier2 of ['理论', '高手']) {
+                        for (const e of t[z]?.[tier2] || []) {
+                            if (!e.sc && e.time != null && e.time <= best * (1 + REC_X)) {
+                                for (const c of e.cars) {
+                                    if (c.name === car) return true;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    function lengthOf(tk) {
+        const b = trackBest(tk);
+        return b < REC_SHORT ? '短' : (b > REC_LONG ? '长' : '中');
+    }
+
+    function recLevel(tk, car) {
+        if (!CLASSES) return 'none';
+        const info = CLASSES[car];
+        if (!info || info['类'] === '大超') return 'none';
+        if (car === 'r兔') return lengthOf(tk) === '短' ? 'strong' : 'weak';
+        if (car === '恶魔') return (lengthOf(tk) === '中' || lengthOf(tk) === '长') ? 'strong' : 'weak';
+        return classOnboard(tk, R_MAIN[car] || info['类']) ? 'strong' : 'none';
+    }
+    // ============ 推荐引擎 end ============
 
     function findEntry(track, z, t, car, stars) {
         if (!track) return null;
@@ -173,12 +250,14 @@
             }
             const tk = t['小地图'];
             const empties = entries.filter(x => x.old == null);
+            const strong = empties.filter(x => x.rec === 'strong').length;
             const dirt = entries.filter(x => dirty[x.key]).length;
             const trk = document.createElement('div');
             trk.className = 'trk' + (openSet.has(tk) ? ' open' : '');
             const hd = document.createElement('div');
             hd.className = 'trk-hd';
             hd.innerHTML = `<span class="name">${tk}</span>` +
+                (strong ? `<span class="cnt" style="color:#3fb950;background:rgba(63,185,80,.12)">⭐ ${strong}</span>` : '') +
                 (empties.length ? `<span class="cnt bad">${empties.length} 空</span>` : `<span class="cnt ok">齐</span>`) +
                 (dirt ? `<span class="cnt" style="color:#d29922">已改 ${dirt}</span>` : '') +
                 `<span class="arrow">▾</span>`;
@@ -191,7 +270,10 @@
                 row.className = 'row';
                 const dirtyVal = dirty[x.key];
                 const input = document.createElement('input');
-                input.type = 'number'; input.min = '0'; input.step = '0.01'; input.placeholder = x.old == null ? '填成绩' : '';
+                input.type = 'number'; input.min = '0'; input.step = '0.01';
+                input.placeholder = x.old == null
+                    ? (x.rec === 'strong' ? '⭐ 推荐' : x.rec === 'weak' ? '可补' : '填')
+                    : '';
                 if (dirtyVal !== undefined) { input.value = dirtyVal; input.classList.add('dirty'); }
                 input.oninput = () => {
                     const v = input.value.trim();
