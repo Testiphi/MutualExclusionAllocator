@@ -76,7 +76,8 @@
     "dose": "Ferrante Design Elytron",
     "陀飞轮": "Bugatti Tourbillon",
     "大爷": "Bugatti Divo",
-    "无敌牛": "Lamborghini Invencible"
+    "无敌牛": "Lamborghini Invencible",
+    "帝国": "Arash Imperium"
   },
   "cars": [
     {
@@ -882,7 +883,8 @@
       "max_speed": 397.5,
       "acceleration": 84.85,
       "handling": 60.77,
-      "nitro": 56.61
+      "nitro": 56.61,
+      "nickname": "帝国"
     },
     {
       "title": "Ares S1",
