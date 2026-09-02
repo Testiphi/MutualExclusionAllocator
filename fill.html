@@ -164,18 +164,63 @@
     }
 
     // ===== 列表 =====
-    function shownEntries(track) {
-        const type = mapTypeOf(zone, track['小地图']);
-        if (!type) return [];
-        const out = [];
-        for (const e of track[zone]?.[tier] || []) {
-            if (e.sc) continue;
-            for (const c of e.cars) {
-                if (dimOf(c.name) !== type) continue;
-                out.push({ car: c.name, stars: c.stars ?? null, old: e.time ?? null, key: cellKey(zone, tier, track['小地图'], c.name, c.stars ?? null) });
+    let CLASS_DIM = null;
+    function classDimMembers() {
+        if (!CLASS_DIM && CLASSES) {
+            CLASS_DIM = {};
+            for (const car in CLASSES) {
+                const dm = dimOf(car);
+                if (dm) (CLASS_DIM[dm] = CLASS_DIM[dm] || []).push(car);
             }
         }
-        return out;
+        return CLASS_DIM || {};
+    }
+
+    function shownEntries(track) {
+        const tk = track['小地图'];
+        const type = mapTypeOf(zone, tk);
+        const tierEntries = track[zone]?.[tier] || [];
+        const out = [];
+        const keyed = new Set();
+        // 1) 本档已有成绩的全部条目（任意维度）— 参考数据, 可改
+        for (const e of tierEntries) {
+            if (e.sc) continue;
+            for (const c of e.cars) {
+                if (e.time == null) continue;
+                const stars = c.stars ?? null;
+                const k = cellKey(zone, tier, tk, c.name, stars);
+                if (keyed.has(k)) continue;
+                keyed.add(k);
+                out.push({ car: c.name, stars, old: e.time, key: k, kind: 'data' });
+            }
+        }
+        if (!type) return out;
+        // 2) 图型维度缺成绩 → 空行（推荐填）
+        const withTimeCar = new Set(out.map(x => x.car));
+        const pushTarget = (car, stars, existing) => {
+            const k = cellKey(zone, tier, tk, car, stars);
+            if (keyed.has(k)) return;
+            keyed.add(k);
+            out.push({ car, stars, old: null, key: k, kind: 'target', existing });
+        };
+        for (const e of tierEntries) {
+            if (e.sc) continue;
+            for (const c of e.cars) {
+                if (e.time != null) continue;
+                if (dimOf(c.name) !== type) continue;   // 非图型维度占位不推荐
+                pushTarget(c.name, c.stars ?? null, true);
+            }
+        }
+        // 理论档: 图型维度车在本档完全无条目 → 一并列出（提交时新建条目）
+        if (tier === '理论') {
+            const present = new Set();
+            for (const e of tierEntries) if (!e.sc) for (const c of e.cars) present.add(c.name);
+            for (const car of classDimMembers()[type] || []) {
+                if (!withTimeCar.has(car) && !present.has(car)) pushTarget(car, null, false);
+            }
+        }
+        // 空行(推荐填)在前, 已有数据在后
+        return out.sort((a, b) => (a.kind === 'target' ? 0 : 1) - (b.kind === 'target' ? 0 : 1));
     }
 
     function statLine() {

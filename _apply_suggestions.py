@@ -38,12 +38,19 @@ for p in props:
     assert zone in ('五区', '四区') and tier in ('理论', '高手'), f'档位非法: {p}'
     t = find_track(p['track'])
     e = find_entry(t, zone, tier, p['car'], p.get('stars'))
-    assert e is not None, f'条目不存在(建议越界): {p["track"]} {zone}_{tier} {p["car"]}★{p.get("stars")}'
-    cur = e.get('time')
-    assert cur == p.get('old'), f'现状与建议不符(数据已变?): {p} 当前={cur} 建议old={p.get("old")}'
-    assert isinstance(p['new'], (int, float)) and p['new'] > 0, f'new 非法: {p}'
-    e['time'] = p['new']
-    log.append(f'{"填占位" if p.get("old") is None else "更新"} {zone}_{tier} {p["track"]} {p["car"]}★{p.get("stars")}: {cur} -> {p["new"]}')
+    created = False
+    if e is None:
+        # 2026-09-02: 地图主导维度模型下理论档可提交全新条目(fill.html 新建建议)
+        assert tier == '理论' and p.get('stars') is None, f'新建条目仅限理论档: {p}'
+        e = {'cars': [{'name': p['car']}], 'time': p['new']}
+        t[zone][tier].append(e)
+        created = True
+    else:
+        cur = e.get('time')
+        assert cur == p.get('old'), f'现状与建议不符(数据已变?): {p} 当前={cur} 建议old={p.get("old")}'
+        assert isinstance(p['new'], (int, float)) and p['new'] > 0, f'new 非法: {p}'
+        e['time'] = p['new']
+    log.append(f'{"新建" if created else ("填占位" if p.get("old") is None else "更新")} {zone}_{tier} {p["track"]} {p["car"]}★{p.get("stars")}: -> {p["new"]}')
 
 # 理论/高手 按 time 升序重排（无 time 置末尾保持相对顺序）
 for t in d['tracks']:
