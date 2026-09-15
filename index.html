@@ -36,15 +36,17 @@
 
     <div class="map-rows" id="mapRowsContainer"></div>
 
-    <div class="garage">
-        <div class="garage-header">
-            <h2 id="garageTitle"> 我的车库</h2>
+    <details class="garage" id="garagePanel" open>
+        <summary class="garage-header">
+            <h2 id="garageTitle">我的车库</h2>
+            <span class="garage-fold-label" aria-hidden="true"></span>
+        </summary>
+        <div class="garage-body">
             <div class="garage-actions">
                 <span class="garage-btn" id="selectAllBtn">全部点亮</span>
                 <span class="garage-btn" id="clearAllBtn">全部清空</span>
                 <span class="garage-btn" id="sortBtn">默认</span>
             </div>
-        </div>
         <div class="zone-hint" id="zoneHint">星级代表加速所改装的星级，仅作为参考</div>
         <input class="garage-search" id="garageSearch" type="text" placeholder="搜索车辆(支持昵称/真名)..." autocomplete="off">
         <div class="class-filter" id="classFilter">
@@ -57,7 +59,8 @@
             <span class="class-filter-btn" data-class="D">D</span>
         </div>
         <div class="car-grid" id="carGrid"></div>
-    </div>
+        </div>
+    </details>
 
     <div class="action">
         <button class="recommend-btn" id="recommendBtn">生成方案</button>
@@ -69,15 +72,13 @@
             <span class="badge-pareto" id="schemeCountBadge">0</span>
         </div>
         <div class="scheme-selector">
-            <label for="schemeSelect">选择方案:</label>
-            <select id="schemeSelect"></select>
+            <select id="schemeSelect" aria-label="选择方案"></select>
         </div>
         <div class="sc-panel" id="scPanel" style="display:none;margin-bottom:14px;padding:10px 14px;background:#0d1117;border-radius:10px;border:1px solid #21262d;">
             <div style="color:#8b949e;font-size:0.8rem;margin-bottom:8px;">特殊跑法</div>
             <div id="scToggleList" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
         </div>
         <div class="result-grid" id="resultGrid"></div>
-        <div class="footer-note">按优先级总和排序，越小越优</div>
     </div>
 </div>
 
@@ -756,7 +757,6 @@
      * 更新车库区域标题、排序/等级按钮的 UI 状态。
      */
     function updateGarageUI() {
-        const isZone4 = currentZone === 'zone4';
         const sortBtn = document.getElementById('sortBtn');
         if (sortBtn) {
             const labels = { 'alpha': '字母', 'score-desc': '分↓', 'score-asc': '分↑' };
@@ -768,10 +768,8 @@
             btn.classList.toggle('active', cls === filterClass);
         });
 
-        const filterSuffix = filterClass ? ` [${filterClass}]` : '';
-        const totalLabel = isZone4
-            ? ` 我的车库 (${[...selectedCars].filter(c => zone4Cars.includes(c)).length}/${zone4Cars.length}) 四区${filterSuffix}`
-            : ` 我的车库 (${selectedCars.size}/${zone5Cars.length}) 五区${filterSuffix}`;
+        const ownedCount = getCurrentCarList().filter(car => selectedCars.has(car)).length;
+        const totalLabel = '我的车库 · 已选 ' + ownedCount + ' 辆';
         document.getElementById('garageTitle').textContent = totalLabel;
     }
 
@@ -1064,8 +1062,7 @@
 
     /**
      * 渲染单个方案的结果网格。
-     * 每列显示：小地图名、大地图名、分配车辆、成绩值、优先级等级。
-     * 底部显示总优先级分。
+     * 每列突出车辆、有效星级及成绩；总优先级仅在方案选择中显示。
      */
     function renderResultGrid(scheme) {
         if (!scheme) {
@@ -1074,28 +1071,25 @@
         }
         renderScToggles();
 
-        const totalScore = getTotalScore(scheme);
         let html = '';
         for (let i = 0; i < ROWS; i++) {
             const big = bigSelects[i].value;
             const small = smallSelects[i].value;
             if (big && small) {
                 const car = scheme.assignment[i];
-                const prio = scheme.vector[i];
                 if (car) {
                     const score = getCarScore(big, small, car, currentZone);
                     const scoreHtml = score !== null && score !== undefined
-                        ? `<div class="result-score">⏱ ${score}</div>`
+                        ? `<div class="result-score">${Number(score).toFixed(2)} <span class="result-unit">秒</span></div>`
                         : '';
                     // 理论档不显示星级（默认满星）
                     const starLevel = getCarStars(car);
-                    const starHtml = (currentTier !== '理论' && starLevel < 6) ? `<span style="color:#e3b341;font-size:0.7rem;"> (★${starLevel})</span>` : '';
+                    const starHtml = currentTier !== '理论' ? `<span class="result-stars">★${starLevel}</span>` : '';
                     html += `<div class="result-item">
                         <div class="result-map">${small}</div>
                         <div class="result-bigmap">${big}</div>
                         <div class="result-car">${car}${starHtml}</div>
                         ${scoreHtml}
-                        <div class="priority-badge">⭐ 优先级 ${prio}</div>
                     </div>`;
                 } else {
                     html += `<div class="result-item">
@@ -1112,7 +1106,6 @@
                 </div>`;
             }
         }
-        html += `<div class="result-score" style="grid-column:1/-1;"> 当前方案总优先级分：${totalScore}（越小越优）</div>`;
         resultGrid.innerHTML = html;
     }
 
@@ -1134,20 +1127,10 @@
         schemeSelect.disabled = false;
         schemeCountBadge.textContent = currentBestSchemes.length;
         currentBestSchemes.forEach((scheme, idx) => {
-            const parts = [];
-            let totalScore = 0;
-            for (let i = 0; i < ROWS; i++) {
-                if (bigSelects[i].value && smallSelects[i].value) {
-                    const car = scheme.assignment[i] || '?';
-                    const prio = scheme.vector[i] !== null ? scheme.vector[i] : '—';
-                    parts.push(`${i+1}:${car}(${prio})`);
-                    if (scheme.vector[i] !== null) totalScore += scheme.vector[i];
-                }
-            }
-            const vectorStr = scheme.vector.filter(v => v !== null).join(',');
+            const totalScore = getTotalScore(scheme);
             const option = document.createElement('option');
             option.value = idx;
-            option.textContent = ` 方案${idx+1}  [${vectorStr}]  Σ=${totalScore}  | ${parts.join(' ')}`;
+            option.textContent = `方案 ${idx+1} · 优先级总分 ${totalScore}`;
             schemeSelect.appendChild(option);
         });
         schemeSelect.value = 0;

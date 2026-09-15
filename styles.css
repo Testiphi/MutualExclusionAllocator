@@ -204,6 +204,19 @@ select:disabled {
     flex-wrap: wrap;
     gap: 10px;
 }
+.garage > summary {
+    cursor: pointer;
+    list-style: none;
+    align-items: center;
+    margin-bottom: 0;
+}
+.garage > summary::-webkit-details-marker { display: none; }
+.garage > summary:focus-visible { outline: 2px solid #58a6ff; outline-offset: 4px; }
+.garage[open] > summary { margin-bottom: 14px; }
+.garage-fold-label { color: #8b949e; font-size: 0.85rem; }
+.garage-fold-label::after { content: '展开 ▾'; }
+.garage[open] .garage-fold-label::after { content: '收起 ▴'; }
+.garage-body > .garage-actions { margin-bottom: 14px; justify-content: flex-end; }
 .zone-hint {
     display: none;
     margin: -6px 0 12px 0;
@@ -365,8 +378,8 @@ select:disabled {
     font-weight: 400;
 }
 .scheme-selector select {
-    width: auto;
-    min-width: 340px;
+    width: 100%;
+    min-width: 0;
     background: #0d1117;
     border-color: #30363d;
 }
@@ -389,19 +402,19 @@ select:disabled {
     margin-bottom: 4px;
 }
 .result-bigmap {
-    font-size: 0.65rem;
-    color: #6e7681;
-    margin-bottom: 10px;
+    font-size: 0.8rem;
+    color: #8b949e;
+    margin-bottom: 16px;
 }
 .result-car {
-    background: #21262d;
-    padding: 8px 0;
-    border-radius: 8px;
+    padding: 4px 0;
     font-weight: 600;
     color: #e6edf3;
-    border: 1px solid #30363d;
-    font-size: 0.85rem;
+    font-size: 1.1rem;
 }
+.result-stars { color: #8b949e; font-size: 0.85rem; margin-left: 8px; font-weight: 400; }
+.result-unit { color: #8b949e; font-size: 0.8rem; font-weight: 400; }
+.result-item .result-score { color: #58a6ff; font-size: 1.25rem; margin-top: 8px; }
 .result-car.empty {
     background: #161b22;
     color: #484f58;
