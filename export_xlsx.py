@@ -5,18 +5,23 @@
 - 列 = 车辆 (高手档按星级拆列, 如 ssc★2/ssc★6; 无星级条目显示纯车名)
 - 格 = 成绩(秒), 无数据留空; 普通/自动档填 ✓ 表示该车可用
 - 特殊跑法 = 明细式 (大地图/小地图/车辆/星级/区-档/成绩/类型)
+
+用法:
+    python export_xlsx.py
+    python export_xlsx.py --input gauntlet_data.json --output custom.xlsx
+默认路径相对脚本目录；显式参数路径相对当前工作目录。
 """
-import json, sys, os
-sys.stdout.reconfigure(encoding='utf-8')
+import argparse
+import json
+import sys
+from pathlib import Path
 import openpyxl
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from openpyxl.utils import get_column_letter
 
-SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-JSON = os.path.join(SCRIPT_DIR, 'gauntlet_data.json')
-XLSX = os.path.join(SCRIPT_DIR, 'gauntlet_data.xlsx')
-
-d = json.load(open(JSON, encoding='utf-8'))
+SCRIPT_DIR = Path(__file__).resolve().parent
+DEFAULT_INPUT = SCRIPT_DIR / 'gauntlet_data.json'
+DEFAULT_OUTPUT = SCRIPT_DIR / 'gauntlet_data.xlsx'
 
 HEADER_FILL = PatternFill('solid', fgColor='2F5496')
 HEADER_FONT = Font(color='FFFFFF', bold=True, size=10)
@@ -34,14 +39,14 @@ def car_combo_key(c):
 
 # ---------- 列排序: 数据量优先, 其次平均速度, 无数据车按名字排右侧 ----------
 
-def compute_car_stats(zone):
+def compute_car_stats(tracks, zone):
     """每车: (覆盖赛道数, 平均相对速度)
     数据源: 理论+高手档 非sc 有time条目, 同一赛道取该车最快成绩
     相对速度 = 赛道最快成绩 / 该车成绩 (1.0 = 该赛道最快, 越小越慢)
     """
     # 先算每条赛道在该区的最快非sc成绩
     track_fastest = {}
-    for t in d['tracks']:
+    for t in tracks:
         best = None
         for tier in ('理论', '高手'):
             for e in t.get(zone, {}).get(tier, []):
@@ -53,7 +58,7 @@ def compute_car_stats(zone):
             track_fastest[(t['大地图'], t['小地图'])] = best
     # 每车每赛道最快成绩
     car_best = {}  # car -> {track_key: best_time}
-    for t in d['tracks']:
+    for t in tracks:
         tk = (t['大地图'], t['小地图'])
         for tier in ('理论', '高手'):
             for e in t.get(zone, {}).get(tier, []):
@@ -65,9 +70,9 @@ def compute_car_stats(zone):
                     if tk not in car_best.setdefault(n, {}) or tm < car_best[n][tk]:
                         car_best[n][tk] = tm
     stats = {}
-    for n, tracks in car_best.items():
-        ratios = [track_fastest[tk] / tm for tk, tm in tracks.items() if tk in track_fastest]
-        stats[n] = (len(tracks), sum(ratios) / len(ratios) if ratios else 0.0)
+    for n, track_times in car_best.items():
+        ratios = [track_fastest[tk] / tm for tk, tm in track_times.items() if tk in track_fastest]
+        stats[n] = (len(track_times), sum(ratios) / len(ratios) if ratios else 0.0)
     return stats
 
 def order_combos(combos, stats):
@@ -86,14 +91,14 @@ def order_combos(combos, stats):
             cols.append((n, s))
     return cols
 
-def build_pivot_sheet(ws, zone, tier, with_stars, show_check=False, stats=None, preset_cols=None):
+def build_pivot_sheet(ws, tracks, zone, tier, show_check=False, stats=None, preset_cols=None):
     """透视表: 行=赛道, 列=车辆
-    stats: compute_car_stats(zone) 结果, 用于数据量+速度排序
+    stats: compute_car_stats(tracks, zone) 结果, 用于数据量+速度排序
     preset_cols: 指定列序 (普通档镜像高手档)
     """
     # 收集列 (含 sc-only 车, 主表留空, 成绩见特殊跑法表)
     combos = set()
-    for t in d['tracks']:
+    for t in tracks:
         for e in t.get(zone, {}).get(tier, []):
             for c in e.get('cars', []):
                 combos.add(car_combo_key(c))
@@ -122,7 +127,7 @@ def build_pivot_sheet(ws, zone, tier, with_stars, show_check=False, stats=None, 
     r = 2
     cur_map = None
     map_start = 2
-    for t in d['tracks']:
+    for t in tracks:
         dm, xm = t['大地图'], t['小地图']
         if dm != cur_map:
             if cur_map is not None:
@@ -181,7 +186,7 @@ def build_pivot_sheet(ws, zone, tier, with_stars, show_check=False, stats=None, 
     ws.auto_filter.ref = f'A1:{get_column_letter(len(cols)+2)}{r-1}'
     return cols
 
-def build_sc_sheet(ws):
+def build_sc_sheet(ws, tracks):
     """特殊跑法 明细式"""
     header = ['大地图', '小地图', '车辆', '星级', '区-档', '成绩', '类型']
     for j, h in enumerate(header, 1):
@@ -191,7 +196,7 @@ def build_sc_sheet(ws):
         c.alignment = CENTER
         c.border = BORDER
     r = 2
-    for t in d['tracks']:
+    for t in tracks:
         for zone in ['五区', '四区']:
             for tier in ['理论', '高手']:
                 for e in t.get(zone, {}).get(tier, []):
@@ -220,28 +225,61 @@ def build_sc_sheet(ws):
     ws.freeze_panes = 'A2'
     return r - 2
 
-wb = openpyxl.Workbook()
-# 移除默认 sheet
-default = wb.active
-wb.remove(default)
+def build_workbook(tracks):
+    """从赛道数据构建工作簿与导出统计，不读写文件。"""
+    workbook = openpyxl.Workbook()
+    workbook.remove(workbook.active)
+    sheet_stats = {}
+    for zone in ['五区', '四区']:
+        car_stats = compute_car_stats(tracks, zone)
+        high_cols = None
+        for tier, show in [('理论', False), ('高手', False), ('普通', True), ('自动', True)]:
+            worksheet = workbook.create_sheet(f'{zone}_{tier}')
+            preset = high_cols if tier == '普通' else None
+            cols = build_pivot_sheet(
+                worksheet, tracks, zone, tier,
+                show_check=show, stats=car_stats, preset_cols=preset,
+            )
+            if tier == '高手':
+                high_cols = cols
+            sheet_stats[f'{zone}_{tier}'] = len(cols)
+    worksheet = workbook.create_sheet('特殊跑法')
+    sheet_stats['特殊跑法'] = build_sc_sheet(worksheet, tracks)
+    return workbook, sheet_stats
 
-stats = {}
-for zone in ['五区', '四区']:
-    car_stats = compute_car_stats(zone)
-    high_cols = None
-    for tier, show in [('理论', False), ('高手', False), ('普通', True), ('自动', True)]:
-        ws = wb.create_sheet(f'{zone}_{tier}')
-        preset = high_cols if tier == '普通' else None
-        cols = build_pivot_sheet(ws, zone, tier, with_stars=(tier == '高手'), show_check=show, stats=car_stats, preset_cols=preset)
-        if tier == '高手':
-            high_cols = cols
-        stats[f'{zone}_{tier}'] = len(cols)
 
-ws = wb.create_sheet('特殊跑法')
-sc_n = build_sc_sheet(ws)
-stats['特殊跑法'] = sc_n
+def export_workbook(input_path, output_path):
+    """读取 JSON 并导出工作簿，返回各工作表统计。"""
+    input_path = Path(input_path)
+    output_path = Path(output_path)
+    if input_path.resolve() == output_path.resolve():
+        raise ValueError('输入与输出不能是同一个文件')
+    with input_path.open(encoding='utf-8') as source:
+        data = json.load(source)
+    workbook, sheet_stats = build_workbook(data['tracks'])
+    try:
+        workbook.save(output_path)
+    finally:
+        workbook.close()
+    return sheet_stats
 
-wb.save(XLSX)
-print('saved:', XLSX)
-for k, v in stats.items():
-    print(f'  {k}: 列数/条目 = {v}')
+
+def main(argv=None):
+    parser = argparse.ArgumentParser(description='将赛道 JSON 导出为九张工作表的 Excel 工作簿')
+    parser.add_argument('--input', type=Path, default=DEFAULT_INPUT, help='输入 JSON（默认：脚本目录下 gauntlet_data.json）')
+    parser.add_argument('--output', type=Path, default=DEFAULT_OUTPUT, help='输出 Excel（默认：脚本目录下 gauntlet_data.xlsx）')
+    args = parser.parse_args(argv)
+    if hasattr(sys.stdout, 'reconfigure'):
+        sys.stdout.reconfigure(encoding='utf-8')
+    try:
+        sheet_stats = export_workbook(args.input, args.output)
+    except (OSError, ValueError, KeyError) as error:
+        parser.exit(1, f'导出失败: {error}\n')
+    print('saved:', args.output)
+    for sheet_name, count in sheet_stats.items():
+        print(f'  {sheet_name}: 列数/条目 = {count}')
+    return 0
+
+
+if __name__ == '__main__':
+    raise SystemExit(main())
