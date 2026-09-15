@@ -812,17 +812,18 @@
         api.savePref(APP_CONFIG.storageKeys.starMap, starsMap);
     }
 
-    /** 获取某辆车的用户设定星级，未设置时取默认 */
+    /** 获取当前分区的有效星级，不改写保存的用户设置 */
     function getCarStars(carName) {
-        if (starsMap[carName] != null) return starsMap[carName];
-        return getDefaultStar(carName);
+        const stars = starsMap[carName] ?? getDefaultStar(carName);
+        const range = getStarRange(carName);
+        return Math.max(range.min, Math.min(range.max, stars));
     }
 
     /** 获取某辆车的初始显示星级：五区用最高星，四区用默认星 */
     function getInitCarStars(carName) {
-        if (starsMap[carName] != null) return starsMap[carName];
+        if (starsMap[carName] != null) return getCarStars(carName);
         if (currentZone === 'zone5') return getStarRange(carName).max;
-        return getDefaultStar(carName);
+        return getCarStars(carName);
     }
 
     /** 设置星级，自动钳位到有效范围 */
@@ -1811,6 +1812,7 @@
                 const stars = parseInt(optBtn.dataset.stars, 10);
                 if (car && stars >= 1 && stars <= 6) {
                     setCarStars(car, stars);
+                    buildMapIndex();
                     renderCarTags();
                     computeAndDisplay();
                 }
@@ -1932,6 +1934,7 @@
                     if (changed) saveGarage();
                 }
                 // 重渲染
+                buildMapIndex();
                 updateSubtitle();
                 renderGarage();
                 computeAndDisplay();
@@ -1945,14 +1948,13 @@
 
     /**
      * 应用入口。初始化顺序：
-     *   data.json 加载 → 地图索引构建 → cars.json 加载（可选）
-     *   → 车库持久化恢复 → UI 渲染 → 事件绑定 → 首次计算
+     *   data.json 加载 → cars.json 加载（可选）→ 车库/分区/星级恢复
+     *   → 地图索引构建 → UI 渲染 → 事件绑定 → 首次计算
      */
     async function initApp() {
         try {
             // 通过 api 层加载数据
             RACE_DATA = await api.getRaceData();
-            buildMapIndex();          // 建地图索引
 
             // 加载车辆度量数据
             try {
@@ -1969,6 +1971,7 @@
 
             await loadGarage();        // 加载车库（现在 zone5Cars/zone4Cars 已就绪）
             loadStarsMap();             // 加载星级
+            buildMapIndex();            // 用恢复后的分区和星级构建优先级
             // 恢复排序模式
             const savedSort = api.loadPref(APP_CONFIG.storageKeys.sortMode);
             if (savedSort) sortMode = savedSort;
