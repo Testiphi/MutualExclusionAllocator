@@ -13,13 +13,13 @@
 """
 import argparse
 import json
-import sys
 from pathlib import Path
+from data_tools import ROOT, atomic_save_workbook, configure_stdout
 import openpyxl
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from openpyxl.utils import get_column_letter
 
-SCRIPT_DIR = Path(__file__).resolve().parent
+SCRIPT_DIR = ROOT
 DEFAULT_INPUT = SCRIPT_DIR / 'gauntlet_data.json'
 DEFAULT_OUTPUT = SCRIPT_DIR / 'gauntlet_data.xlsx'
 
@@ -258,7 +258,7 @@ def export_workbook(input_path, output_path):
         data = json.load(source)
     workbook, sheet_stats = build_workbook(data['tracks'])
     try:
-        workbook.save(output_path)
+        atomic_save_workbook(workbook, output_path)
     finally:
         workbook.close()
     return sheet_stats
@@ -269,8 +269,7 @@ def main(argv=None):
     parser.add_argument('--input', type=Path, default=DEFAULT_INPUT, help='输入 JSON（默认：脚本目录下 gauntlet_data.json）')
     parser.add_argument('--output', type=Path, default=DEFAULT_OUTPUT, help='输出 Excel（默认：脚本目录下 gauntlet_data.xlsx）')
     args = parser.parse_args(argv)
-    if hasattr(sys.stdout, 'reconfigure'):
-        sys.stdout.reconfigure(encoding='utf-8')
+    configure_stdout()
     try:
         sheet_stats = export_workbook(args.input, args.output)
     except (OSError, ValueError, KeyError) as error:
