@@ -22,16 +22,16 @@
     <div class="sub">帕累托最优 · 擂台选车</div>
 
     <!-- 档位切换 -->
-    <div class="toggle-group" id="tierToggle" style="margin-bottom:10px;">
-        <label data-tier="理论" class="inactive">理论档</label>
-        <label data-tier="高手" class="active">高手档</label>
-        <label data-tier="普通" class="inactive">普通档</label>
-        <label data-tier="自动" class="inactive">自动档</label>
+    <div class="toggle-group" id="tierToggle" role="radiogroup" aria-label="成绩档位" style="--segments:4;--active-index:1;">
+        <button type="button" role="radio" data-tier="理论" class="inactive">理论档</button>
+        <button type="button" role="radio" data-tier="高手" class="active">高手档</button>
+        <button type="button" role="radio" data-tier="普通" class="inactive">普通档</button>
+        <button type="button" role="radio" data-tier="自动" class="inactive">自动档</button>
     </div>
 
-    <div class="toggle-group" id="zoneToggle">
-        <label data-zone="zone5" class="active">五区</label>
-        <label data-zone="zone4" class="inactive">四区</label>
+    <div class="toggle-group" id="zoneToggle" role="radiogroup" aria-label="分区" style="--segments:2;--active-index:0;">
+        <button type="button" role="radio" data-zone="zone5" class="active">五区</button>
+        <button type="button" role="radio" data-zone="zone4" class="inactive">四区</button>
     </div>
 
     <div class="map-rows" id="mapRowsContainer"></div>
@@ -1278,18 +1278,47 @@
         });
     }
 
+    function updateSegmentedToggle(id, key, value) {
+        const group = document.getElementById(id);
+        const buttons = [...group.querySelectorAll('button')];
+        const index = buttons.findIndex(button => button.dataset[key] === value);
+        group.style.setProperty('--active-index', index);
+        buttons.forEach((button, buttonIndex) => {
+            const active = buttonIndex === index;
+            button.className = active ? 'active' : 'inactive';
+            button.setAttribute('aria-checked', String(active));
+            button.tabIndex = active ? 0 : -1;
+        });
+    }
+
+    function bindSegmentedKeyboard(id) {
+        const group = document.getElementById(id);
+        group.addEventListener('keydown', event => {
+            const buttons = [...group.querySelectorAll('button')];
+            const index = buttons.indexOf(event.target);
+            if (index < 0) return;
+            let next;
+            if (event.key === 'ArrowRight' || event.key === 'ArrowDown') next = (index + 1) % buttons.length;
+            else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') next = (index + buttons.length - 1) % buttons.length;
+            else if (event.key === 'Home') next = 0;
+            else if (event.key === 'End') next = buttons.length - 1;
+            else return;
+            event.preventDefault();
+            buttons[next].click();
+            buttons[next].focus();
+        });
+    }
+
     // 档位切换
     function initTierToggle() {
-        const labels = document.querySelectorAll('#tierToggle label');
+        const labels = document.querySelectorAll('#tierToggle button');
         labels.forEach(label => {
             label.addEventListener('click', () => {
                 const tier = label.dataset.tier;
                 if (tier === currentTier) return;
                 currentTier = tier;
                 // 更新样式
-                labels.forEach(l => {
-                    l.className = l.dataset.tier === currentTier ? 'active' : 'inactive';
-                });
+                updateSegmentedToggle('tierToggle', 'tier', currentTier);
                 // 重构建地图索引（档位数据不同）
                 buildMapIndex();
                 refreshBigMaps();
@@ -1299,9 +1328,8 @@
             });
         });
         // 初始样式
-        labels.forEach(l => {
-            l.className = l.dataset.tier === currentTier ? 'active' : 'inactive';
-        });
+        updateSegmentedToggle('tierToggle', 'tier', currentTier);
+        bindSegmentedKeyboard('tierToggle');
     }
 
     function updateSubtitle() {
@@ -1325,7 +1353,7 @@
     }
 
     function initZoneToggle() {
-        const labels = document.querySelectorAll('#zoneToggle label');
+        const labels = document.querySelectorAll('#zoneToggle button');
         labels.forEach(label => {
             label.addEventListener('click', () => {
                 const zone = label.dataset.zone;
@@ -1333,9 +1361,7 @@
                 currentZone = zone;
                 saveZoneMode();
                 // 更新toggle样式
-                labels.forEach(l => {
-                    l.className = l.dataset.zone === currentZone ? 'active' : 'inactive';
-                });
+                updateSegmentedToggle('zoneToggle', 'zone', currentZone);
                 // 四区提示显示切换
                 var hint = document.getElementById('zoneHint');
                 if (hint) hint.classList.toggle('show', currentZone === 'zone4');
@@ -1347,9 +1373,8 @@
             });
         });
         // 设置初始样式
-        labels.forEach(l => {
-            l.className = l.dataset.zone === currentZone ? 'active' : 'inactive';
-        });
+        updateSegmentedToggle('zoneToggle', 'zone', currentZone);
+        bindSegmentedKeyboard('zoneToggle');
     }
 
     /**
