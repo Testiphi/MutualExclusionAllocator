@@ -1390,30 +1390,21 @@
         return atLeastOneBetter;
     }
 
-    /**
-     * 核心：生成所有可行方案 → 帕累托非支配过滤。
-     *
-     * 1) 预计算每图的候选车组 + 车→优先级映射
-     * 2) 回溯递归，保证一车不重复用
-     * 3) 对枚举结果执行帕累托非支配过滤
-     */
-    function generateParetoSchemes(validMaps, ownedSet, maxSchemesLimit = 20) {
+    /** 页面层：按选定地图和分区准备候选车组及原始优先级。 */
+    function prepareMapCandidates(validMaps, zone) {
         const n = validMaps.length;
-        if (n === 0) return [];
-
         // 1. 预计算每张图的数据:候选组、车→优先级映射
         const mapsData = [];
         for (let i = 0; i < n; i++) {
             const { big, small } = validMaps[i];
-            const originalGroups = getOriginalGroups(big, small, currentZone);
+            const originalGroups = getOriginalGroups(big, small, zone);
             if (!originalGroups) {
                 // 无数据的地图，标记为空
-                mapsData.push({ filteredGroups: [], carToPriority: new Map() });
+                mapsData.push({ groups: [], carToPriority: new Map() });
                 continue;
             }
 
             // 过滤候选:每组只保留拥有的车
-            const filteredGroups = originalGroups.map(group => group.filter(car => ownedSet.has(car)));
             // 车->优先级 (组索引)
             const carToPriority = new Map();
             for (let gIdx = 0; gIdx < originalGroups.length; gIdx++) {
@@ -1424,14 +1415,26 @@
                     }
                 }
             }
-            mapsData.push({ filteredGroups, carToPriority });
+            mapsData.push({ groups: originalGroups, carToPriority });
         }
+
+        return mapsData;
+    }
+
+    /** 核心算法：仅使用传入候选数据和车库，返回与输入地图对应的方案。 */
+    function generateParetoSchemes(mapCandidates, ownedSet, maxSchemesLimit = 20, noCarPriority = 99) {
+        const n = mapCandidates.length;
+        if (n === 0) return [];
+        const mapsData = mapCandidates.map(({ groups, carToPriority }) => ({
+            filteredGroups: groups.map(group => group.filter(car => ownedSet.has(car))),
+            carToPriority,
+        }));
 
         // ---- 2. 回溯枚举所有可行分配（车不重复） ----
         const allSchemes = [];    // { assignment: string[], vector: number[] }
         const usedCars = new Set();
         const curAssign = new Array(n).fill(null);
-        const curVector = new Array(n).fill(NO_CAR_PRIORITY);
+        const curVector = new Array(n).fill(noCarPriority);
 
         /**
          * 递归回溯。按地图顺序逐一尝试可用车辆，保证同一辆车不重复分配。
@@ -1450,7 +1453,7 @@
             if (filteredGroups.length === 0 || filteredGroups.every(g => g.length === 0)) {
                 // 无可用车：留空当前图，继续
                 curAssign[idx] = null;
-                curVector[idx] = NO_CAR_PRIORITY;
+                curVector[idx] = noCarPriority;
                 backtrack(idx + 1);
                 return;
             }
@@ -1462,21 +1465,21 @@
                 for (const car of group) {
                     if (!usedCars.has(car)) {
                         anyAssigned = true;
-                        const prio = carToPriority.get(car) ?? NO_CAR_PRIORITY;
+                        const prio = carToPriority.get(car) ?? noCarPriority;
                         usedCars.add(car);
                         curAssign[idx] = car;
                         curVector[idx] = prio;
                         backtrack(idx + 1);
                         usedCars.delete(car);
                         curAssign[idx] = null;
-                        curVector[idx] = NO_CAR_PRIORITY;
+                        curVector[idx] = noCarPriority;
                     }
                 }
             }
             // 所有车已被其他图占用：留空继续
             if (!anyAssigned) {
                 curAssign[idx] = null;
-                curVector[idx] = NO_CAR_PRIORITY;
+                curVector[idx] = noCarPriority;
                 backtrack(idx + 1);
             }
         }
@@ -1515,21 +1518,20 @@
             return 0;
         });
 
-        const finalSchemes = paretoFront.slice(0, maxSchemesLimit);
+        return paretoFront.slice(0, maxSchemesLimit);
+    }
 
-        // 将 assignment 扩展为全长 ROWS 的数组(未选地图位置为 null)
-        const extended = finalSchemes.map(scheme => {
-            const fullAssign = new Array(ROWS).fill(null);
-            const fullVec = new Array(ROWS).fill(null);
-            for (let i = 0; i < n; i++) {
-                const origIdx = validMaps[i].originalIndex;
-                fullAssign[origIdx] = scheme.assignment[i];
-                fullVec[origIdx] = scheme.vector[i];
-            }
-            return { assignment: fullAssign, vector: fullVec };
+    /** 页面层：把紧凑方案映射回显示行，未选地图的位置保留为空。 */
+    function mapSchemesToRows(schemes, validMaps, rowCount) {
+        return schemes.map(scheme => {
+            const assignment = new Array(rowCount).fill(null);
+            const vector = new Array(rowCount).fill(null);
+            validMaps.forEach(({ originalIndex }, index) => {
+                assignment[originalIndex] = scheme.assignment[index];
+                vector[originalIndex] = scheme.vector[index];
+            });
+            return { assignment, vector };
         });
-
-        return extended;
     }
 
     /** 计算方案的总优先级分（累加所有非空行，越小越优） */
@@ -1751,7 +1753,9 @@
         // 用 requestAnimationFrame 延迟一帧，确保 loading 动画先渲染
         requestAnimationFrame(() => {
             setTimeout(() => {
-                const paretoSchemes = generateParetoSchemes(validMaps, selectedCars, SCHEME_LIMIT);
+                const candidates = prepareMapCandidates(validMaps, currentZone);
+                const schemes = generateParetoSchemes(candidates, selectedCars, SCHEME_LIMIT, NO_CAR_PRIORITY);
+                const paretoSchemes = mapSchemesToRows(schemes, validMaps, ROWS);
                 paretoSchemes.sort((a, b) => getTotalScore(a) - getTotalScore(b));
                 loadingOverlay.classList.remove('show');
                 updateUIWithSchemes(paretoSchemes);
