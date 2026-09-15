@@ -156,10 +156,16 @@ No server, no build step, no database.
 
 ### Data Pipeline
 
-1. Edit source data files (tier definitions, ban/allow lists)
-2. Run migration script: `python migrate.py`
-3. Reformat: `python reformat.py`
-4. Deploy: push to hosting
+See [Python maintenance tools](PYTHON_TOOLS.md) for installation, paths, review steps and recovery.
+
+1. Export a separate baseline: `python export_xlsx.py --output baseline.xlsx`.
+2. Generate a keyed review list: `python diff_xlsx.py --base baseline.xlsx --user user.xlsx --output changes.review.json`.
+3. Review individually; set `accepted` to `true` only for approved entries.
+4. Preflight: `python apply_changes.py --review changes.review.json`; use `--output` for a separate preview.
+5. Apply with `--write`, run `python validate_data.py`, then re-export and compare.
+
+Existing destinations are backed up before atomic replacement. Historical dated scripts remain as records.
+Run regression checks with `python -m unittest test_data_tools -v`.
 
 ### Algorithm Notes
 
