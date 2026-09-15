@@ -1199,16 +1199,18 @@
         api.savePref(APP_CONFIG.storageKeys.zoneMode, currentZone);
     }
     async function loadGarage() {
+        let isFirstLoad = false;
         try {
             const loaded = await api.loadGarage();
-            loaded.forEach(c => selectedCars.add(c));
+            isFirstLoad = loaded === null;
+            if (loaded) loaded.forEach(c => selectedCars.add(c));
         } catch(e) {}
         try {
             const savedZone = api.loadPref(APP_CONFIG.storageKeys.zoneMode);
             if (savedZone === 'zone4' || savedZone === 'zone5') currentZone = savedZone;
         } catch(e) {}
         // 首次加载无数据时默认全选当前区
-        if (selectedCars.size === 0) {
+        if (isFirstLoad) {
             const carList = getCurrentCarList();
             carList.forEach(c => selectedCars.add(c));
             saveGarage();
@@ -1304,11 +1306,16 @@
     /** 全部点亮（搜索模式下只影响可见车辆） */
     function selectAll() {
         const carList = getCurrentCarList();
-        const targets = filterBySearch(carList, searchQuery);
+        const targets = filterByClass(filterBySearch(carList, searchQuery), filterClass);
         targets.forEach(c => selectedCars.add(c));
+        saveGarage();
         renderGarage();
     }
-    function clearAll() { selectedCars.clear(); renderGarage(); }
+    function clearAll() {
+        getCurrentCarList().forEach(car => selectedCars.delete(car));
+        saveGarage();
+        renderGarage();
+    }
 
     // =======================================================================
     //  核心算法
@@ -1510,8 +1517,11 @@
             }
         }
 
-        // 按优先级向量字典序排序
+        // 先按总优先级排序，再截取；同分时按向量字典序排序
         paretoFront.sort((a, b) => {
+            const totalDifference = a.vector.reduce((sum, value) => sum + value, 0)
+                - b.vector.reduce((sum, value) => sum + value, 0);
+            if (totalDifference !== 0) return totalDifference;
             for (let i = 0; i < n; i++) {
                 if (a.vector[i] !== b.vector[i]) return a.vector[i] - b.vector[i];
             }
@@ -1754,7 +1764,8 @@
         requestAnimationFrame(() => {
             setTimeout(() => {
                 const candidates = prepareMapCandidates(validMaps, currentZone);
-                const schemes = generateParetoSchemes(candidates, selectedCars, SCHEME_LIMIT, NO_CAR_PRIORITY);
+                const ownedInZone = new Set(getCurrentCarList().filter(car => selectedCars.has(car)));
+                const schemes = generateParetoSchemes(candidates, ownedInZone, SCHEME_LIMIT, NO_CAR_PRIORITY);
                 const paretoSchemes = mapSchemesToRows(schemes, validMaps, ROWS);
                 paretoSchemes.sort((a, b) => getTotalScore(a) - getTotalScore(b));
                 loadingOverlay.classList.remove('show');
@@ -1926,17 +1937,6 @@
                 // 四区提示显示切换
                 var hint = document.getElementById('zoneHint');
                 if (hint) hint.classList.toggle('show', currentZone === 'zone4');
-                // 切换到四区时，清除不在四区车池里的车
-                if (currentZone === 'zone4') {
-                    let changed = false;
-                    for (const car of selectedCars) {
-                        if (!zone4Cars.includes(car)) {
-                            selectedCars.delete(car);
-                            changed = true;
-                        }
-                    }
-                    if (changed) saveGarage();
-                }
                 // 重渲染
                 buildMapIndex();
                 updateSubtitle();
@@ -1989,7 +1989,7 @@
             updateSubtitle();
             computeAndDisplay();
         } catch (err) {
-            mapRowsContainer.innerHTML = `<div class="loading" style="color:#f99;padding:30px;">❌ 加载失败: ${err.message}<br>请确保 data.json 文件存在且格式正确</div>`;
+            mapRowsContainer.innerHTML = `<div class="loading" style="color:#f99;padding:30px;">❌ 加载失败: ${err.message}<br>请通过 HTTP 服务打开页面，并确保 gauntlet_data.json 文件存在且格式正确</div>`;
             console.error(err);
         }
     }

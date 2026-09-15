@@ -18,10 +18,10 @@ def norm(v):
 
 total = 0
 for sn in wb_b.sheetnames:
-    ws_b, ws_u = wb_b[sn], wb_u[sn]
     if sn not in wb_u.sheetnames:
         print(f'[{sn}] 用户版缺少此 sheet!')
         continue
+    ws_b, ws_u = wb_b[sn], wb_u[sn]
     rows_b, rows_u = ws_b.max_row, ws_u.max_row
     cols_b, cols_u = ws_b.max_column, ws_u.max_column
     if (rows_b, cols_b) != (rows_u, cols_u):

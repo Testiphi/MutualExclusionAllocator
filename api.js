@@ -73,7 +73,7 @@ const api = (() => {
       }
       try {
         const stored = localStorage.getItem(cfg.storageKeys.garage);
-        return stored ? new Set(JSON.parse(stored)) : new Set();
+        return stored !== null ? new Set(JSON.parse(stored)) : null;
       } catch {
         return new Set();
       }
