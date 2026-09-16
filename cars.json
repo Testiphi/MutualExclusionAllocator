@@ -61,7 +61,7 @@
     "速尾": "McLaren Speedtail",
     "银电": "Mercedes-Benz Silver Lightning",
     "霓虹gtr": "Nissan GT-R Neon Edition",
-    "风扇": "McMurtry Speirling",
+    "风扇": "McMurtry Spéirling",
     "风龙": "Bugatti Mistral",
     "红秋王": "Automobili Pininfarina Battista Edizione Nino Farina",
     "保时捷919": "Porsche 919 Street",
@@ -493,17 +493,6 @@
       "handling": 56.63,
       "nitro": 74.19,
       "nickname": "速尾"
-    },
-    {
-      "title": "McMurtry Speirling",
-      "score": 4003,
-      "max_stars": 5,
-      "class": "A",
-      "max_speed": 339.7,
-      "acceleration": 90.52,
-      "handling": 82.09,
-      "nitro": 62.82,
-      "nickname": "风扇"
     },
     {
       "title": "Mercedes-Benz Silver Lightning",
@@ -1520,10 +1509,10 @@
       "title": "Ferrari LaFerrari Aperta",
       "score": 4293,
       "class": "S",
-      "max_speed": 366.2,
-      "acceleration": 81.03,
-      "handling": 82.48,
-      "nitro": 70.1
+      "max_speed": 366.3,
+      "acceleration": 81.11,
+      "handling": 82.68,
+      "nitro": 70.32
     },
     {
       "title": "Ferrari Monza SP1",
@@ -2344,7 +2333,9 @@
       "max_speed": 339.7,
       "acceleration": 90.52,
       "handling": 82.09,
-      "nitro": 62.82
+      "nitro": 62.82,
+      "nickname": "风扇",
+      "max_stars": 5
     },
     {
       "title": "Mercedes-Benz 2022 Showcar Vision AMG",
