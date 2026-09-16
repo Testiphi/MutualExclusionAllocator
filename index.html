@@ -1130,7 +1130,14 @@
             const totalScore = getTotalScore(scheme);
             const option = document.createElement('option');
             option.value = idx;
-            option.textContent = `方案 ${idx+1} · 优先级总分 ${totalScore}`;
+            // 方案摘要: 列出每张图的选车, 便于在列表中直接比较（未选地图/无车跳过/标注）
+            const parts = [];
+            for (let i = 0; i < ROWS; i++) {
+                const big = bigSelects[i].value;
+                const small = smallSelects[i].value;
+                if (big && small) parts.push(`${small}:${scheme.assignment[i] || '空'}`);
+            }
+            option.textContent = `方案 ${idx+1} · ${parts.join(' ')} · 总分 ${totalScore}`;
             schemeSelect.appendChild(option);
         });
         schemeSelect.value = 0;
