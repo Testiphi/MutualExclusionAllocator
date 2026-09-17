@@ -1378,6 +1378,10 @@
                     carStats[c.title] = c;
                 }
                 Object.assign(nickToName, carData._nickname_map);
+                // 车辆条目自带 nickname 也并入（防止 _nickname_map 漏项导致排序/搜索失效, 如 biome）
+                for (const c of carData.cars) {
+                    if (c.nickname && !nickToName[c.nickname]) nickToName[c.nickname] = c.title;
+                }
             } catch(e) {
                 console.warn('车辆数据加载失败, 搜索/排序降级:', e.message);
             }
