@@ -348,17 +348,21 @@
         api.savePref(APP_CONFIG.storageKeys.starMap, starsMap);
     }
 
-    /** 获取当前分区的有效星级，不改写保存的用户设置 */
+    /** 用户未设置时的分区默认星级：五区=最高星，四区=规则默认值 */
+    function getZoneDefaultStar(carName) {
+        if (currentZone === 'zone5') return getStarRange(carName).max;
+        return getDefaultStar(carName);
+    }
+
+    /** 获取当前分区的有效星级，不改写保存的用户设置（显示与计算共用同一来源） */
     function getCarStars(carName) {
-        const stars = starsMap[carName] ?? getDefaultStar(carName);
+        const stars = starsMap[carName] ?? getZoneDefaultStar(carName);
         const range = getStarRange(carName);
         return Math.max(range.min, Math.min(range.max, stars));
     }
 
-    /** 获取某辆车的初始显示星级：五区用最高星，四区用默认星 */
+    /** 获取某辆车的初始显示星级（与 getCarStars 一致） */
     function getInitCarStars(carName) {
-        if (starsMap[carName] != null) return getCarStars(carName);
-        if (currentZone === 'zone5') return getStarRange(carName).max;
         return getCarStars(carName);
     }
 
