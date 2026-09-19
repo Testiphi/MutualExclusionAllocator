@@ -3207,6 +3207,78 @@
       "handling": 70.17,
       "nitro": 48.98,
       "nickname": "陀飞轮"
+    },
+    {
+      "title": "Audi R8 LMP1 2000",
+      "score": 4889,
+      "class": "S",
+      "max_speed": 422.7,
+      "acceleration": 83.9,
+      "handling": 60.28,
+      "nitro": 66.17
+    },
+    {
+      "title": "Audi R18 E-tron Quattro 2012",
+      "score": 4420,
+      "class": "S",
+      "max_speed": 400.2,
+      "acceleration": 78.77,
+      "handling": 55.32,
+      "nitro": 54.21
+    },
+    {
+      "title": "Audi R8 Coupe V10 Performance Quattro",
+      "score": 3627,
+      "class": "C",
+      "max_speed": 341.2,
+      "acceleration": 76.99,
+      "handling": 64.17,
+      "nitro": 48.62
+    },
+    {
+      "title": "Dodge Challenger Halloween Edition",
+      "score": 4594,
+      "class": "S",
+      "max_speed": 372.4,
+      "acceleration": 86.52,
+      "handling": 56.05,
+      "nitro": 68.79
+    },
+    {
+      "title": "TVR Cerbera Speed 12",
+      "score": 5017,
+      "class": "S",
+      "max_speed": 403.3,
+      "acceleration": 82.42,
+      "handling": 79.44,
+      "nitro": 85.67
+    },
+    {
+      "title": "Bentley Speed 8",
+      "score": 4242,
+      "class": "A",
+      "max_speed": 367.1,
+      "acceleration": 86.53,
+      "handling": 68.34,
+      "nitro": 58.91
+    },
+    {
+      "title": "Porsche 718 Cayman Pac-Man Edition",
+      "score": 4335,
+      "class": "B",
+      "max_speed": 360.0,
+      "acceleration": 81.95,
+      "handling": 64.77,
+      "nitro": 68.37
+    },
+    {
+      "title": "Ginetta Akula",
+      "score": 4391,
+      "class": "A",
+      "max_speed": 369.5,
+      "acceleration": 83.54,
+      "handling": 72.54,
+      "nitro": 66.41
     }
   ]
 }
