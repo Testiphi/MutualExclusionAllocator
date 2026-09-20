@@ -116,11 +116,11 @@ class DataToolsTests(unittest.TestCase):
         result, _ = apply_changes(result, report(change(tier='理论', sc=True, sc_type='跳图', old_present=True, old=10, new=9)), CARS)
         self.assertEqual([e['time'] for e in result['tracks'][0]['五区']['理论']], [9, 11])
 
-    def test_special_route_pivot_sheets_share_rows_and_columns(self):
+    def test_special_route_pivot_sheets_share_rows_with_per_tier_columns(self):
         data, _ = apply_changes(sc_fixture(), report(
-            change(tier='理论', sc=True, sc_type='跳图', new=20),
+            change(tier='理论', car='X', stars=None, sc=True, sc_type='跳图', new=20),
             change(tier='理论', car='Y', stars=None, sc=True, sc_type='跳图', new=21),
-            change(zone='四区', tier='理论', sc=True, sc_type='跳图', new=19),
+            change(zone='四区', tier='高手', sc=True, sc_type='跳图', new=19),
             change(big='B', sc=True, sc_type='滑雪', new=30)), CARS)
         with tempfile.TemporaryDirectory() as temp:
             path = Path(temp) / 'data.xlsx'
@@ -134,11 +134,18 @@ class DataToolsTests(unittest.TestCase):
                 self.assertIn(name, sheets)
                 # 全部跑法组合在四张表都出现, 空行可直接填值
                 self.assertEqual(set(sheets[name]['rows']), {('A', 'Same', '跳图'), ('B', 'Same', '滑雪')}, name)
-        self.assertEqual(sheets['五区_理论_特殊跑法']['headers'], ['X★6', 'Y'])
-        self.assertEqual(sheets['五区_理论_特殊跑法']['rows'][('A', 'Same', '跳图')], {'X★6': 20, 'Y': 21})
+        # 列集按区档各自收集: 理论档无星列, 高手档带星列
+        self.assertEqual(sheets['五区_理论_特殊跑法']['headers'], ['X', 'Y'])
+        self.assertEqual(sheets['五区_高手_特殊跑法']['headers'], ['X★6'])
+        self.assertEqual(sheets['四区_理论_特殊跑法']['headers'], [])
+        self.assertEqual(sheets['四区_高手_特殊跑法']['headers'], ['X★6'])
+        # 有值格只落在本区本档的列上
+        self.assertEqual(sheets['五区_理论_特殊跑法']['rows'][('A', 'Same', '跳图')], {'X': 20, 'Y': 21})
         self.assertEqual(sheets['五区_理论_特殊跑法']['rows'][('B', 'Same', '滑雪')], {})
-        self.assertEqual(sheets['四区_理论_特殊跑法']['rows'][('A', 'Same', '跳图')], {'X★6': 19})
-        self.assertEqual(sheets['四区_高手_特殊跑法']['rows'][('A', 'Same', '跳图')], {})
+        self.assertEqual(sheets['五区_高手_特殊跑法']['rows'][('B', 'Same', '滑雪')], {'X★6': 30})
+        self.assertEqual(sheets['五区_高手_特殊跑法']['rows'][('A', 'Same', '跳图')], {})
+        self.assertEqual(sheets['四区_高手_特殊跑法']['rows'][('A', 'Same', '跳图')], {'X★6': 19})
+        self.assertEqual(sheets['四区_理论_特殊跑法']['rows'][('A', 'Same', '跳图')], {})
         # 只有特殊跑法成绩的车不占主表列
         self.assertEqual(sheets['五区_理论']['headers'], [])
         self.assertEqual(sheets['五区_高手']['headers'], [])
@@ -146,7 +153,7 @@ class DataToolsTests(unittest.TestCase):
 
     def test_special_route_edit_review_apply_round_trip(self):
         data, _ = apply_changes(sc_fixture(), report(
-            change(tier='理论', sc=True, sc_type='跳图', new=20),
+            change(tier='理论', car='X', stars=None, sc=True, sc_type='跳图', new=20),
             change(tier='理论', car='Y', stars=None, sc=True, sc_type='跳图', new=21)), CARS)
         with tempfile.TemporaryDirectory() as temp:
             base, user = [Path(temp) / name for name in ('base.xlsx', 'user.xlsx')]
@@ -157,10 +164,12 @@ class DataToolsTests(unittest.TestCase):
             workbook.save(base)
             self.assertEqual(compare_workbooks(load_workbook_data(base), load_workbook_data(base))['changes'], [])
             sheet = workbook['五区_理论_特殊跑法']
-            self.assertEqual(sheet.cell(1, 4).value, 'X★6')
+            # 理论档列集无星, 两车按成绩升序排
+            self.assertEqual(sheet.cell(1, 4).value, 'X')
+            self.assertEqual(sheet.cell(1, 5).value, 'Y')
             self.assertEqual(sheet.cell(2, 4).value, 20)
             sheet.cell(2, 4).value = 19.5      # 改值
-            sheet.cell(2, 5).value = 22        # 填占位(原本无成绩)
+            sheet.cell(2, 5).value = 22        # 改值
             workbook.save(user)
             workbook.close()
             changes = compare_workbooks(load_workbook_data(base), load_workbook_data(user))
@@ -169,6 +178,7 @@ class DataToolsTests(unittest.TestCase):
                 self.assertTrue(finding['sc'])
                 self.assertEqual(finding['sc_type'], '跳图')
                 self.assertEqual((finding['zone'], finding['tier']), ('五区', '理论'))
+                self.assertIsNone(finding['stars'])
                 finding['accepted'] = True
             result, _ = apply_changes(data, changes, CARS)
             times = {e['cars'][0]['name']: e['time'] for e in result['tracks'][0]['五区']['理论']}
@@ -183,6 +193,22 @@ class DataToolsTests(unittest.TestCase):
             deletion['changes'][0]['accepted'] = True
             trimmed, _ = apply_changes(result, deletion, CARS)
             self.assertEqual(len(trimmed['tracks'][0]['五区']['理论']), 1)
+
+    def test_special_route_high_tier_keeps_starred_columns(self):
+        """高手档带星条目进高手表带星列, 且不混入理论表"""
+        data, _ = apply_changes(sc_fixture(), report(
+            change(tier='高手', car='X', stars=6, sc=True, sc_type='跳图', new=20),
+            change(tier='理论', car='Y', stars=None, sc=True, sc_type='跳图', new=21)), CARS)
+        with tempfile.TemporaryDirectory() as temp:
+            path = Path(temp) / 'data.xlsx'
+            workbook, _ = build_workbook(data['tracks'])
+            workbook.save(path)
+            workbook.close()
+            sheets = load_workbook_data(path)
+        self.assertEqual(sheets['五区_理论_特殊跑法']['headers'], ['Y'])
+        self.assertEqual(sheets['五区_高手_特殊跑法']['headers'], ['X★6'])
+        self.assertEqual(sheets['五区_理论_特殊跑法']['rows'][('A', 'Same', '跳图')], {'Y': 21})
+        self.assertEqual(sheets['五区_高手_特殊跑法']['rows'][('A', 'Same', '跳图')], {'X★6': 20})
 
     def test_validation_requires_known_special_route_type(self):
         data, _ = apply_changes(sc_fixture(), report(change(tier='理论', sc=True, sc_type='跳图', new=20)), CARS)

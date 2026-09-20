@@ -4,7 +4,8 @@
 - 行 = 大地图/小地图 (按大地图分组); 特殊跑法表行 = 大地图/小地图/跑法
 - 列 = 车辆 (高手档按星级拆列, 如 ssc★2/ssc★6; 无星级条目显示纯车名)
 - 格 = 成绩(秒), 无数据留空; 普通/自动档填 ✓ 表示该车可用
-- 特殊跑法表列出全部跑法组合(含空行), 四张表共用列集, 便于跨区档补数据
+- 特殊跑法表列出全部跑法组合(含空行), 四张表共用行集; 列按各自区档收集
+  (理论档只有纯车名列, 高手档只有带星列), 空行可直接填值
 
 用法:
     python export_xlsx.py
@@ -189,6 +190,8 @@ def build_pivot_sheet(ws, tracks, zone, tier, show_check=False, stats=None, pres
     return cols
 
 # ---------- 特殊跑法: 行 = 赛道·跑法, 列 = 车辆 ----------
+# 行集四张表共用(全部跑法组合), 列集按 (区, 档) 各自收集 —— 与主表 build_pivot_sheet 一致:
+#   理论档列集只含不带星条目, 高手档列集只含带星条目。
 # 列序: 'main' 沿用主表车序(数据量+速度); 'sheet' 按本表内最快成绩排, 无成绩车按主表序附后。
 # 两种列序只影响展示, 键控对比按表头集合比较, 不会产生差异条目。
 SC_COLUMN_ORDER = 'main'
@@ -210,16 +213,14 @@ def collect_sc_rows(tracks):
                         rows.append(key)
     return rows
 
-def collect_sc_combos(tracks):
-    """全部 sc 条目涉及的 (车名, 星级) 并集 —— 四张跑法表共用列集"""
+def collect_sc_combos(tracks, zone, tier):
+    """本区本档 sc 条目涉及的 (车名, 星级) 集合 —— 该表自己的列集"""
     combos = set()
     for t in tracks:
-        for zone in ('五区', '四区'):
-            for tier in ('理论', '高手'):
-                for e in t.get(zone, {}).get(tier, []):
-                    if e.get('sc'):
-                        for c in e.get('cars', []):
-                            combos.add(car_combo_key(c))
+        for e in t.get(zone, {}).get(tier, []):
+            if e.get('sc'):
+                for c in e.get('cars', []):
+                    combos.add(car_combo_key(c))
     return combos
 
 def sc_cell_values(tracks, zone, tier):
@@ -241,7 +242,9 @@ def sc_cell_values(tracks, zone, tier):
     return cells
 
 def order_sc_combos(combos, cells, stats):
-    """特殊跑法列序（SC_COLUMN_ORDER）；同车不同星始终聚在一起"""
+    """特殊跑法列序（SC_COLUMN_ORDER）；同车不同星始终聚在一起
+    combos 必须是本区本档的列集, 排序键也只在该集合内取
+    """
     main_cols = order_combos(combos, stats)
     if SC_COLUMN_ORDER != 'sheet':
         return main_cols
@@ -261,10 +264,12 @@ def order_sc_combos(combos, cells, stats):
         cols += [(name, s) for s in stars]
     return cols
 
-def build_sc_pivot_sheet(ws, tracks, zone, tier, row_keys, combos, stats=None):
-    """特殊跑法透视表: 行 = 大地图/小地图/跑法, 列 = 车辆, 格 = 成绩"""
+def build_sc_pivot_sheet(ws, tracks, zone, tier, row_keys, stats=None):
+    """特殊跑法透视表: 行 = 大地图/小地图/跑法, 列 = 车辆, 格 = 成绩
+    列集按本区本档 sc 条目收集 —— 理论档无星列, 高手档带星列
+    """
     cells = sc_cell_values(tracks, zone, tier)
-    cols = order_sc_combos(combos, cells, stats)
+    cols = order_sc_combos(collect_sc_combos(tracks, zone, tier), cells, stats)
 
     for j, header in enumerate(('大地图', '小地图', '跑法'), 1):
         ws.cell(1, j, header)
@@ -339,14 +344,13 @@ def build_workbook(tracks):
                 high_cols = cols
             sheet_stats[f'{zone}_{tier}'] = len(cols)
     sc_rows = collect_sc_rows(tracks)
-    sc_combos = collect_sc_combos(tracks)
     for zone in ['五区', '四区']:
         car_stats = compute_car_stats(tracks, zone)
         for tier in ['理论', '高手']:
             name = f'{zone}_{tier}_{SC_SUFFIX}'
             worksheet = workbook.create_sheet(name)
             sheet_stats[name] = len(build_sc_pivot_sheet(
-                worksheet, tracks, zone, tier, sc_rows, sc_combos, stats=car_stats))
+                worksheet, tracks, zone, tier, sc_rows, stats=car_stats))
     return workbook, sheet_stats
 
 
