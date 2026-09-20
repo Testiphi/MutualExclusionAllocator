@@ -442,37 +442,12 @@
 
     /**
      * 从当前档位中提取五区/四区的原始车组列表（转换为旧格式）。
+     * 保留原始数据顺序；推荐排序统一由 getOriginalGroups 按有效成绩决定。
      */
     function getTierEntries(track, zone) {
         const tierData = track[zone]?.[currentTier];
         if (!tierData || !Array.isArray(tierData)) return [];
-        let entries = tierData.map(normalizeEntry);
-        // 高手档按星级调整后的 time 升序
-        // 对同一车的多星级条目，取用户实际星级调整值
-        if (currentTier === '高手') {
-            // 先构建每车的所有数据点
-            var carDataPoints = {};
-            for (var ei = 0; ei < entries.length; ei++) {
-                var e = entries[ei];
-                if (!e._raw || e._raw.time == null) continue;
-                var car = e._raw.cars?.[0]?.name || e[0];
-                var star = e._raw.cars?.[0]?.stars || 6;
-                if (!carDataPoints[car]) carDataPoints[car] = [];
-                carDataPoints[car].push({ stars: star, time: e._raw.time });
-            }
-            entries.sort(function(a, b) {
-                var carA = a._raw?.cars?.[0]?.name || a[0];
-                var carB = b._raw?.cars?.[0]?.name || b[0];
-                var ta = null, tb = null;
-                if (carDataPoints[carA]) ta = getStarAdjustedScore(carDataPoints[carA], getCarStars(carA));
-                if (carDataPoints[carB]) tb = getStarAdjustedScore(carDataPoints[carB], getCarStars(carB));
-                if (ta == null && tb == null) return 0;
-                if (ta == null) return 1;
-                if (tb == null) return -1;
-                return ta - tb;
-            });
-        }
-        return entries;
+        return tierData.map(normalizeEntry);
     }
 
     /**
@@ -628,8 +603,8 @@
             normalScore = normalDataPoints.length > 0 ? normalDataPoints.reduce(function(a,b){return a.stars>b.stars?a:b}).time : null;
             scScore = scDataPoints.length > 0 ? scDataPoints.reduce(function(a,b){return a.stars>b.stars?a:b}).time : null;
         }
-        // 特殊跑法开启时优先显示 sc 版本的成绩
-        if (scOn && scScore != null) return scScore;
+        // 开关打开时在普通与 sc 之间取更快的那条（与 getOriginalGroups 排序口径一致）
+        if (scOn && scScore != null && (normalScore == null || scScore < normalScore)) return scScore;
         return normalScore;
     }
 
@@ -863,9 +838,38 @@
     // =======================================================================
 
     /**
+     * 计算某车在某图某区档下、用于排序的有效成绩。
+     * - 高手档：用 getStarAdjustedScore 按用户星级调整（与展示层一致）
+     * - 理论档：取最高星数据点（默认满星）
+     * scOnly=true 时只取 sc 条目，false 时只取普通条目。
+     * 返回 null 表示该车无可用成绩（不参与排序，排在末尾）。
+     */
+    function getEffectiveTime(entries, carName, scOnly, zone) {
+        var pts = [];
+        for (var i = 0; i < entries.length; i++) {
+            var e = entries[i];
+            if (!e._raw || e._raw.time == null) continue;
+            if (!!e._raw.sc !== scOnly) continue;
+            var car = e._raw.cars && e._raw.cars[0] ? e._raw.cars[0].name : e[0];
+            if (car !== carName) continue;
+            pts.push({ stars: (e._raw.cars && e._raw.cars[0] && e._raw.cars[0].stars) || 6, time: e._raw.time });
+        }
+        if (pts.length === 0) return null;
+        if (currentTier === '高手') return getStarAdjustedScore(pts, getCarStars(carName));
+        var best = pts[0];
+        for (var j = 1; j < pts.length; j++) if (pts[j].stars > best.stars) best = pts[j];
+        return best.time;
+    }
+
+    /**
      * 获取某地图的选车推荐组。
-     * 组索引 = 优先级等级（越小越优）;
-     * 四区模式优先使用 data.json 中的四区数据，回退时按 ZONE4_CARS 过滤。
+     * 组索引 = 优先级等级（越小越优）。
+     *
+     * 排序规则（2026-09-21 起）：完全按有效成绩升序决定组序。
+     *  - 开关关闭：只用普通跑法成绩排序，sc 条目全部忽略。
+     *  - 开关打开：sc 成绩作为该车的候选成绩参与比较，取更快的那条参与排序；
+     *    sc 类型筛选仍生效（指定类型时只用该类型的 sc）。
+     * 无成绩的车按原数据顺序附在末尾。
      */
     function getOriginalGroups(big, small, zone) {
         const list = smallMapsByBig[big];
@@ -876,6 +880,7 @@
         var mapKey = big + '/' + small;
         var scState = specialRouteEnabled[mapKey];
         if (scState === undefined) scState = 'all';  // 默认全部开启
+        var scOn = scState !== 'off';
 
         // 选择五区或四区的数据
         var entries;
@@ -885,38 +890,40 @@
             entries = found.zone5Entries;
         }
 
-        // 过滤 + 生成车组，sc开启时 sc 版本替换同车普通版本
-        var groups = [];
-        var seenCar = {};
+        // sc 类型过滤后的可用条目（关闭时剔除全部 sc）
+        var usable = [];
         for (var ei = 0; ei < entries.length; ei++) {
-            var entry = entries[ei];
-            var raw = entry._raw;
-            var isSc = raw && raw.sc;
-
-            // sc 关闭 → 跳过所有 sc 条目
-            if (scState === 'off' && isSc) continue;
-            // sc 有特定类型 → 只保留匹配类型的 sc 条目
-            if (scState !== 'off' && scState !== 'all' && isSc && raw.sc_type !== scState) continue;
-
-            var cars = parseCarGroup(entry);
-            if (!cars.length || !cars[0]) continue;
-            var carName = cars[0];
-
-            if (isSc && scState !== 'off') {
-                // sc 条目替换同车普通条目，不新增
-                var existingIdx = seenCar[carName];
-                if (existingIdx !== undefined && existingIdx < groups.length) {
-                    groups[existingIdx] = cars;
-                    continue;
-                }
-            }
-
-            if (seenCar[carName] === undefined) {
-                seenCar[carName] = groups.length;
-            }
-            groups.push(cars);
+            var raw = entries[ei]._raw;
+            if (!raw) continue;
+            if (!scOn && raw.sc) continue;
+            if (scOn && scState !== 'all' && raw.sc && raw.sc_type !== scState) continue;
+            usable.push(entries[ei]);
         }
-        return groups;
+
+        // 收集候选车（保持原数据出现顺序，作为并列时与无成绩时的稳定序）
+        var cars = [];
+        var seen = {};
+        for (var k = 0; k < usable.length; k++) {
+            var name = parseCarGroup(usable[k])[0];
+            if (!name) continue;
+            if (seen[name] === undefined) { seen[name] = cars.length; cars.push(name); }
+        }
+
+        // 每车取「可用的最快成绩」：开关打开时普通与 sc 一起比，谁快用谁
+        var scored = cars.map(function(carName) {
+            var normal = getEffectiveTime(usable, carName, false, zone);
+            var sc = scOn ? getEffectiveTime(usable, carName, true, zone) : null;
+            var best = normal;
+            if (sc != null && (best == null || sc < best)) best = sc;
+            return { car: carName, time: best };
+        });
+
+        // 有成绩的按成绩升序；无成绩的按原顺序附在末尾
+        var withTime = scored.filter(function(s) { return s.time != null; });
+        var noTime = scored.filter(function(s) { return s.time == null; });
+        withTime.sort(function(a, b) { return a.time - b.time; });
+
+        return withTime.concat(noTime).map(function(s) { return [s.car]; });
     }
     /** 默认无车优先级标记（100 以内，远大于实际优先级值） */
     const NO_CAR_PRIORITY = 99;
