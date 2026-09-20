@@ -1,7 +1,7 @@
 """Validate track identities, entries, stars, times, mirrors and ordering."""
 import argparse
 from pathlib import Path
-from data_tools import ROOT, ZONES, TIERS, ZONE4_MAX, car_key, configure_stdout, is_time, read_json
+from data_tools import ROOT, SC_TYPES, ZONES, TIERS, ZONE4_MAX, car_key, configure_stdout, is_time, read_json
 
 
 def validate_data(data, cars):
@@ -44,6 +44,12 @@ def validate_data(data, cars):
                         errors.append(f'无效 sc: {label} {name}')
                     if entry.get('sc_type') is not None and not isinstance(entry['sc_type'], str):
                         errors.append(f'无效 sc_type: {label} {name}')
+                    if entry.get('sc'):
+                        route = entry.get('sc_type')
+                        if not route:
+                            errors.append(f'特殊跑法缺类型: {label} {name}')
+                        elif route not in SC_TYPES:
+                            errors.append(f'未知特殊跑法类型: {label} {name} {route!r}')
                     identity = (name, stars, bool(entry.get('sc')), str(entry.get('sc_type')))
                     if identity in seen:
                         errors.append(f'重复条目: {label} {identity}')

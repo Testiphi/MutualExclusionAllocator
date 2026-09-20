@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 """从 gauntlet_data.json 导出透视表格式 gauntlet_data.xlsx
-- 9 sheets: 五区/四区 × 理论/高手/普通/自动 + 特殊跑法(明细)
-- 行 = 大地图/小地图 (按大地图分组)
+- 12 sheets: 五区/四区 × 理论/高手/普通/自动 + 五区/四区 × 理论/高手_特殊跑法
+- 行 = 大地图/小地图 (按大地图分组); 特殊跑法表行 = 大地图/小地图/跑法
 - 列 = 车辆 (高手档按星级拆列, 如 ssc★2/ssc★6; 无星级条目显示纯车名)
 - 格 = 成绩(秒), 无数据留空; 普通/自动档填 ✓ 表示该车可用
-- 特殊跑法 = 明细式 (大地图/小地图/车辆/星级/区-档/成绩/类型)
+- 特殊跑法表列出全部跑法组合(含空行), 四张表共用列集, 便于跨区档补数据
 
 用法:
     python export_xlsx.py
@@ -14,7 +14,7 @@
 import argparse
 import json
 from pathlib import Path
-from data_tools import ROOT, atomic_save_workbook, configure_stdout
+from data_tools import ROOT, SC_SUFFIX, atomic_save_workbook, configure_stdout
 import openpyxl
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from openpyxl.utils import get_column_letter
@@ -96,10 +96,12 @@ def build_pivot_sheet(ws, tracks, zone, tier, show_check=False, stats=None, pres
     stats: compute_car_stats(tracks, zone) 结果, 用于数据量+速度排序
     preset_cols: 指定列序 (普通档镜像高手档)
     """
-    # 收集列 (含 sc-only 车, 主表留空, 成绩见特殊跑法表)
+    # 收集列 (特殊跑法成绩见 *_特殊跑法 表, 不占主表列)
     combos = set()
     for t in tracks:
         for e in t.get(zone, {}).get(tier, []):
+            if e.get('sc'):
+                continue
             for c in e.get('cars', []):
                 combos.add(car_combo_key(c))
     if preset_cols is not None:
@@ -186,44 +188,137 @@ def build_pivot_sheet(ws, tracks, zone, tier, show_check=False, stats=None, pres
     ws.auto_filter.ref = f'A1:{get_column_letter(len(cols)+2)}{r-1}'
     return cols
 
-def build_sc_sheet(ws, tracks):
-    """特殊跑法 明细式"""
-    header = ['大地图', '小地图', '车辆', '星级', '区-档', '成绩', '类型']
-    for j, h in enumerate(header, 1):
-        c = ws.cell(1, j, h)
+# ---------- 特殊跑法: 行 = 赛道·跑法, 列 = 车辆 ----------
+# 列序: 'main' 沿用主表车序(数据量+速度); 'sheet' 按本表内最快成绩排, 无成绩车按主表序附后。
+# 两种列序只影响展示, 键控对比按表头集合比较, 不会产生差异条目。
+SC_COLUMN_ORDER = 'main'
+
+def collect_sc_rows(tracks):
+    """全部 (大地图, 小地图, 跑法) 组合, 按数据出现顺序
+    四张跑法表都列全: 空行即"该区档还没数据", 填值即可, 无需插行
+    """
+    rows, seen = [], set()
+    for t in tracks:
+        for zone in ('五区', '四区'):
+            for tier in ('理论', '高手'):
+                for e in t.get(zone, {}).get(tier, []):
+                    if not e.get('sc'):
+                        continue
+                    key = (t['大地图'], t['小地图'], e.get('sc_type') or 'sc')
+                    if key not in seen:
+                        seen.add(key)
+                        rows.append(key)
+    return rows
+
+def collect_sc_combos(tracks):
+    """全部 sc 条目涉及的 (车名, 星级) 并集 —— 四张跑法表共用列集"""
+    combos = set()
+    for t in tracks:
+        for zone in ('五区', '四区'):
+            for tier in ('理论', '高手'):
+                for e in t.get(zone, {}).get(tier, []):
+                    if e.get('sc'):
+                        for c in e.get('cars', []):
+                            combos.add(car_combo_key(c))
+    return combos
+
+def sc_cell_values(tracks, zone, tier):
+    """{(大地图, 小地图, 跑法): {(车名, 星级): 成绩}}"""
+    cells = {}
+    for t in tracks:
+        for e in t.get(zone, {}).get(tier, []):
+            if not e.get('sc'):
+                continue
+            values = cells.setdefault((t['大地图'], t['小地图'], e.get('sc_type') or 'sc'), {})
+            for c in e.get('cars', []):
+                key, value = car_combo_key(c), e.get('time')
+                if value is None:
+                    values.setdefault(key, None)
+                elif values.get(key) is None:
+                    values[key] = value
+                else:
+                    values[key] = min(values[key], value)
+    return cells
+
+def order_sc_combos(combos, cells, stats):
+    """特殊跑法列序（SC_COLUMN_ORDER）；同车不同星始终聚在一起"""
+    main_cols = order_combos(combos, stats)
+    if SC_COLUMN_ORDER != 'sheet':
+        return main_cols
+    best = {}
+    for values in cells.values():
+        for combo, value in values.items():
+            if value is not None and (combo[0] not in best or value < best[combo[0]]):
+                best[combo[0]] = value
+    rank = {combo: index for index, combo in enumerate(main_cols)}
+    names = {name for name, _ in combos}
+    def key(name):
+        return (best.get(name) is None, best.get(name, 0.0),
+                min([rank[c] for c in combos if c[0] == name] or [len(rank)]))
+    cols = []
+    for name in sorted(names, key=key):
+        stars = sorted({s for n, s in combos if n == name}, key=lambda s: (s is None, s if s is not None else 0))
+        cols += [(name, s) for s in stars]
+    return cols
+
+def build_sc_pivot_sheet(ws, tracks, zone, tier, row_keys, combos, stats=None):
+    """特殊跑法透视表: 行 = 大地图/小地图/跑法, 列 = 车辆, 格 = 成绩"""
+    cells = sc_cell_values(tracks, zone, tier)
+    cols = order_sc_combos(combos, cells, stats)
+
+    for j, header in enumerate(('大地图', '小地图', '跑法'), 1):
+        ws.cell(1, j, header)
+    for j, (name, stars) in enumerate(cols, 4):
+        ws.cell(1, j, f'{name}★{stars}' if stars else name)
+    for j in range(1, len(cols) + 4):
+        c = ws.cell(1, j)
         c.fill = HEADER_FILL
         c.font = HEADER_FONT
         c.alignment = CENTER
         c.border = BORDER
+
     r = 2
-    for t in tracks:
-        for zone in ['五区', '四区']:
-            for tier in ['理论', '高手']:
-                for e in t.get(zone, {}).get(tier, []):
-                    if not e.get('sc'):
-                        continue
-                    for c in e.get('cars', []):
-                        zt = f'{zone}{"理" if tier == "理论" else "高"}'
-                        ws.cell(r, 1, t['大地图'])
-                        ws.cell(r, 2, t['小地图'])
-                        ws.cell(r, 3, c['name'])
-                        ws.cell(r, 4, f'★{c["stars"]}' if c.get('stars') else '')
-                        ws.cell(r, 5, zt)
-                        ws.cell(r, 6, e.get('time'))
-                        ws.cell(r, 7, e.get('sc_type') or 'sc')
-                        for j in range(1, 8):
-                            cc = ws.cell(r, j)
-                            cc.border = BORDER
-                            cc.font = CELL_FONT
-                            if j in (4, 5, 6):
-                                cc.alignment = CENTER
-                        r += 1
-    widths = [14, 14, 10, 8, 9, 9, 12]
-    for j, w in enumerate(widths, 1):
-        ws.column_dimensions[get_column_letter(j)].width = w
-    ws.auto_filter.ref = f'A1:G{r-1}'
-    ws.freeze_panes = 'A2'
-    return r - 2
+    cur_map = None
+    map_start = 2
+    for dm, xm, route in row_keys:
+        if dm != cur_map:
+            if cur_map is not None:
+                ws.merge_cells(start_row=map_start, start_column=1, end_row=r - 1, end_column=1)
+            cur_map = dm
+            map_start = r
+        values = cells.get((dm, xm, route), {})
+        ws.cell(r, 1, dm)
+        ws.cell(r, 2, xm)
+        ws.cell(r, 3, route)
+        for j, key in enumerate(cols, 4):
+            value = values.get(key)
+            if value is not None:
+                ws.cell(r, j, value)
+        for j in range(1, len(cols) + 4):
+            c = ws.cell(r, j)
+            c.border = BORDER
+            if j <= 3:
+                c.font = TRACK_FONT
+            else:
+                c.font = CELL_FONT
+                c.alignment = CENTER
+        if dm == cur_map:
+            ws.cell(r, 1).fill = ZONE_FILL
+        r += 1
+    if cur_map is not None:
+        ws.merge_cells(start_row=map_start, start_column=1, end_row=r - 1, end_column=1)
+        ws.cell(map_start, 1).fill = ZONE_FILL
+        ws.cell(map_start, 1).alignment = CENTER
+
+    ws.column_dimensions['A'].width = 14
+    ws.column_dimensions['B'].width = 14
+    ws.column_dimensions['C'].width = 12
+    for j in range(4, len(cols) + 4):
+        ws.column_dimensions[get_column_letter(j)].width = 7.5
+    ws.freeze_panes = 'D2'
+    if row_keys:
+        ws.auto_filter.ref = f'A1:{get_column_letter(len(cols)+3)}{r-1}'
+    return cols
 
 def build_workbook(tracks):
     """从赛道数据构建工作簿与导出统计，不读写文件。"""
@@ -243,8 +338,15 @@ def build_workbook(tracks):
             if tier == '高手':
                 high_cols = cols
             sheet_stats[f'{zone}_{tier}'] = len(cols)
-    worksheet = workbook.create_sheet('特殊跑法')
-    sheet_stats['特殊跑法'] = build_sc_sheet(worksheet, tracks)
+    sc_rows = collect_sc_rows(tracks)
+    sc_combos = collect_sc_combos(tracks)
+    for zone in ['五区', '四区']:
+        car_stats = compute_car_stats(tracks, zone)
+        for tier in ['理论', '高手']:
+            name = f'{zone}_{tier}_{SC_SUFFIX}'
+            worksheet = workbook.create_sheet(name)
+            sheet_stats[name] = len(build_sc_pivot_sheet(
+                worksheet, tracks, zone, tier, sc_rows, sc_combos, stats=car_stats))
     return workbook, sheet_stats
 
 
@@ -265,7 +367,7 @@ def export_workbook(input_path, output_path):
 
 
 def main(argv=None):
-    parser = argparse.ArgumentParser(description='将赛道 JSON 导出为九张工作表的 Excel 工作簿')
+    parser = argparse.ArgumentParser(description='将赛道 JSON 导出为十二张工作表的 Excel 工作簿')
     parser.add_argument('--input', type=Path, default=DEFAULT_INPUT, help='输入 JSON（默认：脚本目录下 gauntlet_data.json）')
     parser.add_argument('--output', type=Path, default=DEFAULT_OUTPUT, help='输出 Excel（默认：脚本目录下 gauntlet_data.xlsx）')
     args = parser.parse_args(argv)

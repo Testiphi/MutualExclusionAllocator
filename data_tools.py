@@ -10,6 +10,9 @@ from datetime import datetime
 ROOT = Path(__file__).resolve().parent
 ZONES = ('五区', '四区')
 TIERS = ('理论', '高手', '普通', '自动')
+SC_SUFFIX = '特殊跑法'
+# 特殊跑法类型白名单: 新增跑法类型须先在此登记（校验脚本据此拦截拼写变体）
+SC_TYPES = ('滑栏杆', '滑雪', '跳楼', '跳图', '跳船', '挂桥', '稳定跳图', '旧跳图', '新跳图')
 ZONE4_MAX = {'恶魔': 2, 'ssc': 5, '爱音': 4, '玻璃': 3, 'f5': 3, '莫斯勒': 3,
              '大超': 3, '狼崽': 5, 'fe3': 5, '火山': 5, '风扇': 5, '帕梅': 5,
              'gtr50': 5, '600lt': 5, '5n': 4}
@@ -71,6 +74,19 @@ def atomic_save_workbook(workbook, path):
 
 def car_key(car):
     return car['name'], car.get('stars')
+
+
+def parse_sheet_name(title):
+    """数据表名 → (zone, tier, sc)；非数据表返回 None
+
+    普通表 `五区_理论`；特殊跑法表 `五区_理论_特殊跑法`（多一列跑法行键）。
+    """
+    parts = str(title).split('_')
+    if len(parts) == 2 and parts[0] in ZONES and parts[1] in TIERS:
+        return parts[0], parts[1], False
+    if len(parts) == 3 and parts[0] in ZONES and parts[1] in TIERS and parts[2] == SC_SUFFIX:
+        return parts[0], parts[1], True
+    return None
 
 
 def parse_column(label):

@@ -2,7 +2,7 @@
 import argparse
 import json
 from pathlib import Path
-from data_tools import ROOT, atomic_write, configure_stdout, is_time, parse_column
+from data_tools import ROOT, atomic_write, configure_stdout, is_time, parse_column, parse_sheet_name
 from xlsx_tools import load_workbook_data
 
 
@@ -12,18 +12,11 @@ def compare_workbooks(base, user):
         if sheet not in base or sheet not in user:
             structure.append({'sheet': sheet, 'kind': 'sheet_added' if sheet in user else 'sheet_missing'})
             continue
-        left, right = base[sheet], user[sheet]
-        if sheet == '特殊跑法':
-            for key in sorted(set(left['values']) | set(right['values']), key=repr):
-                old, new = left['values'].get(key), right['values'].get(key)
-                if key in left['values'] and key in right['values'] and old == new:
-                    continue
-                big, small, name, stars, zone, tier, route = key
-                changes.append({'sheet': sheet, 'big': big, 'small': small, 'zone': zone, 'tier': tier,
-                                'car': name, 'stars': stars, 'sc': True, 'sc_type': route,
-                                'old': old, 'new': new, 'old_present': key in left['values'], 'new_present': key in right['values']})
+        parsed = parse_sheet_name(sheet)
+        if parsed is None:
             continue
-        zone, tier = sheet.split('_')
+        zone, tier, sc = parsed
+        left, right = base[sheet], user[sheet]
         for column in sorted(set(left['headers']) ^ set(right['headers'])):
             structure.append({'sheet': sheet, 'kind': 'column_added' if column in right['headers'] else 'column_missing', 'column': column})
         for key in sorted(set(left['rows']) ^ set(right['rows'])):
@@ -31,13 +24,14 @@ def compare_workbooks(base, user):
         # Missing sheets/rows/columns are structural findings, never implicit deletions.
         for key in sorted(set(left['rows']) & set(right['rows'])):
             lrow, rrow = left['rows'][key], right['rows'][key]
+            route = key[2] if sc else None
             for column in right['headers']:
                 old, new = lrow.get(column), rrow.get(column)
                 if old == new or (column not in left['headers'] and new is None):
                     continue
                 name, stars = parse_column(column)
                 changes.append({'sheet': sheet, 'big': key[0], 'small': key[1], 'zone': zone, 'tier': tier,
-                                'car': name, 'stars': stars, 'sc': False, 'sc_type': None,
+                                'car': name, 'stars': stars, 'sc': sc, 'sc_type': route,
                                 'old': old, 'new': new, 'old_present': old is not None, 'new_present': new is not None})
     for index, change in enumerate(changes, 1):
         old, new = change['old'], change['new']

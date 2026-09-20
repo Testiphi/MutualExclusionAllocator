@@ -29,6 +29,14 @@ def fixture():
 CARS = {'cars': [{'title': name} for name in ('X', 'Y', 'Z', '恶魔')]}
 
 
+def sc_fixture():
+    """两区齐全的赛道骨架, 供特殊跑法透视表测试使用"""
+    return {'_version': 1, 'tracks': [
+        {'大地图': big, '小地图': 'Same',
+         **{zone: {tier: [] for tier in ('理论', '高手', '普通', '自动')} for zone in ('五区', '四区')}}
+        for big in ('A', 'B')]}
+
+
 def change(**overrides):
     value = {'accepted': True, 'big': 'A', 'small': 'Same', 'zone': '五区',
              'tier': '高手', 'car': 'X', 'stars': 6, 'sc': False, 'sc_type': None,
@@ -77,7 +85,7 @@ class DataToolsTests(unittest.TestCase):
         self.assertEqual(result['tracks'][1]['五区']['高手'], [])
 
     def test_theory_and_sc_do_not_add_mirrors(self):
-        for value in (change(tier='理论'), change(sc=True, sc_type='jump')):
+        for value in (change(tier='理论'), change(sc=True, sc_type='跳图')):
             result, _ = apply_changes(fixture(), report(value), CARS)
             self.assertEqual(result['tracks'][0]['五区']['普通'], [])
 
@@ -102,11 +110,89 @@ class DataToolsTests(unittest.TestCase):
 
     def test_sorting_and_special_route_identity(self):
         result, _ = apply_changes(fixture(), report(change(new=30), change(car='Y', new=20),
-                                                   change(tier='理论', sc=True, sc_type='jump', new=10),
-                                                   change(tier='理论', sc=True, sc_type='other', new=11)), CARS)
+                                                   change(tier='理论', sc=True, sc_type='跳图', new=10),
+                                                   change(tier='理论', sc=True, sc_type='滑雪', new=11)), CARS)
         self.assertEqual([e['time'] for e in result['tracks'][0]['五区']['高手']], [20, 30])
-        result, _ = apply_changes(result, report(change(tier='理论', sc=True, sc_type='jump', old_present=True, old=10, new=9)), CARS)
+        result, _ = apply_changes(result, report(change(tier='理论', sc=True, sc_type='跳图', old_present=True, old=10, new=9)), CARS)
         self.assertEqual([e['time'] for e in result['tracks'][0]['五区']['理论']], [9, 11])
+
+    def test_special_route_pivot_sheets_share_rows_and_columns(self):
+        data, _ = apply_changes(sc_fixture(), report(
+            change(tier='理论', sc=True, sc_type='跳图', new=20),
+            change(tier='理论', car='Y', stars=None, sc=True, sc_type='跳图', new=21),
+            change(zone='四区', tier='理论', sc=True, sc_type='跳图', new=19),
+            change(big='B', sc=True, sc_type='滑雪', new=30)), CARS)
+        with tempfile.TemporaryDirectory() as temp:
+            path = Path(temp) / 'data.xlsx'
+            workbook, _ = build_workbook(data['tracks'])
+            workbook.save(path)
+            workbook.close()
+            sheets = load_workbook_data(path)
+        for zone in ('五区', '四区'):
+            for tier in ('理论', '高手'):
+                name = f'{zone}_{tier}_特殊跑法'
+                self.assertIn(name, sheets)
+                # 全部跑法组合在四张表都出现, 空行可直接填值
+                self.assertEqual(set(sheets[name]['rows']), {('A', 'Same', '跳图'), ('B', 'Same', '滑雪')}, name)
+        self.assertEqual(sheets['五区_理论_特殊跑法']['headers'], ['X★6', 'Y'])
+        self.assertEqual(sheets['五区_理论_特殊跑法']['rows'][('A', 'Same', '跳图')], {'X★6': 20, 'Y': 21})
+        self.assertEqual(sheets['五区_理论_特殊跑法']['rows'][('B', 'Same', '滑雪')], {})
+        self.assertEqual(sheets['四区_理论_特殊跑法']['rows'][('A', 'Same', '跳图')], {'X★6': 19})
+        self.assertEqual(sheets['四区_高手_特殊跑法']['rows'][('A', 'Same', '跳图')], {})
+        # 只有特殊跑法成绩的车不占主表列
+        self.assertEqual(sheets['五区_理论']['headers'], [])
+        self.assertEqual(sheets['五区_高手']['headers'], [])
+        self.assertEqual(sheets['四区_理论']['headers'], [])
+
+    def test_special_route_edit_review_apply_round_trip(self):
+        data, _ = apply_changes(sc_fixture(), report(
+            change(tier='理论', sc=True, sc_type='跳图', new=20),
+            change(tier='理论', car='Y', stars=None, sc=True, sc_type='跳图', new=21)), CARS)
+        with tempfile.TemporaryDirectory() as temp:
+            base, user = [Path(temp) / name for name in ('base.xlsx', 'user.xlsx')]
+            workbook, _ = build_workbook(data['tracks'])
+            self.assertEqual(set(workbook.sheetnames), {f'{zone}_{tier}' for zone in ('五区', '四区')
+                             for tier in ('理论', '高手', '普通', '自动')} | {f'{zone}_{tier}_特殊跑法'
+                             for zone in ('五区', '四区') for tier in ('理论', '高手')})
+            workbook.save(base)
+            self.assertEqual(compare_workbooks(load_workbook_data(base), load_workbook_data(base))['changes'], [])
+            sheet = workbook['五区_理论_特殊跑法']
+            self.assertEqual(sheet.cell(1, 4).value, 'X★6')
+            self.assertEqual(sheet.cell(2, 4).value, 20)
+            sheet.cell(2, 4).value = 19.5      # 改值
+            sheet.cell(2, 5).value = 22        # 填占位(原本无成绩)
+            workbook.save(user)
+            workbook.close()
+            changes = compare_workbooks(load_workbook_data(base), load_workbook_data(user))
+            self.assertEqual(len(changes['changes']), 2)
+            for finding in changes['changes']:
+                self.assertTrue(finding['sc'])
+                self.assertEqual(finding['sc_type'], '跳图')
+                self.assertEqual((finding['zone'], finding['tier']), ('五区', '理论'))
+                finding['accepted'] = True
+            result, _ = apply_changes(data, changes, CARS)
+            times = {e['cars'][0]['name']: e['time'] for e in result['tracks'][0]['五区']['理论']}
+            self.assertEqual(times, {'X': 19.5, 'Y': 22})
+            # 删值: 清空 Y 的单元格 → 删除条目
+            fresh, _ = build_workbook(result['tracks'])
+            fresh['五区_理论_特殊跑法'].cell(2, 5).value = None
+            fresh.save(base)
+            fresh.close()
+            deletion = compare_workbooks(load_workbook_data(user), load_workbook_data(base))
+            self.assertEqual([c['kind'] for c in deletion['changes']], ['deleted'])
+            deletion['changes'][0]['accepted'] = True
+            trimmed, _ = apply_changes(result, deletion, CARS)
+            self.assertEqual(len(trimmed['tracks'][0]['五区']['理论']), 1)
+
+    def test_validation_requires_known_special_route_type(self):
+        data, _ = apply_changes(sc_fixture(), report(change(tier='理论', sc=True, sc_type='跳图', new=20)), CARS)
+        entry = data['tracks'][0]['五区']['理论'][0]
+        self.assertEqual(validate_data(data, CARS)[0], [])
+        for sc_type, message in ((None, '缺类型'), ('jump', '未知')):
+            entry['sc_type'] = sc_type
+            errors = validate_data(data, CARS)[0]
+            self.assertTrue(errors, sc_type)
+            self.assertIn(message, errors[0])
 
     def test_expert_and_explicit_mirror_changes_share_original_snapshot(self):
         mirror = change(tier='普通', new='✓')
