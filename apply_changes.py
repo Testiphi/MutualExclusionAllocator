@@ -59,7 +59,10 @@ def apply_changes(data, report, cars):
         current = original_entry.get('time') if original_entry else None
         if tier in ('普通', '自动'):
             current = '✓' if original_entry else None
-        current_present = original_entry is not None if sc else current is not None
+        # 存在性统一按「xlsx 该格是否有值」判定: sc 条目在 json 中可能只是占位
+        # (带 sc/sc_type 但无 time), 对应空单元格, 故 sc 也看 time 是否存在。
+        # 若按「条目是否存在」判定, diff 侧把占位填值报成 added(old_present=false) 时会误报旧值不匹配。
+        current_present = current is not None
         if change['old_present'] != current_present or current != change['old']:
             raise ValueError(f'旧值不匹配，数据已变化: {identity}, 当前 {current!r}, 清单 {change["old"]!r}')
         new = change['new']

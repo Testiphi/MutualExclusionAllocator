@@ -89,6 +89,18 @@ class DataToolsTests(unittest.TestCase):
             result, _ = apply_changes(fixture(), report(value), CARS)
             self.assertEqual(result['tracks'][0]['五区']['普通'], [])
 
+    def test_sc_placeholder_fill_accepts_absent_old_and_keeps_route(self):
+        """sc 占位条目(有 sc_type 无 time)对应 xlsx 空单元格, 填值应视作新增而非旧值不匹配"""
+        data = fixture()
+        data['tracks'][0]['五区']['理论'] = [{'cars': [{'name': 'X'}], 'sc': True, 'sc_type': '跳图'}]
+        result, _ = apply_changes(data, report(
+            change(tier='理论', stars=None, sc=True, sc_type='跳图', new=15)), CARS)
+        entries = result['tracks'][0]['五区']['理论']
+        self.assertEqual(len(entries), 1)
+        self.assertEqual(entries[0]['sc_type'], '跳图')
+        self.assertEqual(entries[0]['time'], 15)
+        self.assertEqual(result['tracks'][0]['五区']['普通'], [])
+
     def test_deletion_removes_expert_mirror_and_slower_update_is_explicit(self):
         data, _ = apply_changes(fixture(), report(change()), CARS)
         slower = change(old_present=True, old=20, new=21)
