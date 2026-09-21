@@ -1,5 +1,7 @@
 # [MutualExclusionAllocator](https://github.com/Testiphi/MutualExclusionAllocator)
 
+**English** | [中文](README.zh-CN.md)
+
 > 🌐 **Live demo**: [testiphi.github.io/MutualExclusionAllocator](https://testiphi.github.io/MutualExclusionAllocator/)
 
 A constraint-based resource allocation tool with Pareto-optimal filtering, supporting multiple user tiers and alternative-route heuristics.
