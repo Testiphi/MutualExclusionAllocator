@@ -333,7 +333,22 @@
     /** 用户为每辆车设定的星级映射（持久化） */
     let starsMap = {};
 
-    const STAR_PENALTY_PER_STAR = 0.005;
+    /**
+     * 降星惩罚曲线：f(Δ) = exp(A·Δ + B·Δ²)，Δ = 距最近已知星级点的星数。
+     *
+     * 由真实数据拟合（高手档 125 个多星组 / 233 个星级点对，按组 5 折交叉验证），
+     * 取代原先的恒定 0.5%/星。每星代价随 Δ 递增（0.63% → 1.46%），因为跨度越大
+     * 单位星级的损失越大；恒定系数在长跨度外推时会系统性低估（Δ=5 时中位误差
+     * 2.69% → 0.38%）。
+     * 复核 / 重新拟合：`python _star_curve_fit.py [--refit]`
+     */
+    const STAR_PENALTY_A = 0.00525;
+    const STAR_PENALTY_B = 0.001025;
+
+    /** 比已知星级点低 diff 星时的成绩倍数（> 1，即更慢） */
+    function starPenalty(diff) {
+        return Math.exp(STAR_PENALTY_A * diff + STAR_PENALTY_B * diff * diff);
+    }
 
     /** 加载已保存的星级映射 */
     function loadStarsMap() {
@@ -383,8 +398,8 @@
      *
      * 策略：
      *  - 有精确匹配 → 直接返回
-     *  - 已知两级之间的星级 → 线性插值
-     *  - 未覆盖的星级（如低于最低已知数据）→ 用最接近的数据点 + 惩罚公式外推
+     *  - 已知两级之间的星级 → 线性插值（实测此分支误差中位仅 0.21%）
+     *  - 未覆盖的星级（如低于最低已知数据）→ 最接近的数据点 + starPenalty 凸曲线外推
      */
     function getStarAdjustedScore(dataPoints, userStars) {
         if (!dataPoints || dataPoints.length === 0) return null;
@@ -411,13 +426,13 @@
         // 只有下界（userStars > 所有已知）→ 用最接近的已知点 + 惩罚倒数
         if (lower) {
             var diff = userStars - lower.stars;
-            // 更高星应更快，除以 (1 + penalty * diff)
-            return +(lower.time / (1 + STAR_PENALTY_PER_STAR * diff)).toFixed(3);
+            // 更高星应更快，除以惩罚倍数
+            return +(lower.time / starPenalty(diff)).toFixed(3);
         }
         // 只有上界（userStars < 所有已知）→ 用最接近的已知点 + 惩罚
         if (upper) {
             var diff = upper.stars - userStars;
-            return +(upper.time * (1 + STAR_PENALTY_PER_STAR * diff)).toFixed(3);
+            return +(upper.time * starPenalty(diff)).toFixed(3);
         }
         return null;
     }
