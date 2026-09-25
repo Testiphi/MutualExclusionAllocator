@@ -532,8 +532,8 @@
       },
       "四区": {
         "理论": [{"cars":[{"name":"爱音","stars":null}],"time":27.5},{"cars":[{"name":"杰哥"}],"time":27.55},{"cars":[{"name":"f5","stars":null}],"time":27.8},{"cars":[{"name":"复仇"}],"time":28.29},{"cars":[{"name":"速尾"}],"time":28.39},{"cars":[{"name":"urs"}],"time":28.79},{"cars":[{"name":"007s","stars":null}],"time":29.03},{"cars":[{"name":"fe3","stars":null}],"time":29.05},{"cars":[{"name":"9x8","stars":null}],"time":29.06},{"cars":[{"name":"att"}]}],
-        "高手": [{"cars":[{"name":"杰哥","stars":6}],"time":27.93},{"cars":[{"name":"爱音","stars":2}],"time":28.15},{"cars":[{"name":"狼崽","stars":5}],"time":29.3},{"cars":[{"name":"9x8","stars":6}],"time":29.4},{"cars":[{"name":"fe3","stars":5}],"time":29.56},{"cars":[{"name":"火山","stars":5}],"time":29.6},{"cars":[{"name":"fp1","stars":5}],"time":29.8},{"cars":[{"name":"小牛","stars":6}],"time":30.1},{"cars":[{"name":"肥龙","stars":6}]},{"cars":[{"name":"fp1","stars":6}]},{"cars":[{"name":"英灵殿","stars":6}]},{"cars":[{"name":"5n","stars":4}]},{"cars":[{"name":"att","stars":6}]}],
-        "普通": [{"cars":[{"name":"杰哥","stars":6}]},{"cars":[{"name":"肥龙","stars":6}]},{"cars":[{"name":"fp1","stars":6}]},{"cars":[{"name":"狼崽","stars":5}]},{"cars":[{"name":"9x8","stars":6}]},{"cars":[{"name":"火山","stars":5}]},{"cars":[{"name":"英灵殿","stars":6}]},{"cars":[{"name":"5n","stars":4}]},{"cars":[{"name":"fe3","stars":5}]},{"cars":[{"name":"爱音","stars":2}]},{"cars":[{"name":"小牛","stars":6}]},{"cars":[{"name":"att","stars":6}]},{"cars":[{"name":"fp1","stars":5}]}],
+        "高手": [{"cars":[{"name":"杰哥","stars":6}],"time":27.93},{"cars":[{"name":"爱音","stars":2}],"time":28.15},{"cars":[{"name":"狼崽","stars":5}],"time":29.3},{"cars":[{"name":"9x8","stars":6}],"time":29.4},{"cars":[{"name":"fe3","stars":5}],"time":29.56},{"cars":[{"name":"火山","stars":5}],"time":29.6},{"cars":[{"name":"fp1","stars":5}],"time":29.8},{"cars":[{"name":"小牛","stars":6}],"time":30.1},{"cars":[{"name":"att","stars":2}],"time":30.9},{"cars":[{"name":"肥龙","stars":6}]},{"cars":[{"name":"fp1","stars":6}]},{"cars":[{"name":"英灵殿","stars":6}]},{"cars":[{"name":"5n","stars":4}]},{"cars":[{"name":"att","stars":6}]}],
+        "普通": [{"cars":[{"name":"杰哥","stars":6}]},{"cars":[{"name":"肥龙","stars":6}]},{"cars":[{"name":"fp1","stars":6}]},{"cars":[{"name":"狼崽","stars":5}]},{"cars":[{"name":"9x8","stars":6}]},{"cars":[{"name":"火山","stars":5}]},{"cars":[{"name":"英灵殿","stars":6}]},{"cars":[{"name":"5n","stars":4}]},{"cars":[{"name":"fe3","stars":5}]},{"cars":[{"name":"爱音","stars":2}]},{"cars":[{"name":"小牛","stars":6}]},{"cars":[{"name":"att","stars":6}]},{"cars":[{"name":"fp1","stars":5}]},{"cars":[{"name":"att","stars":2}]}],
         "自动": [{"cars":[{"name":"fp1"}]},{"cars":[{"name":"9x8"}]}]
       }
     },
@@ -1119,7 +1119,7 @@
       },
       "四区": {
         "理论": [{"cars":[{"name":"恶魔"}],"time":33.79,"sc":null,"sc_type":null},{"cars":[{"name":"f5"}],"time":33.89},{"cars":[{"name":"杰哥"}],"time":34.49},{"cars":[{"name":"爱音"}]},{"cars":[{"name":"玻璃"}]},{"cars":[{"name":"ssc"}]},{"cars":[{"name":"莫斯勒"}]},{"cars":[{"name":"狼崽"}]},{"cars":[{"name":"火山"}]},{"cars":[{"name":"att"}]}],
-        "高手": [{"cars":[{"name":"恶魔","stars":2}],"time":34.7},{"cars":[{"name":"恶魔","stars":1}],"time":34.89},{"cars":[{"name":"f5","stars":3}],"time":34.9},{"time":35.19,"stars":null,"sc":false,"sc_type":null,"cars":[{"name":"杰哥","stars":4}]},{"cars":[{"name":"杰哥","stars":6}]},{"cars":[{"name":"莫斯勒","stars":3}]},{"cars":[{"name":"狼崽","stars":5}]},{"cars":[{"name":"火山","stars":5}]},{"cars":[{"name":"att","stars":6}]}],
+        "高手": [{"cars":[{"name":"恶魔","stars":2}],"time":34.7},{"cars":[{"name":"恶魔","stars":1}],"time":34.89},{"cars":[{"name":"f5","stars":3}],"time":34.9},{"cars":[{"name":"杰哥","stars":6}],"time":34.95},{"time":35.19,"stars":null,"sc":false,"sc_type":null,"cars":[{"name":"杰哥","stars":4}]},{"cars":[{"name":"莫斯勒","stars":3}]},{"cars":[{"name":"狼崽","stars":5}]},{"cars":[{"name":"火山","stars":5}]},{"cars":[{"name":"att","stars":6}]}],
         "普通": [{"cars":[{"name":"杰哥","stars":6}]},{"cars":[{"name":"莫斯勒","stars":3}]},{"cars":[{"name":"狼崽","stars":5}]},{"cars":[{"name":"火山","stars":5}]},{"cars":[{"name":"杰哥","stars":4}]},{"cars":[{"name":"恶魔","stars":1}]},{"cars":[{"name":"恶魔","stars":2}]},{"cars":[{"name":"f5","stars":3}]},{"cars":[{"name":"att","stars":6}]}],
         "自动": []
       }
@@ -1153,8 +1153,8 @@
       },
       "四区": {
         "理论": [{"cars":[{"name":"杰哥"}],"time":26.76},{"cars":[{"name":"玻璃","stars":null}],"time":27.5},{"cars":[{"name":"狼崽"}],"time":28.06},{"cars":[{"name":"att"}]}],
-        "高手": [{"cars":[{"name":"杰哥","stars":6}],"time":26.8},{"time":27.09,"stars":null,"sc":false,"sc_type":null,"cars":[{"name":"杰哥","stars":4}]},{"cars":[{"name":"肥龙","stars":6}],"time":27.8},{"cars":[{"name":"速尾","stars":6}],"time":28.1},{"cars":[{"name":"att","stars":6}]},{"cars":[{"name":"狼崽","stars":5}]},{"cars":[{"name":"火山","stars":5}]}],
-        "普通": [{"cars":[{"name":"杰哥","stars":6}]},{"cars":[{"name":"肥龙","stars":6}]},{"cars":[{"name":"速尾","stars":6}]},{"cars":[{"name":"att","stars":6}]},{"cars":[{"name":"狼崽","stars":5}]},{"cars":[{"name":"火山","stars":5}]},{"cars":[{"name":"杰哥","stars":4}]}],
+        "高手": [{"cars":[{"name":"杰哥","stars":6}],"time":26.8},{"time":27.09,"stars":null,"sc":false,"sc_type":null,"cars":[{"name":"杰哥","stars":4}]},{"cars":[{"name":"肥龙","stars":6}],"time":27.8},{"cars":[{"name":"速尾","stars":6}],"time":28.1},{"cars":[{"name":"att","stars":2}],"time":30.13},{"cars":[{"name":"att","stars":6}]},{"cars":[{"name":"狼崽","stars":5}]},{"cars":[{"name":"火山","stars":5}]}],
+        "普通": [{"cars":[{"name":"杰哥","stars":6}]},{"cars":[{"name":"肥龙","stars":6}]},{"cars":[{"name":"速尾","stars":6}]},{"cars":[{"name":"att","stars":6}]},{"cars":[{"name":"狼崽","stars":5}]},{"cars":[{"name":"火山","stars":5}]},{"cars":[{"name":"杰哥","stars":4}]},{"cars":[{"name":"att","stars":2}]}],
         "自动": [{"cars":[{"name":"速尾"}]}]
       }
     },
