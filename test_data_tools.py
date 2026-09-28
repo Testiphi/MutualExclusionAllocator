@@ -104,6 +104,27 @@ class SyncZonesTests(unittest.TestCase):
         changes, _ = sync(data, SYNC_CARS)
         self.assertEqual(sum(len(entries) for entries in changes.values()), 0)
 
+    def test_expert_mirror_is_added_only_for_non_special_routes(self):
+        """SC 条目不补普通镜像（与 apply_changes 同一口径；validate 拦不住这类多余镜像）"""
+        route = {'cars': [{'name': 'Y', 'stars': 6}], 'time': 21, 'sc': True, 'sc_type': '跳图'}
+        data = {'tracks': [sync_track([], [expert('X', 20), route])]}
+        self.assertEqual(validate_data(data, SYNC_CARS)[0], [])
+        changes, _ = sync(data, SYNC_CARS)
+        self.assertEqual(len(changes['创建']), 2)
+        self.assertEqual(len(changes['镜像']), 1)
+        self.assertIn('X★6', changes['镜像'][0])
+        self.assertEqual([e['cars'][0]['name'] for e in data['tracks'][0]['五区']['普通']], ['X'])
+        self.assertEqual(validate_data(data, SYNC_CARS)[0], [])
+
+    def test_special_route_only_entry_adds_no_mirror(self):
+        route = {'cars': [{'name': 'X', 'stars': 6}], 'time': 20, 'sc': True, 'sc_type': '跳图'}
+        data = {'tracks': [sync_track([], [route])]}
+        changes, _ = sync(data, SYNC_CARS)
+        self.assertEqual(len(changes['创建']), 1)
+        self.assertEqual(changes['镜像'], [])
+        self.assertEqual(data['tracks'][0]['五区']['普通'], [])
+        self.assertEqual(validate_data(data, SYNC_CARS)[0], [])
+
 
 class DataToolsTests(unittest.TestCase):
     def test_format_preserves_unknown_fields_escaping_and_missing_zones(self):

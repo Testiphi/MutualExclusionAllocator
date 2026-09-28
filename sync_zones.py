@@ -11,7 +11,7 @@
   1. 只有一边有 `time` → 另一边填占位；占位不存在则新建条目
   2. 两边都有 `time` 且不等 → **保留更快值**，慢侧被覆盖（预检会逐条列出被覆盖的慢值）
   3. 两边都是占位 / 只有占位 → 不动
-- 高手档新建条目时，同区普通档补同车同星镜像
+- 仅**非特殊跑法**高手档新建条目时，同区普通档补同车同星镜像（与 `apply_changes.py` 同一口径）
 - 三个分支都会改动理论/高手档，故**改动过的列表按成绩升序回排**（占位在末尾），
   再跑一次全库校验；校验不通过则报错且不写文件（避免写出「成绩乱序」的库）
 
@@ -131,7 +131,7 @@ def sync(data, cars, max_score=MAX_SCORE):
                     target_zone.append(make_entry(name, stars, source['time'], sc, sc_type))
                     dirty[id(target_zone)] = target_zone
                     changes['创建'].append(f'{label} {tier} {target_name} {tag}: 新建 = {source["time"]}')
-                    if tier == '高手':
+                    if tier == '高手' and not sc:
                         normal = track[target_name]['普通']
                         if find_entry(normal, name, stars, False, None) is None:
                             normal.append({'cars': [{'name': name, 'stars': stars}]})
