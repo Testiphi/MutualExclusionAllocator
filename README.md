@@ -217,7 +217,13 @@ See [Python maintenance tools](PYTHON_TOOLS.md) for installation, paths, review 
 5. Apply with `--write`, run `python validate_data.py`, then re-export and compare.
 
 Existing destinations are backed up before atomic replacement. Historical dated scripts remain as records.
-Run regression checks with `python -m unittest test_data_tools -v` and `node --test test_allocator.js`.
+Run regression checks:
+
+```bash
+python -m unittest test_data_tools -v      # data tools and validation
+node --test test_allocator.js              # allocator boundary cases
+node test_boot_smoke.js                    # page boot smoke test (DOM stub, no browser)
+```
 
 ### Algorithm Notes
 

@@ -204,7 +204,13 @@ config → 数据加载层（api 抽象）→ 应用逻辑（IIFE）
 5. 用 `--write` 应用，运行 `python validate_data.py`，然后重新导出并比对。
 
 既有目标文件在原子替换前会先备份。历史带日期的脚本作为记录保留。
-运行回归检查：`python -m unittest test_data_tools -v` 与 `node --test test_allocator.js`。
+运行回归检查：
+
+```bash
+python -m unittest test_data_tools -v      # 数据工具与校验
+node --test test_allocator.js              # 分配算法边界
+node test_boot_smoke.js                    # 页面启动冒烟（DOM 桩，不启浏览器）
+```
 
 ### 算法说明
 
