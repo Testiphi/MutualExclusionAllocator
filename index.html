@@ -102,102 +102,13 @@
     let smallMapsByBig = {};
 
     // ===================== 五区 / 四区 独立车池（硬编码，可自由增删） =====================
-    const ZONE5_CARS = [
-        "007s",
-        "21c",
-        "300+",
-        "499p",
-        "5n",
-        "600lt",
-        "650s",
-        "9x8",
-        "att",
-        "b95",
-        "c1",
-        "c2",
-        "cc850",
-        "cs",
-        "divo",
-        "er9",
-        "f5",
-        "f5r",
-        "fe3",
-        "fp1",
-        "gtr50",
-        "ps龙",
-        "r兔",
-        "r牛",
-        "sf90",
-        "sgt",
-        "ssc",
-        "ts900",
-        "t牛",
-        "urs",
-        "万达",
-        "六子",
-        "冬王",
-        "塞纳",
-        "复仇",
-        "大超",
-        "小牛",
-        "小自燃",
-        "小蜥蜴",
-        "帕梅",
-        "恶魔",
-        "杰哥",
-        "杰弟",
-        "杰皇",
-        "法拉第",
-        "火山",
-        "冰山",
-        "爱音",
-        "狼崽",
-        "狼王",
-        "猫头鹰",
-        "玻璃",
-        "电牛",
-        "白龙",
-        "919",
-        "秋王",
-        "红秋王",
-        "纳兰",
-        "统治",
-        "肥龙",
-        "自燃",
-        "自私",
-        "英灵殿",
-        "莫斯勒",
-        "速尾",
-        "银电",
-        "霓虹gtr",
-        "风扇",
-        "风龙",
-        "黑龙",
-        "西安",
-        "陀飞轮",
-        "无敌牛",
-        "帝国",
-        "dose",
-    ];
-    const ZONE4_CARS = [
-        "21c", "5n", "600lt", "9x8", "c2",
-        "f5", "fe3", "fp1", "sf90", "sgt",
-        "ssc", "ts900", "urs", "万达", "塞纳",
-        "复仇", "大超", "小牛", "恶魔", "杰哥",
-        "法拉第", "火山", "冰山", "狼崽", "狼王", "玻璃",
-        "秋王", "肥龙", "英灵殿", "莫斯勒",
-        "速尾", "风扇", "白龙",
-        "爱音", "divo", "biome",
-        "统治", "无敌牛", "att",
-        "gtr50", "cs", "er9", "杰弟",
-        "007s", "六子", "帕梅", "919", "dose"
-    ];
-
-
-
-    // zone5Cars / zone4Cars 直接引用上方常量（无需副本）
-    const zone5Cars = ZONE5_CARS;
-    const zone4Cars = ZONE4_CARS;
+    // ===================== 五区 / 四区 车池与星级规则 =====================
+    // 唯一来源是 cars.json 里每辆车记录上的 `zones`（车池）与 `star_rule`（星级上下限）。
+    // 前端与 Python 校验（validate_data.py）读同一份定义，避免两侧规则分叉；
+    // 增删车辆、调整星级限制都改 cars.json，不要在本文件里再维护副本。
+    // 以下变量由 buildCarRules() 在 cars.json 加载后填充。
+    let zone5Cars = [];
+    let zone4Cars = [];
 
     // 车辆度量数据 (cars.json 动态加载后填充)
     let carStats = {};         // 真车名 → { score, max_speed, ... }
@@ -230,89 +141,44 @@
     // ========================== 星级自定义 ==========================
 
     /**
-     * 每辆车的星级规则。
-     * - min: 最低可用星级（上下限均适用）
-     * - zone4Max: 四区模式最高可用星级（未指定则 6）
+     * 每辆车的星级规则（来源：cars.json 每辆车记录上的 `star_rule`）。
+     * - min: 最低可用星级（四区/五区均适用）
+     * - max: 全局最高可用星级（未指定则 6）
+     * - zone4Max: 四区模式最高可用星级（未指定则沿用 max）
      * - default: 默认星级（未设 starsMap 时使用）
+     *
+     * 由 buildCarRules() 填充；前端与 Python 校验共用同一份定义。
      */
-    const CAR_STAR_RULES = {
-        '恶魔':   { min: 1, zone4Max: 2, default: 1 },
-        '杰哥':   { min: 1, default: 4 },
-        'ssc':    { min: 1, zone4Max: 5, default: 3 },
-        'f5':     { min: 1, zone4Max: 3, default: 3 },
-        '玻璃':   { min: 1, zone4Max: 3, default: 1 },
-        '大超':   { min: 1, zone4Max: 3, default: 1 },
-        '莫斯勒': { min: 1, zone4Max: 3, default: 2 },
-        '爱音':   { min: 1, zone4Max: 4, default: 3 },
-        'c2':     { min: 3, default: 3 },
-        '21c':    { min: 3, default: 3 },
-        '肥龙':   { min: 4, default: 6 },
-        'fp1':    { min: 4, default: 6 },
-        '速尾':   { min: 4, default: 6 },
-        '秋王':   { min: 4, default: 5 },
-        'sf90':   { min: 4, default: 6 },
-        '狼王':   { min: 6, zone4Max: 6, default: 6 },
-        '塞纳':   { min: 6, default: 6 },
-        '万达':   { min: 6, default: 6 },
-        '9x8':    { min: 5, default: 6 },
-        '复仇':   { min: 5, default: 6 },
-        '冰山':   { min: 4, default: 4 },
-        'ts900':  { min: 5, default: 6 },
-        'urs':    { min: 4, default: 6 },
-        '法拉第': { min: 6, default: 6 },
-        '英灵殿': { min: 6, default: 6 },
-        '小牛':   { min: 6, default: 6 },
-        '狼崽':   { min: 5, max: 5, default: 5 },
-        '帕梅':   { min: 5, max: 5, default: 5 },
-        'gtr50':  { min: 5, max: 5, default: 5 },
-        'fe3':    { min: 5, max: 5, default: 5 },
-        '600lt':  { min: 5, max: 5, default: 5 },
-        '无敌牛': { min: 5, max: 5, default: 5 },
-        'sgt':    { min: 6, default: 6 },
-        '007s':   { min: 6, default: 6 },
-        '300+':   { min: 6, default: 6 },
-        '499p':   { min: 6, default: 6 },
-        '650s':   { min: 6, default: 6 },
-        'att':    { min: 2, max: 6, default: 6 },
-        'b95':    { min: 6, default: 6 },
-        'c1':     { min: 6, default: 6 },
-        'cc850':  { min: 4, default: 6 },
-        'cs':     { min: 6, default: 6 },
-        'divo':   { min: 6, default: 6 },
-        'er9':    { min: 6, default: 6 },
-        'ps龙':   { min: 6, default: 6 },
-        'r兔':    { min: 5, default: 6 },
-        'r牛':    { min: 6, default: 6 },
-        't牛':    { min: 6, default: 6 },
-        '冬王':   { min: 6, default: 6 },
-        '六子':   { min: 6, default: 6 },
-        '自私':   { min: 6, default: 6 },
-        '自燃':   { min: 6, default: 6 },
-        '小蜥蜴': { min: 6, default: 6 },
-        '小自燃': { min: 6, default: 6 },
-        '纳兰':   { min: 6, default: 6 },
-        '杰弟':   { min: 3, max: 6, zone4Max: 4, default: 6 },
-        '杰皇':   { min: 1, default: 6 },
-        '统治':   { min: 6, default: 6 },
-        '电牛':   { min: 6, default: 6 },
-        '红秋王': { min: 6, default: 6 },
-        '风龙':   { min: 5, default: 6 },
-        '黑龙':   { min: 5, default: 6 },
-        '银电':   { min: 6, default: 6 },
-        '霓虹gtr':{ min: 6, default: 6 },
-        '西安':   { min: 6, default: 6 },
-        '白龙':   { min: 6, default: 6 },
-        '风扇':   { min: 5, max: 5, default: 5 },
-        '火山':   { min: 5, max: 5, default: 5 },
-        '5n':     { min: 4, max: 4, default: 4 },
-        '陀飞轮': { min: 6, default: 6 },
-        '919': { min: 4, default: 6 },
-        'dose': { min: 3, max: 6, zone4Max: 4 },
-    };
+    let CAR_STAR_RULES = {};
 
     /** 获取某辆车的星级规则，未配置则无限制 */
     function getStarRule(carName) {
         return CAR_STAR_RULES[carName] || null;
+    }
+
+    /**
+     * 由 cars.json 派生车池与星级规则（唯一来源，页面内不再维护副本）。
+     *
+     * 每辆车记录上：
+     *   `zones`     → 参与的分区车池，如 ["五区","四区"]
+     *   `star_rule` → 星级限制，键与下方 getStarRange 一致
+     *
+     * 必须在 carStats / nickToName 就绪之后、loadGarage() 之前调用。
+     */
+    function buildCarRules() {
+        zone5Cars = [];
+        zone4Cars = [];
+        CAR_STAR_RULES = {};
+        for (const car of Object.values(carStats)) {
+            if (!car.nickname) continue;          // nickname 即数据里的车名（唯一索引）
+            const zones = car.zones || [];
+            if (zones.includes('五区')) zone5Cars.push(car.nickname);
+            if (zones.includes('四区')) zone4Cars.push(car.nickname);
+            if (car.star_rule) CAR_STAR_RULES[car.nickname] = car.star_rule;
+        }
+        if (zone5Cars.length === 0 || zone4Cars.length === 0 || Object.keys(CAR_STAR_RULES).length === 0) {
+            throw new Error('cars.json 缺少 zones / star_rule 定义，无法构建车池与星级规则');
+        }
     }
 
     /** 获取某辆车的当前有效星级范围 */
@@ -549,7 +415,7 @@
 
     // ========================== 数据加载与索引 ==========================
 
-    // 车池由上方硬编码 ZONE5_CARS / ZONE4_CARS 定义
+    // 车池与星级规则由 cars.json 的 zones / star_rule 派生，见 buildCarRules()
 
     // 构建地图索引（从 gauntlet_data.json 读取，按当前档位获取数据）
     function buildMapIndex() {
@@ -1400,22 +1266,20 @@
             // 通过 api 层加载数据
             RACE_DATA = await api.getRaceData();
 
-            // 加载车辆度量数据
-            try {
-                const carData = await api.getCars();
-                carStats = {};
-                nickToName = {};
-                for (const c of carData.cars) {
-                    carStats[c.title] = c;
-                }
-                Object.assign(nickToName, carData._nickname_map);
-                // 车辆条目自带 nickname 也并入（防止 _nickname_map 漏项导致排序/搜索失效, 如 biome）
-                for (const c of carData.cars) {
-                    if (c.nickname && !nickToName[c.nickname]) nickToName[c.nickname] = c.title;
-                }
-            } catch(e) {
-                console.warn('车辆数据加载失败, 搜索/排序降级:', e.message);
+            // 加载车辆度量数据 —— cars.json 同时承载车池（zones）与星级规则（star_rule），
+            // 因此现在是必需依赖：加载失败不再降级，直接报错。
+            const carData = await api.getCars();
+            carStats = {};
+            nickToName = {};
+            for (const c of carData.cars) {
+                carStats[c.title] = c;
             }
+            Object.assign(nickToName, carData._nickname_map);
+            // 车辆条目自带 nickname 也并入（防止 _nickname_map 漏项导致排序/搜索失效, 如 biome）
+            for (const c of carData.cars) {
+                if (c.nickname && !nickToName[c.nickname]) nickToName[c.nickname] = c.title;
+            }
+            buildCarRules();            // 由 zones / star_rule 派生车池与星级规则
 
             await loadGarage();        // 加载车库（现在 zone5Cars/zone4Cars 已就绪）
             loadStarsMap();             // 加载星级
@@ -1433,7 +1297,7 @@
             updateSubtitle();
             computeAndDisplay();
         } catch (err) {
-            mapRowsContainer.innerHTML = `<div class="loading" style="color:#f99;padding:30px;">❌ 加载失败: ${err.message}<br>请通过 HTTP 服务打开页面，并确保 gauntlet_data.json 文件存在且格式正确</div>`;
+            mapRowsContainer.innerHTML = `<div class="loading" style="color:#f99;padding:30px;">❌ 加载失败: ${err.message}<br>请通过 HTTP 服务打开页面，并确保 gauntlet_data.json 与 cars.json 存在且格式正确</div>`;
             console.error(err);
         }
     }

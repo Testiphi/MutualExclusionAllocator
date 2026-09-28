@@ -1,5 +1,5 @@
 {
-  "_comment": "A9 国服全量车辆数据 (整合自 a9mmgj.top + asec.tools)",
+  "_comment": "A9 国服全量车辆数据 (整合自 a9mmgj.top + asec.tools)。zones = 该车参与的分区车池；star_rule = 人工指定的星级限制（min 最低可用星级，max 全局最高，zone4Max 四区最高，default 默认星级）。前端与 Python 校验共用本文件，勿在 index.html 里再维护副本。",
   "_source": "本地归档: 数据源/国服_a9mmgj_top.csv (a9mmgj.top, 目前使用) + 数据源/国际服_asec_tools.csv (asec.tools, 备用)",
   "_nickname_map": {
     "007s": "Glickenhaus 007S",
@@ -89,7 +89,10 @@
       "acceleration": 89.34,
       "handling": 51.72,
       "nitro": 51.29,
-      "nickname": "猫头鹰"
+      "nickname": "猫头鹰",
+      "zones": [
+        "五区"
+      ]
     },
     {
       "title": "Aston Martin Valhalla Concept Car",
@@ -99,7 +102,15 @@
       "acceleration": 82.25,
       "handling": 81.76,
       "nitro": 59.55,
-      "nickname": "英灵殿"
+      "nickname": "英灵殿",
+      "zones": [
+        "五区",
+        "四区"
+      ],
+      "star_rule": {
+        "min": 6,
+        "default": 6
+      }
     },
     {
       "title": "Automobili Pininfarina B95",
@@ -109,7 +120,14 @@
       "acceleration": 86.93,
       "handling": 60.35,
       "nitro": 45.07,
-      "nickname": "b95"
+      "nickname": "b95",
+      "zones": [
+        "五区"
+      ],
+      "star_rule": {
+        "min": 6,
+        "default": 6
+      }
     },
     {
       "title": "Automobili Pininfarina Battista Edizione Nino Farina",
@@ -119,7 +137,14 @@
       "acceleration": 89.37,
       "handling": 64.44,
       "nitro": 45.9,
-      "nickname": "红秋王"
+      "nickname": "红秋王",
+      "zones": [
+        "五区"
+      ],
+      "star_rule": {
+        "min": 6,
+        "default": 6
+      }
     },
     {
       "title": "Bugatti Bolide",
@@ -129,7 +154,16 @@
       "acceleration": 84.28,
       "handling": 55.58,
       "nitro": 34.66,
-      "nickname": "玻璃"
+      "nickname": "玻璃",
+      "zones": [
+        "五区",
+        "四区"
+      ],
+      "star_rule": {
+        "min": 1,
+        "zone4Max": 3,
+        "default": 1
+      }
     },
     {
       "title": "Bugatti Centodieci",
@@ -139,7 +173,15 @@
       "acceleration": 86.51,
       "handling": 62.58,
       "nitro": 77.09,
-      "nickname": "白龙"
+      "nickname": "白龙",
+      "zones": [
+        "五区",
+        "四区"
+      ],
+      "star_rule": {
+        "min": 6,
+        "default": 6
+      }
     },
     {
       "title": "Bugatti Chiron",
@@ -149,7 +191,15 @@
       "acceleration": 84.4,
       "handling": 45.62,
       "nitro": 63.63,
-      "nickname": "肥龙"
+      "nickname": "肥龙",
+      "zones": [
+        "五区",
+        "四区"
+      ],
+      "star_rule": {
+        "min": 4,
+        "default": 6
+      }
     },
     {
       "title": "Bugatti Chiron Super Sport 300+",
@@ -159,7 +209,14 @@
       "acceleration": 83.26,
       "handling": 64.82,
       "nitro": 44.58,
-      "nickname": "300+"
+      "nickname": "300+",
+      "zones": [
+        "五区"
+      ],
+      "star_rule": {
+        "min": 6,
+        "default": 6
+      }
     },
     {
       "title": "Bugatti Divo",
@@ -169,7 +226,15 @@
       "acceleration": 85.66,
       "handling": 61.5,
       "nitro": 74.02,
-      "nickname": "divo"
+      "nickname": "divo",
+      "zones": [
+        "五区",
+        "四区"
+      ],
+      "star_rule": {
+        "min": 6,
+        "default": 6
+      }
     },
     {
       "title": "Bugatti LA Voiture Noire",
@@ -179,7 +244,14 @@
       "acceleration": 84.88,
       "handling": 54.68,
       "nitro": 63.8,
-      "nickname": "黑龙"
+      "nickname": "黑龙",
+      "zones": [
+        "五区"
+      ],
+      "star_rule": {
+        "min": 5,
+        "default": 6
+      }
     },
     {
       "title": "Bugatti Mistral",
@@ -189,7 +261,14 @@
       "acceleration": 84.4,
       "handling": 60.79,
       "nitro": 65.81,
-      "nickname": "风龙"
+      "nickname": "风龙",
+      "zones": [
+        "五区"
+      ],
+      "star_rule": {
+        "min": 5,
+        "default": 6
+      }
     },
     {
       "title": "Czinger 21C",
@@ -199,7 +278,15 @@
       "acceleration": 89.07,
       "handling": 54.43,
       "nitro": 51.03,
-      "nickname": "21c"
+      "nickname": "21c",
+      "zones": [
+        "五区",
+        "四区"
+      ],
+      "star_rule": {
+        "min": 3,
+        "default": 3
+      }
     },
     {
       "title": "Deus Vayanne",
@@ -209,7 +296,14 @@
       "acceleration": 86.55,
       "handling": 47.61,
       "nitro": 47.08,
-      "nickname": "冬王"
+      "nickname": "冬王",
+      "zones": [
+        "五区"
+      ],
+      "star_rule": {
+        "min": 6,
+        "default": 6
+      }
     },
     {
       "title": "Devel Sixteen",
@@ -219,7 +313,16 @@
       "acceleration": 81.37,
       "handling": 56.37,
       "nitro": 38.45,
-      "nickname": "恶魔"
+      "nickname": "恶魔",
+      "zones": [
+        "五区",
+        "四区"
+      ],
+      "star_rule": {
+        "min": 1,
+        "zone4Max": 2,
+        "default": 1
+      }
     },
     {
       "title": "Faraday Future FFZERO1",
@@ -229,7 +332,15 @@
       "acceleration": 86.06,
       "handling": 42.83,
       "nitro": 51.7,
-      "nickname": "法拉第"
+      "nickname": "法拉第",
+      "zones": [
+        "五区",
+        "四区"
+      ],
+      "star_rule": {
+        "min": 6,
+        "default": 6
+      }
     },
     {
       "title": "Ferrari 499P Modificata",
@@ -239,7 +350,14 @@
       "acceleration": 84.54,
       "handling": 85.32,
       "nitro": 77.85,
-      "nickname": "499p"
+      "nickname": "499p",
+      "zones": [
+        "五区"
+      ],
+      "star_rule": {
+        "min": 6,
+        "default": 6
+      }
     },
     {
       "title": "Ferrari SF90 Stradale",
@@ -249,7 +367,15 @@
       "acceleration": 86.83,
       "handling": 93.5,
       "nitro": 69.88,
-      "nickname": "sf90"
+      "nickname": "sf90",
+      "zones": [
+        "五区",
+        "四区"
+      ],
+      "star_rule": {
+        "min": 4,
+        "default": 6
+      }
     },
     {
       "title": "Ford Team Fordzilla P1",
@@ -259,7 +385,15 @@
       "acceleration": 87.77,
       "handling": 83.66,
       "nitro": 51.4,
-      "nickname": "fp1"
+      "nickname": "fp1",
+      "zones": [
+        "五区",
+        "四区"
+      ],
+      "star_rule": {
+        "min": 4,
+        "default": 6
+      }
     },
     {
       "title": "Formula E Gen 3 EVO Championship Edition",
@@ -270,7 +404,16 @@
       "acceleration": 90.21,
       "handling": 77.89,
       "nitro": 62.24,
-      "nickname": "fe3"
+      "nickname": "fe3",
+      "zones": [
+        "五区",
+        "四区"
+      ],
+      "star_rule": {
+        "min": 5,
+        "max": 5,
+        "default": 5
+      }
     },
     {
       "title": "Glickenhaus 007S",
@@ -280,7 +423,15 @@
       "acceleration": 89.33,
       "handling": 82.63,
       "nitro": 55.24,
-      "nickname": "007s"
+      "nickname": "007s",
+      "zones": [
+        "五区",
+        "四区"
+      ],
+      "star_rule": {
+        "min": 6,
+        "default": 6
+      }
     },
     {
       "title": "Hennessey Venom F5",
@@ -290,7 +441,16 @@
       "acceleration": 80.68,
       "handling": 49.02,
       "nitro": 49.52,
-      "nickname": "f5"
+      "nickname": "f5",
+      "zones": [
+        "五区",
+        "四区"
+      ],
+      "star_rule": {
+        "min": 1,
+        "zone4Max": 3,
+        "default": 3
+      }
     },
     {
       "title": "Hennessey Venom F5 Revolution",
@@ -300,7 +460,10 @@
       "acceleration": 82.77,
       "handling": 55.58,
       "nitro": 50.2,
-      "nickname": "f5r"
+      "nickname": "f5r",
+      "zones": [
+        "五区"
+      ]
     },
     {
       "title": "Hyundai IONIQ 5 N",
@@ -311,7 +474,16 @@
       "acceleration": 88.63,
       "handling": 80.51,
       "nitro": 63.38,
-      "nickname": "5n"
+      "nickname": "5n",
+      "zones": [
+        "五区",
+        "四区"
+      ],
+      "star_rule": {
+        "min": 4,
+        "max": 4,
+        "default": 4
+      }
     },
     {
       "title": "Icona Vulcano Titanium",
@@ -322,7 +494,16 @@
       "acceleration": 81.38,
       "handling": 43.38,
       "nitro": 65.89,
-      "nickname": "火山"
+      "nickname": "火山",
+      "zones": [
+        "五区",
+        "四区"
+      ],
+      "star_rule": {
+        "min": 5,
+        "max": 5,
+        "default": 5
+      }
     },
     {
       "title": "Koenigsegg CC850",
@@ -332,7 +513,14 @@
       "acceleration": 82.37,
       "handling": 54.39,
       "nitro": 49.63,
-      "nickname": "cc850"
+      "nickname": "cc850",
+      "zones": [
+        "五区"
+      ],
+      "star_rule": {
+        "min": 4,
+        "default": 6
+      }
     },
     {
       "title": "Koenigsegg Gemera",
@@ -342,7 +530,17 @@
       "acceleration": 88.58,
       "handling": 66.06,
       "nitro": 48.36,
-      "nickname": "杰弟"
+      "nickname": "杰弟",
+      "zones": [
+        "五区",
+        "四区"
+      ],
+      "star_rule": {
+        "min": 3,
+        "max": 6,
+        "zone4Max": 4,
+        "default": 6
+      }
     },
     {
       "title": "Koenigsegg Jesko",
@@ -352,7 +550,15 @@
       "acceleration": 80.07,
       "handling": 48.19,
       "nitro": 58.23,
-      "nickname": "杰哥"
+      "nickname": "杰哥",
+      "zones": [
+        "五区",
+        "四区"
+      ],
+      "star_rule": {
+        "min": 1,
+        "default": 4
+      }
     },
     {
       "title": "Koenigsegg Jesko Absolut",
@@ -362,7 +568,14 @@
       "acceleration": 82.27,
       "handling": 50.53,
       "nitro": 52.89,
-      "nickname": "杰皇"
+      "nickname": "杰皇",
+      "zones": [
+        "五区"
+      ],
+      "star_rule": {
+        "min": 1,
+        "default": 6
+      }
     },
     {
       "title": "Koenigsegg Regera",
@@ -372,7 +585,15 @@
       "acceleration": 80.88,
       "handling": 48.75,
       "nitro": 52.48,
-      "nickname": "统治"
+      "nickname": "统治",
+      "zones": [
+        "五区",
+        "四区"
+      ],
+      "star_rule": {
+        "min": 6,
+        "default": 6
+      }
     },
     {
       "title": "Bugatti Chiron Pur Sport",
@@ -382,7 +603,14 @@
       "acceleration": 87.01,
       "handling": 73.62,
       "nitro": 65.32,
-      "nickname": "ps龙"
+      "nickname": "ps龙",
+      "zones": [
+        "五区"
+      ],
+      "star_rule": {
+        "min": 6,
+        "default": 6
+      }
     },
     {
       "title": "Lamborghini Revuelto",
@@ -392,7 +620,14 @@
       "acceleration": 86.36,
       "handling": 76.33,
       "nitro": 54.22,
-      "nickname": "r牛"
+      "nickname": "r牛",
+      "zones": [
+        "五区"
+      ],
+      "star_rule": {
+        "min": 6,
+        "default": 6
+      }
     },
     {
       "title": "McLaren Senna",
@@ -402,7 +637,15 @@
       "acceleration": 82.91,
       "handling": 101.81,
       "nitro": 78.25,
-      "nickname": "塞纳"
+      "nickname": "塞纳",
+      "zones": [
+        "五区",
+        "四区"
+      ],
+      "star_rule": {
+        "min": 6,
+        "default": 6
+      }
     },
     {
       "title": "Lamborghini Egoista",
@@ -412,7 +655,14 @@
       "acceleration": 84.48,
       "handling": 61.54,
       "nitro": 72.02,
-      "nickname": "自私"
+      "nickname": "自私",
+      "zones": [
+        "五区"
+      ],
+      "star_rule": {
+        "min": 6,
+        "default": 6
+      }
     },
     {
       "title": "Lamborghini Huracan EVO Spyder",
@@ -422,7 +672,15 @@
       "acceleration": 84.31,
       "handling": 75.97,
       "nitro": 82.43,
-      "nickname": "小牛"
+      "nickname": "小牛",
+      "zones": [
+        "五区",
+        "四区"
+      ],
+      "star_rule": {
+        "min": 6,
+        "default": 6
+      }
     },
     {
       "title": "Lamborghini Sesto Elemento",
@@ -432,7 +690,15 @@
       "acceleration": 88.16,
       "handling": 70.97,
       "nitro": 74.78,
-      "nickname": "六子"
+      "nickname": "六子",
+      "zones": [
+        "五区",
+        "四区"
+      ],
+      "star_rule": {
+        "min": 6,
+        "default": 6
+      }
     },
     {
       "title": "Lamborghini Temerario",
@@ -442,7 +708,14 @@
       "acceleration": 88.35,
       "handling": 70.53,
       "nitro": 62.21,
-      "nickname": "t牛"
+      "nickname": "t牛",
+      "zones": [
+        "五区"
+      ],
+      "star_rule": {
+        "min": 6,
+        "default": 6
+      }
     },
     {
       "title": "Lamborghini Terzo Millennio",
@@ -452,7 +725,14 @@
       "acceleration": 82.77,
       "handling": 52.84,
       "nitro": 69.29,
-      "nickname": "电牛"
+      "nickname": "电牛",
+      "zones": [
+        "五区"
+      ],
+      "star_rule": {
+        "min": 6,
+        "default": 6
+      }
     },
     {
       "title": "Lotus E-R9",
@@ -462,7 +742,15 @@
       "acceleration": 87.44,
       "handling": 72.33,
       "nitro": 49.35,
-      "nickname": "er9"
+      "nickname": "er9",
+      "zones": [
+        "五区",
+        "四区"
+      ],
+      "star_rule": {
+        "min": 6,
+        "default": 6
+      }
     },
     {
       "title": "McLaren 600LT Spider",
@@ -473,7 +761,16 @@
       "acceleration": 86.11,
       "handling": 83.17,
       "nitro": 74.54,
-      "nickname": "600lt"
+      "nickname": "600lt",
+      "zones": [
+        "五区",
+        "四区"
+      ],
+      "star_rule": {
+        "min": 5,
+        "max": 5,
+        "default": 5
+      }
     },
     {
       "title": "McLaren 650S GT3",
@@ -483,7 +780,14 @@
       "acceleration": 84.34,
       "handling": 85.82,
       "nitro": 78.22,
-      "nickname": "650s"
+      "nickname": "650s",
+      "zones": [
+        "五区"
+      ],
+      "star_rule": {
+        "min": 6,
+        "default": 6
+      }
     },
     {
       "title": "McLaren Speedtail",
@@ -493,7 +797,15 @@
       "acceleration": 81.11,
       "handling": 56.63,
       "nitro": 74.19,
-      "nickname": "速尾"
+      "nickname": "速尾",
+      "zones": [
+        "五区",
+        "四区"
+      ],
+      "star_rule": {
+        "min": 4,
+        "default": 6
+      }
     },
     {
       "title": "Mercedes-Benz Silver Lightning",
@@ -503,7 +815,14 @@
       "acceleration": 80.15,
       "handling": 84.1,
       "nitro": 55.95,
-      "nickname": "银电"
+      "nickname": "银电",
+      "zones": [
+        "五区"
+      ],
+      "star_rule": {
+        "min": 6,
+        "default": 6
+      }
     },
     {
       "title": "Mosler Super GT",
@@ -513,7 +832,16 @@
       "acceleration": 83.27,
       "handling": 49.79,
       "nitro": 44.54,
-      "nickname": "莫斯勒"
+      "nickname": "莫斯勒",
+      "zones": [
+        "五区",
+        "四区"
+      ],
+      "star_rule": {
+        "min": 1,
+        "zone4Max": 3,
+        "default": 2
+      }
     },
     {
       "title": "Naran Hyper Coupe",
@@ -523,7 +851,14 @@
       "acceleration": 85.79,
       "handling": 67.31,
       "nitro": 65.58,
-      "nickname": "纳兰"
+      "nickname": "纳兰",
+      "zones": [
+        "五区"
+      ],
+      "star_rule": {
+        "min": 6,
+        "default": 6
+      }
     },
     {
       "title": "Nissan GT-R Neon Edition",
@@ -533,7 +868,14 @@
       "acceleration": 88.23,
       "handling": 75.46,
       "nitro": 70.44,
-      "nickname": "霓虹gtr"
+      "nickname": "霓虹gtr",
+      "zones": [
+        "五区"
+      ],
+      "star_rule": {
+        "min": 6,
+        "default": 6
+      }
     },
     {
       "title": "Nissan GTR-50 Italdesign",
@@ -544,7 +886,16 @@
       "acceleration": 86.24,
       "handling": 73.5,
       "nitro": 64.28,
-      "nickname": "gtr50"
+      "nickname": "gtr50",
+      "zones": [
+        "五区",
+        "四区"
+      ],
+      "star_rule": {
+        "min": 5,
+        "max": 5,
+        "default": 5
+      }
     },
     {
       "title": "Peugeot 9X8",
@@ -554,7 +905,15 @@
       "acceleration": 90.03,
       "handling": 94.15,
       "nitro": 69.94,
-      "nickname": "9x8"
+      "nickname": "9x8",
+      "zones": [
+        "五区",
+        "四区"
+      ],
+      "star_rule": {
+        "min": 5,
+        "default": 6
+      }
     },
     {
       "title": "Porsche Panamera Turbo S",
@@ -565,7 +924,16 @@
       "acceleration": 88.03,
       "handling": 72.48,
       "nitro": 58.56,
-      "nickname": "帕梅"
+      "nickname": "帕梅",
+      "zones": [
+        "五区",
+        "四区"
+      ],
+      "star_rule": {
+        "min": 5,
+        "max": 5,
+        "default": 5
+      }
     },
     {
       "title": "Raesr Tartarus",
@@ -575,7 +943,16 @@
       "acceleration": 90.64,
       "handling": 61.77,
       "nitro": 42.69,
-      "nickname": "大超"
+      "nickname": "大超",
+      "zones": [
+        "五区",
+        "四区"
+      ],
+      "star_rule": {
+        "min": 1,
+        "zone4Max": 3,
+        "default": 1
+      }
     },
     {
       "title": "Rimac Concept S",
@@ -585,7 +962,15 @@
       "acceleration": 84.53,
       "handling": 79.09,
       "nitro": 69.86,
-      "nickname": "cs"
+      "nickname": "cs",
+      "zones": [
+        "五区",
+        "四区"
+      ],
+      "star_rule": {
+        "min": 6,
+        "default": 6
+      }
     },
     {
       "title": "Rimac Concept_One",
@@ -595,7 +980,14 @@
       "acceleration": 86.45,
       "handling": 84.35,
       "nitro": 54.75,
-      "nickname": "c1"
+      "nickname": "c1",
+      "zones": [
+        "五区"
+      ],
+      "star_rule": {
+        "min": 6,
+        "default": 6
+      }
     },
     {
       "title": "Rimac Nevera",
@@ -605,7 +997,15 @@
       "acceleration": 87.71,
       "handling": 51.33,
       "nitro": 56.51,
-      "nickname": "c2"
+      "nickname": "c2",
+      "zones": [
+        "五区",
+        "四区"
+      ],
+      "star_rule": {
+        "min": 3,
+        "default": 3
+      }
     },
     {
       "title": "Rimac Nevera R",
@@ -615,7 +1015,14 @@
       "acceleration": 89.07,
       "handling": 76.53,
       "nitro": 48.88,
-      "nickname": "r兔"
+      "nickname": "r兔",
+      "zones": [
+        "五区"
+      ],
+      "star_rule": {
+        "min": 5,
+        "default": 6
+      }
     },
     {
       "title": "SSC Tuatara",
@@ -625,7 +1032,16 @@
       "acceleration": 82.51,
       "handling": 48.74,
       "nitro": 62.05,
-      "nickname": "ssc"
+      "nickname": "ssc",
+      "zones": [
+        "五区",
+        "四区"
+      ],
+      "star_rule": {
+        "min": 1,
+        "zone4Max": 5,
+        "default": 3
+      }
     },
     {
       "title": "SSC Tuatara Striker",
@@ -635,7 +1051,14 @@
       "acceleration": 80.65,
       "handling": 63.37,
       "nitro": 55.62,
-      "nickname": "小蜥蜴"
+      "nickname": "小蜥蜴",
+      "zones": [
+        "五区"
+      ],
+      "star_rule": {
+        "min": 6,
+        "default": 6
+      }
     },
     {
       "title": "SSC Ultimate Aero TT",
@@ -645,7 +1068,16 @@
       "acceleration": 79.67,
       "handling": 50.01,
       "nitro": 51.45,
-      "nickname": "att"
+      "nickname": "att",
+      "zones": [
+        "五区",
+        "四区"
+      ],
+      "star_rule": {
+        "min": 2,
+        "max": 6,
+        "default": 6
+      }
     },
     {
       "title": "Trion Nemesis",
@@ -655,11 +1087,28 @@
       "acceleration": 79.98,
       "handling": 48.49,
       "nitro": 44.79,
-      "nickname": "复仇"
+      "nickname": "复仇",
+      "zones": [
+        "五区",
+        "四区"
+      ],
+      "star_rule": {
+        "min": 5,
+        "default": 6
+      }
     },
     {
       "title": "Tushek Aeon E",
       "nickname": "爱音",
+      "zones": [
+        "五区",
+        "四区"
+      ],
+      "star_rule": {
+        "min": 1,
+        "zone4Max": 4,
+        "default": 3
+      },
       "score": 5025,
       "class": "S",
       "max_speed": 491.5,
@@ -675,7 +1124,15 @@
       "acceleration": 86.02,
       "handling": 73.76,
       "nitro": 61.52,
-      "nickname": "ts900"
+      "nickname": "ts900",
+      "zones": [
+        "五区",
+        "四区"
+      ],
+      "star_rule": {
+        "min": 5,
+        "default": 6
+      }
     },
     {
       "title": "Ultima RS",
@@ -685,7 +1142,15 @@
       "acceleration": 81.41,
       "handling": 63.54,
       "nitro": 63.28,
-      "nickname": "urs"
+      "nickname": "urs",
+      "zones": [
+        "五区",
+        "四区"
+      ],
+      "star_rule": {
+        "min": 4,
+        "default": 6
+      }
     },
     {
       "title": "Vanda Electrics Dendrobium",
@@ -695,7 +1160,15 @@
       "acceleration": 86.24,
       "handling": 95.92,
       "nitro": 84.9,
-      "nickname": "万达"
+      "nickname": "万达",
+      "zones": [
+        "五区",
+        "四区"
+      ],
+      "star_rule": {
+        "min": 6,
+        "default": 6
+      }
     },
     {
       "title": "W Motors Fenyr Supersport",
@@ -705,7 +1178,16 @@
       "acceleration": 82.19,
       "handling": 43.24,
       "nitro": 68.6,
-      "nickname": "狼王"
+      "nickname": "狼王",
+      "zones": [
+        "五区",
+        "四区"
+      ],
+      "star_rule": {
+        "min": 6,
+        "zone4Max": 6,
+        "default": 6
+      }
     },
     {
       "title": "W Motors Lykan Hypersport",
@@ -716,7 +1198,16 @@
       "acceleration": 80.48,
       "handling": 40.97,
       "nitro": 58.46,
-      "nickname": "狼崽"
+      "nickname": "狼崽",
+      "zones": [
+        "五区",
+        "四区"
+      ],
+      "star_rule": {
+        "min": 5,
+        "max": 5,
+        "default": 5
+      }
     },
     {
       "title": "Zenvo TS1 GT Anniversary",
@@ -726,7 +1217,14 @@
       "acceleration": 81.29,
       "handling": 46.66,
       "nitro": 63.43,
-      "nickname": "自燃"
+      "nickname": "自燃",
+      "zones": [
+        "五区"
+      ],
+      "star_rule": {
+        "min": 6,
+        "default": 6
+      }
     },
     {
       "title": "Zenvo TSR-S",
@@ -736,7 +1234,14 @@
       "acceleration": 85.32,
       "handling": 74.39,
       "nitro": 69.0,
-      "nickname": "小自燃"
+      "nickname": "小自燃",
+      "zones": [
+        "五区"
+      ],
+      "star_rule": {
+        "min": 6,
+        "default": 6
+      }
     },
     {
       "title": "McLaren Solus GT",
@@ -746,7 +1251,15 @@
       "acceleration": 89.3,
       "handling": 83.11,
       "nitro": 76.82,
-      "nickname": "sgt"
+      "nickname": "sgt",
+      "zones": [
+        "五区",
+        "四区"
+      ],
+      "star_rule": {
+        "min": 6,
+        "default": 6
+      }
     },
     {
       "title": "Automobili Pininfarina Battista",
@@ -756,7 +1269,15 @@
       "acceleration": 88.48,
       "handling": 80.42,
       "nitro": 78.22,
-      "nickname": "秋王"
+      "nickname": "秋王",
+      "zones": [
+        "五区",
+        "四区"
+      ],
+      "star_rule": {
+        "min": 4,
+        "default": 5
+      }
     },
     {
       "title": "ATS Automobili Corsa RRTurbo",
@@ -874,7 +1395,10 @@
       "acceleration": 84.85,
       "handling": 60.77,
       "nitro": 56.61,
-      "nickname": "帝国"
+      "nickname": "帝国",
+      "zones": [
+        "五区"
+      ]
     },
     {
       "title": "Ares S1",
@@ -2064,6 +2588,15 @@
       "handling": 75.74,
       "nitro": 67.64,
       "nickname": "无敌牛",
+      "zones": [
+        "五区",
+        "四区"
+      ],
+      "star_rule": {
+        "min": 5,
+        "max": 5,
+        "default": 5
+      },
       "max_stars": 5
     },
     {
@@ -2127,7 +2660,15 @@
       "max_speed": 374.0,
       "acceleration": 82.06,
       "handling": 92.32,
-      "nitro": 81.15
+      "nitro": 81.15,
+      "nickname": "西安",
+      "zones": [
+        "五区"
+      ],
+      "star_rule": {
+        "min": 6,
+        "default": 6
+      }
     },
     {
       "title": "Lamborghini Veneno",
@@ -2336,6 +2877,15 @@
       "handling": 82.09,
       "nitro": 62.82,
       "nickname": "风扇",
+      "zones": [
+        "五区",
+        "四区"
+      ],
+      "star_rule": {
+        "min": 5,
+        "max": 5,
+        "default": 5
+      },
       "max_stars": 5
     },
     {
@@ -3047,7 +3597,16 @@
       "max_speed": 374.4,
       "acceleration": 87.83,
       "handling": 85.29,
-      "nitro": 62.21
+      "nitro": 62.21,
+      "nickname": "919",
+      "zones": [
+        "五区",
+        "四区"
+      ],
+      "star_rule": {
+        "min": 4,
+        "default": 6
+      }
     },
     {
       "title": "Porsche 911 GT3 R Rennsport",
@@ -3102,7 +3661,15 @@
       "acceleration": 83.6,
       "handling": 55.64,
       "nitro": 51.99,
-      "nickname": "冰山"
+      "nickname": "冰山",
+      "zones": [
+        "五区",
+        "四区"
+      ],
+      "star_rule": {
+        "min": 4,
+        "default": 4
+      }
     },
     {
       "title": "Zenvo Aurora Agil",
@@ -3157,7 +3724,10 @@
       "acceleration": 80.62,
       "handling": 80.16,
       "nitro": 83.39,
-      "nickname": "biome"
+      "nickname": "biome",
+      "zones": [
+        "四区"
+      ]
     },
     {
       "title": "Nio EP9 Anniversary Special Edition",
@@ -3177,6 +3747,15 @@
       "handling": 56.39,
       "nitro": 47.19,
       "nickname": "dose",
+      "zones": [
+        "五区",
+        "四区"
+      ],
+      "star_rule": {
+        "min": 3,
+        "max": 6,
+        "zone4Max": 4
+      },
       "nitro_speed": 477,
       "air_speed": 585
     },
@@ -3206,7 +3785,14 @@
       "acceleration": 85.24,
       "handling": 70.17,
       "nitro": 48.98,
-      "nickname": "陀飞轮"
+      "nickname": "陀飞轮",
+      "zones": [
+        "五区"
+      ],
+      "star_rule": {
+        "min": 6,
+        "default": 6
+      }
     },
     {
       "title": "Audi R8 LMP1 2000",

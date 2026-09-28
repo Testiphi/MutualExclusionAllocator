@@ -13,9 +13,6 @@ TIERS = ('理论', '高手', '普通', '自动')
 SC_SUFFIX = '特殊跑法'
 # 特殊跑法类型白名单: 新增跑法类型须先在此登记（校验脚本据此拦截拼写变体）
 SC_TYPES = ('滑栏杆', '滑雪', '跳楼', '跳图', '跳船', '挂桥', '稳定跳图', '旧跳图', '新跳图')
-ZONE4_MAX = {'恶魔': 2, 'ssc': 5, '爱音': 4, '玻璃': 3, 'f5': 3, '莫斯勒': 3,
-             '大超': 3, '狼崽': 5, 'fe3': 5, '火山': 5, '风扇': 5, '帕梅': 5,
-             'gtr50': 5, '600lt': 5, '5n': 4}
 
 
 def read_json(path):
@@ -29,6 +26,42 @@ def json_text(value):
 
 def is_time(value):
     return isinstance(value, (int, float)) and not isinstance(value, bool) and math.isfinite(value) and value > 0
+
+
+def car_records(cars):
+    """车名 → 车辆记录。车名可为 title、记录自带 nickname 或 `_nickname_map` 别名。
+
+    车池（`zones`）与星级规则（`star_rule`）都挂在记录上，前端与校验共用 cars.json。
+    """
+    records = {}
+    for car in cars['cars']:
+        records[car['title']] = car
+        if car.get('nickname'):
+            records[car['nickname']] = car
+    for alias, title in cars.get('_nickname_map', {}).items():
+        if title in records:
+            records.setdefault(alias, records[title])
+    return records
+
+
+def car_zone_names(cars, zone):
+    """给定分区的车池车名（记录顺序，与前端 buildCarRules 的派生口径一致）"""
+    return [car['nickname'] for car in cars['cars']
+            if car.get('nickname') and zone in (car.get('zones') or [])]
+
+
+def star_limits(record, zone):
+    """该车在指定分区的 (最低, 最高) 可用星级；无规则时 (1, 6)。
+
+    与前端 `index.html` 的 getStarRange 逐条对齐：
+    `zone4Max` 覆盖 `max`，`min` 两区通用，且上限不低于下限。
+    """
+    rule = (record or {}).get('star_rule') or {}
+    minimum = rule.get('min') or 1
+    maximum = rule.get('max') or 6
+    if zone == '四区' and rule.get('zone4Max') is not None:
+        maximum = rule['zone4Max']
+    return minimum, max(maximum, minimum)
 
 
 def atomic_write(path, text, backup=True):

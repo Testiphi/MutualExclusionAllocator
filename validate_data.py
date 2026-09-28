@@ -1,16 +1,16 @@
 """Validate track identities, entries, stars, times, mirrors and ordering."""
 import argparse
 from pathlib import Path
-from data_tools import ROOT, SC_TYPES, ZONES, TIERS, ZONE4_MAX, car_key, configure_stdout, is_time, read_json
+from data_tools import (ROOT, SC_TYPES, ZONES, TIERS, car_key, car_records, car_zone_names,
+                        configure_stdout, is_time, read_json, star_limits)
 
 
 def validate_data(data, cars):
     errors = []
-    known = set(cars.get('_nickname_map', {}))
-    for car in cars['cars']:
-        known.add(car['title'])
-        if car.get('nickname'):
-            known.add(car['nickname'])
+    records = car_records(cars)
+    known = set(records)
+    # 车池与星级规则来自 cars.json 记录上的 zones / star_rule，与前端共用同一份定义
+    pools = {zone: set(car_zone_names(cars, zone)) for zone in ZONES}
     tracks_seen = set()
     counts = {f'{zone}_{tier}': 0 for zone in ZONES for tier in TIERS}
     for track in data['tracks']:
@@ -37,9 +37,18 @@ def validate_data(data, cars):
                     name, stars = car_key(car)
                     if name not in known:
                         errors.append(f'未知车名: {label} {name}')
-                    maximum = ZONE4_MAX.get(name, 6) if zone == '四区' else 6
-                    if stars is not None and (type(stars) is not int or not 1 <= stars <= maximum):
-                        errors.append(f'星级越界: {label} {name}★{stars}')
+                    elif name not in pools[zone]:
+                        errors.append(f'车名不在{zone}车池: {label} {name}')
+                    if stars is not None:
+                        if type(stars) is not int:
+                            errors.append(f'星级非整数: {label} {name} {stars!r}')
+                        else:
+                            minimum, maximum = star_limits(records.get(name), zone)
+                            if not 1 <= stars <= 6:
+                                errors.append(f'星级超出 1-6: {label} {name}★{stars}')
+                            elif not minimum <= stars <= maximum:
+                                errors.append(
+                                    f'星级越界: {label} {name}★{stars}（{zone}允许 {minimum}-{maximum}）')
                     if entry.get('sc') is not None and type(entry['sc']) is not bool:
                         errors.append(f'无效 sc: {label} {name}')
                     if entry.get('sc_type') is not None and not isinstance(entry['sc_type'], str):
