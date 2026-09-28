@@ -90,9 +90,14 @@ Tiers share the same slot structure but differ in which entries and which items 
 Certain slots may have entries flagged with `sc: true`, representing alternative approaches (e.g., different techniques, shortcuts, workarounds) that yield different efficiency metrics.
 
 - **Per-slot toggle**: each heuristic route can be enabled or disabled independently.
-- **Multiple subtypes**: a slot may have several distinct heuristic methods, each with its own toggle (e.g., "method A", "method B").
-- **Replacement semantics**: when enabled, the heuristic entry replaces the normal entry for the same items at the same priority position; it does not add a duplicate.
+- **Three states**: `all` (default) / a specific route type / `off`. When off, all `sc` entries for that
+  slot are dropped; when a specific type is selected, only entries with a matching `sc_type` are kept.
+- **Additive semantics (not replacement)**: `sc` entries compete as **additional candidates** alongside
+  the normal entries of the same slot, each ranked by its own metric. Disabling a route does not change
+  the ranking of normal entries.
 - **Affects**: both the allocation order (which items the algorithm tries first) and the displayed efficiency score.
+- Every `sc_type` must be registered in `SC_TYPES` (`repo/data_tools.py`, currently 9 values);
+  new route types must be added to that constant first.
 
 ---
 
@@ -100,36 +105,37 @@ Certain slots may have entries flagged with `sc: true`, representing alternative
 
 Each slot can have two independent priority lists (e.g., "Zone A" and "Zone B"). The user switches between zones; switching filters the candidate list and resource pool accordingly.
 
+The two resource pools, and the per-item star-rating rules, are declared per item in `cars.json`
+(`zones` / `star_rule`) and shared with the Python validation scripts — see "Architecture".
+
 ---
 
 ## Data Format
 
+`gauntlet_data.json` (tracks) and `cars.json` (vehicle library, which also carries the rules) are both
+real files of this project and use fixed Chinese field names. Below is the actual structure
+(abridged from the real files):
+
 ```json
+// gauntlet_data.json
 {
-  "tier_info": {
-    "theory": { "label": "Theory", "desc": "..." },
-    "expert": { "label": "Expert", "desc": "..." }
-  },
+  "_version": 1,
+  "_comment": "...",
+  "tier_info": { "理论": { "label": "...", "desc": "..." } },
   "tracks": [
     {
-      "category": "Region A",
-      "slot": "Slot 1",
-      "has_heuristic_route": true,
-      "zones": {
-        "primary": {
-          "theory": [
-            {"items": [{"id": "X"}, {"id": "Y"}], "score": 12.5},
-            {"items": [{"id": "X"}], "score": 8.3, "heuristic": true, "heuristic_type": "route_A"}
-          ],
-          "expert": [
-            {"items": [{"id": "X", "stars": 5}], "score": 12.5},
-            ...
-          ],
-          "normal": [{"items": [{"id": "X"}]}, ...],
-          "auto": [{"items": [{"id": "X"}]}, ...]
-        },
-        "secondary": { ... }
-      }
+      "大地图": "古老斗技场",
+      "小地图": "偏僻小道",
+      "has_special_route": true,
+      "special_route_note": "...",
+      "五区": {
+        "理论": [ { "cars": [ { "name": "9x8" } ], "time": 16.9,
+                    "sc": true, "sc_type": "跳图" } ],
+        "高手": [ { "cars": [ { "name": "r兔", "stars": 6 } ], "time": 18.59 } ],
+        "普通": [ { "cars": [ { "name": "r兔", "stars": 6 } ] } ],
+        "自动": [ { "cars": [ { "name": "白龙" } ] } ]
+      },
+      "四区": { "理论": [], "高手": [], "普通": [], "自动": [] }
     }
   ]
 }
@@ -139,11 +145,36 @@ Each slot can have two independent priority lists (e.g., "Zone A" and "Zone B").
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `items` | `[{id, ?stars}]` | Candidate resources; pick one |
-| `score` | number/null | Efficiency metric (lower = better) |
-| `heuristic` | bool | Marks as heuristic route entry |
-| `heuristic_type` | string | Subtype for multi-heuristic slots |
-| `heuristic_note` | string | Human-readable note |
+| `cars` | `[{name, ?stars}]` | Candidate resources; always a single-element array here (one per group) |
+| `time` | number / absent | Efficiency metric (lower = better). **Absent means "no result yet"**, not a placeholder value |
+| `sc` | bool | Marks the entry as an alternative (heuristic) route |
+| `sc_type` | string | Route type; must belong to `data_tools.SC_TYPES` |
+
+Theory/expert tiers are kept sorted by `time` ascending, with result-less entries last; the normal/auto
+tiers only express availability (no `time`). Every expert entry must have a matching normal-tier mirror
+(enforced by validation).
+
+```json
+// cars.json
+{
+  "_comment": "...",
+  "_nickname_map": { "007s": "Glickenhaus 007S" },
+  "cars": [
+    {
+      "title": "W Motors Lykan Hypersport",
+      "nickname": "狼崽",
+      "score": 4083, "class": "S", "max_stars": 5,
+      "max_speed": 407.6, "acceleration": 80.48, "handling": 40.97, "nitro": 58.46,
+      "zones": ["五区", "四区"],
+      "star_rule": { "min": 5, "max": 5, "default": 5 }
+    }
+  ]
+}
+```
+
+`nickname` is the name used to reference this vehicle in the data file. `zones` and `star_rule` are the
+**hand-maintained** pool membership and star limits, shared by the frontend and the Python validation
+scripts (see "Architecture").
 
 ---
 
@@ -157,10 +188,19 @@ config → data loader (api abstraction) → application logic (IIFE)
 
 - **Config** — paths, keys, storage settings
 - **Data loader** — fetches JSON data, handles static and API modes
+- **Rule derivation** — the zone pools (`zones`) and star rules (`star_rule`) are derived from
+  `cars.json` by `buildCarRules()` in `index.html`; **this is the single source of truth** and the page
+  no longer keeps a hardcoded copy
 - **Application logic** — builds slot indexes, runs backtracking + Pareto filtering, renders UI
 - **State persistence** — resource pool state saved to localStorage
 
 No server, no build step, no database.
+
+> **Single source of truth for rules**: the pools and star rules used to be hardcoded in `index.html`,
+> with a second, simplified table on the Python side (`data_tools.ZONE4_MAX`). The two had drifted —
+> the frontend knew rules for 72 cars while Python knew 15 and never checked the minimum star level.
+> They now live in `cars.json` as `zones` / `star_rule` and are read by both the page and
+> `python validate_data.py`. Change vehicle rules in `cars.json`.
 
 ---
 
@@ -214,18 +254,20 @@ Run regression checks with `python -m unittest test_data_tools -v` and `node --t
 
 Static hosting (GitHub Pages, Netlify, any web server).
 
-Requires: `index.html`, `gauntlet_data.json`, `cars.json` (or equivalent data files).
+Required files (all three): `index.html`, `gauntlet_data.json`, `cars.json`.
+Besides vehicle data, `cars.json` carries the zone pools and star rules, so it is a **hard dependency** —
+if it fails to load the page reports the error instead of degrading.
 
 ---
 
-## Future Directions
+## Known Limitations & Future Directions
 
-| Priority | Feature |
-|----------|---------|
-| P0 | Time-based sorting for Expert tier (currently uses arbitrary index order) |
-| P1 | Per-item star rating UI (affects availability and priority) |
-| P2 | Better score display (units, null handling, heuristic route annotations) |
-| P3 | Ban list configuration for Normal tier |
-| P4 | Secondary zone data for Theory tier |
-| P5 | Heuristic route data for Expert tier |
-| P6 | UI polish (tier name in header, detailed scheme info) |
+(Implemented features are no longer listed here; only items confirmed as unfinished.)
+
+| Item | Status |
+|------|--------|
+| Solve performance | Worst case ~1.7 s and ~1.1 GB heap (see "Algorithm Notes"). Options: stop materialising all schemes, incremental front filtering, or move the solve off the main thread. **Not yet decided.** |
+| Browser-side stress test | **Not done.** All figures are Node algorithm-level measurements, excluding rendering and GC pauses. |
+| Thin candidate lists | 13 "zone/tier" combinations are down to 1–2 candidates (weakest: `大桥海湾/喧闹铁路` four-zone expert has only `9x8★6`; `极昼之地/凌云狂飙` four-zone expert has only `ssc★2`). |
+| Redundant `max` field | `star_rule.max` matches `cars.json`'s `max_stars` for all 9 cars that declare it (`att`/`杰弟`/`dose` use 6 = unconstrained). Whether to merge them is undecided. |
+| Pending rule violations | After unifying validation, 16 entries violate `star_rule`/pool membership (14 star, 2 out-of-pool `biome`). See `test_data_tools.PENDING_RULE_VIOLATIONS`; awaiting a decision on fixing the data vs. the rules. |
