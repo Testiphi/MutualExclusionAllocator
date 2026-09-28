@@ -14,6 +14,7 @@ from data_tools import ROOT, atomic_write, read_json
 from diff_workbooks import compare_workbooks
 from export_xlsx import build_workbook
 from format_json import format_data
+from sync_zones import sync
 from validate_data import validate_data
 from xlsx_tools import load_workbook_data
 
@@ -47,6 +48,61 @@ def change(**overrides):
 
 def report(*changes):
     return {'version': 1, 'changes': list(changes), 'structure': []}
+
+
+SYNC_CARS = {'cars': [{'title': name, 'score': 4000} for name in ('X', 'Y', 'Z')]}
+
+
+def expert(name, time, stars=6):
+    return {'cars': [{'name': name, 'stars': stars}], 'time': time}
+
+
+def sync_track(expert5, expert4):
+    """单条赛道骨架；普通档自动按高手档补同车同星镜像，保证初始状态可通过校验"""
+    def tiers(expert_entries):
+        return {'理论': [], '高手': list(expert_entries),
+                '普通': [{'cars': [dict(entry['cars'][0])]} for entry in expert_entries if not entry.get('sc')],
+                '自动': []}
+    return {'大地图': 'A', '小地图': 'Same', '五区': tiers(expert5), '四区': tiers(expert4)}
+
+
+class SyncZonesTests(unittest.TestCase):
+    """三个改动分支都会写入理论/高手档，必须回排升序，否则写出「成绩乱序」的库"""
+
+    def test_create_inserts_faster_value_in_order(self):
+        data = {'tracks': [sync_track([expert('X', 20), expert('Y', 30)],
+                                     [expert('Z', 10), expert('X', 20), expert('Y', 30)])]}
+        self.assertEqual(validate_data(data, SYNC_CARS)[0], [])
+        changes, _ = sync(data, SYNC_CARS)
+        self.assertEqual(len(changes['创建']), 1)
+        self.assertEqual([e['time'] for e in data['tracks'][0]['五区']['高手']], [10, 20, 30])
+        self.assertEqual(validate_data(data, SYNC_CARS)[0], [])
+
+    def test_placeholder_fill_moves_entry_to_sorted_position(self):
+        placeholder = {'cars': [{'name': 'X', 'stars': 6}]}
+        data = {'tracks': [sync_track([expert('Y', 30), placeholder],
+                                     [expert('X', 10), expert('Y', 30)])]}
+        self.assertEqual(validate_data(data, SYNC_CARS)[0], [])
+        changes, _ = sync(data, SYNC_CARS)
+        self.assertEqual(len(changes['填占位']), 1)
+        self.assertEqual([(e['cars'][0]['name'], e['time']) for e in data['tracks'][0]['五区']['高手']],
+                         [('X', 10), ('Y', 30)])
+        self.assertEqual(validate_data(data, SYNC_CARS)[0], [])
+
+    def test_slower_value_overwrite_moves_entry_to_sorted_position(self):
+        data = {'tracks': [sync_track([expert('X', 20), expert('Y', 25)],
+                                     [expert('Y', 10), expert('X', 20)])]}
+        changes, _ = sync(data, SYNC_CARS)
+        self.assertEqual(len(changes['覆盖慢值']), 1)
+        self.assertEqual([e['time'] for e in data['tracks'][0]['五区']['高手']], [10, 20])
+        self.assertEqual(validate_data(data, SYNC_CARS)[0], [])
+
+    def test_second_run_is_a_no_op(self):
+        data = {'tracks': [sync_track([expert('X', 20), expert('Y', 30)],
+                                     [expert('Z', 10), expert('X', 20), expert('Y', 30)])]}
+        sync(data, SYNC_CARS)
+        changes, _ = sync(data, SYNC_CARS)
+        self.assertEqual(sum(len(entries) for entries in changes.values()), 0)
 
 
 class DataToolsTests(unittest.TestCase):

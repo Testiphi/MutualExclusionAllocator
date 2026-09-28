@@ -76,6 +76,14 @@ def car_key(car):
     return car['name'], car.get('stars')
 
 
+def entry_sort_key(entry):
+    """理论/高手档排序键: 成绩升序, 无 time 的条目(占位)恒排末尾。
+
+    写入这两个档位的工具必须用它回排, 否则会写出「成绩乱序」的库。
+    """
+    return entry.get('time') is None, entry.get('time') or 0
+
+
 def parse_sheet_name(title):
     """数据表名 → (zone, tier, sc)；非数据表返回 None
 

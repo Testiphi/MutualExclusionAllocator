@@ -12,6 +12,8 @@
   2. 两边都有 `time` 且不等 → **保留更快值**，慢侧被覆盖（预检会逐条列出被覆盖的慢值）
   3. 两边都是占位 / 只有占位 → 不动
 - 高手档新建条目时，同区普通档补同车同星镜像
+- 三个分支都会改动理论/高手档，故**改动过的列表按成绩升序回排**（占位在末尾），
+  再跑一次全库校验；校验不通过则报错且不写文件（避免写出「成绩乱序」的库）
 
 用法
 ----
@@ -25,8 +27,9 @@ import json
 import sys
 from pathlib import Path
 
-from data_tools import ROOT, atomic_write, configure_stdout, read_json
+from data_tools import ROOT, atomic_write, configure_stdout, entry_sort_key, read_json
 import format_json
+from validate_data import validate_data
 
 MAX_SCORE = 4200
 
@@ -68,10 +71,15 @@ def make_entry(name, stars, time, sc, sc_type):
 
 
 def sync(data, cars, max_score=MAX_SCORE):
-    """返回 (changes, stats)；changes 为逐条描述，stats 为动作计数"""
+    """返回 (changes, stats)；changes 为逐条描述，stats 为动作计数
+
+    改动过的理论/高手列表会被回排升序，并在返回前跑一次全库校验；
+    校验失败抛 ValueError（调用方据此中止，不写文件）。
+    """
     score_map = build_score_map(cars)
     sync_names = {n for n, s in score_map.items() if s <= max_score}
     changes = {'覆盖慢值': [], '填占位': [], '创建': [], '镜像': []}
+    dirty = {}      # id(列表) → 列表：本次改动过的理论/高手列表，需回排升序
 
     for track in data['tracks']:
         label = f"{track['大地图']}/{track['小地图']}"
@@ -96,13 +104,15 @@ def sync(data, cars, max_score=MAX_SCORE):
                 if t5 is not None and t4 is not None:
                     if t5 == t4:
                         continue
+                    # 慢值被覆盖成更快值 → 该条目要往列表前面挪
                     if t5 > t4:
                         fast_zone, fast, slow_zone, slow = '四区', t4, '五区', t5
-                        target = e5
+                        target_zone, target = zone5, e5
                     else:
                         fast_zone, fast, slow_zone, slow = '五区', t5, '四区', t4
-                        target = e4
+                        target_zone, target = zone4, e4
                     target['time'] = fast
+                    dirty[id(target_zone)] = target_zone
                     changes['覆盖慢值'].append(
                         f'{label} {tier} {slow_zone} {tag}: {slow} → {fast}（采用{fast_zone}更快值）')
                     continue
@@ -115,15 +125,22 @@ def sync(data, cars, max_score=MAX_SCORE):
                 if existing is not None:
                     assert existing.get('time') is None, f'目标已有值: {label} {tier} {tag}'
                     existing['time'] = source['time']
+                    dirty[id(target_zone)] = target_zone
                     changes['填占位'].append(f'{label} {tier} {target_name} {tag}: 填占位 = {source["time"]}')
                 else:
                     target_zone.append(make_entry(name, stars, source['time'], sc, sc_type))
+                    dirty[id(target_zone)] = target_zone
                     changes['创建'].append(f'{label} {tier} {target_name} {tag}: 新建 = {source["time"]}')
                     if tier == '高手':
                         normal = track[target_name]['普通']
                         if find_entry(normal, name, stars, False, None) is None:
                             normal.append({'cars': [{'name': name, 'stars': stars}]})
                             changes['镜像'].append(f'{label} {tier} {target_name} {tag}: 普通档补镜像')
+    for entries in dirty.values():
+        entries.sort(key=entry_sort_key)
+    errors, _ = validate_data(data, cars)
+    if errors:
+        raise ValueError('同步后校验失败:\n' + '\n'.join(errors))
     return changes, sync_names
 
 

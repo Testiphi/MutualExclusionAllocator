@@ -3,7 +3,7 @@ import argparse
 from copy import deepcopy
 import hashlib
 from pathlib import Path
-from data_tools import ROOT, atomic_write, car_key, configure_stdout, is_time, read_json
+from data_tools import ROOT, atomic_write, car_key, configure_stdout, entry_sort_key, is_time, read_json
 from format_json import format_data
 from validate_data import validate_data
 
@@ -98,7 +98,7 @@ def apply_changes(data, report, cars):
     touched = {(c['big'], c['small'], c['zone'], c['tier']) for c in report['changes'] if c.get('accepted') is True}
     for big, small, zone, tier in touched:
         if tier in ('理论', '高手'):
-            tracks[(big, small)][zone][tier].sort(key=lambda e: (e.get('time') is None, e.get('time') or 0))
+            tracks[(big, small)][zone][tier].sort(key=entry_sort_key)
     errors, _ = validate_data(result, cars)
     if errors:
         raise ValueError('应用后校验失败:\n' + '\n'.join(errors))
