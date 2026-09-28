@@ -30,7 +30,11 @@ const allocator = (() => {
 
         /**
          * 递归回溯。按地图顺序逐一尝试可用车辆，保证同一辆车不重复分配。
-         * 某图无可用车时将其留空，继续后续地图。
+         *
+         * 「留空」本身也是一条可行方案（允许部分分配），因此每个位置都显式枚举留空分支：
+         * 某张图可用的车可能留给后面的图更划算，两个方案优先级向量不同、互不支配。
+         * 若只在「本图已无车可分」时才留空，靠前的图会对稀缺车获得绝对优先权，
+         * 并静默漏掉一批非支配方案（例：两行都只能选 A 时，[空, A] 从未被枚举）。
          */
         function backtrack(idx) {
             if (idx === n) {
@@ -42,37 +46,25 @@ const allocator = (() => {
             }
             const { filteredGroups, carToPriority } = mapsData[idx];
 
-            if (filteredGroups.length === 0 || filteredGroups.every(g => g.length === 0)) {
-                // 无可用车：留空当前图，继续
-                curAssign[idx] = null;
-                curVector[idx] = noCarPriority;
-                backtrack(idx + 1);
-                return;
-            }
+            // 分支 1：留空本图（本图没有任何候选组时，这就是唯一分支）
+            curAssign[idx] = null;
+            curVector[idx] = noCarPriority;
+            backtrack(idx + 1);
 
-            var anyAssigned = false;
+            // 分支 2：为每个候选组挑一辆尚未被其他图占用的车
             for (let g = 0; g < filteredGroups.length; g++) {
                 const group = filteredGroups[g];
                 if (group.length === 0) continue;
                 for (const car of group) {
-                    if (!usedCars.has(car)) {
-                        anyAssigned = true;
-                        const prio = carToPriority.get(car) ?? noCarPriority;
-                        usedCars.add(car);
-                        curAssign[idx] = car;
-                        curVector[idx] = prio;
-                        backtrack(idx + 1);
-                        usedCars.delete(car);
-                        curAssign[idx] = null;
-                        curVector[idx] = noCarPriority;
-                    }
+                    if (usedCars.has(car)) continue;
+                    usedCars.add(car);
+                    curAssign[idx] = car;
+                    curVector[idx] = carToPriority.get(car) ?? noCarPriority;
+                    backtrack(idx + 1);
+                    usedCars.delete(car);
+                    curAssign[idx] = null;
+                    curVector[idx] = noCarPriority;
                 }
-            }
-            // 所有车已被其他图占用：留空继续
-            if (!anyAssigned) {
-                curAssign[idx] = null;
-                curVector[idx] = noCarPriority;
-                backtrack(idx + 1);
             }
         }
 

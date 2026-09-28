@@ -42,13 +42,23 @@ Some entries carry an `sc` (special/heuristic route) flag with optional subtype 
 
 ```
 for each slot (in order):
-  for each entry group (by ascending priority):
-    for each resource in the group:
-      if resource is not already used AND is available:
-        assign → recurse to next slot
+  ① leave the slot unassigned → recurse to next slot
+  ② for each entry group (by ascending priority):
+       for each resource in the group:
+         if resource is not already used AND is available:
+           assign → recurse to next slot
 ```
 
-If a slot has zero available resources, it is left unassigned and enumeration continues (partial assignments are allowed).
+**Leaving a slot unassigned is itself a feasible scheme** (partial assignments are allowed), so the
+"leave blank" branch is enumerated explicitly for *every* slot: a resource that is available for one
+slot may be worth saving for a later one, and the two schemes differ in their priority vectors without
+dominating each other.
+
+> If "leave blank" were only tried when the slot has no resource left, earlier slots would gain
+> **absolute priority** over scarce resources, and a set of non-dominated schemes would be silently
+> dropped (e.g. two slots that can only take resource A: `[blank, A]` was never enumerated).
+> Leaving a slot blank costs the sentinel value (below), so when resources are plentiful the blank
+> branches are always dominated and never reach the front.
 
 ### 3. Pareto Non-Dominated Filtering
 
@@ -167,13 +177,33 @@ See [Python maintenance tools](PYTHON_TOOLS.md) for installation, paths, review 
 5. Apply with `--write`, run `python validate_data.py`, then re-export and compare.
 
 Existing destinations are backed up before atomic replacement. Historical dated scripts remain as records.
-Run regression checks with `python -m unittest test_data_tools -v`.
+Run regression checks with `python -m unittest test_data_tools -v` and `node --test test_allocator.js`.
 
 ### Algorithm Notes
 
-- Complexity: `O(k^n)` worst case where `k` = avg. entry group count and `n` = slot count. With realistic constraints (`n ≤ 5`, `k ≤ ~25`), enumeration completes near-instantly.
-- Partial assignments: slots with no available resources are left unassigned rather than blocking the entire solution.
-- The Pareto filter runs on the full enumeration output; for very large item pools, the scheme count may be capped.
+- Complexity: `O(k^n)` worst case where `k` = candidates per slot and `n` = slot count.
+  Because every slot also enumerates a "leave blank" branch, the search is roughly 1.5–2× the size of
+  an enumeration that only allows blanks when no resource is available.
+- **Measured performance (Node 22, 2026-09-28; `n = 5`, full pool, five candidate-heaviest maps)**:
+
+  | Zone / tier | Candidates | Enumerated leaves | Time | Heap growth |
+  |---|---|---|---|---|
+  | Five-zone / theory | 25/23/22/21/19 | 4,456,946 | **1714 ms** | **~1140 MB** |
+  | Five-zone / expert | 23/14/14/14/12 | 638,446 | 143 ms | ~181 MB |
+  | Four-zone / theory | 12/12/12/11/10 | 220,459 | 64 ms | ~56 MB |
+  | Four-zone / expert | 10/10/10/9/9 | 68,656 | 19 ms | ~15 MB |
+
+  So it is **not "near-instant"**: the worst case costs ~1.7 s and over a gigabyte of heap, because
+  `allSchemes` materialises every enumerated scheme before filtering.
+  `SCHEME_LIMIT = 25` caps only the schemes **returned/displayed**, not the computation or memory.
+  The solve runs synchronously on the browser main thread; `requestAnimationFrame` + `setTimeout`
+  only defer the start, they do not reduce the work. **No browser-side stress test has been run yet** —
+  the figures above are algorithm-level and exclude rendering.
+- Partial assignments: any slot may be left blank, and the blank branch is enumerated explicitly like
+  any other. A blank costs the sentinel value (99), so when resources are plentiful blank schemes are
+  always dominated and never appear on the front.
+- The Pareto filter runs on the full enumeration output; `SCHEME_LIMIT` caps only the number of
+  schemes **returned/displayed**, not the amount of computation.
 
 ---
 
