@@ -100,6 +100,22 @@ python export_xlsx.py --output gauntlet_data_shared.xlsx
 应用后重新导出并键控对比。高手新增或删除带来的普通镜像差异应单独核对；
 其余差异应只剩未接受的建议。工具不会自行提交或推送数据。
 
+## 四五区成绩同步
+
+```powershell
+python sync_zones.py
+python sync_zones.py --input gauntlet_data.json --max-score 4200 --write
+```
+
+让性能分 `<= --max-score`（默认 4200）的车辆在「四区 / 五区」两边的成绩一致。
+匹配键为同赛道同档位下的 `(车名, 星级, sc, sc_type)`，档位取理论与高手：
+
+- 只有一边有 `time` → 另一边填占位；占位不存在则新建条目（高手档新建时同区普通档补同车同星镜像）
+- 两边都有 `time` 且不等 → 保留更快值，**慢侧会被覆盖**（预检逐条列出被覆盖的慢值）
+- 两边都不是有值条目 → 不动
+
+**默认只预检、不写文件**；确认后加 `--write`，写回走 `format_json` 紧凑格式与原子替换（自动 `.bak` 备份）。
+
 ## 维护与测试
 
 ```powershell
