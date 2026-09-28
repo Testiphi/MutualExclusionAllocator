@@ -491,8 +491,8 @@
       "has_special_route": false,
       "五区": {
         "理论": [{"cars":[{"name":"r兔"}],"time":21.8},{"cars":[{"name":"杰弟"}],"time":22.3},{"cars":[{"name":"恶魔"}],"time":22.49,"sc":null,"sc_type":null},{"cars":[{"name":"玻璃"}],"time":22.59},{"cars":[{"name":"c2"}],"time":22.6},{"cars":[{"name":"银电"}],"time":22.69},{"cars":[{"name":"杰皇"}],"time":22.8},{"cars":[{"name":"白龙"}],"time":22.89},{"cars":[{"name":"冬王"}],"time":22.9},{"cars":[{"name":"黑龙"}],"time":22.95},{"cars":[{"name":"21c"}],"time":22.99},{"cars":[{"name":"秋王"}],"time":23.0},{"cars":[{"name":"sf90"}],"time":23.1},{"cars":[{"name":"9x8"}],"time":23.1},{"cars":[{"name":"007s","stars":null}],"time":23.2},{"cars":[{"name":"万达"}],"time":23.29},{"cars":[{"name":"sgt"}],"time":23.39},{"cars":[{"name":"无敌牛"}],"time":23.95}],
-        "高手": [{"cars":[{"name":"r兔","stars":6}],"time":22.59},{"cars":[{"name":"杰弟","stars":6}],"time":22.89},{"cars":[{"name":"c2","stars":6}],"time":22.96},{"cars":[{"name":"白龙","stars":6}],"time":23.05},{"cars":[{"name":"9x8","stars":6}],"time":23.19}],
-        "普通": [{"cars":[{"name":"r兔","stars":6}]},{"cars":[{"name":"杰弟","stars":6}]},{"cars":[{"name":"c2","stars":6}]},{"cars":[{"name":"白龙","stars":6}]},{"cars":[{"name":"9x8","stars":6}]}],
+        "高手": [{"cars":[{"name":"r兔","stars":6}],"time":22.59},{"cars":[{"name":"杰弟","stars":6}],"time":22.89},{"cars":[{"name":"c2","stars":6}],"time":22.96},{"cars":[{"name":"白龙","stars":6}],"time":23.05},{"cars":[{"name":"9x8","stars":6}],"time":23.19},{"cars":[{"name":"万达","stars":6}],"time":23.49}],
+        "普通": [{"cars":[{"name":"r兔","stars":6}]},{"cars":[{"name":"杰弟","stars":6}]},{"cars":[{"name":"c2","stars":6}]},{"cars":[{"name":"白龙","stars":6}]},{"cars":[{"name":"9x8","stars":6}]},{"cars":[{"name":"万达","stars":6}]}],
         "自动": [{"cars":[{"name":"r兔"}]},{"cars":[{"name":"杰弟"}]},{"cars":[{"name":"c2"}]},{"cars":[{"name":"白龙"}]},{"cars":[{"name":"秋王"}]},{"cars":[{"name":"sf90"}]},{"cars":[{"name":"9x8"}]},{"cars":[{"name":"fp1"}]}]
       },
       "四区": {
