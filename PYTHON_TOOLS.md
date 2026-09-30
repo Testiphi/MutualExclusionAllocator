@@ -48,11 +48,13 @@ JSON 先检查格式化前后数据等价；Excel 先检查生成的 XLSX 压缩
 （新增跑法类型须先在该常量登记，避免拼写变体混入）。
 已有的 `sc: null` 与未设置标记兼容；旧版明细式 `特殊跑法` 工作表不再被解析。
 
-⚠️ **当前有 16 条既有条目违反上述规则**（14 条星级越界 + 2 条 `biome` 越池车名），
-已登记在 `test_data_tools.PENDING_RULE_VIOLATIONS` 中（附说明）。
-`validate_data.py` 会照实报出这 16 条并以非零退出码结束，因此
-`apply_changes.py --write` 与 `sync_zones.py --write` **在数据或规则被修正前会被拦住**。
-修好后应同步把该清单清空（测试会因此失败，提示更新）。
+上述规则校验会**拦住写入**：`validate_data.py` 报错时以非零退出码结束，
+`apply_changes.py --write` 与 `sync_zones.py --write` 都不会写文件。
+
+`test_data_tools.PENDING_RULE_VIOLATIONS` 是既有违规的登记处，**当前为空**——
+2026-10-01 已按用户决定处理完毕：`肥龙` min 4→3、`21c` min 3→2（改规则）、
+删除 `21c★1` 全部条目 8 条（含普通镜像）、`biome` 加入五区车池。
+将来若再出现违规，请登记进该常量并在报告中说明，不要静默放过。
 
 ## 键控对比和人工审核
 

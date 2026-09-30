@@ -276,4 +276,3 @@ if it fails to load the page reports the error instead of degrading.
 | Browser-side stress test | **Not done.** All figures are Node algorithm-level measurements, excluding rendering and GC pauses. |
 | Thin candidate lists | 13 "zone/tier" combinations are down to 1–2 candidates (weakest: `大桥海湾/喧闹铁路` four-zone expert has only `9x8★6`; `极昼之地/凌云狂飙` four-zone expert has only `ssc★2`). |
 | Redundant `max` field | `star_rule.max` matches `cars.json`'s `max_stars` for all 9 cars that declare it (`att`/`杰弟`/`dose` use 6 = unconstrained). Whether to merge them is undecided. |
-| Pending rule violations | After unifying validation, 16 entries violate `star_rule`/pool membership (14 star, 2 out-of-pool `biome`). See `test_data_tools.PENDING_RULE_VIOLATIONS`; awaiting a decision on fixing the data vs. the rules. |
