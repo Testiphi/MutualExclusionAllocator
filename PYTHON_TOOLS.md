@@ -58,7 +58,9 @@ JSON 先检查格式化前后数据等价；Excel 先检查生成的 XLSX 压缩
 
 ## 键控对比和人工审核
 
-先备份用户工作簿。建议另行导出基准，避免覆盖正在填写的文件：
+建议另行导出基准，避免覆盖正在填写的用户工作簿。
+**用户表的备份只在本次运行期间需要**（放在临时工作目录，作为覆盖前的安全网）——
+任务结束即删，**不要在仓库里长期保留用户表快照**；追溯某一轮的回代请看 git 提交历史：
 
 ```powershell
 python export_xlsx.py --output baseline.xlsx
@@ -142,6 +144,6 @@ python sync_zones.py --input gauntlet_data.json --max-score 4200 --write
 python -m unittest test_data_tools -v
 ```
 
-历史 `_diff_keyed_*.py`、`_apply_*.py`、校验脚本和用户表格备份保留作记录，
-新任务使用上述固定入口，不再复制并修改日期脚本。
+历史 `_diff_keyed_*.py`、`_apply_*.py`、校验脚本与用户表格备份**都不在本地保留**（已清理）；
+新任务一律使用上面的固定入口，不再复制并修改日期脚本。追溯某一轮的改动请看 git 提交历史。
 目前工具仍位于仓库根目录，避免同时迁移文件路径。

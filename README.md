@@ -216,7 +216,8 @@ See [Python maintenance tools](PYTHON_TOOLS.md) for installation, paths, review 
 4. Preflight: `python apply_changes.py --review changes.review.json`; use `--output` for a separate preview.
 5. Apply with `--write`, run `python validate_data.py`, then re-export and compare.
 
-Existing destinations are backed up before atomic replacement. Historical dated scripts remain as records.
+Existing destinations are backed up before atomic replacement. Historical dated scripts and user-workbook
+snapshots are **not kept locally** — use the git commit history to trace a past round.
 Run regression checks:
 
 ```bash

@@ -203,7 +203,7 @@ config → 数据加载层（api 抽象）→ 应用逻辑（IIFE）
 4. 预检：`python apply_changes.py --review changes.review.json`；用 `--output` 可单独输出预览。
 5. 用 `--write` 应用，运行 `python validate_data.py`，然后重新导出并比对。
 
-既有目标文件在原子替换前会先备份。历史带日期的脚本作为记录保留。
+既有目标文件在原子替换前会先备份。历史带日期的脚本与用户表格备份**已清理，不在本地保留**——追溯请用 git 提交历史。
 运行回归检查：
 
 ```bash
