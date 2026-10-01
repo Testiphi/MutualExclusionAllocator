@@ -22,8 +22,17 @@ const allocator = (() => {
             carToPriority,
         }));
 
-        // ---- 2. 回溯枚举所有可行分配（车不重复） ----
-        const allSchemes = [];    // { assignment: string[], vector: number[] }
+        // ---- 2. 回溯枚举，边走边维护帕累托前沿 ----
+        //
+        // 不再把全部可行分配收集到 allSchemes 里再统一过滤：密集候选下叶子数可达数百万，
+        // 逐个复制 assignment/vector 会吃掉上 GB 堆。改为每走到叶子就**直接与当前前沿比较**，
+        // 被支配的立即返回（一次数组复制都不做），只有能进入前沿的方案才复制。
+        //
+        // 正确性：在线前沿构建（被支配则丢弃 → 否则剔除被本方案支配的前沿项 → 登记本方案）
+        // 得到的最终前沿与「先收集全部再批量过滤」完全一致——支配关系有传递性，
+        // 若某方案被一个非前沿方案支配，那个非前沿方案又被前沿中某方案支配，则它也直接被前沿支配。
+        // 枚举顺序未变，前沿的维护顺序也未变，故最终顺序（含同向量方案的相对顺序）保持一致。
+        const paretoFront = [];
         const usedCars = new Set();
         const curAssign = new Array(n).fill(null);
         const curVector = new Array(n).fill(noCarPriority);
@@ -38,10 +47,22 @@ const allocator = (() => {
          */
         function backtrack(idx) {
             if (idx === n) {
-                allSchemes.push({
+                // 被当前前沿里任一方案支配 → 直接丢弃，不复制数组
+                for (let i = 0; i < paretoFront.length; i++) {
+                    if (dominates(paretoFront[i].vector, curVector)) return;
+                }
+                // 未被支配：剔除被本方案支配的前沿项，再把本方案登记进前沿
+                // （注意：相同向量、不同车辆分配的方案互不支配，因此都会保留，不做去重）
+                const kept = [];
+                for (const existing of paretoFront) {
+                    if (!dominates(curVector, existing.vector)) kept.push(existing);
+                }
+                kept.push({
                     assignment: [...curAssign],
                     vector: [...curVector]
                 });
+                paretoFront.length = 0;
+                paretoFront.push(...kept);
                 return;
             }
             const { filteredGroups, carToPriority } = mapsData[idx];
@@ -69,31 +90,9 @@ const allocator = (() => {
         }
 
         backtrack(0);
-        if (allSchemes.length === 0) return [];
+        if (paretoFront.length === 0) return [];
 
-        // ---- 3. 帕累托非支配过滤（前沿构建） ----
-        const paretoFront = [];
-        for (const scheme of allSchemes) {
-            let dominated = false;
-            for (let i = 0; i < paretoFront.length; i++) {
-                if (dominates(paretoFront[i].vector, scheme.vector)) {
-                    dominated = true;
-                    break;
-                }
-            }
-            if (!dominated) {
-                const newFront = [];
-                for (const existing of paretoFront) {
-                    if (!dominates(scheme.vector, existing.vector)) {
-                        newFront.push(existing);
-                    }
-                }
-                newFront.push(scheme);
-                paretoFront.length = 0;
-                paretoFront.push(...newFront);
-            }
-        }
-
+        // ---- 3. 排序与截断（必须在搜索全部结束后进行）----
         // 先按总优先级排序，再截取；同分时按向量字典序排序
         paretoFront.sort((a, b) => {
             const totalDifference = a.vector.reduce((sum, value) => sum + value, 0)

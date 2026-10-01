@@ -19,13 +19,29 @@ def validate_data(data, cars):
             errors.append(f'重复赛道: {track_key}')
         tracks_seen.add(track_key)
         for zone in ZONES:
-            tiers = track.get(zone, {})
+            # 结构必须显式存在：缺区、缺档或类型不对都要报错，
+            # 不能用默认空字典兜过去（否则"整区丢失"会静默通过）
+            if zone not in track:
+                errors.append(f'缺{zone}: {track_key}')
+                continue
+            if not isinstance(track[zone], dict):
+                errors.append(f'无效{zone}结构: {track_key}')
+                continue
+            tiers = track[zone]
+            for tier in TIERS:
+                if tier not in tiers:
+                    errors.append(f'缺档位: {track_key} {zone}/{tier}')
+                elif not isinstance(tiers[tier], list):
+                    errors.append(f'无效档位结构: {track_key} {zone}/{tier}')
+            for tier in tiers:
+                if tier not in TIERS:
+                    errors.append(f'未知档位: {track_key} {zone}/{tier}')
             for tier, entries in tiers.items():
                 label = f'{track_key} {zone}/{tier}'
                 if tier not in TIERS or not isinstance(entries, list):
-                    errors.append(f'无效档位结构: {label}')
                     continue
                 counts[f'{zone}_{tier}'] += len(entries)
+                sc_invalid_tier = tier in ('普通', '自动')
                 seen = set()
                 previous = None
                 placeholder = False
@@ -34,6 +50,9 @@ def validate_data(data, cars):
                         errors.append(f'条目必须包含一辆车: {label}')
                         continue
                     car = entry['cars'][0]
+                    if not isinstance(car, dict) or not isinstance(car.get('name'), str) or not car['name']:
+                        errors.append(f'无效车辆结构: {label}')
+                        continue
                     name, stars = car_key(car)
                     if name not in known:
                         errors.append(f'未知车名: {label} {name}')
@@ -54,11 +73,16 @@ def validate_data(data, cars):
                     if entry.get('sc_type') is not None and not isinstance(entry['sc_type'], str):
                         errors.append(f'无效 sc_type: {label} {name}')
                     if entry.get('sc'):
+                        # 特殊跑法只存在于理论、高手档；普通/自动档出现 sc 必是结构错误
+                        if sc_invalid_tier:
+                            errors.append(f'特殊跑法档位错误: {label} {name}（SC 只允许理论/高手档）')
                         route = entry.get('sc_type')
                         if not route:
                             errors.append(f'特殊跑法缺类型: {label} {name}')
                         elif route not in SC_TYPES:
                             errors.append(f'未知特殊跑法类型: {label} {name} {route!r}')
+                    if stars is not None and type(stars) is not int:
+                        continue
                     identity = (name, stars, bool(entry.get('sc')), str(entry.get('sc_type')))
                     if identity in seen:
                         errors.append(f'重复条目: {label} {identity}')
@@ -73,10 +97,26 @@ def validate_data(data, cars):
                             if placeholder or (previous is not None and time < previous):
                                 errors.append(f'成绩乱序: {label} {name}')
                             previous = time
-            normal_keys = {car_key(e['cars'][0]) for e in tiers.get('普通', []) if not e.get('sc') and len(e.get('cars', [])) == 1}
-            for entry in tiers.get('高手', []):
-                if not entry.get('sc') and len(entry.get('cars', [])) == 1 and car_key(entry['cars'][0]) not in normal_keys:
-                    errors.append(f'缺普通镜像: {track_key} {zone} {car_key(entry["cars"][0])}')
+            # 已报告的结构错误不能在镜像检查中再次触发迭代/哈希异常。
+            def mirror_keys(tier):
+                entries = tiers.get(tier)
+                if not isinstance(entries, list):
+                    return set()
+                keys = set()
+                for entry in entries:
+                    if not isinstance(entry, dict) or entry.get('sc'):
+                        continue
+                    entry_cars = entry.get('cars')
+                    if not isinstance(entry_cars, list) or len(entry_cars) != 1:
+                        continue
+                    car = entry_cars[0]
+                    if (isinstance(car, dict) and isinstance(car.get('name'), str)
+                            and (car.get('stars') is None or type(car['stars']) is int)):
+                        keys.add(car_key(car))
+                return keys
+            normal_keys = mirror_keys('普通')
+            for key in sorted(mirror_keys('高手') - normal_keys, key=lambda k: (k[0], k[1] or 0)):
+                errors.append(f'缺普通镜像: {track_key} {zone} {key}')
     return errors, counts
 
 

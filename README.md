@@ -18,7 +18,7 @@ This tool solves a **multi-group mutual-exclusion allocation problem**:
 - A resource assigned to one slot **cannot be reused** elsewhere.
 - Some entries may have **alternative routes** that yield different efficiency metrics, enabled per-slot.
 
-The algorithm finds all feasible assignments via **backtracking enumeration**, then applies **Pareto non-dominated filtering** to return only schemes that cannot be strictly improved across all dimensions.
+The algorithm visits all feasible assignments via **backtracking enumeration**, maintaining the **Pareto non-dominated front** at each leaf to return only schemes that cannot be strictly improved across all dimensions.
 
 ---
 
@@ -36,7 +36,7 @@ Slot: "Slot A"
   ...
 ```
 
-Some entries carry an `sc` (special/heuristic route) flag with optional subtype (`sc_type`) and note. When a heuristic route is enabled, the sc version replaces its normal counterpart at the same priority slot.
+Some entries carry an `sc` (special/heuristic route) flag and a required valid `sc_type`. When enabled, normal and special routes compete: each car uses its faster effective time, then candidates are ranked by time.
 
 ### 2. Backtracking Enumeration
 
@@ -218,6 +218,8 @@ See [Python maintenance tools](PYTHON_TOOLS.md) for installation, paths, review 
 
 Existing destinations are backed up before atomic replacement. Historical dated scripts and user-workbook
 snapshots are **not kept locally** — use the git commit history to trace a past round.
+Each track must explicitly contain both zones and all four tiers; empty lists are valid. SC is allowed only in theory/expert tiers.
+Zone sync retains the score threshold and also checks both pools and star ranges. Ineligible entries are reported and skipped; existing invalid data still blocks sync.
 Run regression checks:
 
 ```bash
@@ -228,29 +230,31 @@ node test_boot_smoke.js                    # page boot smoke test (DOM stub, no 
 
 ### Algorithm Notes
 
-- Complexity: `O(k^n)` worst case where `k` = candidates per slot and `n` = slot count.
-  Because every slot also enumerates a "leave blank" branch, the search is roughly 1.5–2× the size of
-  an enumeration that only allows blanks when no resource is available.
-- **Measured performance (Node 22, 2026-09-28; `n = 5`, full pool, five candidate-heaviest maps)**:
+- Leaf count is bounded by `O((k+1)^n)` including blanks. Each leaf also scans the front; a large front can still increase comparison cost and memory.
+- Leaves are compared directly against the current front. Dominated assignments are discarded without copying arrays.
+  Equal vectors with different assignments are retained; sorting and the 25-scheme limit apply only after enumeration finishes.
+- **Comparison (2026-10-01, Node v24.15.0 / Windows x64 / i9-13900H / 63.6 GB RAM)**:
 
-  | Zone / tier | Candidates | Enumerated leaves | Time | Heap growth |
+  | Zone / tier | Unique candidates | Leaves | Time old→new(ms) | Before/after heap delta old→new(MB) |
   |---|---|---|---|---|
-  | Five-zone / theory | 25/23/22/21/19 | 4,456,946 | **1714 ms** | **~1140 MB** |
-  | Five-zone / expert | 23/14/14/14/12 | 638,446 | 143 ms | ~181 MB |
-  | Four-zone / theory | 12/12/12/11/10 | 220,459 | 64 ms | ~56 MB |
-  | Four-zone / expert | 10/10/10/9/9 | 68,656 | 19 ms | ~15 MB |
+  | Five-zone / theory | 22/18/18/18/18 | 2,347,041 | 517.6→150.1 | 631.8→0.6 |
+  | Five-zone / expert | 20/12/11/11/10 | 309,414 | 74.0→23.2 | 88.9→1.0 |
+  | Four-zone / theory | 12/12/11/10/10 | 186,020 | 46.9→14.6 | 56.3→2.0 |
+  | Four-zone / expert | 9/8/7/7/7 | 31,404 | 9.6→4.8 | 10.8→2.0 |
 
-  So it is **not "near-instant"**: the worst case costs ~1.7 s and over a gigabyte of heap, because
-  `allSchemes` materialises every enumerated scheme before filtering.
-  `SCHEME_LIMIT = 25` caps only the schemes **returned/displayed**, not the computation or memory.
-  The solve runs synchronously on the browser main thread; `requestAnimationFrame` + `setTimeout`
-  only defer the start, they do not reduce the work. **No browser-side stress test has been run yet** —
-  the figures above are algorithm-level and exclude rendering.
+  Each version used a separate process, one cold call, and `--expose-gc --max-old-space-size=8192`.
+  Inputs use the five maps with most unique candidates, a full zone garage, all SC routes and default stars;
+  expert times use the original frontend estimator. Timing covers only the solve; leaf counting runs separately.
+  GC runs before the call, not after. **Heap delta is neither peak heap nor total allocations**; GC may occur during the call.
+  The old algorithm is from `ce30445`. Earlier reports counted multiple stars/routes of one car as separate candidates;
+  this input now matches the page, so absolute values are not directly comparable with those reports.
+  These are dense examples, not a proof of the worst case or statistics from repeated measurements.
+- Solving still runs synchronously on the browser main thread; deferring the start does not remove the work.
+  **No browser-side stress test has been run**; Node figures exclude page rendering and do not predict browser/mobile latency.
 - Partial assignments: any slot may be left blank, and the blank branch is enumerated explicitly like
   any other. A blank costs the sentinel value (99), so when resources are plentiful blank schemes are
   always dominated and never appear on the front.
-- The Pareto filter runs on the full enumeration output; `SCHEME_LIMIT` caps only the number of
-  schemes **returned/displayed**, not the amount of computation.
+- `SCHEME_LIMIT` caps only schemes **returned/displayed**, not enumeration or the search-time front size.
 
 ---
 
@@ -261,7 +265,7 @@ node test_boot_smoke.js                    # page boot smoke test (DOM stub, no 
 
 Static hosting (GitHub Pages, Netlify, any web server).
 
-Required files (all three): `index.html`, `gauntlet_data.json`, `cars.json`.
+Deployment files: `index.html`, `styles.css`, `config.js`, `api.js`, `allocator.js`, `gauntlet_data.json`, `cars.json`.
 Besides vehicle data, `cars.json` carries the zone pools and star rules, so it is a **hard dependency** —
 if it fails to load the page reports the error instead of degrading.
 
@@ -273,7 +277,7 @@ if it fails to load the page reports the error instead of degrading.
 
 | Item | Status |
 |------|--------|
-| Solve performance | Worst case ~1.7 s and ~1.1 GB heap (see "Algorithm Notes"). Options: stop materialising all schemes, incremental front filtering, or move the solve off the main thread. **Not yet decided.** |
-| Browser-side stress test | **Not done.** All figures are Node algorithm-level measurements, excluding rendering and GC pauses. |
+| Solve performance | Incremental front filtering is implemented; the dense example takes ~150 ms (see "Algorithm Notes"). Full enumeration and front scans still run on the main thread. Pruning and Workers are not implemented. |
+| Browser-side stress test | **Not done.** Figures are single Node algorithm calls; GC during a call may affect timing. Browser rendering and responsiveness remain untested. |
 | Thin candidate lists | 13 "zone/tier" combinations are down to 1–2 candidates (weakest: `大桥海湾/喧闹铁路` four-zone expert has only `9x8★6`; `极昼之地/凌云狂飙` four-zone expert has only `ssc★2`). |
 | Redundant `max` field | `star_rule.max` matches `cars.json`'s `max_stars` for all 9 cars that declare it (`att`/`杰弟`/`dose` use 6 = unconstrained). Whether to merge them is undecided. |

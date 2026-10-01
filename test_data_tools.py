@@ -7,6 +7,9 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from unittest.mock import patch
+import contextlib
+import io
 
 import openpyxl
 from apply_changes import apply_changes
@@ -14,17 +17,21 @@ from data_tools import ROOT, atomic_write, read_json, star_limits
 from diff_workbooks import compare_workbooks
 from export_xlsx import build_workbook
 from format_json import format_data
-from sync_zones import sync
+from sync_zones import ACTION_KEYS, main as sync_main, sync
 from validate_data import validate_data
 from xlsx_tools import load_workbook_data
+
+
+def empty_tiers():
+    """两区 × 四档的空骨架；新校验要求四区、五区与四个档位都必须显式存在"""
+    return {zone: {tier: [] for tier in ('理论', '高手', '普通', '自动')} for zone in ('五区', '四区')}
 
 
 def fixture():
     return {'_version': 1, '_comment': 'quote " and \\ and\nnewline', 'tier_info': {},
             'extra': {'keep': True}, 'tracks': [
-                {'大地图': big, '小地图': 'Same', 'note': 'keep " me',
-                 zone: {tier: [] for tier in ('理论', '高手', '普通', '自动')}}
-                for big, zone in [('A', '五区'), ('B', '五区')]]}
+                {'大地图': big, '小地图': 'Same', 'note': 'keep " me', **empty_tiers()}
+                for big in ('A', 'B')]}
 
 
 CARS = {'cars': [{'title': name, 'nickname': name, 'zones': ['五区', '四区']}
@@ -39,9 +46,7 @@ PENDING_RULE_VIOLATIONS = []
 def sc_fixture():
     """两区齐全的赛道骨架, 供特殊跑法透视表测试使用"""
     return {'_version': 1, 'tracks': [
-        {'大地图': big, '小地图': 'Same',
-         **{zone: {tier: [] for tier in ('理论', '高手', '普通', '自动')} for zone in ('五区', '四区')}}
-        for big in ('A', 'B')]}
+        {'大地图': big, '小地图': 'Same', **empty_tiers()} for big in ('A', 'B')]}
 
 
 def change(**overrides):
@@ -131,6 +136,176 @@ class SyncZonesTests(unittest.TestCase):
         self.assertEqual(changes['镜像'], [])
         self.assertEqual(data['tracks'][0]['五区']['普通'], [])
         self.assertEqual(validate_data(data, SYNC_CARS)[0], [])
+
+    def test_single_zone_car_is_skipped_without_changing_data(self):
+        cars = deepcopy(SYNC_CARS)
+        cars['cars'][0]['zones'] = ['五区']
+        data = {'tracks': [sync_track([expert('X', 20)], [])]}
+        original = deepcopy(data)
+        changes, _ = sync(data, cars)
+        self.assertEqual(data, original)
+        self.assertEqual(sum(len(changes[k]) for k in ACTION_KEYS), 0)
+        self.assertIn('不在四区车池', changes['跳过'][0])
+        self.assertIn('sc=False sc_type=None', changes['跳过'][0])
+
+    def test_stars_outside_other_zone_range_are_skipped(self):
+        cars = deepcopy(SYNC_CARS)
+        cars['cars'][0]['star_rule'] = {'min': 2, 'max': 6, 'zone4Max': 4}
+        data = {'tracks': [sync_track([expert('X', 20, stars=5)], [])]}
+        original = deepcopy(data)
+        changes, _ = sync(data, cars)
+        self.assertEqual(data, original)
+        self.assertIn('四区星级范围 2-4', changes['跳过'][0])
+
+    def test_theory_without_stars_and_score_gate_are_preserved(self):
+        cars = deepcopy(SYNC_CARS)
+        cars['cars'][0]['star_rule'] = {'min': 2, 'zone4Max': 4}
+        cars['cars'][1]['score'] = 4300
+        data = {'tracks': [sync_track([], [])]}
+        data['tracks'][0]['五区']['理论'] = [
+            {'cars': [{'name': 'X'}], 'time': 20}, {'cars': [{'name': 'Y'}], 'time': 21}]
+        changes, _ = sync(data, cars)
+        target = data['tracks'][0]['四区']['理论']
+        self.assertEqual([e['cars'][0]['name'] for e in target], ['X'])
+        self.assertIsNone(target[0]['cars'][0].get('stars'))
+        self.assertEqual(len(changes['创建']), 1)
+
+    def test_preexisting_violation_is_not_hidden_by_skip(self):
+        cars = deepcopy(SYNC_CARS)
+        cars['cars'][0]['zones'] = ['五区']
+        data = {'tracks': [sync_track([], [expert('X', 20)])]}
+        original = deepcopy(data)
+        with self.assertRaisesRegex(ValueError, '同步前校验失败'):
+            sync(data, cars)
+        self.assertEqual(data, original)
+
+    def test_cli_dry_run_write_and_source_drift(self):
+        with tempfile.TemporaryDirectory() as temp:
+            directory = Path(temp)
+            source, cars = directory / 'data.json', directory / 'cars.json'
+            original = {'tracks': [sync_track([expert('X', 20)], [])]}
+            source.write_text(json.dumps(original), encoding='utf-8')
+            cars.write_text(json.dumps(SYNC_CARS), encoding='utf-8')
+            args = ['--input', str(source), '--cars', str(cars)]
+            before = source.read_bytes()
+            with contextlib.redirect_stdout(io.StringIO()):
+                self.assertEqual(sync_main(args), 0)
+            self.assertEqual(source.read_bytes(), before)
+            self.assertFalse(list(directory.glob('*.bak')))
+
+            def drift(data, car_data, max_score):
+                result = sync(data, car_data, max_score)
+                source.write_text(json.dumps(original) + '\n', encoding='utf-8')
+                return result
+
+            with patch('sync_zones.sync', side_effect=drift), patch('sync_zones.atomic_write') as write:
+                with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
+                    with self.assertRaises(SystemExit) as error:
+                        sync_main(args + ['--write'])
+                self.assertEqual(error.exception.code, 1)
+                write.assert_not_called()
+            self.assertEqual(read_json(source), original)
+            self.assertFalse(list(directory.glob('*.bak')))
+            with contextlib.redirect_stdout(io.StringIO()):
+                self.assertEqual(sync_main(args + ['--write']), 0)
+                self.assertEqual(sync_main(args + ['--write']), 0)
+            self.assertEqual(len(list(directory.glob('*.bak'))), 1)
+            self.assertEqual(read_json(source)['tracks'][0]['四区']['高手'][0]['time'], 20)
+
+    def test_cli_only_skips_do_not_count_as_writes(self):
+        with tempfile.TemporaryDirectory() as temp:
+            directory = Path(temp)
+            source, cars = directory / 'data.json', directory / 'cars.json'
+            car_data = deepcopy(SYNC_CARS)
+            car_data['cars'][0]['zones'] = ['五区']
+            source.write_text(json.dumps({'tracks': [sync_track([expert('X', 20)], [])]}), encoding='utf-8')
+            cars.write_text(json.dumps(car_data), encoding='utf-8')
+            before = source.read_bytes()
+            output = io.StringIO()
+            with contextlib.redirect_stdout(output):
+                self.assertEqual(sync_main(['--input', str(source), '--cars', str(cars), '--write']), 0)
+            self.assertIn('跳过 (1)', output.getvalue())
+            self.assertIn('合计变更 0 条', output.getvalue())
+            self.assertEqual(source.read_bytes(), before)
+            self.assertFalse(list(directory.glob('*.bak')))
+
+
+def structural_data():
+    """结构完整（两区 × 四档）的单赛道数据，用于结构性错误测试"""
+    return {'tracks': [{'大地图': 'A', '小地图': 'Same', 'note': 'keep', **empty_tiers()}]}
+
+
+class ValidationStructureTests(unittest.TestCase):
+    """结构校验：缺区/缺档/类型错误必须报错，SC 只能落在理论、高手档"""
+
+    def test_complete_skeleton_passes(self):
+        data = structural_data()
+        self.assertEqual(validate_data(data, CARS)[0], [])
+        # 空列表合法——档位存在即可，不要求有内容
+        self.assertEqual(sum(validate_data(data, CARS)[1].values()), 0)
+
+    def test_missing_zone_is_reported(self):
+        for zone in ('五区', '四区'):
+            data = structural_data()
+            del data['tracks'][0][zone]
+            errors = validate_data(data, CARS)[0]
+            self.assertIn(f'缺{zone}', errors[0], zone)
+
+    def test_wrong_zone_type_is_reported(self):
+        data = structural_data()
+        data['tracks'][0]['四区'] = []
+        self.assertIn('无效四区结构', validate_data(data, CARS)[0][0])
+
+    def test_missing_tier_is_reported(self):
+        for zone in ('五区', '四区'):
+            for tier in ('理论', '高手', '普通', '自动'):
+                data = structural_data()
+                del data['tracks'][0][zone][tier]
+                errors = validate_data(data, CARS)[0]
+                self.assertIn(f'缺档位: {("A", "Same")} {zone}/{tier}', errors[0], (zone, tier))
+
+    def test_wrong_tier_type_is_reported(self):
+        for tier in ('理论', '高手', '普通', '自动'):
+            for bad in (None, {}, 3, 'wrong'):
+                data = structural_data()
+                data['tracks'][0]['五区'][tier] = bad
+                self.assertIn('无效档位结构', validate_data(data, CARS)[0][0])
+
+    def test_malformed_entries_return_errors_instead_of_crashing(self):
+        for entry in (None, {'cars': None}, {'cars': [None]}, {'cars': [{}]},
+                      {'cars': [{'name': 'X', 'stars': []}]}):
+            data = structural_data()
+            data['tracks'][0]['五区']['高手'] = [entry]
+            self.assertTrue(validate_data(data, CARS)[0])
+
+    def test_unknown_tier_key_is_reported_but_unknown_fields_are_kept(self):
+        data = structural_data()
+        data['tracks'][0]['五区']['精英'] = []
+        self.assertIn('未知档位: ', validate_data(data, CARS)[0][0])
+        # 未知的顶层/赛道扩展字段不受影响（has_special_route / special_route_note 即此类）
+        data = structural_data()
+        data['tracks'][0]['has_special_route'] = True
+        data['tracks'][0]['special_route_note'] = '跳图'
+        self.assertEqual(validate_data(data, CARS)[0], [])
+
+    def test_special_route_rejected_in_normal_and_auto_tiers(self):
+        for zone in ('五区', '四区'):
+            for tier in ('普通', '自动'):
+                data = structural_data()
+                data['tracks'][0][zone][tier] = [
+                    {'cars': [{'name': 'X', 'stars': 6}], 'sc': True, 'sc_type': '跳图'}]
+                errors = validate_data(data, CARS)[0]
+                self.assertEqual(len(errors), 1, (zone, tier, errors))
+                self.assertIn('特殊跑法档位错误', errors[0])
+
+    def test_special_route_allowed_in_theory_and_expert_tiers(self):
+        for tier, stars in (('理论', None), ('高手', 6)):
+            data = structural_data()
+            car = {'name': 'X'} if stars is None else {'name': 'X', 'stars': stars}
+            data['tracks'][0]['五区'][tier] = [{'cars': [car], 'time': 20, 'sc': True, 'sc_type': '跳图'}]
+            if tier == '高手':
+                data['tracks'][0]['五区']['普通'] = [{'cars': [{'name': 'X', 'stars': stars}]}]
+            self.assertEqual(validate_data(data, CARS)[0], [], tier)
 
 
 class DataToolsTests(unittest.TestCase):

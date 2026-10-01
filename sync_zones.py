@@ -6,6 +6,7 @@
 同步规则
 --------
 - 车辆集：`cars.json` 中 `score <= 4200` 的车（按真名 / nickname / `_nickname_map` 别名匹配）
+- 先校验源数据；同步要求双区车池归属及两区星级合规，否则单列跳过原因
 - 档位：理论 + 高手（含特殊跑法，按 `sc_type` 匹配）
 - 键：同赛道同档位下的 `(车名, 星级, sc, sc_type)`
   1. 只有一边有 `time` → 另一边填占位；占位不存在则新建条目
@@ -14,6 +15,7 @@
 - 仅**非特殊跑法**高手档新建条目时，同区普通档补同车同星镜像（与 `apply_changes.py` 同一口径）
 - 三个分支都会改动理论/高手档，故**改动过的列表按成绩升序回排**（占位在末尾），
   再跑一次全库校验；校验不通过则报错且不写文件（避免写出「成绩乱序」的库）
+- 写入前复核源文件 SHA256，处理期间变化则停止写入；只有跳过不写文件
 
 用法
 ----
@@ -23,15 +25,18 @@
 默认输入为脚本所在目录下的 `gauntlet_data.json` / `cars.json`；显式相对路径相对当前工作目录。
 """
 import argparse
+import hashlib
 import json
 import sys
 from pathlib import Path
 
-from data_tools import ROOT, atomic_write, configure_stdout, entry_sort_key, read_json
+from data_tools import (ROOT, atomic_write, car_records, car_zone_names, configure_stdout,
+                        entry_sort_key, read_json, star_limits)
 import format_json
 from validate_data import validate_data
 
 MAX_SCORE = 4200
+ACTION_KEYS = ('覆盖慢值', '填占位', '创建', '镜像')
 
 
 def build_score_map(cars):
@@ -71,14 +76,19 @@ def make_entry(name, stars, time, sc, sc_type):
 
 
 def sync(data, cars, max_score=MAX_SCORE):
-    """返回 (changes, stats)；changes 为逐条描述，stats 为动作计数
+    """返回 (changes, sync_names)；changes 含动作与单独的跳过原因。
 
     改动过的理论/高手列表会被回排升序，并在返回前跑一次全库校验；
     校验失败抛 ValueError（调用方据此中止，不写文件）。
     """
+    errors, _ = validate_data(data, cars)
+    if errors:
+        raise ValueError('同步前校验失败:\n' + '\n'.join(errors))
     score_map = build_score_map(cars)
+    records = car_records(cars)
+    pools = {zone: set(car_zone_names(cars, zone)) for zone in ('五区', '四区')}
     sync_names = {n for n, s in score_map.items() if s <= max_score}
-    changes = {'覆盖慢值': [], '填占位': [], '创建': [], '镜像': []}
+    changes = {key: [] for key in (*ACTION_KEYS, '跳过')}
     dirty = {}      # id(列表) → 列表：本次改动过的理论/高手列表，需回排升序
 
     for track in data['tracks']:
@@ -100,6 +110,18 @@ def sync(data, cars, max_score=MAX_SCORE):
                 e4 = find_entry(zone4, name, stars, sc, sc_type)
                 t5, t4 = (e5.get('time') if e5 else None), (e4.get('time') if e4 else None)
                 if t5 is None and t4 is None:
+                    continue
+                reasons = []
+                for zone in ('五区', '四区'):
+                    if name not in pools[zone]:
+                        reasons.append(f'不在{zone}车池')
+                    if stars is not None:
+                        minimum, maximum = star_limits(records.get(name), zone)
+                        if not minimum <= stars <= maximum:
+                            reasons.append(f'{zone}星级范围 {minimum}-{maximum}')
+                if reasons:
+                    changes['跳过'].append(
+                        f'{label} {tier} {tag} sc={sc} sc_type={sc_type!r}: ' + '；'.join(reasons))
                     continue
                 if t5 is not None and t4 is not None:
                     if t5 == t4:
@@ -153,15 +175,19 @@ def main(argv=None):
     args = parser.parse_args(argv)
     configure_stdout()
     try:
-        data = read_json(args.input)
+        if args.input.resolve() == args.cars.resolve():
+            raise ValueError('赛道数据不能与车辆库使用同一路径')
+        source = args.input.read_bytes()
+        digest = hashlib.sha256(source).digest()
+        data = json.loads(source.decode('utf-8'))
         cars = read_json(args.cars)
         changes, names = sync(data, cars, args.max_score)
     except (OSError, ValueError, KeyError, TypeError, AssertionError) as error:
         parser.exit(1, f'同步失败: {error}\n')
 
-    total = sum(len(v) for v in changes.values())
+    total = sum(len(changes[key]) for key in ACTION_KEYS)
     print(f'同步车辆集（score ≤ {args.max_score}）: {len(names)} 个名字')
-    for key in ('覆盖慢值', '填占位', '创建', '镜像'):
+    for key in (*ACTION_KEYS, '跳过'):
         print(f'\n{key} ({len(changes[key])}):')
         for line in changes[key]:
             print('  ' + line)
@@ -174,10 +200,15 @@ def main(argv=None):
         print('预检完成（未写文件）；确认后加 --write 写回。')
         return 0
 
-    text = format_json.format_data(data)
-    if json.loads(text) != data:
-        parser.exit(1, '同步失败: 格式化前后数据不一致\n')
-    atomic_write(args.input, text)
+    try:
+        text = format_json.format_data(data)
+        if json.loads(text) != data:
+            raise ValueError('格式化前后数据不一致')
+        if hashlib.sha256(args.input.read_bytes()).digest() != digest:
+            raise ValueError('处理期间源数据变化，停止写入')
+        atomic_write(args.input, text)
+    except (OSError, ValueError, TypeError) as error:
+        parser.exit(1, f'同步失败: {error}\n')
     print(f'已写回 {args.input}（{len(text.splitlines())} 行，已自动备份 .bak）')
     return 0
 
