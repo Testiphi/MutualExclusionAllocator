@@ -4,7 +4,7 @@
 
 > 🌐 **Live demo**: [testiphi.github.io/MutualExclusionAllocator](https://testiphi.github.io/MutualExclusionAllocator/)
 
-A constraint-based resource allocation tool with Pareto-optimal filtering, supporting multiple user tiers and alternative-route heuristics.
+A car allocator for Gauntlet challenges, supporting five-zone/four-zone pools, four data tiers, star ratings and special routes. It returns Pareto-optimal schemes without reusing cars.
 
 ---
 
@@ -66,7 +66,9 @@ Each complete assignment produces a **priority vector** `[p₀, p₁, ..., pₙ�
 
 **Scheme A dominates scheme B** iff `∀i : A[i] ≤ B[i]` and `∃j : A[j] < B[j]`.
 
-Only schemes on the **Pareto front** (non-dominated set) are returned, sorted by total priority sum.
+Each leaf is compared immediately with the current front: discard it if dominated, otherwise remove the schemes it dominates and add it.
+Different car assignments with equal vectors are retained. After enumeration, sort by total priority and then lexicographically by vector, returning at most 25 schemes.
+The objective is each map's candidate rank; it does not directly minimise the sum of race times.
 
 ---
 
@@ -90,11 +92,10 @@ Tiers share the same slot structure but differ in which entries and which items 
 Certain slots may have entries flagged with `sc: true`, representing alternative approaches (e.g., different techniques, shortcuts, workarounds) that yield different efficiency metrics.
 
 - **Per-slot toggle**: each heuristic route can be enabled or disabled independently.
-- **Three states**: `all` (default) / a specific route type / `off`. When off, all `sc` entries for that
-  slot are dropped; when a specific type is selected, only entries with a matching `sc_type` are kept.
-- **Additive semantics (not replacement)**: `sc` entries compete as **additional candidates** alongside
-  the normal entries of the same slot, each ranked by its own metric. Disabling a route does not change
-  the ranking of normal entries.
+- **Three states**: `all` (default) / a specific route type / `off`. Off removes all SC entries for the slot;
+  a specific type keeps only matching SC entries while normal routes remain available.
+- **One candidate per car**: compare normal and allowed SC results, using the faster effective time for each car.
+  Changing routes reorders candidates. Normal recorded times stay unchanged, but a car's priority rank may change.
 - **Affects**: both the allocation order (which items the algorithm tries first) and the displayed efficiency score.
 - Every `sc_type` must be registered in `SC_TYPES` (`repo/data_tools.py`, currently 9 values);
   new route types must be added to that constant first.
@@ -107,6 +108,7 @@ Each slot can have two independent priority lists (e.g., "Zone A" and "Zone B").
 
 The two resource pools, and the per-item star-rating rules, are declared per item in `cars.json`
 (`zones` / `star_rule`) and shared with the Python validation scripts — see "Architecture".
+Four-zone special-modification star limits are hand-maintained. A full-upgrade score above 4200 alone does not make a car invalid in that pool.
 
 ---
 
@@ -146,13 +148,14 @@ real files of this project and use fixed Chinese field names. Below is the actua
 | Field | Type | Description |
 |-------|------|-------------|
 | `cars` | `[{name, ?stars}]` | Candidate resources; always a single-element array here (one per group) |
-| `time` | number / absent | Efficiency metric (lower = better). **Absent means "no result yet"**, not a placeholder value |
+| `time` | number / null / absent | Recorded time must be positive finite seconds; lower is better. Null or absent means no result |
 | `sc` | bool | Marks the entry as an alternative (heuristic) route |
 | `sc_type` | string | Route type; must belong to `data_tools.SC_TYPES` |
 
-Theory/expert tiers are kept sorted by `time` ascending, with result-less entries last; the normal/auto
-tiers only express availability (no `time`). Every expert entry must have a matching normal-tier mirror
-(enforced by validation).
+Theory/expert tiers are sorted by `time` ascending, with result-less entries last; normal/auto tiers express availability without times.
+Current maintenance creates theory/expert entries only when results exist, without pre-populating placeholders; tools still support existing result-less entries.
+Only **non-SC expert entries** require a matching normal-tier mirror with the same car and stars.
+SC belongs only in theory/expert tiers and does not create normal mirrors. Each track must explicitly contain both zones and all four tiers, which may be empty lists.
 
 ```json
 // cars.json
@@ -183,16 +186,19 @@ scripts (see "Architecture").
 Pure client-side static application:
 
 ```
-config → data loader (api abstraction) → application logic (IIFE)
+config.js → api.js → index.html (state, candidate preparation, rendering)
+                         └→ allocator.js (pure allocation algorithm)
 ```
 
 - **Config** — paths, keys, storage settings
-- **Data loader** — fetches JSON data, handles static and API modes
+- **Data loader** — currently fetches static JSON; API mode is a reserved interface with no backend implementation in this repository
 - **Rule derivation** — the zone pools (`zones`) and star rules (`star_rule`) are derived from
   `cars.json` by `buildCarRules()` in `index.html`; **this is the single source of truth** and the page
   no longer keeps a hardcoded copy
-- **Application logic** — builds slot indexes, runs backtracking + Pareto filtering, renders UI
-- **State persistence** — resource pool state saved to localStorage
+- **Application logic** — prepares candidates, estimates star-adjusted times, manages state and renders the UI
+- **Algorithm module** — `allocator.js` has no DOM/network dependencies and incrementally maintains the Pareto front during backtracking
+- **State persistence** — garage, star ratings and UI preferences use this browser's localStorage; there are no accounts or cross-device sync
+- **Local maintenance** — Python tools maintain JSON/Excel and are not part of the web runtime
 
 No server, no build step, no database.
 
@@ -220,6 +226,10 @@ Existing destinations are backed up before atomic replacement. Historical dated 
 snapshots are **not kept locally** — use the git commit history to trace a past round.
 Each track must explicitly contain both zones and all four tiers; empty lists are valid. SC is allowed only in theory/expert tiers.
 Zone sync retains the score threshold and also checks both pools and star ranges. Ineligible entries are reported and skipped; existing invalid data still blocks sync.
+
+Run `python sync_zones.py` to review a dry run before using `--write`.
+Different times across zones use the faster value. Before writing, the source is checked for changes during processing; this is not a multi-process file lock.
+
 Run regression checks:
 
 ```bash
@@ -227,6 +237,9 @@ python -m unittest test_data_tools -v      # data tools and validation
 node --test test_allocator.js              # allocator boundary cases
 node test_boot_smoke.js                    # page boot smoke test (DOM stub, no browser)
 ```
+
+As of 2026-10-01, 44 Python tests, 15 allocator tests and the boot smoke test pass, with zero data-validation errors.
+The boot test uses a DOM stub and does not validate real-browser interaction or performance.
 
 ### Algorithm Notes
 
@@ -268,6 +281,15 @@ Static hosting (GitHub Pages, Netlify, any web server).
 Deployment files: `index.html`, `styles.css`, `config.js`, `api.js`, `allocator.js`, `gauntlet_data.json`, `cars.json`.
 Besides vehicle data, `cars.json` carries the zone pools and star rules, so it is a **hard dependency** —
 if it fails to load the page reports the error instead of degrading.
+
+For local preview, run from the repository directory:
+
+```bash
+python -m http.server 8000
+```
+
+Open [localhost:8000](http://localhost:8000/) in a browser. Use HTTP; opening the HTML directly may prevent JSON loading due to browser restrictions.
+Python is used only for this preview server and local maintenance; the deployed static page does not require it.
 
 ---
 
