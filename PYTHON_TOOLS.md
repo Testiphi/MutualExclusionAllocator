@@ -154,7 +154,7 @@ python sync_zones.py --input gauntlet_data.json --max-score 4200 --write
 `python -B -X utf8 _star_curve_fit.py` 执行只读报告，`--refit` 额外输出全量拟合常量供人工参考，
 不自动改生产参数。需要已有 numpy 与 Node；`--node PATH` 可指定 Node，不自动安装依赖。
 默认路径定位到脚本目录，可用 `--input`、`--frontend` 指定输入，用 `--seed` 指定分折随机种子。
-生产基准提取并执行 `index.html` 的原始常量、`starPenalty()`、`getStarAdjustedScore()`，
+生产基准从 `index.html` 确认模块接线，提取并执行 `race_scores.js` 的原始常量、`starPenalty()`、`getStarAdjustedScore()`，
 包含三位小数取整；候选也使用同一原函数，只替换训练折拟合出的 A/B。
 五折按赛道/车分组，双区成绩捆绑避免同步副本跨折；候选参数只用训练折的外推样本拟合。
 折外误差、全量拟合结果分开报告；固定生产参数可能用过当前数据，因此生产基准是回顾性复核，

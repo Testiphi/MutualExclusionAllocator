@@ -7,6 +7,7 @@
     <script src="config.js"></script>
     <script src="api.js"></script>
     <script src="allocator.js"></script>
+    <script src="race_scores.js"></script>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -101,7 +102,6 @@
     let bigMapList = [];
     let smallMapsByBig = {};
 
-    // ===================== 五区 / 四区 独立车池（硬编码，可自由增删） =====================
     // ===================== 五区 / 四区 车池与星级规则 =====================
     // 唯一来源是 cars.json 里每辆车记录上的 `zones`（车池）与 `star_rule`（星级上下限）。
     // 前端与 Python 校验（validate_data.py）读同一份定义，避免两侧规则分叉；
@@ -135,7 +135,7 @@
     let selectedCars = new Set();            // 车库拥有车辆
     let searchQuery = '';                    // 车库搜索关键字
     let currentBestSchemes = [];             // 非支配方案列表 { assignment, vector }
-    // 特殊跑法开关: mapKey('大地图/小地图') → true/false
+    // 特殊跑法状态: mapKey('大地图/小地图') → 'all' / 'off' / sc_type
     let specialRouteEnabled = {};
 
     // ========================== 星级自定义 ==========================
@@ -202,22 +202,7 @@
     /** 用户为每辆车设定的星级映射（持久化） */
     let starsMap = {};
 
-    /**
-     * 降星惩罚曲线：f(Δ) = exp(A·Δ + B·Δ²)，Δ = 距最近已知星级点的星数。
-     *
-     * 由真实数据拟合（高手档 125 个多星组 / 233 个星级点对，按组 5 折交叉验证），
-     * 取代原先的恒定 0.5%/星。每星代价随 Δ 递增（0.63% → 1.46%），因为跨度越大
-     * 单位星级的损失越大；恒定系数在长跨度外推时会系统性低估（Δ=5 时中位误差
-     * 2.69% → 0.38%）。
-     * 复核 / 重新拟合：`python _star_curve_fit.py [--refit]`
-     */
-    const STAR_PENALTY_A = 0.00525;
-    const STAR_PENALTY_B = 0.001025;
-
-    /** 比已知星级点低 diff 星时的成绩倍数（> 1，即更慢） */
-    function starPenalty(diff) {
-        return Math.exp(STAR_PENALTY_A * diff + STAR_PENALTY_B * diff * diff);
-    }
+    // 星级曲线与独立跑法估算位于 race_scores.js；参数和取整保持不变。
 
     /** 加载已保存的星级映射 */
     function loadStarsMap() {
@@ -242,7 +227,9 @@
 
     /** 获取当前分区的有效星级，不改写保存的用户设置（显示与计算共用同一来源） */
     function getCarStars(carName) {
-        const stars = starsMap[carName] ?? getZoneDefaultStar(carName);
+        const saved = starsMap[carName];
+        const stars = Number.isInteger(saved) && saved >= 1 && saved <= 6
+            ? saved : getZoneDefaultStar(carName);
         const range = getStarRange(carName);
         return Math.max(range.min, Math.min(range.max, stars));
     }
@@ -259,51 +246,6 @@
         starsMap[carName] = clamped;
         saveStarsMap();
         return clamped;
-    }
-
-    /**
-     * 给定某车在一条赛道上所有星级的成绩数据点，
-     * 返回用户当前星级下最合理的成绩。
-     *
-     * 策略：
-     *  - 有精确匹配 → 直接返回
-     *  - 已知两级之间的星级 → 线性插值（实测此分支误差中位仅 0.21%）
-     *  - 未覆盖的星级（如低于最低已知数据）→ 最接近的数据点 + starPenalty 凸曲线外推
-     */
-    function getStarAdjustedScore(dataPoints, userStars) {
-        if (!dataPoints || dataPoints.length === 0) return null;
-        // 按星级排序
-        var sorted = dataPoints.slice().sort(function(a, b) { return a.stars - b.stars; });
-        // 精确匹配
-        for (var i = 0; i < sorted.length; i++) {
-            if (sorted[i].stars === userStars) return sorted[i].time;
-        }
-        // 找到包围 userStars 的两个数据点
-        var lower = null, upper = null;
-        for (var i = 0; i < sorted.length; i++) {
-            if (sorted[i].stars < userStars) {
-                if (!lower || sorted[i].stars > lower.stars) lower = sorted[i];
-            } else if (sorted[i].stars > userStars) {
-                if (!upper || sorted[i].stars < upper.stars) upper = sorted[i];
-            }
-        }
-        // 有上下界 → 线性插值
-        if (lower && upper) {
-            var ratio = (userStars - lower.stars) / (upper.stars - lower.stars);
-            return +(lower.time + (upper.time - lower.time) * ratio).toFixed(3);
-        }
-        // 只有下界（userStars > 所有已知）→ 用最接近的已知点 + 惩罚倒数
-        if (lower) {
-            var diff = userStars - lower.stars;
-            // 更高星应更快，除以惩罚倍数
-            return +(lower.time / starPenalty(diff)).toFixed(3);
-        }
-        // 只有上界（userStars < 所有已知）→ 用最接近的已知点 + 惩罚
-        if (upper) {
-            var diff = upper.stars - userStars;
-            return +(upper.time * starPenalty(diff)).toFixed(3);
-        }
-        return null;
     }
 
     // ========================== 工具函数 ==========================
@@ -454,44 +396,11 @@
      * @returns {number|string|null} 成绩值，或 null
      */
     function getCarScore(big, small, carName, zone) {
-        const list = smallMapsByBig[big];
-        if (!list) return null;
-        const found = list.find(item => item.name === small);
+        const found = smallMapsByBig[big]?.find(item => item.name === small);
         if (!found) return null;
-        const mapKey = big + '/' + small;
-        var scState = specialRouteEnabled[mapKey];
-        var scOn = scState !== 'off';  // undefined/'all'/type=开, 'off'=关
-        var entries = zone === 'zone4' ? found.zone4Entries : found.zone5Entries;
-        var scDataPoints = [];
-        var normalDataPoints = [];
-        for (var ei = 0; ei < entries.length; ei++) {
-            var entry = entries[ei];
-            var cars = parseCarGroup(entry);
-            if (!cars.includes(carName)) continue;
-            // 跳过不匹配的 sc 类型
-            if (entry._raw && entry._raw.sc && scState !== 'all' && scState !== undefined && entry._raw.sc_type && entry._raw.sc_type !== scState) continue;
-            if (!entry._raw || entry._raw.time == null) continue;
-            var entryStars = entry._raw.cars?.[0]?.stars || 6;
-            if (entry._raw.sc) {
-                scDataPoints.push({ stars: entryStars, time: entry._raw.time });
-            } else {
-                normalDataPoints.push({ stars: entryStars, time: entry._raw.time });
-            }
-        }
-        var normalScore = null;
-        var scScore = null;
-        if (currentTier === '高手') {
-            var userStars = getCarStars(carName);
-            if (normalDataPoints.length > 0) normalScore = getStarAdjustedScore(normalDataPoints, userStars);
-            if (scDataPoints.length > 0) scScore = getStarAdjustedScore(scDataPoints, userStars);
-        } else {
-            // 理论档：用最高星数据（默认满星）
-            normalScore = normalDataPoints.length > 0 ? normalDataPoints.reduce(function(a,b){return a.stars>b.stars?a:b}).time : null;
-            scScore = scDataPoints.length > 0 ? scDataPoints.reduce(function(a,b){return a.stars>b.stars?a:b}).time : null;
-        }
-        // 开关打开时在普通与 sc 之间取更快的那条（与 getOriginalGroups 排序口径一致）
-        if (scOn && scScore != null && (normalScore == null || scScore < normalScore)) return scScore;
-        return normalScore;
+        const entries = zone === 'zone4' ? found.zone4Entries : found.zone5Entries;
+        const routeState = specialRouteEnabled[big + '/' + small] ?? 'all';
+        return raceScores.effectiveTime(entries, carName, currentTier, getCarStars(carName), routeState);
     }
 
     // ========================== 界面渲染 ==========================
@@ -731,20 +640,7 @@
      * 返回 null 表示该车无可用成绩（不参与排序，排在末尾）。
      */
     function getEffectiveTime(entries, carName, scOnly, zone) {
-        var pts = [];
-        for (var i = 0; i < entries.length; i++) {
-            var e = entries[i];
-            if (!e._raw || e._raw.time == null) continue;
-            if (!!e._raw.sc !== scOnly) continue;
-            var car = e._raw.cars && e._raw.cars[0] ? e._raw.cars[0].name : e[0];
-            if (car !== carName) continue;
-            pts.push({ stars: (e._raw.cars && e._raw.cars[0] && e._raw.cars[0].stars) || 6, time: e._raw.time });
-        }
-        if (pts.length === 0) return null;
-        if (currentTier === '高手') return getStarAdjustedScore(pts, getCarStars(carName));
-        var best = pts[0];
-        for (var j = 1; j < pts.length; j++) if (pts[j].stars > best.stars) best = pts[j];
-        return best.time;
+        return raceScores.effectiveTime(entries, carName, currentTier, getCarStars(carName), 'all', scOnly);
     }
 
     /**
@@ -769,12 +665,7 @@
         var scOn = scState !== 'off';
 
         // 选择五区或四区的数据
-        var entries;
-        if (zone === 'zone4' && found.zone4Entries && found.zone4Entries.length > 0) {
-            entries = found.zone4Entries;
-        } else {
-            entries = found.zone5Entries;
-        }
+        const entries = zone === 'zone4' ? found.zone4Entries : found.zone5Entries;
 
         // sc 类型过滤后的可用条目（关闭时剔除全部 sc）
         var usable = [];
@@ -1258,7 +1149,7 @@
 
     /**
      * 应用入口。初始化顺序：
-     *   data.json 加载 → cars.json 加载（可选）→ 车库/分区/星级恢复
+     *   data.json 加载 → cars.json 加载（必需）→ 车库/分区/星级恢复
      *   → 地图索引构建 → UI 渲染 → 事件绑定 → 首次计算
      */
     async function initApp() {

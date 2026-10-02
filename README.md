@@ -96,6 +96,7 @@ Certain slots may have entries flagged with `sc: true`, representing alternative
   a specific type keeps only matching SC entries while normal routes remain available.
 - **One candidate per car**: compare normal and allowed SC results, using the faster effective time for each car.
   Changing routes reorders candidates. Normal recorded times stay unchanged, but a car's priority rank may change.
+- **Independent estimation**: expert times are interpolated/extrapolated separately for the normal route and each `sc_type`, then compared. Different special routes are never combined for interpolation. Display and ranking share one scoring entry point.
 - **Affects**: both the allocation order (which items the algorithm tries first) and the displayed efficiency score.
 - Every `sc_type` must be registered in `SC_TYPES` (`repo/data_tools.py`, currently 9 values);
   new route types must be added to that constant first.
@@ -187,7 +188,8 @@ Pure client-side static application:
 
 ```
 config.js → api.js → index.html (state, candidate preparation, rendering)
-                         └→ allocator.js (pure allocation algorithm)
+                         ├→ allocator.js (pure allocation algorithm)
+                         └→ race_scores.js (time calculation)
 ```
 
 - **Config** — paths, keys, storage settings
@@ -197,6 +199,7 @@ config.js → api.js → index.html (state, candidate preparation, rendering)
   no longer keeps a hardcoded copy
 - **Application logic** — prepares candidates, estimates star-adjusted times, manages state and renders the UI
 - **Algorithm module** — `allocator.js` has no DOM/network dependencies and incrementally maintains the Pareto front during backtracking
+- **Scoring module** — `race_scores.js` has no DOM/network dependencies and owns the star curve and independent route estimates; an empty four-zone candidate list remains empty instead of borrowing five-zone entries
 - **State persistence** — garage, star ratings and UI preferences use this browser's localStorage; there are no accounts or cross-device sync
 - **Local maintenance** — Python tools maintain JSON/Excel and are not part of the web runtime
 
@@ -235,10 +238,11 @@ Run regression checks:
 ```bash
 python -m unittest test_data_tools -v      # data tools and validation
 node --test test_allocator.js              # allocator boundary cases
+node --test test_race_scores.js            # score boundaries and page wiring
 node test_boot_smoke.js                    # page boot smoke test (DOM stub, no browser)
 ```
 
-As of 2026-10-01, 44 Python tests, 15 allocator tests and the boot smoke test pass, with zero data-validation errors.
+As of 2026-10-02, 44 Python tests, 15 allocator tests, 11 scoring tests and the boot smoke test pass, with zero data-validation errors.
 The boot test uses a DOM stub and does not validate real-browser interaction or performance.
 
 ### Algorithm Notes
@@ -278,7 +282,8 @@ The boot test uses a DOM stub and does not validate real-browser interaction or 
 
 Static hosting (GitHub Pages, Netlify, any web server).
 
-Deployment files: `index.html`, `styles.css`, `config.js`, `api.js`, `allocator.js`, `gauntlet_data.json`, `cars.json`.
+Deployment files: `index.html`, `styles.css`, `config.js`, `api.js`, `allocator.js`, `race_scores.js`, `gauntlet_data.json`, `cars.json`.
+When updating an older deployment, upload both the new `index.html` and `race_scores.js`; omitting the new module prevents page startup.
 Besides vehicle data, `cars.json` carries the zone pools and star rules, so it is a **hard dependency** —
 if it fails to load the page reports the error instead of degrading.
 

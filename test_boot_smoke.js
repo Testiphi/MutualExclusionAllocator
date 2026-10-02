@@ -101,7 +101,7 @@ console.error = (...args) => warnings.push('error: ' + args.join(' '));
 
 let syncError = null;
 try {
-    new Function([read('config.js'), read('api.js'), read('allocator.js'), instrumented].join('\n;\n'))();
+    new Function([read('config.js'), read('api.js'), read('allocator.js'), read('race_scores.js'), instrumented].join('\n;\n'))();
 } catch (error) {
     syncError = error.message;
 }

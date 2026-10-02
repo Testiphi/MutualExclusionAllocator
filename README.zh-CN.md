@@ -92,6 +92,7 @@ for 每个槽位（按顺序）:
   指定跑法时只保留该类型的 SC，普通跑法仍参与比较。
 - **同车合并**：普通与允许的 SC 成绩一起比较，每辆车仅生成一个候选，取有效成绩较快者。
   切换跑法会重新排序候选，普通成绩本身不变，但车辆的优先级名次可能变化。
+- **独立估算**：高手档按普通跑法和各个 `sc_type` 分别插值/外推，再取最快成绩；不同特殊跑法之间不混合插值。显示与排序使用同一计算入口。
 - **影响范围**：既影响分配次序（算法先尝试哪些资源），也影响展示的效率分数。
 - `sc_type` 的取值必须在 `repo/data_tools.py` 的 `SC_TYPES` 白名单内（共 9 种），
   新增跑法类型须先在该常量登记。
@@ -180,7 +181,8 @@ for 每个槽位（按顺序）:
 
 ```
 config.js → api.js → index.html（状态、候选准备、渲染）
-                         └→ allocator.js（纯分配算法）
+                         ├→ allocator.js（纯分配算法）
+                         └→ race_scores.js（成绩计算）
 ```
 
 - **Config** —— 路径、键名、存储设置
@@ -189,6 +191,7 @@ config.js → api.js → index.html（状态、候选准备、渲染）
   见 `index.html` 的 `buildCarRules()`；**这是规则的唯一来源**，页面里不再有硬编码副本
 - **应用逻辑** —— 准备候选、估算星级成绩、管理状态并渲染界面
 - **算法模块** —— `allocator.js` 无 DOM/网络依赖，回溯时增量维护 Pareto 前沿
+- **成绩模块** —— `race_scores.js` 无 DOM/网络依赖，管理星级曲线和独立跑法估算；四区空候选保持为空，不借用五区列表
 - **状态持久化** —— 车库、星级与界面偏好保存至当前浏览器的 localStorage；没有账号或跨设备同步
 - **本地维护** —— Python 工具维护 JSON/Excel，不参与网页运行
 
@@ -225,10 +228,11 @@ config.js → api.js → index.html（状态、候选准备、渲染）
 ```bash
 python -m unittest test_data_tools -v      # 数据工具与校验
 node --test test_allocator.js              # 分配算法边界
+node --test test_race_scores.js            # 成绩边界与页面接线
 node test_boot_smoke.js                    # 页面启动冒烟（DOM 桩，不启浏览器）
 ```
 
-截至 2026-10-01，Python 回归 44 项、算法回归 15 项、启动冒烟均通过，全库校验 0 错误。
+截至 2026-10-02，Python 回归 44 项、算法回归 15 项、成绩回归 11 项、启动冒烟均通过，全库校验 0 错误。
 启动冒烟使用 DOM 桩，不代表真实浏览器交互或性能验证。
 
 ### 算法说明
@@ -265,7 +269,8 @@ node test_boot_smoke.js                    # 页面启动冒烟（DOM 桩，不�
 
 静态托管（GitHub Pages、Netlify，或任意 Web 服务器均可）。
 
-部署文件：`index.html`、`styles.css`、`config.js`、`api.js`、`allocator.js`、`gauntlet_data.json`、`cars.json`。
+部署文件：`index.html`、`styles.css`、`config.js`、`api.js`、`allocator.js`、`race_scores.js`、`gauntlet_data.json`、`cars.json`。
+从旧版更新时，需同时上传新的 `index.html` 与 `race_scores.js`，否则页面无法完成启动。
 `cars.json` 除车辆数据外还承载车池与星级规则，因此是**必需**依赖——加载失败会在页面上直接报错，
 不再降级运行。
 
