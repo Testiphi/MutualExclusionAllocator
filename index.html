@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>狂野飙车9 · 擂台选车小助手</title>
     <script src="config.js"></script>
+    <script src="app_state.js"></script>
     <script src="api.js"></script>
     <script src="allocator.js"></script>
     <script src="race_scores.js"></script>
@@ -21,6 +22,7 @@
 
     <h1>擂台选车助手</h1>
     <div class="sub">帕累托最优 · 擂台选车</div>
+    <p id="storageNotice" role="status" hidden style="color:#ffb86c;"></p>
 
     <!-- 档位切换 -->
     <div class="toggle-group" id="tierToggle" style="margin-bottom:10px;">
@@ -138,6 +140,32 @@
     // 特殊跑法状态: mapKey('大地图/小地图') → 'all' / 'off' / sc_type
     let specialRouteEnabled = {};
 
+    const storageFailures = new Map();
+    function storageResult(key, error) {
+        if (error) storageFailures.set(key, error);
+        else storageFailures.delete(key);
+        const notice = document.getElementById('storageNotice');
+        notice.hidden = storageFailures.size === 0;
+        notice.textContent = [...storageFailures.values()].join('；');
+    }
+    function savePreference(key, value) {
+        try {
+            api.savePref(key, value);
+            storageResult(key, null);
+        } catch (error) {
+            storageResult(key, '设置未能保存，刷新后可能丢失');
+        }
+    }
+    function getRouteState(big, small, zone = currentZone) {
+        const track = RACE_DATA?.tracks?.find(t => t.大地图 === big && t.小地图 === small);
+        const entries = track?.[zone === 'zone4' ? '四区' : '五区']?.[currentTier] || [];
+        const available = [...new Set(entries.filter(e => e.sc).map(e => e.sc_type))];
+        const mapKey = big + '/' + small;
+        const normalized = appState.route(specialRouteEnabled[mapKey], available);
+        specialRouteEnabled[mapKey] = normalized;
+        return normalized;
+    }
+
     // ========================== 星级自定义 ==========================
 
     /**
@@ -216,7 +244,7 @@
 
     /** 保存星级映射 */
     function saveStarsMap() {
-        api.savePref(APP_CONFIG.storageKeys.starMap, starsMap);
+        savePreference(APP_CONFIG.storageKeys.starMap, starsMap);
     }
 
     /** 用户未设置时的分区默认星级：五区=最高星，四区=规则默认值 */
@@ -399,7 +427,7 @@
         const found = smallMapsByBig[big]?.find(item => item.name === small);
         if (!found) return null;
         const entries = zone === 'zone4' ? found.zone4Entries : found.zone5Entries;
-        const routeState = specialRouteEnabled[big + '/' + small] ?? 'all';
+        const routeState = getRouteState(big, small, zone);
         return raceScores.effectiveTime(entries, carName, currentTier, getCarStars(carName), routeState);
     }
 
@@ -501,20 +529,27 @@
     }
 
     // --- 车库持久化 ---
-    function saveGarage() {
-        api.saveGarage(selectedCars);
+    async function saveGarage() {
+        try {
+            await api.saveGarage(selectedCars);
+            storageResult(APP_CONFIG.storageKeys.garage, null);
+        } catch (error) {
+            storageResult(APP_CONFIG.storageKeys.garage, '车库未能保存，刷新后可能丢失');
+        }
         saveZoneMode();
     }
     function saveZoneMode() {
-        api.savePref(APP_CONFIG.storageKeys.zoneMode, currentZone);
+        savePreference(APP_CONFIG.storageKeys.zoneMode, currentZone);
     }
     async function loadGarage() {
         let isFirstLoad = false;
         try {
-            const loaded = await api.loadGarage();
+            const loaded = await api.loadGarage(new Set([...zone5Cars, ...zone4Cars]));
             isFirstLoad = loaded === null;
             if (loaded) loaded.forEach(c => selectedCars.add(c));
-        } catch(e) {}
+        } catch(e) {
+            storageResult(APP_CONFIG.storageKeys.garage, '车库读取失败，请重新选择车辆；重新保存前会保留原存储数据');
+        }
         try {
             const savedZone = api.loadPref(APP_CONFIG.storageKeys.zoneMode);
             if (savedZone === 'zone4' || savedZone === 'zone5') currentZone = savedZone;
@@ -660,8 +695,7 @@
         if (!found) return null;
 
         var mapKey = big + '/' + small;
-        var scState = specialRouteEnabled[mapKey];
-        if (scState === undefined) scState = 'all';  // 默认全部开启
+        var scState = getRouteState(big, small, zone);
         var scOn = scState !== 'off';
 
         // 选择五区或四区的数据
@@ -803,8 +837,7 @@
             if (!hasScEntries) continue;
             hasSc = true;
             var note = track.special_route_note || '';
-            var currentState = specialRouteEnabled[mapKey];
-            if (currentState === undefined) currentState = 'all';
+            var currentState = getRouteState(big, small);
             var scTypes = getScTypes(track);
 
             if (scTypes.length > 1) {
@@ -940,7 +973,19 @@
      * 无地图选中时显示提示；有地图时异步计算（延迟一帧给加载动画时间）。
      * 结果按总优先级分升序排列。
      */
+    const computation = appState.createScheduler(callback => {
+        requestAnimationFrame(() => setTimeout(callback, 0));
+    });
+    function computationError(error) {
+        currentBestSchemes = [];
+        schemeSelect.innerHTML = '';
+        schemeSelect.disabled = true;
+        schemeCountBadge.textContent = '0';
+        resultGrid.textContent = '计算失败，请重试或刷新页面。';
+        console.error(error);
+    }
     function computeAndDisplay() {
+        computation.cancel();
         const validMaps = getCurrentValidMaps();
         if (validMaps.length === 0) {
             loadingOverlay.classList.remove('show');
@@ -956,19 +1001,25 @@
             return;
         }
 
-        loadingOverlay.classList.add('show');
-        // 用 requestAnimationFrame 延迟一帧，确保 loading 动画先渲染
-        requestAnimationFrame(() => {
-            setTimeout(() => {
-                const candidates = prepareMapCandidates(validMaps, currentZone);
-                const ownedInZone = new Set(getCurrentCarList().filter(car => selectedCars.has(car)));
-                const schemes = allocator.generateParetoSchemes(candidates, ownedInZone, SCHEME_LIMIT, NO_CAR_PRIORITY);
-                const paretoSchemes = mapSchemesToRows(schemes, validMaps, ROWS);
-                paretoSchemes.sort((a, b) => getTotalScore(a) - getTotalScore(b));
-                loadingOverlay.classList.remove('show');
-                updateUIWithSchemes(paretoSchemes);
-            }, 0);
-        });
+
+        try {
+            // 输入在当前事件中准备完毕，排队任务不读取后来变化的界面状态。
+            const candidates = prepareMapCandidates(validMaps, currentZone);
+            const ownedInZone = new Set(getCurrentCarList().filter(car => selectedCars.has(car)));
+            computation.run({
+                compute: () => {
+                    const schemes = allocator.generateParetoSchemes(candidates, ownedInZone, SCHEME_LIMIT, NO_CAR_PRIORITY);
+                    return mapSchemesToRows(schemes, validMaps, ROWS);
+                },
+                publish: updateUIWithSchemes,
+                onError: computationError,
+                onStart: () => loadingOverlay.classList.add('show'),
+                onFinish: () => loadingOverlay.classList.remove('show'),
+            });
+        } catch (error) {
+            loadingOverlay.classList.remove('show');
+            computationError(error);
+        }
     }
 
     // 事件绑定
@@ -984,7 +1035,7 @@
             const SORT_CYCLE = ['alpha', 'score-desc', 'score-asc'];
             const idx = SORT_CYCLE.indexOf(sortMode);
             sortMode = SORT_CYCLE[(idx + 1) % SORT_CYCLE.length];
-            api.savePref(APP_CONFIG.storageKeys.sortMode, sortMode);
+            savePreference(APP_CONFIG.storageKeys.sortMode, sortMode);
             renderGarage();
         });
 
@@ -1177,7 +1228,7 @@
             buildMapIndex();            // 用恢复后的分区和星级构建优先级
             // 恢复排序模式
             const savedSort = api.loadPref(APP_CONFIG.storageKeys.sortMode);
-            if (savedSort) sortMode = savedSort;
+            if (['alpha', 'score-desc', 'score-asc'].includes(savedSort)) sortMode = savedSort;
             renderMapRows();
             renderGarage();
             refreshBigMaps();

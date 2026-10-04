@@ -2,11 +2,13 @@
 import argparse
 from pathlib import Path
 from data_tools import (ROOT, SC_TYPES, ZONES, TIERS, car_key, car_records, car_zone_names,
-                        configure_stdout, is_time, read_json, star_limits)
+                        configure_stdout, is_time, read_json, star_limits, validate_car_catalog)
 
 
 def validate_data(data, cars):
-    errors = []
+    errors = validate_car_catalog(cars)
+    if errors:
+        return errors, {f'{zone}_{tier}': 0 for zone in ZONES for tier in TIERS}
     records = car_records(cars)
     known = set(records)
     # 车池与星级规则来自 cars.json 记录上的 zones / star_rule，与前端共用同一份定义

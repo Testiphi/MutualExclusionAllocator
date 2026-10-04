@@ -67,16 +67,12 @@ const api = (() => {
     // ---------------------------------------------------------------------
 
     /** 加载已选车辆集合 */
-    async loadGarage() {
+    async loadGarage(knownCars) {
       if (cfg.dataSource === 'api') {
-        return apiFetch('GET', '/garage');
+        return appState.garage(await apiFetch('GET', '/garage'), knownCars);
       }
-      try {
-        const stored = localStorage.getItem(cfg.storageKeys.garage);
-        return stored !== null ? new Set(JSON.parse(stored)) : null;
-      } catch {
-        return new Set();
-      }
+      const stored = localStorage.getItem(cfg.storageKeys.garage);
+      return stored !== null ? appState.garage(JSON.parse(stored), knownCars) : null;
     },
 
     /** 保存已选车辆集合 */
@@ -84,11 +80,7 @@ const api = (() => {
       if (cfg.dataSource === 'api') {
         return apiFetch('PUT', '/garage', { cars: [...carSet] });
       }
-      try {
-        localStorage.setItem(cfg.storageKeys.garage, JSON.stringify([...carSet]));
-      } catch (e) {
-        console.warn('garage 保存失败:', e.message);
-      }
+      localStorage.setItem(cfg.storageKeys.garage, JSON.stringify([...carSet]));
     },
 
     // ---------------------------------------------------------------------
@@ -107,11 +99,7 @@ const api = (() => {
 
     /** 保存 UI 偏好 */
     savePref(key, value) {
-      try {
-        localStorage.setItem(key, JSON.stringify(value));
-      } catch (e) {
-        console.warn(`pref ${key} 保存失败:`, e.message);
-      }
+      localStorage.setItem(key, JSON.stringify(value));
     },
 
 

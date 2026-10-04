@@ -53,8 +53,8 @@ const extract = name => {
 };
 function page(rows, tier = '高手', savedStars = 3) {
     return new Function('rows', 'tier', 'savedStars', `${moduleSource}
-        const currentTier = tier;
-        const specialRouteEnabled = {};
+        const currentTier = tier; const currentZone = 'zone5';
+        const specialRouteEnabled = {}; const getRouteState = () => 'all';
         const smallMapsByBig = {A:[{name:'B',zone5Entries:rows,zone4Entries:[]}]};
         const starsMap = {X:savedStars};
         const getZoneDefaultStar = () => 6;

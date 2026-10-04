@@ -187,7 +187,7 @@ scripts (see "Architecture").
 Pure client-side static application:
 
 ```
-config.js → api.js → index.html (state, candidate preparation, rendering)
+config.js → app_state.js → api.js → index.html (state, candidate preparation, rendering)
                          ├→ allocator.js (pure allocation algorithm)
                          └→ race_scores.js (time calculation)
 ```
@@ -200,6 +200,7 @@ config.js → api.js → index.html (state, candidate preparation, rendering)
 - **Application logic** — prepares candidates, estimates star-adjusted times, manages state and renders the UI
 - **Algorithm module** — `allocator.js` has no DOM/network dependencies and incrementally maintains the Pareto front during backtracking
 - **Scoring module** — `race_scores.js` has no DOM/network dependencies and owns the star curve and independent route estimates; an empty four-zone candidate list remains empty instead of borrowing five-zone entries
+- **State boundaries** — `app_state.js` validates garage/route selections and publishes only the latest queued computation. Storage failures are shown in the page; invalid saved garage data is not overwritten at startup.
 - **State persistence** — garage, star ratings and UI preferences use this browser's localStorage; there are no accounts or cross-device sync
 - **Local maintenance** — Python tools maintain JSON/Excel and are not part of the web runtime
 
@@ -236,13 +237,13 @@ Different times across zones use the faster value. Before writing, the source is
 Run regression checks:
 
 ```bash
-python -m unittest test_data_tools -v      # data tools and validation
+python -B -X utf8 -m unittest test_data_tools test_car_catalog test_release_tools -v      # data tools and validation
 node --test test_allocator.js              # allocator boundary cases
-node --test test_race_scores.js            # score boundaries and page wiring
+node --test test_race_scores.js test_app_state.js            # score boundaries and page wiring
 node test_boot_smoke.js                    # page boot smoke test (DOM stub, no browser)
 ```
 
-As of 2026-10-02, 44 Python tests, 15 allocator tests, 11 scoring tests and the boot smoke test pass, with zero data-validation errors.
+As of 2026-10-03, 53 Python tests pass (one additional Linux symlink test is skipped on Windows), alongside 15 allocator, 11 scoring, 12 state tests and the boot smoke test; data validation reports zero errors.
 The boot test uses a DOM stub and does not validate real-browser interaction or performance.
 
 ### Algorithm Notes
@@ -282,10 +283,12 @@ The boot test uses a DOM stub and does not validate real-browser interaction or 
 
 Static hosting (GitHub Pages, Netlify, any web server).
 
-Deployment files: `index.html`, `styles.css`, `config.js`, `api.js`, `allocator.js`, `race_scores.js`, `gauntlet_data.json`, `cars.json`.
-When updating an older deployment, upload both the new `index.html` and `race_scores.js`; omitting the new module prevents page startup.
+Deployment files: `index.html`, `styles.css`, `config.js`, `app_state.js`, `api.js`, `allocator.js`, `race_scores.js`, `gauntlet_data.json`, `cars.json`.
+When updating an older deployment, add `app_state.js` and update `index.html` and `api.js` together. `race_scores.js` remains required.
 Besides vehicle data, `cars.json` carries the zone pools and star rules, so it is a **hard dependency** —
 if it fails to load the page reports the error instead of degrading.
+
+For complete release packages and rollback, see [Deployment](DEPLOYMENT.md). Staging is the default; activation is explicit. Linux link switching still requires server verification.
 
 For local preview, run from the repository directory:
 

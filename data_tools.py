@@ -28,6 +28,63 @@ def is_time(value):
     return isinstance(value, (int, float)) and not isinstance(value, bool) and math.isfinite(value) and value > 0
 
 
+def validate_car_catalog(cars):
+    """车辆库身份和规则校验；不推导或调整人工指定的特改规则。"""
+    errors = []
+    if not isinstance(cars, dict) or not isinstance(cars.get('cars'), list):
+        return ['车辆库必须包含 cars 列表']
+    names, titles = {}, set()
+    for index, car in enumerate(cars['cars']):
+        label = f'车辆库第{index + 1}项'
+        if not isinstance(car, dict) or not isinstance(car.get('title'), str) or not car['title']:
+            errors.append(f'无效车辆记录: {label}')
+            continue
+        title = car['title']
+        if title in titles:
+            errors.append(f'重复车辆真名: {title}')
+        titles.add(title)
+        nickname = car.get('nickname')
+        if nickname is not None and (not isinstance(nickname, str) or not nickname):
+            errors.append(f'无效车辆昵称: {title}')
+        for name in (title, nickname):
+            if not isinstance(name, str) or not name:
+                continue
+            if name in names and names[name] != title:
+                errors.append(f'车名或昵称冲突: {name}')
+            names[name] = title
+        zones = car.get('zones', [])
+        if (not isinstance(zones, list) or any(zone not in ZONES for zone in zones)
+                or len(zones) != len(set(zones))):
+            errors.append(f'无效车池定义: {title}')
+        if zones and not isinstance(nickname, str):
+            errors.append(f'入池车辆缺昵称: {title}')
+        rule = car.get('star_rule', {})
+        if not isinstance(rule, dict):
+            errors.append(f'无效星级规则: {title}')
+            continue
+        bad = False
+        for field in ('min', 'max', 'zone4Max', 'default'):
+            if field in rule and (type(rule[field]) is not int or not 1 <= rule[field] <= 6):
+                errors.append(f'无效星级规则字段: {title} {field}')
+                bad = True
+        if not bad:
+            minimum, maximum = rule.get('min', 1), rule.get('max', 6)
+            if minimum > maximum or minimum > rule.get('zone4Max', maximum):
+                errors.append(f'星级上下限倒置: {title}')
+            if not minimum <= rule.get('default', maximum) <= maximum:
+                errors.append(f'默认星级越界: {title}')
+    aliases = cars.get('_nickname_map', {})
+    if not isinstance(aliases, dict):
+        errors.append('无效昵称映射')
+    else:
+        for alias, title in aliases.items():
+            if not isinstance(alias, str) or not alias or not isinstance(title, str) or title not in titles:
+                errors.append(f'无效昵称映射: {alias}')
+            elif alias in names and names[alias] != title:
+                errors.append(f'昵称映射冲突: {alias}')
+    return errors
+
+
 def car_records(cars):
     """车名 → 车辆记录。车名可为 title、记录自带 nickname 或 `_nickname_map` 别名。
 

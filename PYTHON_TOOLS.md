@@ -34,6 +34,9 @@ JSON 先检查格式化前后数据等价；Excel 先检查生成的 XLSX 压缩
 随后以临时文件原子替换目标。缺少输出目录时明确报错，不自动创建目录。
 格式化保留未知字段和原有字段顺序，并正确转义引号、反斜杠及换行。
 
+车辆库先校验真名/昵称身份冲突、重复记录、车池枚举和重复分区、入池昵称、星级字段类型/范围/上下限及默认值。
+仅检查人工定义的结构，不从性能分推导特改规则，默认星级可由前端按四区上限钳位。
+
 校验包括赛道复合键、单车条目、重复条目、已知车名、车池归属、星级上下限、
 正有限成绩、特殊跑法标记、非特殊跑法高手到普通的镜像，以及理论/高手成绩排序。
 每张赛道必须显式包含五区、四区，各区必须包含理论、高手、普通、自动四个列表，
@@ -163,7 +166,7 @@ python sync_zones.py --input gauntlet_data.json --max-score 4200 --write
 ## 维护与测试
 
 ```powershell
-python -m unittest test_data_tools -v
+python -B -X utf8 -m unittest test_data_tools test_car_catalog test_release_tools -v
 ```
 
 历史 `_diff_keyed_*.py`、`_apply_*.py`、校验脚本与用户表格备份**都不在本地保留**（已清理）；
