@@ -119,7 +119,7 @@ setTimeout(() => {
     if (check(typeof probe === 'function', '内联脚本未执行到 initApp()')) {
         const state = probe();
         check(state.zone5Cars.length === 76, `zone5Cars 应为 76，实际 ${state.zone5Cars.length}`);
-        check(state.zone4Cars.length === 49, `zone4Cars 应为 49，实际 ${state.zone4Cars.length}`);
+        check(state.zone4Cars.length === 50, `zone4Cars 应为 50，实际 ${state.zone4Cars.length}`);
         check(Object.keys(state.rules).length === 72,
             `CAR_STAR_RULES 应为 72 车，实际 ${Object.keys(state.rules).length}`);
         check(state.zone5Cars.includes('919') && state.zone5Cars.includes('dose'),
@@ -137,6 +137,6 @@ setTimeout(() => {
         for (const message of failures) console.error('   - ' + message);
         process.exitCode = 1;
     } else {
-        console.log('✅ 启动冒烟测试通过：页面完成启动，车池 76/49、星级规则 72 车均从 cars.json 派生');
+        console.log('✅ 启动冒烟测试通过：页面完成启动，车池 76/50、星级规则 72 车均从 cars.json 派生');
     }
 }, 2500);
