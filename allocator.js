@@ -37,6 +37,34 @@ const allocator = (() => {
         const curAssign = new Array(n).fill(null);
         const curVector = new Array(n).fill(noCarPriority);
 
+        // 放松剩余位置之间及其与前缀的车辆互斥约束，得到逐维乐观下界。
+        // 留空也参加 min：调用者的 noCarPriority 不一定比候选优先级大。
+        // 非有限数值输入沿用原始枚举行为，不为其引入新的比较语义。
+        let canBound = Number.isFinite(noCarPriority);
+        const optimistic = mapsData.map(({ filteredGroups, carToPriority }) => {
+            let best = noCarPriority;
+            for (const group of filteredGroups) for (const car of group) {
+                const priority = carToPriority.get(car) ?? noCarPriority;
+                if (!Number.isFinite(priority)) canBound = false;
+                best = Math.min(best, priority);
+            }
+            return best;
+        });
+
+        function branchDominated(idx) {
+            for (const existing of paretoFront) {
+                let strictlyBetter = false;
+                let noWorse = true;
+                for (let i = 0; i < n; i++) {
+                    const bound = i < idx ? curVector[i] : optimistic[i];
+                    if (existing.vector[i] > bound) { noWorse = false; break; }
+                    if (existing.vector[i] < bound) strictlyBetter = true;
+                }
+                if (noWorse && strictlyBetter) return true;
+            }
+            return false;
+        }
+
         /**
          * 递归回溯。按地图顺序逐一尝试可用车辆，保证同一辆车不重复分配。
          *
@@ -65,6 +93,9 @@ const allocator = (() => {
                 paretoFront.push(...kept);
                 return;
             }
+            // 每个后代向量逐维 >= 下界。严格支配下界即严格支配所有后代；
+            // 相等时不能剪枝，否则会丢失相同向量的不同车辆分配。
+            if (idx > 0 && canBound && branchDominated(idx)) return;
             const { filteredGroups, carToPriority } = mapsData[idx];
 
             // 分支 1：留空本图（本图没有任何候选组时，这就是唯一分支）

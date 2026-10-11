@@ -18,7 +18,7 @@ This tool solves a **multi-group mutual-exclusion allocation problem**:
 - A resource assigned to one slot **cannot be reused** elsewhere.
 - Some entries may have **alternative routes** that yield different efficiency metrics, enabled per-slot.
 
-The algorithm visits all feasible assignments via **backtracking enumeration**, maintaining the **Pareto non-dominated front** at each leaf to return only schemes that cannot be strictly improved across all dimensions.
+The algorithm uses exact backtracking with optimistic-bound pruning, maintaining the **Pareto non-dominated front** at visited leaves. A branch is skipped only when an existing scheme strictly dominates its lower bound, including the unassigned option.
 
 ---
 
@@ -248,6 +248,8 @@ The boot test uses a DOM stub and does not validate real-browser interaction or 
 
 ### Algorithm Notes
 
+- **2026-10-11 exact pruning:** traversal, equal-vector assignments, sorting and truncation are unchanged. Reproducible real-page inputs, proof, full ordered comparisons, desktop Node/browser timings and limitations are in [perf/REPORT.md](perf/REPORT.md). Run `node --test test_allocator_pruning.js` and `node --expose-gc perf/benchmark.js`; open `perf/browser.html` through the local HTTP server for browser measurements. Tiny inputs can regress due to extra comparisons. The 2026-10-01 table below is historical, before branch pruning.
+
 - Leaf count is bounded by `O((k+1)^n)` including blanks. Each leaf also scans the front; a large front can still increase comparison cost and memory.
 - Leaves are compared directly against the current front. Dominated assignments are discarded without copying arrays.
   Equal vectors with different assignments are retained; sorting and the 25-scheme limit apply only after enumeration finishes.
@@ -268,7 +270,7 @@ The boot test uses a DOM stub and does not validate real-browser interaction or 
   this input now matches the page, so absolute values are not directly comparable with those reports.
   These are dense examples, not a proof of the worst case or statistics from repeated measurements.
 - Solving still runs synchronously on the browser main thread; deferring the start does not remove the work.
-  **No browser-side stress test has been run**; Node figures exclude page rendering and do not predict browser/mobile latency.
+  Desktop browser algorithm measurements are now recorded separately in the report above; Node figures exclude page rendering and do not predict browser/mobile latency.
 - Partial assignments: any slot may be left blank, and the blank branch is enumerated explicitly like
   any other. A blank costs the sentinel value (99), so when resources are plentiful blank schemes are
   always dominated and never appear on the front.
@@ -307,7 +309,7 @@ Python is used only for this preview server and local maintenance; the deployed 
 
 | Item | Status |
 |------|--------|
-| Solve performance | Incremental front filtering is implemented; the dense example takes ~150 ms (see "Algorithm Notes"). Full enumeration and front scans still run on the main thread. Pruning and Workers are not implemented. |
-| Browser-side stress test | **Not done.** Figures are single Node algorithm calls; GC during a call may affect timing. Browser rendering and responsiveness remain untested. |
+| Solve performance | Conservative exact pruning is implemented; front scans still run on the main thread. Workers are not implemented. Repeated measurements and regressions are in perf/REPORT.md. |
+| Browser-side stress test | Desktop Chromium solve time and timer delay measured with real page candidates. Phones, full-page interaction latency and peak memory remain untested. |
 | Thin candidate lists | 13 "zone/tier" combinations are down to 1–2 candidates (weakest: `大桥海湾/喧闹铁路` four-zone expert has only `9x8★6`; `极昼之地/凌云狂飙` four-zone expert has only `ssc★2`). |
 | Redundant `max` field | `star_rule.max` matches `cars.json`'s `max_stars` for all 9 cars that declare it (`att`/`杰弟`/`dose` use 6 = unconstrained). Whether to merge them is undecided. |

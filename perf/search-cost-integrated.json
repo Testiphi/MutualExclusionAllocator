@@ -1,0 +1,117 @@
+[
+  {
+    "name": "zone5-ordinary",
+    "costs": {
+      "reference": {
+        "nodes": 174,
+        "leaves": 125,
+        "dominanceCalls": 314,
+        "boundChecks": 0,
+        "boundFrontComparisons": 0,
+        "boundDimensions": 0,
+        "pruned": 0
+      },
+      "pruned": {
+        "nodes": 104,
+        "leaves": 64,
+        "dominanceCalls": 229,
+        "boundChecks": 39,
+        "boundFrontComparisons": 63,
+        "boundDimensions": 163,
+        "pruned": 9
+      }
+    }
+  },
+  {
+    "name": "zone5-dense",
+    "costs": {
+      "reference": {
+        "nodes": 2493566,
+        "leaves": 2347041,
+        "dominanceCalls": 3714631,
+        "boundChecks": 0,
+        "boundFrontComparisons": 0,
+        "boundDimensions": 0,
+        "pruned": 0
+      },
+      "pruned": {
+        "nodes": 367486,
+        "leaves": 220961,
+        "dominanceCalls": 446209,
+        "boundChecks": 146524,
+        "boundFrontComparisons": 615385,
+        "boundDimensions": 2636493,
+        "pruned": 124985
+      }
+    }
+  },
+  {
+    "name": "zone4-ordinary",
+    "costs": {
+      "reference": {
+        "nodes": 76,
+        "leaves": 42,
+        "dominanceCalls": 140,
+        "boundChecks": 0,
+        "boundFrontComparisons": 0,
+        "boundDimensions": 0,
+        "pruned": 0
+      },
+      "pruned": {
+        "nodes": 62,
+        "leaves": 32,
+        "dominanceCalls": 126,
+        "boundChecks": 29,
+        "boundFrontComparisons": 57,
+        "boundDimensions": 169,
+        "pruned": 2
+      }
+    }
+  },
+  {
+    "name": "zone4-dense",
+    "costs": {
+      "reference": {
+        "nodes": 215803,
+        "leaves": 194400,
+        "dominanceCalls": 222729,
+        "boundChecks": 0,
+        "boundFrontComparisons": 0,
+        "boundDimensions": 0,
+        "pruned": 0
+      },
+      "pruned": {
+        "nodes": 424,
+        "leaves": 212,
+        "dominanceCalls": 606,
+        "boundChecks": 211,
+        "boundFrontComparisons": 365,
+        "boundDimensions": 1190,
+        "pruned": 173
+      }
+    }
+  },
+  {
+    "name": "zone4-expert-route",
+    "costs": {
+      "reference": {
+        "nodes": 2351,
+        "leaves": 1608,
+        "dominanceCalls": 2356,
+        "boundChecks": 0,
+        "boundFrontComparisons": 0,
+        "boundDimensions": 0,
+        "pruned": 0
+      },
+      "pruned": {
+        "nodes": 164,
+        "leaves": 50,
+        "dominanceCalls": 236,
+        "boundChecks": 113,
+        "boundFrontComparisons": 206,
+        "boundDimensions": 620,
+        "pruned": 72
+      }
+    }
+  }
+]

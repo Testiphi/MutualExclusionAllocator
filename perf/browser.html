@@ -1,0 +1,57 @@
+<!doctype html><meta charset="utf-8"><title>Allocator performance benchmark</title>
+<style>body{font:16px system-ui;margin:32px}pre{white-space:pre-wrap}button{padding:12px}</style>
+<h1>Allocator performance benchmark</h1>
+<p>Real page preparation, five distinct big maps. No storage or data writes. Timing excludes candidate preparation and rendering.</p>
+<button id="run">Run benchmark</button><button id="download" disabled>Download JSON</button><pre id="output">Ready</pre>
+<script src="page_inputs.js"></script>
+<script>
+const output=document.getElementById('output');
+document.getElementById('download').onclick=()=>{
+    const url=URL.createObjectURL(new Blob([output.textContent],{type:'application/json'}));
+    const a=document.createElement('a');a.href=url;a.download='allocator-browser-results.json';a.click();URL.revokeObjectURL(url);
+};
+const pause=()=>new Promise(resolve=>setTimeout(resolve,30));
+document.getElementById('run').onclick=async()=>{
+    document.getElementById('run').disabled=true;
+    document.getElementById('download').disabled=true;
+    try {
+        const files=['index.html','app_state.js','race_scores.js','cars.json','gauntlet_data.json','allocator.js','perf/allocator_reference.js'];
+        const sources=Object.fromEntries(await Promise.all(files.map(async f=>[f,await (await fetch('../'+f)).text()])));
+        const cases=pageInputs.prepare(sources,JSON.parse(sources['cars.json']),JSON.parse(sources['gauntlet_data.json']));
+        const load=f=>new Function(sources[f]+';return allocator.generateParetoSchemes;')();
+        const implementations={reference:load('perf/allocator_reference.js'),pruned:load('allocator.js')};
+        const longTasks=[];
+        const observer=typeof PerformanceObserver!=='undefined' && PerformanceObserver.supportedEntryTypes.includes('longtask')
+            ? new PerformanceObserver(list=>longTasks.push(...list.getEntries().map(x=>({startTime:x.startTime,duration:x.duration})))):null;
+        observer?.observe({type:'longtask'});
+        const report={environment:{userAgent:navigator.userAgent,hardwareConcurrency:navigator.hardwareConcurrency},
+            method:'First call, 2 warmups, 7 alternating-order repeats. No forced GC. Timer delay is scheduled before synchronous allocator; not full page interaction latency. Heap and peak not measured.',cases:[]};
+        report.hashes=Object.fromEntries(await Promise.all(files.map(async f=>[f,Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(sources[f])))).map(x=>x.toString(16).padStart(2,'0')).join('')])));
+        for(const c of cases){
+            output.textContent='Running '+c.name;
+            const args=[c.candidates,new Set(c.owned),25,99];const results={};let expected;
+            async function measure(name){
+                await pause();const t=performance.now();
+                const timer=new Promise(resolve=>setTimeout(()=>resolve(performance.now()-t),0));
+                const value=implementations[name](...args);const ms=performance.now()-t;
+                const timerDelayMs=await timer;
+                const encoded=JSON.stringify(value);if(expected===undefined)expected=encoded;else if(encoded!==expected)throw Error('Ordered mismatch');
+                return {ms,timerDelayMs};
+            }
+            for(const name of Object.keys(implementations)){
+                const first=await measure(name);results[name]={first,samplesMs:[],timerDelayMs:[]};
+                await measure(name);await measure(name);
+            }
+            for(let i=0;i<7;i++)for(const name of (i%2?['reference','pruned']:['pruned','reference'])){
+                const r=await measure(name);results[name].samplesMs.push(r.ms);results[name].timerDelayMs.push(r.timerDelayMs);
+            }
+            for(const r of Object.values(results)){const s=[...r.samplesMs].sort((a,b)=>a-b);r.medianMs=s[3];r.minMs=s[0];r.maxMs=s[6];}
+            const {candidates,...metadata}=c;
+            report.cases.push({...metadata,counts:candidates.map(m=>m.groups.flat().filter(x=>args[1].has(x)).length),results});
+        }
+        await pause();observer?.disconnect();report.longTasks=longTasks;
+        output.textContent=JSON.stringify(report,null,2);
+        document.getElementById('download').disabled=false;
+    }catch(e){output.textContent=e.stack;}finally{document.getElementById('run').disabled=false;}
+};
+</script>

@@ -1,0 +1,13 @@
+{
+  "environment": {"browser":"Codex in-app Chromium 155.0.0.0", "platform":"Windows x64", "hardwareConcurrency":20},
+  "method":"Read from benchmark page DOM. Values rounded to 0.001 ms. First invocation per case is not a fresh browser/engine. 2 warmups then 7 alternating-order repeats. No forced GC. Same inputs and source hashes as comparison-node.json. Heap/peak not measured.",
+  "cases":[
+    {"name":"zone5-ordinary","reference":{"firstMs":0.3,"samplesMs":[0.2,0.3,0.1,0.2,0,0.1,0],"medianMs":0.1},"pruned":{"firstMs":0.5,"samplesMs":[0.1,0.1,0.2,0.1,0.2,0,0.2],"medianMs":0.1}},
+    {"name":"zone5-dense","reference":{"firstMs":124.6,"firstTimerDelayMs":125,"samplesMs":[111.4,111.7,111.3,113.1,111,112.2,112.5],"timerDelayMs":[111.5,111.8,111.5,113.2,111.1,112.3,112.6],"medianMs":111.7},"pruned":{"firstMs":26.7,"firstTimerDelayMs":26.8,"samplesMs":[23,21.7,22.6,21.8,23.1,22.5,21.9],"timerDelayMs":[23.1,21.7,22.6,21.9,23.1,22.5,22],"medianMs":22.5}},
+    {"name":"zone4-ordinary","reference":{"firstMs":0.1,"samplesMs":[0,0.1,0,0.1,0.1,0,0],"medianMs":0},"pruned":{"firstMs":0.1,"samplesMs":[0,0,0.1,0.1,0,0.1,0.1],"medianMs":0.1}},
+    {"name":"zone4-dense","reference":{"firstMs":8.7,"samplesMs":[10.2,9.1,9.5,8.7,8.7,8.6,8.5],"medianMs":8.7},"pruned":{"firstMs":0.1,"samplesMs":[0.1,0.1,0.1,0,0.1,0,0.2],"medianMs":0.1}},
+    {"name":"zone4-expert-route","reference":{"firstMs":0.2,"samplesMs":[0.1,0.1,0.2,0.1,0.2,0.1,0.2],"medianMs":0.1},"pruned":{"firstMs":0.1,"samplesMs":[0,0,0.1,0.1,0.1,0,0.1],"medianMs":0.1}}
+  ],
+  "observedLongTaskDurationsMs":[124,114,115,111,111,111,113,111,112,112],
+  "limitations":"Desktop only; no CPU throttling or phone. Timer baseline around 4-6 ms for tiny inputs; zero means below timer resolution, not zero cost. Long-task observer covers whole benchmark; count/durations align with reference dense invocations, without per-task attribution instrumentation. Full UI preparation/render latency and memory peak unmeasured."
+}
