@@ -2,7 +2,7 @@
 
 [English](README.md) | **中文**
 
-> 🌐 **在线演示**：[testiphi.github.io/MutualExclusionAllocator](https://testiphi.github.io/MutualExclusionAllocator/)
+> 🌐 **正式网站**：[擂台选车助手](https://racepick.cn/) · **在线演示**：[testiphi.github.io/MutualExclusionAllocator](https://testiphi.github.io/MutualExclusionAllocator/)
 
 一个用于 Gauntlet 挑战模式的用车分配工具，支持五区/四区、四种数据档位、车辆星级与特殊跑法，输出车辆互斥的 Pareto 最优方案。
 

@@ -2,7 +2,7 @@
 
 **English** | [中文](README.zh-CN.md)
 
-> 🌐 **Live demo**: [testiphi.github.io/MutualExclusionAllocator](https://testiphi.github.io/MutualExclusionAllocator/)
+> 🌐 **Website**: [RacePick](https://racepick.cn/) · **Live demo**: [testiphi.github.io/MutualExclusionAllocator](https://testiphi.github.io/MutualExclusionAllocator/)
 
 A car allocator for Gauntlet challenges, supporting five-zone/four-zone pools, four data tiers, star ratings and special routes. It returns Pareto-optimal schemes without reusing cars.
 
