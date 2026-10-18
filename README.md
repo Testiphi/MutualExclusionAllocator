@@ -317,3 +317,5 @@ Python is used only for this preview server and local maintenance; the deployed 
 ## Local account development
 
 Account support is local-only on this feature branch and has not been deployed. See [local account instructions](ACCOUNTS_LOCAL.md) for startup, tests, backup/restore and the deferred player-score submission workflow. Static hosting retains guest mode.
+
+Local web submissions, moderation, 0–5 ratings and tier classification are documented in [submission workflow](SUBMISSIONS_LOCAL.md). No official score writes, Excel import or reward-based access is enabled.

@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>成绩投稿与审核 · 擂台选车助手</title>
+<link rel="stylesheet" href="/submissions.css"><script defer src="/submissions.js"></script>
+</head>
+<body>
+<header><a href="/">← 返回选车助手</a><h1>成绩投稿</h1><p id="identity">正在检查登录状态…</p><p id="reference"></p>
+<nav id="navigation" hidden><button id="newTab" type="button">提交成绩</button><button id="mineTab" type="button">我的投稿</button><button id="reviewTab" type="button" hidden>审核工作台</button></nav>
+</header>
+<main>
+<p id="message" role="status" aria-live="polite"></p>
+<section id="compose" hidden aria-labelledby="composeTitle"><h2 id="composeTitle">录入成绩</h2>
+<p>可连续添加多条，先保存草稿，再逐条补充证据、预览并提交。请确认实际分区与星级；不要直接照抄账号车库设置。</p>
+<div id="draftRows"></div><div class="actions"><button id="addRow" type="button">再添一条</button><button id="saveBatch" type="button">保存全部草稿</button></div>
+</section>
+<section id="workspace" hidden>
+<div class="filters"><h2 id="listTitle">我的投稿</h2><label>状态 <select id="statusFilter"><option value="">全部</option><option value="draft">草稿</option><option value="pending">待审核</option><option value="needs_info">需要补充</option><option value="accepted">已采纳，待应用</option><option value="ignored">未采纳</option></select></label><label>地图 / 车辆 / 说明 <input id="search" maxlength="100" type="search"></label><button id="searchBtn" type="button">查询</button><button id="refresh" type="button">刷新</button></div>
+<div class="review-layout"><aside aria-label="投稿队列"><p id="count"></p><div id="list"></div><div class="actions"><button id="previous" type="button">上一页</button><button id="next" type="button">下一页</button></div></aside><article id="detail" aria-live="polite"><p>选择一条投稿查看内容。</p></article></div>
+</section>
+</main>
+<footer>本地开发版 · 采纳只保存审核决定，尚未写入正式成绩或发布网站。</footer>
+<dialog id="confirmDialog"><p id="confirmText"></p><div class="actions"><button id="confirmCancel" type="button">取消</button><button id="confirmYes" type="button">确认继续</button></div></dialog>
+</body></html>

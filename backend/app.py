@@ -85,8 +85,8 @@ class Store:
                 purpose TEXT NOT NULL, expires_at INTEGER NOT NULL);
             CREATE TABLE IF NOT EXISTS attempts(bucket TEXT PRIMARY KEY, count INTEGER NOT NULL, expires_at INTEGER NOT NULL);
             ''')
-            if db.execute('SELECT max(version) FROM schema_version').fetchone()[0] != 1:
-                raise RuntimeError('不支持的数据库版本')
+            from backend.submissions import migrate
+            migrate(db)
 
     @contextmanager
     def connect(self):
@@ -110,10 +110,11 @@ class Store:
             db.execute('INSERT INTO attempts VALUES (?,1,?) ON CONFLICT(bucket) DO UPDATE SET count=count+1', (key, now+600))
 
 
-def create_app(data_dir=None, origin='http://127.0.0.1:8000'):
+def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None):
     parsed = urlsplit(origin)
     if parsed.scheme != 'http' or parsed.hostname not in ('127.0.0.1', 'localhost') or parsed.path or parsed.query or parsed.fragment or parsed.username:
         raise ValueError('本地开发仅允许 localhost/127.0.0.1 HTTP origin')
+    cookie_name = COOKIE if parsed.port in (None,8000) else COOKIE+'_'+str(parsed.port)
     store = Store(data_dir or ROOT / '.local-accounts')
     app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None)
     app.state.store = store
@@ -121,7 +122,7 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000'):
     known = {c['nickname'] for c in catalog['cars'] if c.get('nickname') and c.get('zones')}
 
     def session(request, required=True):
-        token = request.cookies.get(COOKIE, '')
+        token = request.cookies.get(cookie_name, '')
         with store.connect() as db:
             row = db.execute('SELECT * FROM sessions WHERE token_hash=? AND expires_at>?', (digest(token), int(time.time()))).fetchone()
         if not row and required:
@@ -147,7 +148,7 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000'):
         if transaction is None:
             with store.connect() as db: insert(db)
         else: insert(transaction)
-        response.set_cookie(COOKIE, raw, httponly=True, samesite='strict', secure=False, max_age=duration, path='/')
+        response.set_cookie(cookie_name, raw, httponly=True, samesite='strict', secure=False, max_age=duration, path='/')
         return csrf
 
     def mail(db, uid, email, purpose):
@@ -177,7 +178,8 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000'):
             total=0
             async for chunk in request.stream():
                 total += len(chunk)
-                if total>65536:
+                limit = 3000000 if request.url.path.endswith('/images') else 65536
+                if total>limit:
                     return JSONResponse({'detail':'请求过大'},status_code=413)
                 if total==len(chunk): body=chunk
                 else: body+=chunk
@@ -224,15 +226,15 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000'):
             if not row['verified']: raise HTTPException(403,'请先通过本地测试邮件验证邮箱')
             if HASHER.check_needs_rehash(row['password_hash']):
                 db.execute('UPDATE users SET password_hash=? WHERE id=?',(HASHER.hash(data.password),row['id']))
-            db.execute('DELETE FROM sessions WHERE token_hash=?',(digest(request.cookies.get(COOKIE,'')),))
+            db.execute('DELETE FROM sessions WHERE token_hash=?',(digest(request.cookies.get(cookie_name,'')),))
             csrf=new_session(response,row['id'],db)
         return {'csrf':csrf,'user':{'id':row['id'],'email':row['email'],'role':row['role'],'verified':True}}
 
     @app.post('/api/auth/logout')
     def logout(request:Request,response:Response):
         with store.connect() as db:
-            db.execute('DELETE FROM sessions WHERE token_hash=?',(digest(request.cookies.get(COOKIE,'')),))
-        response.delete_cookie(COOKIE,path='/')
+            db.execute('DELETE FROM sessions WHERE token_hash=?',(digest(request.cookies.get(cookie_name,'')),))
+        response.delete_cookie(cookie_name,path='/')
         return {'message':'已退出'}
 
     @app.post('/api/auth/resend-verification')
@@ -304,13 +306,16 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000'):
                 (owner['id'],json.dumps(data.cars,ensure_ascii=False),json.dumps(data.stars,ensure_ascii=False),revision,int(time.time())))
         return {'revision':revision}
 
+    from backend.submissions import install
+    install(app,store,ROOT,user,reference_dir)
+
     @app.get('/')
     def index():
         html=(ROOT/'index.html').read_text(encoding='utf-8')
         html=html.replace('</head>','<script src="/profile_store.js"></script><script src="/auth.js"></script><link rel="stylesheet" href="/accounts.css">\n</head>')
         return HTMLResponse(html)
 
-    assets={'styles.css','config.js','api.js','app_state.js','allocator.js','race_scores.js','cars.json','gauntlet_data.json','auth.js','profile_store.js','accounts.css'}
+    assets={'styles.css','config.js','api.js','app_state.js','allocator.js','race_scores.js','cars.json','gauntlet_data.json','auth.js','profile_store.js','accounts.css','submissions.js','submissions.css'}
     @app.get('/{name}')
     def asset(name:str):
         if name not in assets: raise HTTPException(404)

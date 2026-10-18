@@ -146,6 +146,17 @@ class AccountsTests(unittest.TestCase):
         self.assertEqual(self.post('verify-email',{'token':new}).status_code,200)
         self.assertEqual(self.post('verify-email',{'token':new}).status_code,400)
 
+    def test_local_ports_use_distinct_session_cookie_names(self):
+        self.signup()
+        other_app=create_app(self.path/'other-port',origin='http://127.0.0.1:8001')
+        with TestClient(other_app,base_url='http://127.0.0.1:8001') as other:
+            other.cookies.update(self.client.cookies)
+            response=other.get('/api/auth/me')
+            self.assertIsNone(response.json()['user'])
+            self.assertIn(COOKIE+'_8001=',response.headers['set-cookie'])
+            self.client.cookies.update(other.cookies)
+            self.assertEqual(self.client.get('/api/auth/me').json()['user']['email'],'player@example.com')
+
     def test_database_restart_preserves_data_and_backup(self):
         self.signup()
         self.client.put('/api/me/profile',json={'revision':0,'cars':[],'stars':{}})
