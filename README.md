@@ -313,3 +313,7 @@ Python is used only for this preview server and local maintenance; the deployed 
 | Browser-side stress test | Desktop Chromium solve time and timer delay measured with real page candidates. Phones, full-page interaction latency and peak memory remain untested. |
 | Thin candidate lists | 13 "zone/tier" combinations are down to 1–2 candidates (weakest: `大桥海湾/喧闹铁路` four-zone expert has only `9x8★6`; `极昼之地/凌云狂飙` four-zone expert has only `ssc★2`). |
 | Redundant `max` field | `star_rule.max` matches `cars.json`'s `max_stars` for all 9 cars that declare it (`att`/`杰弟`/`dose` use 6 = unconstrained). Whether to merge them is undecided. |
+
+## Local account development
+
+Account support is local-only on this feature branch and has not been deployed. See [local account instructions](ACCOUNTS_LOCAL.md) for startup, tests, backup/restore and the deferred player-score submission workflow. Static hosting retains guest mode.

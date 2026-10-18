@@ -1,3 +1,7 @@
 __pycache__/
 *.py[cod]
 *.bak
+
+.local-accounts/
+.venv/
+.env

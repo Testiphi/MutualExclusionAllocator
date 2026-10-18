@@ -68,6 +68,7 @@ const api = (() => {
 
     /** 加载已选车辆集合 */
     async loadGarage(knownCars) {
+      if (globalThis.accountUI?.active()) return accountUI.garage();
       if (cfg.dataSource === 'api') {
         return appState.garage(await apiFetch('GET', '/garage'), knownCars);
       }
@@ -77,6 +78,7 @@ const api = (() => {
 
     /** 保存已选车辆集合 */
     async saveGarage(carSet) {
+      if (globalThis.accountUI?.active()) return accountUI.saveGarage(carSet);
       if (cfg.dataSource === 'api') {
         return apiFetch('PUT', '/garage', { cars: [...carSet] });
       }
