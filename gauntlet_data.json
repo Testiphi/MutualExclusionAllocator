@@ -308,8 +308,8 @@
       },
       "四区": {
         "理论": [{"cars":[{"name":"爱音"}],"time":31.99},{"cars":[{"name":"f5"}],"time":32.19},{"cars":[{"name":"恶魔"}],"time":32.33,"sc":null,"sc_type":null},{"cars":[{"name":"9x8"}],"time":33.05},{"cars":[{"name":"fp1","stars":null}],"time":33.07},{"cars":[{"name":"919"}],"time":33.45},{"cars":[{"name":"cs"}],"time":33.5}],
-        "高手": [{"cars":[{"name":"f5","stars":3}],"time":32.5},{"cars":[{"name":"爱音","stars":4}],"time":32.7},{"cars":[{"name":"爱音","stars":3}],"time":32.8},{"cars":[{"name":"9x8","stars":6}],"time":33.4},{"cars":[{"name":"杰哥","stars":6}],"time":33.5}],
-        "普通": [{"cars":[{"name":"杰哥","stars":6}]},{"cars":[{"name":"9x8","stars":6}]},{"cars":[{"name":"爱音","stars":3}]},{"cars":[{"name":"爱音","stars":4}]},{"cars":[{"name":"f5","stars":3}]}],
+        "高手": [{"cars":[{"name":"f5","stars":3}],"time":32.5},{"cars":[{"name":"爱音","stars":4}],"time":32.7},{"cars":[{"name":"爱音","stars":3}],"time":32.8},{"cars":[{"name":"9x8","stars":6}],"time":33.4},{"cars":[{"name":"杰哥","stars":6}],"time":33.5},{"cars":[{"name":"fp1","stars":5}],"time":33.7}],
+        "普通": [{"cars":[{"name":"杰哥","stars":6}]},{"cars":[{"name":"9x8","stars":6}]},{"cars":[{"name":"爱音","stars":3}]},{"cars":[{"name":"爱音","stars":4}]},{"cars":[{"name":"f5","stars":3}]},{"cars":[{"name":"fp1","stars":5}]}],
         "自动": [{"cars":[{"name":"fp1"}]},{"cars":[{"name":"9x8"}]},{"cars":[{"name":"sf90"}]},{"cars":[{"name":"速尾"}]}]
       }
     },
@@ -1119,8 +1119,8 @@
       },
       "四区": {
         "理论": [{"cars":[{"name":"恶魔"}],"time":33.79,"sc":null,"sc_type":null},{"cars":[{"name":"f5"}],"time":33.89},{"cars":[{"name":"杰哥"}],"time":34.49}],
-        "高手": [{"cars":[{"name":"恶魔","stars":2}],"time":34.7},{"cars":[{"name":"恶魔","stars":1}],"time":34.89},{"cars":[{"name":"f5","stars":3}],"time":34.9},{"cars":[{"name":"杰哥","stars":6}],"time":34.95},{"time":35.19,"stars":null,"sc":false,"sc_type":null,"cars":[{"name":"杰哥","stars":4}]},{"cars":[{"name":"杰哥","stars":3}],"time":35.24}],
-        "普通": [{"cars":[{"name":"杰哥","stars":6}]},{"cars":[{"name":"杰哥","stars":4}]},{"cars":[{"name":"恶魔","stars":1}]},{"cars":[{"name":"恶魔","stars":2}]},{"cars":[{"name":"f5","stars":3}]},{"cars":[{"name":"杰哥","stars":3}]}],
+        "高手": [{"cars":[{"name":"恶魔","stars":2}],"time":34.7},{"cars":[{"name":"恶魔","stars":1}],"time":34.89},{"cars":[{"name":"f5","stars":3}],"time":34.9},{"cars":[{"name":"杰哥","stars":6}],"time":34.95},{"time":35.19,"stars":null,"sc":false,"sc_type":null,"cars":[{"name":"杰哥","stars":4}]},{"cars":[{"name":"杰哥","stars":3}],"time":35.24},{"cars":[{"name":"莫斯勒","stars":1}],"time":35.99}],
+        "普通": [{"cars":[{"name":"杰哥","stars":6}]},{"cars":[{"name":"杰哥","stars":4}]},{"cars":[{"name":"恶魔","stars":1}]},{"cars":[{"name":"恶魔","stars":2}]},{"cars":[{"name":"f5","stars":3}]},{"cars":[{"name":"杰哥","stars":3}]},{"cars":[{"name":"莫斯勒","stars":1}]}],
         "自动": []
       }
     },
