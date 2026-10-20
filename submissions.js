@@ -7,7 +7,20 @@
     let user,csrf,catalog,scope='mine',offset=0,selected=null,busy=false,preview=null,formSerial=0;
     let listTicket=0,detailTicket=0,activeForm=null,batchRequest=null,unsaved=false;
     function el(tag,text,cls){const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(cls)n.className=cls;return n;}
-    function say(text){$('message').textContent=text;}
+    let actionFocus=null,noticeFocus=null;
+    $('noticeClose').onclick=()=>$('noticeDialog').close();
+    $('noticeDialog').addEventListener('close',()=>{
+        if(noticeFocus?.isConnected&&!noticeFocus.disabled)noticeFocus.focus();
+        noticeFocus=null;
+    });
+    function say(text,focusTarget=null){
+        $('message').textContent=text;
+        $('noticeText').textContent=text;
+        noticeFocus=focusTarget||actionFocus;
+        const dialog=$('noticeDialog');
+        if(!dialog.open)dialog.showModal();
+        $('noticeClose').focus();
+    }
     async function request(method,path,body){
         const controller=new AbortController(), timer=setTimeout(()=>controller.abort(),15000);
         try{
@@ -21,7 +34,7 @@
         finally{clearTimeout(timer);}
     }
     async function run(fn){
-        if(busy)return;busy=true;document.body.setAttribute('aria-busy','true');
+        if(busy)return;actionFocus=document.activeElement;busy=true;document.body.setAttribute('aria-busy','true');
         $('compose').inert=true;$('workspace').inert=true;$('navigation').inert=true;
         try{await fn();}catch(e){say(e.message+(e.status===401?'。请返回首页重新登录，再刷新本页。':''));}
         finally{busy=false;document.body.removeAttribute('aria-busy');$('compose').inert=false;$('workspace').inert=false;$('navigation').inert=false;}
@@ -128,7 +141,7 @@
         if(user.role==='admin'&&item.status==='pending')renderReview(root,item);
         if(user.role==='admin'&&['accepted','ignored'].includes(item.status)){
             const label=el('label','重新审核原因'),reason=el('textarea');reason.maxLength=2000;label.append(reason);root.append(label,button('重新打开审核',async()=>{
-                if(!reason.value.trim()){say('请填写重新审核原因');return;}
+                if(!reason.value.trim()){say('请填写重新审核原因。',reason);return;}
                 if(!await ask('撤回当前决定并重新进入待审核？原决定会保留在历史中。'))return;
                 await request('POST',`/admin/submissions/${item.id}/review`,{revision:item.revision,action:'reopen',reason:reason.value});await refreshItem(item.id);say('已重新打开审核');
             }));
@@ -176,7 +189,7 @@
             accept.disabled=preview.comparison.kind==='rule_needed';
             say('预览已更新。修改后采纳或更慢成绩需要审核原因。');
         }),accept,button('要求补充',async()=>decision('needs_info')),button('忽略本条',async()=>decision('ignore')));root.append(buttons);
-        async function decision(action){if(!reason.value.trim()){say('请填写给玩家的反馈原因');return;}if(!await ask(action==='ignore'?'忽略此投稿，不修改正式成绩；历史会保留。':'要求玩家补充资料后重新提交？'))return;
+        async function decision(action){if(!reason.value.trim()){say('请填写给玩家的反馈原因，再选择要求补充或忽略。',reason);return;}if(!await ask(action==='ignore'?'忽略此投稿，不修改正式成绩；历史会保留。':'要求玩家补充资料后重新提交？'))return;
             await request('POST',`/admin/submissions/${item.id}/review`,{revision:item.revision,action,reason:reason.value,review_score:score.value===''?null:Number(score.value)});await refreshItem(item.id);say(action==='ignore'?'已忽略并保存原因':'已要求补充');}
     }
     async function init(){

@@ -93,10 +93,10 @@
         accountLabel.textContent=owner ? owner.email : '游客 · 资料保存在本机';
         $('accountForm').hidden=!!owner; $('accountActions').hidden=!owner;
         if(owner) {
-            const link=document.createElement('a'); link.href='/submissions'; link.textContent='提交成绩 / 我的投稿';
+            const link=document.createElement('a'); link.href='/submissions'; link.className='account-link'; link.textContent='提交成绩 / 我的投稿';
             $('accountActions').append(link);
             if(owner.role==='admin') {
-                const review=document.createElement('a'); review.href='/submissions#review'; review.textContent='审核工作台';
+                const review=document.createElement('a'); review.href='/submissions#review'; review.className='account-link'; review.textContent='审核工作台';
                 $('accountActions').append(review);
             }
         }
