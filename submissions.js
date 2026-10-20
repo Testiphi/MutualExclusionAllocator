@@ -27,10 +27,10 @@
             const response=await fetch('/api'+path,{method,credentials:'same-origin',signal:controller.signal,
                 headers:{'Content-Type':'application/json','X-CSRF-Token':csrf||'',...(user?{'X-Account-ID':user.id}:{})},
                 ...(body===undefined?{}:{body:JSON.stringify(body)})});
-            const data=await response.json();
+            const data=await response.json().catch(()=>{throw new Error('服务器返回了无法识别的响应，请稍后重试；若刚才进行了保存，请先刷新列表核对结果。');});
             if(!response.ok){const e=new Error(typeof data.detail==='string'?data.detail:'字段格式不正确，请检查星级、成绩和文字长度');e.status=response.status;throw e;}
             return data;
-        }catch(e){if(e.name==='AbortError')throw new Error('请求超时；草稿可能已保存，请重试或刷新列表核对，不要反复新建。');throw e;}
+        }catch(e){if(e.name==='AbortError')throw new Error('请求超时；草稿可能已保存，请重试或刷新列表核对，不要反复新建。');if(e instanceof TypeError)throw new Error('网络连接失败，请检查本地服务是否运行。若刚才进行了保存，请先刷新列表核对结果。');throw e;}
         finally{clearTimeout(timer);}
     }
     async function run(fn){
@@ -131,7 +131,7 @@
         if(item.baseline)root.append(el('p',`记录的参考数据 ${item.baseline.data.slice(0,12)} / 规则 ${item.baseline.cars.slice(0,12)}`,'muted'));
         root.append(el('h3','证据'));
         if(item.payload.video_url){const a=el('a','打开玩家提供的来源链接（外部网站）');a.href=item.payload.video_url;a.target='_blank';a.rel='noopener noreferrer';root.append(a);}
-        const images=el('div',undefined,'evidence');for(const img of item.images){const a=el('a');a.href=img.url;a.target='_blank';a.rel='noopener';const image=el('img');image.src=img.url;image.alt='投稿证据图片';a.append(image);const card=el('div');card.append(a);
+        const images=el('div',undefined,'evidence');for(const img of item.images){const a=el('a');a.href=img.url;a.target='_blank';a.rel='noopener';const image=el('img');image.src=img.url;image.alt='投稿证据图片';image.onerror=()=>{if(image.isConnected)say('证据图片加载失败，请检查登录状态和网络连接，再刷新详情重试。');};a.append(image);const card=el('div');card.append(a);
             if(item.owner_id===user.id&&['draft','needs_info'].includes(item.status))card.append(button('移除此图片',async()=>{
                 if(unsaved){say('请先保存条目修改。');return;}
                 if(!await ask('从本次投稿中移除此图片？已产生的历史记录仍会保留。'))return;
@@ -157,7 +157,7 @@
         root.append(button('上传证据图片',async()=>{
             if(unsaved){say('请先保存条目修改，再上传图片。');return;}
             const picture=file.files[0];if(!picture){say('请选择图片');return;}if(picture.size>2*1024*1024){say('图片不能超过2MB');return;}
-            const data=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(String(reader.result).split(',')[1]);reader.onerror=reject;reader.readAsDataURL(picture);});
+            const data=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(String(reader.result).split(',')[1]);reader.onerror=()=>reject(new Error('本地图片读取失败，请重新选择图片后重试。'));reader.onabort=()=>reject(new Error('图片读取已中断，请重新选择图片。'));reader.readAsDataURL(picture);});
             await request('POST',`/submissions/${item.id}/images`,{revision:item.revision,data});await refreshItem(item.id);say('图片已保存；转换为JPEG并移除元数据。');
         }));
         const buttons=el('div',undefined,'actions');buttons.append(button('保存修改',async()=>{
@@ -194,7 +194,7 @@
     }
     async function init(){
         const session=await request('GET','/auth/me');user=session.user;csrf=session.csrf;
-        if(!user){$('identity').textContent='请先返回选车助手注册或登录，再进入投稿页。';return;}
+        if(!user){const text='请先返回选车助手注册或登录，再进入投稿页。';$('identity').textContent=text;say(text);return;}
         $('identity').textContent=`${user.email} · ${user.role==='admin'?'管理员':'玩家'}`;
         catalog=await request('GET','/submissions/catalog');$('reference').textContent=catalog.reference_label+' · '+catalog.basis.data.slice(0,12);
         $('navigation').hidden=false;$('reviewTab').hidden=user.role!=='admin';
