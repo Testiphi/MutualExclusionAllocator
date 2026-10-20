@@ -198,6 +198,7 @@
         $('identity').textContent=`${user.email} · ${user.role==='superadmin'?'超级管理员':user.role==='admin'?'管理员':'玩家'}`;
         catalog=await request('GET','/submissions/catalog');$('reference').textContent=catalog.reference_label+' · '+catalog.basis.data.slice(0,12);
         $('navigation').hidden=false;$('reviewTab').hidden=!['admin','superadmin'].includes(user.role);
+        if(session.readonly_previews&&['admin','superadmin'].includes(user.role)){const link=el('a','已采纳投稿预览');link.href='/data-previews';$('navigation').append(link);}
         $('newTab').onclick=()=>run(()=>switchView('new'));$('mineTab').onclick=()=>run(()=>switchView('mine'));$('reviewTab').onclick=()=>run(()=>switchView('review'));
         $('addRow').onclick=newRow;
         $('saveBatch').onclick=()=>run(async()=>{

@@ -95,6 +95,8 @@ class Store:
             migrate_mail(db)
             from backend.roles import migrate_roles
             migrate_roles(db)
+            from backend.previews import migrate_previews
+            migrate_previews(db)
 
     @contextmanager
     def connect(self):
@@ -118,7 +120,7 @@ class Store:
             db.execute('INSERT INTO attempts VALUES (?,1,?) ON CONFLICT(bucket) DO UPDATE SET count=count+1', (key, now+600))
 
 
-def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None, mail_config=None):
+def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None, mail_config=None, preview_source=None):
     parsed = urlsplit(origin)
     if parsed.scheme != 'http' or parsed.hostname not in ('127.0.0.1', 'localhost') or parsed.path or parsed.query or parsed.fragment or parsed.username:
         raise ValueError('本地开发仅允许 localhost/127.0.0.1 HTTP origin')
@@ -198,8 +200,8 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
     def me(request:Request, response:Response):
         current=session(request,False)
         if not current:
-            return {'user':None,'csrf':new_session(response),'mail_mode':mail_service.config.mode,'admin_invites':True}
-        return {'user':user(request) if current['user_id'] else None,'csrf':current['csrf'],'mail_mode':mail_service.config.mode,'admin_invites':True}
+            return {'user':None,'csrf':new_session(response),'mail_mode':mail_service.config.mode,'admin_invites':True,'readonly_previews':preview_source is not None}
+        return {'user':user(request) if current['user_id'] else None,'csrf':current['csrf'],'mail_mode':mail_service.config.mode,'admin_invites':True,'readonly_previews':preview_source is not None}
 
     @app.post('/api/auth/register')
     def register(data:Registration, request:Request):
@@ -331,6 +333,8 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
     install(app,store,ROOT,user,reference_dir)
     from backend.roles import install as install_roles
     install_roles(app,store,ROOT,user)
+    from backend.previews import install as install_previews
+    install_previews(app,store,ROOT,user,preview_source)
 
     @app.get('/')
     def index():
@@ -338,7 +342,7 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
         html=html.replace('</head>','<script src="/profile_store.js"></script><script src="/auth.js"></script><link rel="stylesheet" href="/accounts.css">\n</head>')
         return HTMLResponse(html)
 
-    assets={'styles.css','config.js','api.js','app_state.js','allocator.js','race_scores.js','cars.json','gauntlet_data.json','auth.js','profile_store.js','accounts.css','submissions.js','submissions.css','admin_access.js'}
+    assets={'styles.css','config.js','api.js','app_state.js','allocator.js','race_scores.js','cars.json','gauntlet_data.json','auth.js','profile_store.js','accounts.css','submissions.js','submissions.css','admin_access.js','data_previews.js','data_previews.css'}
     @app.get('/{name}')
     def asset(name:str):
         if name not in assets: raise HTTPException(404)
@@ -350,6 +354,7 @@ def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--port',type=int,default=8000)
     parser.add_argument('--data-dir',type=Path,default=ROOT/'.local-accounts')
+    parser.add_argument('--preview-source',type=Path,help='正式成绩库只读预览来源；需显式指定，不接收网页路径参数')
     parser.add_argument('--mail-mode',choices=['file','smtp'],default='file')
     parser.add_argument('--mail-to',help='SMTP本地测试唯一允许的收件邮箱')
     args=parser.parse_args()
@@ -365,6 +370,6 @@ def main():
     except (ValueError,KeyboardInterrupt) as error:
         parser.exit(1, ('已取消' if isinstance(error,KeyboardInterrupt) else str(error))+'\n')
     import uvicorn
-    uvicorn.run(create_app(args.data_dir,f'http://127.0.0.1:{args.port}',mail_config=config),host='127.0.0.1',port=args.port,proxy_headers=False)
+    uvicorn.run(create_app(args.data_dir,f'http://127.0.0.1:{args.port}',mail_config=config,preview_source=args.preview_source),host='127.0.0.1',port=args.port,proxy_headers=False)
 
 if __name__=='__main__': main()

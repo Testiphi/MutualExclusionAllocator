@@ -58,7 +58,7 @@ def read_password():
 
 def migrate_mail(db):
     version = db.execute('SELECT max(version) FROM schema_version').fetchone()[0]
-    if version in (4,5):
+    if version in (4,5,6):
         return
     if version != 3:
         raise RuntimeError('邮件迁移需要数据库v3')

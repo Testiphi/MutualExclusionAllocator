@@ -1,0 +1,10 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>已采纳投稿 · 只读预览</title><link rel="stylesheet" href="/submissions.css"><link rel="stylesheet" href="/data_previews.css"><script defer src="/data_previews.js"></script></head>
+<body><header><a href="/">← 返回选车助手</a> · <a href="/submissions#review">审核工作台</a><h1>已采纳投稿 · 变更清单预览</h1><p id="previewIdentity">正在检查登录…</p><p class="warning">只读阶段：不写正式JSON、不改工作簿、不提交Git、不发布网站，也不改变投稿采纳状态。</p></header>
+<main id="previewMain" hidden>
+<section><h2>正式库来源</h2><p id="sourceInfo"></p><p class="muted">只读取正式JSON和车辆规则；尚未回代的Excel编辑不会包含在预览中。审核时的旧参考库不同，会单独提醒。评分不决定自动写回。</p></section>
+<section><h2>选择已采纳投稿</h2><div class="actions"><button id="reloadCandidates" type="button">刷新列表与来源</button><button id="clearPicks" type="button">清空选择</button><span id="pickCount">已选0条</span><button id="generatePreview" type="button">生成只读预览</button><span id="previewBusy" role="status" hidden>正在处理…</span></div>
+<div id="candidateTable" class="table-wrap"></div><div class="actions"><button id="candidatePrevious" type="button">上一页</button><span id="candidateCount"></span><button id="candidateNext" type="button">下一页</button></div></section>
+<section><h2>预览结果</h2><div class="actions"><label>历史预览<select id="previewHistory"><option value="">请选择</option></select></label><button id="checkPreview" type="button">重新检查当前预览</button></div><article id="previewResult"><p>选择投稿后生成预览。</p></article></section>
+</main><dialog id="previewNotice" role="alertdialog" aria-labelledby="previewNoticeTitle"><h2 id="previewNoticeTitle">操作提示</h2><p id="previewNoticeText"></p><button id="previewNoticeClose" type="button">知道了</button></dialog>
+<footer>候选清单所有 accepted 均为 false。预览有效不代表已确认写回；本版本没有写回或发布入口。</footer></body></html>

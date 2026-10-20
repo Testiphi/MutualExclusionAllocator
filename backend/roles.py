@@ -15,7 +15,7 @@ ROOT=Path(__file__).resolve().parents[1]
 
 def migrate_roles(db):
     version=db.execute('SELECT max(version) FROM schema_version').fetchone()[0]
-    if version==5:return
+    if version in (5,6):return
     if version!=4:raise RuntimeError('权限迁移需要数据库v4')
     # Keep existing users rows and foreign keys intact. The singleton owns the
     # effective superadmin role; users.role retains its original compatibility enum.

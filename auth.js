@@ -162,6 +162,7 @@
             if(['admin','superadmin'].includes(owner.role)) {
                 const review=document.createElement('a'); review.href='/submissions#review'; review.className='account-link'; review.textContent='审核工作台';
                 $('accountActions').append(review);
+                if(session.readonly_previews){const preview=document.createElement('a');preview.href='/data-previews';preview.className='account-link';preview.textContent='变更清单预览';$('accountActions').append(preview);}
             }
             if(owner.role==='superadmin') {
                 const access=document.createElement('a');access.href='/admin-access';access.className='account-link';access.textContent='管理员与邀请码';$('accountActions').append(access);

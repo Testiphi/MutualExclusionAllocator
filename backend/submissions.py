@@ -25,9 +25,9 @@ def packed(value):
 def migrate(db):
     db.execute('BEGIN IMMEDIATE')
     version = db.execute('SELECT max(version) FROM schema_version').fetchone()[0]
-    if version not in (1, 2, 3, 4, 5):
+    if version not in (1, 2, 3, 4, 5, 6):
         raise RuntimeError('不支持的数据库版本')
-    if version in (3, 4, 5):
+    if version in (3, 4, 5, 6):
         return
     if version == 2:
         db.execute('ALTER TABLE submissions ADD COLUMN review_score INTEGER CHECK(review_score BETWEEN 0 AND 5)')

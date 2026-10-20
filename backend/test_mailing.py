@@ -131,6 +131,6 @@ class MailTests(unittest.TestCase):
         restored=Store(self.path)
         with restored.connect() as db:
             self.assertEqual(before,[tuple(r) for r in db.execute('SELECT * FROM users')])
-            self.assertEqual(db.execute('SELECT max(version) FROM schema_version').fetchone()[0],5)
+            self.assertEqual(db.execute('SELECT max(version) FROM schema_version').fetchone()[0],6)
 
 if __name__=='__main__':unittest.main()

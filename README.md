@@ -323,3 +323,5 @@ Local web submissions, moderation, 0–5 ratings and tier classification are doc
 Local email verification and password reset can explicitly use Aliyun SMTP. File delivery remains the default; see [isolated email test instructions](MAIL_LOCAL.md).
 
 Local owner protection, email-bound administrator invitations and permission revocation are described in [administrator invitation instructions](INVITATIONS_LOCAL.md).
+
+Accepted submissions can produce read-only change reports and previews against an explicitly configured data source. See [preview instructions](PREVIEWS_LOCAL.md); no writeback or publishing endpoint is provided.

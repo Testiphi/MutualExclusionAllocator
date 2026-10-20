@@ -177,10 +177,10 @@ class RolesTests(unittest.TestCase):
         with self.app.state.store.connect() as db:
             before={table:[tuple(r) for r in db.execute('SELECT * FROM '+table)] for table in ['users','profiles','auth_tokens','sessions']}
             for table in ['invitation_events','admin_invitations','super_admins','access_events']:db.execute('DROP TABLE '+table)
-            db.execute('DELETE FROM schema_version WHERE version=5')
+            db.execute('DELETE FROM schema_version WHERE version>=5')
         store=Store(self.path)
         with store.connect() as db:
-            self.assertEqual(db.execute('SELECT max(version) FROM schema_version').fetchone()[0],5)
+            self.assertEqual(db.execute('SELECT max(version) FROM schema_version').fetchone()[0],6)
             self.assertEqual(before,{table:[tuple(r) for r in db.execute('SELECT * FROM '+table)] for table in before})
             self.assertEqual(db.execute('PRAGMA foreign_key_check').fetchall(),[])
 
