@@ -2,9 +2,23 @@
 
 [English](README.md) | **中文**
 
-> 🌐 **正式网站**：[擂台选车助手](https://racepick.cn/) · **在线演示**：[testiphi.github.io/MutualExclusionAllocator](https://testiphi.github.io/MutualExclusionAllocator/)
+> 🌐 **正式网站**：[擂台选车助手](https://racepick.cn/) · **静态游客演示**：[testiphi.github.io/MutualExclusionAllocator](https://testiphi.github.io/MutualExclusionAllocator/)
 
 一个用于 Gauntlet 挑战模式的用车分配工具，支持五区/四区、四种数据档位、车辆星级与特殊跑法，输出车辆互斥的 Pareto 最优方案。
+
+## 当前功能与上线状态
+
+2026-10-20，正式网站的账号与投稿审核已上线，用户完成公网验收：
+
+- 邮箱注册与验证、密码重置；重置后旧密码和旧会话失效。
+- 账号车库与星级保存，刷新、退出重新登录后恢复；游客仍可直接选车计算。
+- 网页成绩投稿、补充重提、管理员评分和档位调整，以及采纳/忽略反馈。
+- 超级管理员、绑定邮箱的管理员邀请码与角色权限隔离。
+
+采纳只保存审核决定，不自动修改正式成绩。变更清单预览、逐项确认写回、回滚及工作簿同步仍留在本地，公网没有相关入口。Excel批量导入、贡献激励与排行榜尚未实现。
+
+手动数据库备份成功，自动备份定时器已启用；截至本次记录，首次定时执行尚待核验。发布版本、用户验收与运维步骤见 [生产部署说明](PRODUCTION_DEPLOYMENT.md)。
+
 
 ---
 
@@ -177,26 +191,30 @@ for 每个槽位（按顺序）:
 
 ## 架构
 
-纯客户端静态应用：
+浏览器负责选车计算；正式网站通过 Nginx HTTPS 接入 FastAPI，SQLite 保存账号、车库、投稿和审核记录：
 
 ```
 config.js → app_state.js → api.js → index.html（状态、候选准备、渲染）
                          ├→ allocator.js（纯分配算法）
                          └→ race_scores.js（成绩计算）
+
+auth.js / profile_store.js / submissions.js / admin_access.js
+        → Nginx HTTPS → FastAPI → SQLite
+                              └→ 阿里云 SMTP（验证与重置邮件）
 ```
 
 - **Config** —— 路径、键名、存储设置
-- **数据加载层** —— 当前静态模式加载 JSON；API 模式是预留接口，仓库没有后端实现
+- **成绩数据加载** —— 仍加载公开 JSON；`api.js`中的成绩数据API模式是预留接口，与已实现的账号/投稿API分开
 - **规则派生** —— 车池（`zones`）与星级规则（`star_rule`）从 `cars.json` 派生，
   见 `index.html` 的 `buildCarRules()`；**这是规则的唯一来源**，页面里不再有硬编码副本
 - **应用逻辑** —— 准备候选、估算星级成绩、管理状态并渲染界面
 - **算法模块** —— `allocator.js` 无 DOM/网络依赖，回溯时增量维护 Pareto 前沿
 - **成绩模块** —— `race_scores.js` 无 DOM/网络依赖，管理星级曲线和独立跑法估算；四区空候选保持为空，不借用五区列表
 - **状态边界** —— `app_state.js` 校验车库/跑法状态，只允许最新排队计算发布结果；保存失败在页面提示，损坏车库在启动时不被覆盖
-- **状态持久化** —— 车库、星级与界面偏好保存至当前浏览器的 localStorage；没有账号或跨设备同步
-- **本地维护** —— Python 工具维护 JSON/Excel，不参与网页运行
+- **状态持久化** —— 游客车库和星级保存在当前浏览器；登录后由`auth.js`/`profile_store.js`保存到账号。界面偏好仍按本机保存
+- **本地维护** —— Python维护工具处理JSON/Excel；正式网站的账号后端不自动应用成绩变更
 
-无需服务器、无构建步骤、无数据库。
+静态游客版本无需后端或数据库；正式账号版本需要Python服务、SQLite和SMTP。前端仍无需打包构建。
 
 > **规则的单一来源**：车池与星级规则原先硬编码在 `index.html`，Python 侧另有一份简化表
 > （`data_tools.ZONE4_MAX`），两侧已经分叉（前端 72 车有规则，Python 只认识 15 车，且从不校验最低星级）。
@@ -265,28 +283,28 @@ node test_boot_smoke.js                    # 页面启动冒烟（DOM 桩，不�
 
 ---
 
-## 部署
+## 部署与本地运行
 
-- **GitHub Pages**：[testiphi.github.io/MutualExclusionAllocator](https://testiphi.github.io/MutualExclusionAllocator/)
-- **仓库**：[github.com/Testiphi/MutualExclusionAllocator](https://github.com/Testiphi/MutualExclusionAllocator)
+### 正式账号网站
 
-静态托管（GitHub Pages、Netlify，或任意 Web 服务器均可）。
+[RacePick](https://racepick.cn/)运行账号、真实邮件与投稿审核服务。采用独立生产数据库，应用只监听回环端口，由Nginx提供HTTPS；凭据通过systemd加载，不进入Git或发布包。
 
-部署文件：`index.html`、`styles.css`、`config.js`、`app_state.js`、`api.js`、`allocator.js`、`race_scores.js`、`gauntlet_data.json`、`cars.json`。
-从旧版更新时，新增 `app_state.js` 并一起更新 `index.html`、`api.js`；`race_scores.js` 仍是必需依赖。
-`cars.json` 除车辆数据外还承载车池与星级规则，因此是**必需**依赖——加载失败会在页面上直接报错，
-不再降级运行。
+完整发布包、服务器安装、主号初始化、自动备份与回退见 [生产部署说明](PRODUCTION_DEPLOYMENT.md)。使用`build_production.py`和`deploy_production.py`；默认只暂存，激活应用与Nginx切流分开执行。不要将本地账号库或测试工作簿上传到正式环境。
 
-完整发布包与回滚见 [部署说明](DEPLOYMENT.md)。默认暂存、显式启用；Linux真实链接切换仍需在服务器验证。
-
-本地预览，在仓库目录运行：
+### 本地账号开发
 
 ```bash
-python -m http.server 8000
+python -m pip install -r backend/requirements.txt
+python -B -m backend.app --port 8000
 ```
 
-浏览器打开 [localhost:8000](http://localhost:8000/)。通过 HTTP 加载，直接双击 HTML 可能因浏览器限制无法读取 JSON。
-Python 仅用于此处的本地预览服务及数据维护，线上静态页面不依赖 Python。
+打开 [127.0.0.1:8000](http://127.0.0.1:8000/)。默认使用独立本地数据库和文件模拟邮件；SMTP测试需显式启用。详细说明见 [ACCOUNTS_LOCAL.md](ACCOUNTS_LOCAL.md)，这个本地入口不能直接用于公网部署。
+
+### 静态游客版本
+
+[GitHub Pages演示](https://testiphi.github.io/MutualExclusionAllocator/)仅提供静态游客功能。部署九个文件：`index.html`、`styles.css`、`config.js`、`app_state.js`、`api.js`、`allocator.js`、`race_scores.js`、`gauntlet_data.json`、`cars.json`。`cars.json`承载车辆规则，是必需依赖。
+
+静态包暂存和回退见 [DEPLOYMENT.md](DEPLOYMENT.md)，与账号生产包分开。本地查看静态版本可运行`python -m http.server 8000`，打开 [localhost:8000](http://localhost:8000/)；不会出现账号功能。通过HTTP加载，直接打开HTML可能无法读取JSON。
 
 ---
 
@@ -301,20 +319,15 @@ Python 仅用于此处的本地预览服务及数据维护，线上静态页面�
 | 候选过少的槽位 | 13 个「区/档」组合只剩 1–2 个候选（最脆弱：`大桥海湾/喧闹铁路` 四区高手仅 `9x8★6`、`极昼之地/凌云狂飙` 四区高手仅 `ssc★2`）。 |
 | `max` 字段冗余 | `star_rule.max` 与 `cars.json` 的 `max_stars` 目前 9 辆车上一一对应（`att`/`杰弟`/`dose` 为 6 即无限制）。是否合并为单一字段待定。 |
 
-## 本地账号开发版
+## 功能与维护文档
 
-账号功能在独立分支本地开发，尚未上线。启动、验证、备份恢复和后续玩家成绩投稿规划见 [本地账号说明](ACCOUNTS_LOCAL.md)。静态部署保持游客模式。
-
-网页投稿、审核评分和四档归类的本地使用说明见 [投稿审核说明](SUBMISSIONS_LOCAL.md)。本轮不自动写入正式成绩库，不含Excel导入或积分解锁。
-
-本地注册验证与密码重置可显式启用阿里云SMTP；默认仍为模拟收件箱，隔离测试步骤见 [真实邮件说明](MAIL_LOCAL.md)。
-
-超级管理员主号、管理员邀请码注册与权限回收见 [管理员邀请码说明](INVITATIONS_LOCAL.md)；已完成公网权限隔离验收。
-
-已采纳投稿可生成只读变更清单与独立预览，使用明确指定的正式库，详见 [只读预览说明](PREVIEWS_LOCAL.md)。没有写回或发布入口。
-
-本地隔离写回实验室：[WRITEBACK_LAB.md](WRITEBACK_LAB.md)。仅操作新建测试数据和独立账号库。
-
-账号生产发布：[PRODUCTION_DEPLOYMENT.md](PRODUCTION_DEPLOYMENT.md)。使用全新生产数据库与独立HTTPS/SMTP入口，不开放成绩写回。
-
-2026-10-20上线验收：账号、真实邮件验证/重置、车库与星级保存、投稿审核及权限隔离通过；手动数据库备份成功，自动备份定时器已启用，首次定时执行尚待核验。正式成绩写回仍仅本地。详见[上线记录](PRODUCTION_DEPLOYMENT.md)。
+| 文档 | 范围 |
+|---|---|
+| [生产部署与验收](PRODUCTION_DEPLOYMENT.md) | 当前上线版本、真实邮件、备份、回退与用户验收记录 |
+| [本地账号开发](ACCOUNTS_LOCAL.md) | 本地启动、账号资料保存及历史验收 |
+| [邮件接入](MAIL_LOCAL.md) | 本地文件邮件、受限SMTP测试及生产接入记录 |
+| [投稿与审核](SUBMISSIONS_LOCAL.md) | 投稿、补充、评分、档位调整及审核反馈 |
+| [管理员邀请](INVITATIONS_LOCAL.md) | 超级管理员、邀请码和权限隔离 |
+| [只读变更预览](PREVIEWS_LOCAL.md) | 仅本地：新增、更新、更慢成绩和普通镜像影响 |
+| [隔离写回实验室](WRITEBACK_LAB.md) | 仅本地测试：逐项确认、备份回滚及工作簿同步 |
+| [数据维护工具](PYTHON_TOOLS.md) | JSON/Excel维护、差异审核和校验 |
