@@ -8,6 +8,8 @@ A car allocator for Gauntlet challenges, supporting five-zone/four-zone pools, f
 
 ## Current Features and Release Status
 
+Latest data deployment: on 2026-10-21, three five-zone theory time improvements went live in release `09897d5f81a696dca0b95c8e` (source `7a2f164`). The user confirmed the updated results and account features work correctly. See the [deployment record](PRODUCTION_DEPLOYMENT.md). Official score writeback remains local only.
+
 The account feature branch was merged into main on 2026-10-20, preserving the latest main-branch score data and existing workbooks. This source merge did not redeploy the production service; official score writeback remains local only.
 
 Accounts and submission review went live on 2026-10-20. The user completed production acceptance for registration/email verification, password reset with old-password and session invalidation, garage/star persistence, submission review and role isolation.
