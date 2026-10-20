@@ -224,7 +224,7 @@ def install(app,store,root,user,reference_root=None):
         return {'tracks':[{'big':t['大地图'],'small':t['小地图']} for t in data['tracks']],
                 'cars':[{'name':c['nickname'],'title':c['title'],'zones':c.get('zones',[]),
                          'limits':{z:star_limits(c,z) for z in c.get('zones',[])}} for c in cars['cars'] if c.get('nickname') and c.get('zones')],
-                'routes':list(SC_TYPES),'basis':basis,'reference_label':'本地功能分支参考库快照，尚非线上实时库'}
+                'routes':list(SC_TYPES),'basis':basis,'reference_label':'隔离写回测试库（非真实正式库）' if hasattr(app.state,'writeback') else '本地功能分支参考库快照，尚非线上实时库'}
 
     @app.post('/api/submissions')
     def create(body:CreateBatch,request:Request):
@@ -278,6 +278,10 @@ def install(app,store,root,user,reference_root=None):
             result['baseline']=json.loads(row['baseline']) if row['baseline'] else None
             result['images']=[{'id':r['id'],'digest':r['digest'],'url':f'/api/submissions/{sid}/images/{r["id"]}'} for r in db.execute('SELECT id,digest FROM submission_images WHERE submission_id=? AND active=1 ORDER BY created_at',(sid,))]
             result['events']=[{**dict(r),'snapshot':json.loads(r['snapshot'])} for r in db.execute('SELECT revision,actor_id,action,snapshot,created_at FROM submission_events WHERE submission_id=? ORDER BY revision',(sid,))]
+            result['application']=None
+            if hasattr(app.state,'writeback'):
+                receipt=db.execute('SELECT batch_id,state FROM write_receipts WHERE submission_id=?',(sid,)).fetchone()
+                result['application']=dict(receipt) if receipt else None
             result['same_target']=[]
             if owner['role'] in ('admin','superadmin') and row['target_key']:
                 result['same_target']=[dict(r) for r in db.execute("SELECT id,status FROM submissions WHERE target_key=? AND id!=? AND status!='draft' ORDER BY updated_at DESC LIMIT 20",(row['target_key'],sid))]
@@ -332,6 +336,7 @@ def install(app,store,root,user,reference_root=None):
         owner=actor(request,True)
         with store.connect() as db:
             db.execute('BEGIN IMMEDIATE'); row=get_row(db,sid,owner); expected(row,body.revision)
+            if hasattr(app.state,'writeback'): app.state.writeback.guard(db,sid)
             if body.action=='reopen':
                 if row['status'] not in ('accepted','ignored') or not body.reason.strip():
                     raise HTTPException(422,'仅已采纳或已忽略投稿可重新审核，且需填写原因')
@@ -354,7 +359,8 @@ def install(app,store,root,user,reference_root=None):
                 if (candidate!=json.loads(row['payload']) or compare['kind']=='slower') and not reason:
                     raise HTTPException(422,'修改后采纳或较慢成绩必须填写审核原因')
                 # Another accepted proposal for the same target must not silently coexist.
-                duplicate=db.execute("SELECT id FROM submissions WHERE target_key=? AND status='accepted' AND id!=?",(identity(candidate),sid)).fetchone()
+                pending_filter=" AND NOT EXISTS(SELECT 1 FROM write_receipts WHERE submission_id=submissions.id)" if hasattr(app.state,'writeback') else ""
+                duplicate=db.execute("SELECT id FROM submissions WHERE target_key=? AND status='accepted' AND id!=?"+pending_filter,(identity(candidate),sid)).fetchone()
                 if duplicate: raise HTTPException(409,'该目标已有已采纳投稿：'+duplicate['id']+'；请先处理冲突，不能重复采纳')
                 # No writes to reference files, no mirror or cross-zone synchronization here.
             elif not reason:

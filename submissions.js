@@ -139,7 +139,8 @@
             }));images.append(card);}root.append(images);
         if(item.owner_id===user.id&&['draft','needs_info'].includes(item.status))renderEdit(root,item);
         if(['admin','superadmin'].includes(user.role)&&item.status==='pending')renderReview(root,item);
-        if(['admin','superadmin'].includes(user.role)&&['accepted','ignored'].includes(item.status)){
+        if(item.application)root.append(el('p',`测试库应用状态：${item.application.state==='applied'?'已应用':'已回滚'} · 批次 ${item.application.batch_id}；审核历史保留，如需修改请新建投稿。`));
+        if(!item.application&&['admin','superadmin'].includes(user.role)&&['accepted','ignored'].includes(item.status)){
             const label=el('label','重新审核原因'),reason=el('textarea');reason.maxLength=2000;label.append(reason);root.append(label,button('重新打开审核',async()=>{
                 if(!reason.value.trim()){say('请填写重新审核原因。',reason);return;}
                 if(!await ask('撤回当前决定并重新进入待审核？原决定会保留在历史中。'))return;

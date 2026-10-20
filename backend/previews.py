@@ -190,6 +190,7 @@ def install(app,store,root,user,source_dir=None):
     def selected_rows(db,picks):
         rows=[]
         for pick in picks:
+            if hasattr(app.state,'writeback'): app.state.writeback.guard(db,pick.id)
             row=db.execute('SELECT * FROM submissions WHERE id=?',(pick.id,)).fetchone()
             if not row or row['status']!='accepted' or row['revision']!=pick.revision:
                 raise HTTPException(409,'所选投稿已变化或不再是已采纳状态，请刷新后重新选择')
@@ -206,6 +207,8 @@ def install(app,store,root,user,source_dir=None):
         except (HTTPException,OSError):reasons.append('无法核对正式库或工具版本')
         with store.connect() as db:
             for item in result['items']:
+                if hasattr(app.state,'writeback') and db.execute('SELECT 1 FROM write_receipts WHERE submission_id=?',(item['submission_id'],)).fetchone():
+                    reasons.append('投稿已有应用或回滚回执：'+item['submission_id'])
                 row=db.execute('SELECT revision,status,accepted_payload FROM submissions WHERE id=?',(item['submission_id'],)).fetchone()
                 if not row or row['status']!='accepted' or row['revision']!=item['revision'] or sha((row['accepted_payload'] or '').encode())!=item['accepted_hash']:
                     reasons.append('投稿审核版本已变化：'+item['submission_id'])
@@ -231,8 +234,10 @@ def install(app,store,root,user,source_dir=None):
         admin(request)
         if offset<0:raise HTTPException(422,'页码无效')
         with store.connect() as db:
-            total=db.execute("SELECT count(*) FROM submissions WHERE status='accepted'").fetchone()[0]
-            rows=db.execute("SELECT id,revision,accepted_payload,review_score,decision_reason FROM submissions WHERE status='accepted' ORDER BY updated_at DESC,id DESC LIMIT 50 OFFSET ?",(offset,)).fetchall()
+            pending="status='accepted'"
+            if hasattr(app.state,'writeback'): pending+=" AND NOT EXISTS(SELECT 1 FROM write_receipts WHERE submission_id=submissions.id)"
+            total=db.execute('SELECT count(*) FROM submissions WHERE '+pending).fetchone()[0]
+            rows=db.execute('SELECT id,revision,accepted_payload,review_score,decision_reason FROM submissions WHERE '+pending+' ORDER BY updated_at DESC,id DESC LIMIT 50 OFFSET ?',(offset,)).fetchall()
         return {'total':total,'items':[{**dict(r),'accepted_payload':json.loads(r['accepted_payload']) if r['accepted_payload'] else None} for r in rows]}
 
     @app.get('/api/admin/previews')
