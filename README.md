@@ -8,6 +8,8 @@ A car allocator for Gauntlet challenges, supporting five-zone/four-zone pools, f
 
 ## Current Features and Release Status
 
+The account feature branch was merged into main on 2026-10-20, preserving the latest main-branch score data and existing workbooks. This source merge did not redeploy the production service; official score writeback remains local only.
+
 Accounts and submission review went live on 2026-10-20. The user completed production acceptance for registration/email verification, password reset with old-password and session invalidation, garage/star persistence, submission review and role isolation.
 
 - Guests can continue allocating cars without an account; signed-in users can save their garage and star ratings.
