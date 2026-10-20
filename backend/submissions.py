@@ -12,7 +12,7 @@ from urllib.parse import urlsplit
 import warnings
 
 from fastapi import HTTPException, Request
-from fastapi.responses import FileResponse, Response
+from fastapi.responses import FileResponse, HTMLResponse, Response
 from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictInt
 from PIL import Image, UnidentifiedImageError
 from data_tools import SC_TYPES, car_records, star_limits
@@ -185,7 +185,7 @@ def comparison(value, data):
     return {'kind':kind,'old':old,'new':value['time'],'delta':None if old is None else str(new-Decimal(str(old))), 'effect':effect}
 
 
-def install(app,store,root,user,reference_root=None):
+def install(app,store,root,user,reference_root=None,production=False):
     reference_root = reference_root or root
     def actor(request,admin=False,header=True):
         owner=user(request)
@@ -215,7 +215,9 @@ def install(app,store,root,user,reference_root=None):
                    (sid,row['revision'],owner['id'],action,packed(snapshot),int(time.time())))
 
     @app.get('/submissions')
-    def page(): return FileResponse(root/'submissions.html')
+    def page():
+        if production:return HTMLResponse((root/'submissions.html').read_text(encoding='utf-8').replace('本地开发版 · 采纳只保存审核决定，尚未写入正式成绩或发布网站。','采纳只保存审核决定；正式成绩由站长另行维护。'))
+        return FileResponse(root/'submissions.html')
 
     @app.get('/api/submissions/catalog')
     def catalog(request:Request):
@@ -224,7 +226,7 @@ def install(app,store,root,user,reference_root=None):
         return {'tracks':[{'big':t['大地图'],'small':t['小地图']} for t in data['tracks']],
                 'cars':[{'name':c['nickname'],'title':c['title'],'zones':c.get('zones',[]),
                          'limits':{z:star_limits(c,z) for z in c.get('zones',[])}} for c in cars['cars'] if c.get('nickname') and c.get('zones')],
-                'routes':list(SC_TYPES),'basis':basis,'reference_label':'隔离写回测试库（非真实正式库）' if hasattr(app.state,'writeback') else '本地功能分支参考库快照，尚非线上实时库'}
+                'routes':list(SC_TYPES),'basis':basis,'reference_label':'当前网站成绩库（采纳不自动写入）' if production else '隔离写回测试库（非真实正式库）' if hasattr(app.state,'writeback') else '本地功能分支参考库快照，尚非线上实时库'}
 
     @app.post('/api/submissions')
     def create(body:CreateBatch,request:Request):

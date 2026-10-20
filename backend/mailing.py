@@ -25,12 +25,16 @@ class MailConfig:
     mode: str = 'file'
     allowed_recipient: str = ''
     password: str = field(default='', repr=False)
+    production: bool = False
+    daily_limit: int = 20
 
     def __post_init__(self):
         if self.mode not in ('file', 'smtp'):
             raise ValueError('邮件模式仅允许file或smtp')
+        if not 1 <= self.daily_limit <= 10000:raise ValueError('发信限额无效')
+        if self.production and self.mode!='smtp':raise ValueError('生产环境必须使用SMTP')
         if self.mode == 'smtp':
-            if not re.fullmatch(r'[A-Za-z0-9.!#$%&\'*+/=?^_`{|}~-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}', self.allowed_recipient):
+            if not self.production and not re.fullmatch(r'[A-Za-z0-9.!#$%&\'*+/=?^_`{|}~-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}', self.allowed_recipient):
                 raise ValueError('SMTP测试需要明确指定一个允许收信的邮箱')
             if not self.password:
                 raise ValueError('SMTP密码为空，拒绝启动真实邮件模式')
@@ -70,7 +74,7 @@ def migrate_mail(db):
     db.execute('INSERT INTO schema_version VALUES (4)')
 
 
-def build_message(payload):
+def build_message(payload, production=False):
     purpose = payload['purpose']
     if purpose not in ('verify', 'reset'):
         raise ValueError('不支持的邮件类型')
@@ -78,27 +82,24 @@ def build_message(payload):
     msg = EmailMessage()
     msg['From'] = f'擂台选车助手 <{SMTP_SENDER}>'
     msg['To'] = payload['to']
-    msg['Subject'] = '擂台选车助手｜'+title+'（本地测试）'
+    msg['Subject'] = '擂台选车助手｜'+title+('' if production else '（本地测试）')
     msg['Date'] = format_datetime(datetime.now(timezone.utc))
     msg['Message-ID'] = payload['message_id']
-    msg.set_content(
-        f'你请求了擂台选车助手的{title}操作。\n\n'
-        f'请在运行本地服务的同一台电脑上，用浏览器打开以下链接：\n{payload["url"]}\n\n'
-        '打开后还需要在页面点击确认；链接30分钟有效且只能使用一次。'
-        '重新申请同类邮件会使旧链接失效。\n'
-        '本地链接不能在手机或其他电脑上完成验证。此服务仍未上线。\n'
-        '如果不是你发起的请求，请忽略本邮件；不要向任何人提供密码或此链接。\n'
-    )
+    instruction='请用浏览器打开以下链接：' if production else '请在运行本地服务的同一台电脑上，用浏览器打开以下链接：'
+    local_note='' if production else '本地链接不能在手机或其他电脑上完成验证。此服务仍未上线。\n'
+    msg.set_content(f'你请求了擂台选车助手的{title}操作。\n\n{instruction}\n{payload["url"]}\n\n'
+                    '打开后还需要在页面点击确认；链接30分钟有效且只能使用一次。重新申请同类邮件会使旧链接失效。\n'
+                    +local_note+'如果不是你发起的请求，请忽略本邮件；不要向任何人提供密码或此链接。\n')
     return msg
 
 
 def send_smtp(config, payload):
-    if payload['to'].strip().lower() != config.allowed_recipient.strip().lower():
+    if not config.production and payload['to'].strip().lower() != config.allowed_recipient.strip().lower():
         raise MailFailure('recipient_blocked', '真实邮件测试仅允许启动时指定的收件人')
     smtp = None
     sending = False
     try:
-        msg = build_message(payload)
+        msg = build_message(payload,config.production)
         smtp = smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT, timeout=15, context=ssl.create_default_context())
         smtp.set_debuglevel(0)
         smtp.login(SMTP_SENDER, config.password)
@@ -128,7 +129,7 @@ class MailService:
         self.store, self.origin, self.config = store, origin, config
 
     def check_recipient(self, email):
-        if self.config.mode == 'smtp' and email.strip().lower() != self.config.allowed_recipient.strip().lower():
+        if self.config.mode == 'smtp' and not self.config.production and email.strip().lower() != self.config.allowed_recipient.strip().lower():
             from fastapi import HTTPException
             raise HTTPException(403, '当前为受限真实邮件测试，仅允许启动时指定的收件邮箱')
 
@@ -140,8 +141,10 @@ class MailService:
         if self.config.mode == 'smtp':
             if db.execute("SELECT 1 FROM mail_deliveries WHERE user_id=? AND purpose=? AND mode='smtp' AND created_at>?",(uid,purpose,now-60)).fetchone():
                 raise HTTPException(429, '同类邮件请等待60秒后再申请，先检查邮箱及垃圾邮件')
-            if db.execute("SELECT count(*) FROM mail_deliveries WHERE mode='smtp' AND created_at>?",(now-86400,)).fetchone()[0] >= 20:
-                raise HTTPException(429, '本测试库24小时内最多20次发信申请，已达到上限')
+            if db.execute("SELECT count(*) FROM mail_deliveries WHERE mode='smtp' AND created_at>?",(now-86400,)).fetchone()[0] >= self.config.daily_limit:
+                raise HTTPException(429, '24小时发信总额度已用完，请稍后再试')
+        if self.config.production and db.execute('SELECT count(*) FROM mail_deliveries WHERE user_id=? AND created_at>?',(uid,now-86400)).fetchone()[0]>=6:
+            raise HTTPException(429,'此账号24小时内发信次数已达上限')
         raw = secrets.token_urlsafe(32)
         db.execute('DELETE FROM auth_tokens WHERE user_id=? AND purpose=?',(uid,purpose))
         db.execute('INSERT INTO auth_tokens VALUES (?,?,?,?)',(hashlib.sha256(raw.encode()).hexdigest(),uid,purpose,now+1800))

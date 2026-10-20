@@ -1,0 +1,118 @@
+"""Production entry point: HTTPS proxy, fresh persistent database, SMTP credentials."""
+import argparse
+from contextlib import contextmanager, closing
+from datetime import datetime,timezone
+import json
+import os
+from pathlib import Path
+import sqlite3
+import stat
+from backend.app import Store, Credentials, create_app
+from backend.mailing import MailConfig
+from backend.manage import copy_database
+from backend.roles import set_role
+
+
+def settings(path):
+    data=json.loads(Path(path).read_text(encoding='utf-8'))
+    if set(data)!={'origin','data_dir','owner_email','mail_daily_limit'}:raise ValueError('生产配置字段不正确')
+    if data['origin']!='https://racepick.cn':raise ValueError('本发布包只允许https://racepick.cn')
+    data['owner_email']=Credentials.email_valid(data['owner_email'])
+    directory=Path(data['data_dir'])
+    if not directory.is_absolute() or directory.is_symlink():raise ValueError('数据目录必须是独立绝对路径')
+    if directory.resolve().is_relative_to(Path(__file__).resolve().parents[1]):raise ValueError('生产数据不能位于发布目录')
+    if type(data['mail_daily_limit']) is not int or not 1<=data['mail_daily_limit']<=10000:raise ValueError('发信额度不正确')
+    return data
+
+def marker(config):return {'kind':'racepick-production-v1','origin':config['origin'],'owner_email':config['owner_email']}
+
+def require_database(config):
+    path=Path(config['data_dir'])
+    if json.loads((path/'production.json').read_text(encoding='utf-8'))!=marker(config):raise ValueError('生产库标记与配置不一致，禁止导入本地测试库')
+    if not (path/'accounts.sqlite3').is_file():raise ValueError('生产数据库不存在')
+    with closing(sqlite3.connect((path/'accounts.sqlite3').as_uri()+'?mode=ro',uri=True)) as db:
+        if db.execute('SELECT max(version) FROM schema_version').fetchone()[0]!=6:raise ValueError('生产库版本不兼容，先备份并单独评估迁移')
+        if db.execute("SELECT 1 FROM sqlite_master WHERE name='write_batches'").fetchone():raise ValueError('禁止使用写回实验室数据库')
+    return path
+
+def initialize(config):
+    path=Path(config['data_dir']);path.mkdir(parents=True,exist_ok=True)
+    # systemd may already have created an empty state directory. Never replace an existing database.
+    if any(path.iterdir()):raise ValueError('初始化只接受空目录；不会覆盖或导入已有账号库')
+    if os.name=='posix':path.chmod(0o700)
+    Store(path)
+    (path/'production.json').write_text(json.dumps(marker(config),ensure_ascii=False),encoding='utf-8')
+    if os.name=='posix':
+        for p in path.iterdir():p.chmod(0o600)
+
+def make_app(config,password):
+    path=require_database(config)
+    return create_app(path,config['origin'],mail_config=MailConfig('smtp','',password,production=True,daily_limit=config['mail_daily_limit']),production=True)
+
+@contextmanager
+def service_lock(path):
+    if os.name!='posix':raise ValueError('生产服务和恢复工具只支持Linux；本地测试请使用测试入口')
+    import fcntl
+    with (path/'service.lock').open('a+b') as f:
+        try:fcntl.flock(f,fcntl.LOCK_EX|fcntl.LOCK_NB)
+        except OSError:raise ValueError('服务正在运行，请先停止racepick-accounts再执行恢复') from None
+        try:yield
+        finally:fcntl.flock(f,fcntl.LOCK_UN)
+
+def stamp():return datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S%fZ')
+def backup(config):
+    path=require_database(config);directory=path/'backups';directory.mkdir(exist_ok=True)
+    return copy_database(path/'accounts.sqlite3',directory/('accounts-'+stamp()+'.sqlite3'))
+def bootstrap(config):
+    path=require_database(config)
+    with closing(sqlite3.connect(path/'accounts.sqlite3')) as db:
+        row=db.execute('SELECT verified FROM users WHERE email=?',(config['owner_email'],)).fetchone()
+        if not row or not row[0]:raise ValueError('请先使用配置中的主邮箱注册并完成真实邮件验证')
+    backup(config)
+    set_role(path,config['owner_email'],'superadmin')
+
+def restore(config,source):
+    path=require_database(config)
+    with service_lock(path):
+        source=Path(source).resolve()
+        if source==path/'accounts.sqlite3':raise ValueError('备份不能是正在使用的数据库')
+        temp=path/('restore-'+stamp()+'.sqlite3')
+        copy_database(source,temp)
+        try:
+            with closing(sqlite3.connect(temp)) as db, db:
+                if db.execute('SELECT max(version) FROM schema_version').fetchone()[0]!=6:raise ValueError('只恢复兼容v6备份')
+                if db.execute("SELECT 1 FROM sqlite_master WHERE name='write_batches'").fetchone():raise ValueError('拒绝测试写回库')
+                owner=db.execute('SELECT email FROM users JOIN super_admins ON users.id=super_admins.user_id').fetchone()
+                if owner and owner[0]!=config['owner_email']:raise ValueError('备份超级管理员与配置不同')
+                db.execute('DELETE FROM sessions');db.execute('DELETE FROM auth_tokens')
+            backup(config)
+            if any((path/('accounts.sqlite3'+suffix)).exists() for suffix in ('-wal','-shm','-journal')):raise ValueError('存在数据库日志文件，需先核查，不覆盖恢复')
+            os.replace(temp,path/'accounts.sqlite3')
+        finally:temp.unlink(missing_ok=True)
+
+def main():
+    parser=argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('action',choices=['init','serve','bootstrap-owner','backup','restore'])
+    parser.add_argument('--config',type=Path,default=Path('/etc/racepick/production.json'))
+    parser.add_argument('--backup',type=Path)
+    args=parser.parse_args();os.umask(0o077)
+    try:
+        config=settings(args.config)
+        if args.action=='init':initialize(config);print('全新生产数据库已初始化，未创建测试账号')
+        elif args.action=='bootstrap-owner':bootstrap(config);print('已验证主号已设为超级管理员；请重新登录')
+        elif args.action=='backup':print(backup(config))
+        elif args.action=='restore':
+            if not args.backup:raise ValueError('恢复必须指定--backup')
+            restore(config,args.backup);print('已恢复兼容备份并撤销会话及验证链接，请重启并验收')
+        else:
+            import uvicorn
+            path=require_database(config)
+            credential_dir=os.environ.get('CREDENTIALS_DIRECTORY')
+            if not credential_dir:raise ValueError('必须通过systemd凭据启动，不接受命令行或环境变量SMTP明文密码')
+            secret=Path(credential_dir)/'smtp-password'
+            if secret.stat().st_mode & (stat.S_IRWXG|stat.S_IRWXO):raise ValueError('SMTP凭据权限过宽')
+            password=secret.read_text(encoding='utf-8').rstrip('\r\n')
+            with service_lock(path):uvicorn.run(make_app(config,password),host='127.0.0.1',port=8001,proxy_headers=False,access_log=False)
+    except (OSError,ValueError,sqlite3.Error) as error:parser.exit(1,str(error)+'\n')
+
+if __name__=='__main__':main()

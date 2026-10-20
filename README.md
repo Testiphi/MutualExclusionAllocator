@@ -327,3 +327,5 @@ Local owner protection, email-bound administrator invitations and permission rev
 Accepted submissions can produce read-only change reports and previews against an explicitly configured data source. See [preview instructions](PREVIEWS_LOCAL.md); no writeback or publishing endpoint is provided.
 
 Local disposable writeback lab: [WRITEBACK_LAB.md](WRITEBACK_LAB.md). Writes are restricted to fresh test data and a separate account database.
+
+Production accounts release: [PRODUCTION_DEPLOYMENT.md](PRODUCTION_DEPLOYMENT.md). Separate fresh database and HTTPS/SMTP entry point; no public score writeback.

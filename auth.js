@@ -67,7 +67,7 @@
         $('accountResend').textContent=mode==='sent'&&sentAction==='forgot'?'重发重置邮件':'重发验证邮件';
         $('accountAuthHelp').textContent=mode==='verify'?'点击确认完成邮箱验证。打开邮件链接本身不会完成验证。':mode==='reset'?'请输入两次新密码。重置成功后，原有登录会话将失效。':mode==='login'?'登录后可同步车库和星级，提交成绩并查看审核反馈。':mode==='register'?(invitesEnabled?'普通玩家无需邀请码；受邀管理员请填写与本邮箱绑定的邀请码，验证邮箱后生效。密码为12–128字符。':'使用邮箱创建账号，密码为12–128字符。'):mode==='forgot'?'输入注册邮箱，我们会发送一次性密码重置链接。':mode==='resend'?'输入尚未验证的注册邮箱；新链接生成后，旧链接失效。':mode==='invite'?'邀请码必须绑定当前账号邮箱。激活后需重新登录；不能通过邀请码获得超级管理员权限。':'';
         $('accountMailHelp').hidden=['login','verified','resetDone','invite','relogin'].includes(mode);
-        $('accountMailHelp').textContent=mailMode==='smtp'?'真实邮件测试：仅向启动时指定的邮箱发送。请在运行服务的这台电脑打开邮件链接，30分钟内有效。':'本地模拟模式：邮件在 .local-accounts/outbox，打开最新邮件文件中的链接。';
+        $('accountMailHelp').textContent=mailMode==='production'?'验证和重置邮件会发送至你的邮箱，链接30分钟内有效，请同时检查垃圾邮件。':mailMode==='smtp'?'真实邮件测试：仅向启动时指定的邮箱发送。请在运行服务的这台电脑打开邮件链接，30分钟内有效。':'本地模拟模式：邮件在 .local-accounts/outbox，打开最新邮件文件中的链接。';
         if(!authDialog.open)authDialog.showModal();
         if(!busy)focusAuth();
     }

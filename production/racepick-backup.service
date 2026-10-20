@@ -1,0 +1,14 @@
+[Unit]
+Description=RacePick consistent SQLite backup
+
+[Service]
+Type=oneshot
+User=racepick
+Group=racepick
+WorkingDirectory=/opt/racepick/current
+ExecStart=/opt/racepick/current/.venv/bin/python -B -m backend.production backup
+UMask=0077
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/racepick

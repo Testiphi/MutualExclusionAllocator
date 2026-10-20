@@ -314,3 +314,5 @@ Python 仅用于此处的本地预览服务及数据维护，线上静态页面�
 已采纳投稿可生成只读变更清单与独立预览，使用明确指定的正式库，详见 [只读预览说明](PREVIEWS_LOCAL.md)。没有写回或发布入口。
 
 本地隔离写回实验室：[WRITEBACK_LAB.md](WRITEBACK_LAB.md)。仅操作新建测试数据和独立账号库。
+
+账号生产发布：[PRODUCTION_DEPLOYMENT.md](PRODUCTION_DEPLOYMENT.md)。使用全新生产数据库与独立HTTPS/SMTP入口，不开放成绩写回。

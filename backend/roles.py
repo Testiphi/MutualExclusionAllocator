@@ -7,7 +7,7 @@ import time
 from typing import Literal
 
 from fastapi import HTTPException, Request
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, HTMLResponse
 from pydantic import BaseModel, ConfigDict, Field, StrictInt, field_validator
 
 ROOT=Path(__file__).resolve().parents[1]
@@ -135,7 +135,7 @@ class MemberRevoke(BaseModel):
     reason: str=Field(min_length=1,max_length=200)
 
 
-def install(app,store,root,user):
+def install(app,store,root,user,production=False):
     def actor(request,owner_only=True):
         current=user(request)
         if request.headers.get('x-account-id')!=current['id']:raise HTTPException(401,'账号已切换，请刷新后重试')
@@ -144,7 +144,9 @@ def install(app,store,root,user):
         return current
 
     @app.get('/admin-access')
-    def page():return FileResponse(root/'admin_access.html')
+    def page():
+        if production:return HTMLResponse((root/'admin_access.html').read_text(encoding='utf-8').replace('本地开发版 · 管理员邀请码不改变公开网站。','管理员权限与邀请码管理'))
+        return FileResponse(root/'admin_access.html')
 
     @app.get('/api/admin/invitations')
     def invitations(request:Request):

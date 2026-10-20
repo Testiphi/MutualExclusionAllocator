@@ -48,6 +48,10 @@ class EmailInput(BaseModel):
     model_config = ConfigDict(extra='forbid')
     email: str = Field(max_length=254)
 
+    @field_validator('email')
+    @classmethod
+    def email_valid(cls,value):return Credentials.email_valid(value)
+
 
 class TokenInput(BaseModel):
     model_config = ConfigDict(extra='forbid')
@@ -120,11 +124,16 @@ class Store:
             db.execute('INSERT INTO attempts VALUES (?,1,?) ON CONFLICT(bucket) DO UPDATE SET count=count+1', (key, now+600))
 
 
-def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None, mail_config=None, preview_source=None, writeback_lab=None):
+def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None, mail_config=None, preview_source=None, writeback_lab=None, production=False):
     parsed = urlsplit(origin)
-    if parsed.scheme != 'http' or parsed.hostname not in ('127.0.0.1', 'localhost') or parsed.path or parsed.query or parsed.fragment or parsed.username:
+    if production:
+        if parsed.scheme!='https' or not parsed.hostname or parsed.hostname in ('127.0.0.1','localhost') or parsed.port not in (None,443) or parsed.path or parsed.query or parsed.fragment or parsed.username or parsed.password:
+            raise ValueError('生产环境需要精确HTTPS域名来源')
+        if writeback_lab is not None or preview_source is not None:raise ValueError('生产环境禁止启用预览及写回实验室')
+        if not data_dir or mail_config is None or not mail_config.production:raise ValueError('生产环境需独立数据目录和正式SMTP配置')
+    elif parsed.scheme != 'http' or parsed.hostname not in ('127.0.0.1', 'localhost') or parsed.path or parsed.query or parsed.fragment or parsed.username:
         raise ValueError('本地开发仅允许 localhost/127.0.0.1 HTTP origin')
-    cookie_name = COOKIE if parsed.port in (None,8000) else COOKIE+'_'+str(parsed.port)
+    cookie_name = '__Host-racepick_session' if production else (COOKIE if parsed.port in (None,8000) else COOKIE+'_'+str(parsed.port))
     if writeback_lab is not None:
         from backend.writeback_lab import validate_lab
         validate_lab(writeback_lab, data_dir or ROOT/'.local-accounts', preview_source)
@@ -169,11 +178,21 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
         if transaction is None:
             with store.connect() as db: insert(db)
         else: insert(transaction)
-        response.set_cookie(cookie_name, raw, httponly=True, samesite='strict', secure=False, max_age=duration, path='/')
+        response.set_cookie(cookie_name, raw, httponly=True, samesite='strict', secure=production, max_age=duration, path='/')
         return csrf
+
+    def client_ip(request):
+        if production:return request.state.client_ip
+        return request.client.host
 
     @app.middleware('http')
     async def boundary(request, call_next):
+        if production:
+            import ipaddress
+            if request.client.host not in ('127.0.0.1','::1') or request.headers.get('x-forwarded-proto')!='https':
+                return JSONResponse({'detail':'仅接受可信HTTPS反向代理'},status_code=400)
+            try:request.state.client_ip=str(ipaddress.ip_address(request.headers.get('x-real-ip','')))
+            except ValueError:return JSONResponse({'detail':'缺少可信客户端地址'},status_code=400)
         if request.headers.get('host') != parsed.netloc:
             return JSONResponse({'detail':'无效 Host'},status_code=400)
         if request.url.path.startswith('/api/') and request.method not in ('GET','HEAD','OPTIONS'):
@@ -206,13 +225,13 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
     def me(request:Request, response:Response):
         current=session(request,False)
         if not current:
-            return {'user':None,'csrf':new_session(response),'mail_mode':mail_service.config.mode,'admin_invites':True,'readonly_previews':preview_source is not None,'writeback_lab':writeback_lab is not None}
-        return {'user':user(request) if current['user_id'] else None,'csrf':current['csrf'],'mail_mode':mail_service.config.mode,'admin_invites':True,'readonly_previews':preview_source is not None,'writeback_lab':writeback_lab is not None}
+            return {'user':None,'csrf':new_session(response),'mail_mode':'production' if production else mail_service.config.mode,'admin_invites':True,'readonly_previews':preview_source is not None,'writeback_lab':writeback_lab is not None}
+        return {'user':user(request) if current['user_id'] else None,'csrf':current['csrf'],'mail_mode':'production' if production else mail_service.config.mode,'admin_invites':True,'readonly_previews':preview_source is not None,'writeback_lab':writeback_lab is not None}
 
     @app.post('/api/auth/register')
     def register(data:Registration, request:Request):
         mail_service.check_recipient(data.email)
-        store.throttle('register:'+request.client.host,20)
+        store.throttle('register:'+client_ip(request),20)
         prepared = None
         hashed=HASHER.hash(data.password)
         with store.connect() as db:
@@ -232,7 +251,7 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
 
     @app.post('/api/auth/login')
     def login(data:Credentials, request:Request, response:Response):
-        store.throttle('login-ip:'+request.client.host,40)
+        store.throttle('login-ip:'+client_ip(request),40)
         store.throttle('login-email:'+digest(data.email),10)
         with store.connect() as db:
             db.execute('BEGIN IMMEDIATE')
@@ -255,13 +274,13 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
     def logout(request:Request,response:Response):
         with store.connect() as db:
             db.execute('DELETE FROM sessions WHERE token_hash=?',(digest(request.cookies.get(cookie_name,'')),))
-        response.delete_cookie(cookie_name,path='/')
+        response.delete_cookie(cookie_name,path='/',secure=production,httponly=True,samesite='strict')
         return {'message':'已退出'}
 
     @app.post('/api/auth/resend-verification')
     def resend(data:EmailInput,request:Request):
         mail_service.check_recipient(data.email)
-        store.throttle('resend:'+request.client.host,10)
+        store.throttle('resend:'+client_ip(request),10)
         prepared = None
         with store.connect() as db:
             db.execute('BEGIN IMMEDIATE')
@@ -273,7 +292,7 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
     @app.post('/api/auth/forgot-password')
     def forgot(data:EmailInput,request:Request):
         mail_service.check_recipient(data.email)
-        store.throttle('forgot:'+request.client.host,10)
+        store.throttle('forgot:'+client_ip(request),10)
         prepared = None
         with store.connect() as db:
             db.execute('BEGIN IMMEDIATE')
@@ -300,12 +319,12 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
 
     @app.post('/api/auth/verify-email')
     def verify(data:TokenInput,request:Request):
-        store.throttle('verify:'+request.client.host,30)
+        store.throttle('verify:'+client_ip(request),30)
         return consume(data.token,'verify')
 
     @app.post('/api/auth/reset-password')
     def reset(data:ResetInput,request:Request):
-        store.throttle('reset:'+request.client.host,20)
+        store.throttle('reset:'+client_ip(request),20)
         return consume(data.token,'reset',data.password)
 
     @app.get('/api/me/profile')
@@ -336,13 +355,18 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
         return {'revision':revision}
 
     from backend.submissions import install
-    install(app,store,ROOT,user,reference_dir)
+    install(app,store,ROOT,user,reference_dir,production=production)
     from backend.roles import install as install_roles
-    install_roles(app,store,ROOT,user)
+    install_roles(app,store,ROOT,user,production=production)
     from backend.previews import install as install_previews
-    install_previews(app,store,ROOT,user,preview_source)
+    if not production:install_previews(app,store,ROOT,user,preview_source)
 
-    @app.get('/')
+    @app.get('/api/health')
+    def health():
+        with store.connect() as db:db.execute('SELECT 1').fetchone()
+        return {'status':'ok','mode':'production' if production else 'local','schema':6}
+
+    @app.api_route('/',methods=['GET','HEAD'])
     def index():
         html=(ROOT/'index.html').read_text(encoding='utf-8')
         html=html.replace('</head>','<script src="/profile_store.js"></script><script src="/auth.js"></script><link rel="stylesheet" href="/accounts.css">\n</head>')
@@ -352,8 +376,9 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
         from backend.writeback import install as install_writeback
         install_writeback(app,store,ROOT,user,writeback_lab,preview_source)
     assets={'styles.css','config.js','api.js','app_state.js','allocator.js','race_scores.js','cars.json','gauntlet_data.json','auth.js','profile_store.js','accounts.css','submissions.js','submissions.css','admin_access.js','data_previews.js','data_previews.css','writeback_lab.js'}
-    @app.get('/{name}')
+    @app.api_route('/{name}',methods=['GET','HEAD'])
     def asset(name:str):
+        if production and name in ('data_previews.js','data_previews.css','writeback_lab.js'):raise HTTPException(404)
         if name not in assets: raise HTTPException(404)
         if writeback_lab is not None and name in ('gauntlet_data.json','cars.json'):
             return FileResponse(Path(preview_source)/name,headers={'Cache-Control':'no-store'})
