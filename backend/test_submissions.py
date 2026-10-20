@@ -226,7 +226,7 @@ class SubmissionsTests(unittest.TestCase):
         with migrated.connect() as db:
             row=db.execute('SELECT status,revision,review_score FROM submissions WHERE id=?',(sid,)).fetchone()
             self.assertEqual((row['status'],row['revision'],row['review_score']),('pending',2,None))
-            self.assertEqual(db.execute('SELECT max(version) FROM schema_version').fetchone()[0],4)
+            self.assertEqual(db.execute('SELECT max(version) FROM schema_version').fetchone()[0],5)
 
     def test_migration_from_v1_preserves_users_and_profile(self):
         self.client.put('/api/me/profile',json={'revision':0,'cars':[],'stars':{}})
@@ -237,7 +237,7 @@ class SubmissionsTests(unittest.TestCase):
             db.execute('DELETE FROM schema_version WHERE version>=2')
         migrated=Store(self.path)
         with migrated.connect() as db:
-            self.assertEqual(db.execute('SELECT max(version) FROM schema_version').fetchone()[0],4)
+            self.assertEqual(db.execute('SELECT max(version) FROM schema_version').fetchone()[0],5)
             self.assertEqual(db.execute('SELECT count(*) FROM users').fetchone()[0],count)
             self.assertEqual(db.execute('SELECT revision FROM profiles').fetchone()[0],1)
             self.assertEqual(db.execute('PRAGMA foreign_key_check').fetchall(),[])

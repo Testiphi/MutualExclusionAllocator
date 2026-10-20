@@ -2,7 +2,7 @@
 (function(root) {
     let csrf = '', owner = null, store = null, applyProfile = null, known = null, busy = false;
     let box, message, accountLabel, statusLabel, authDialog;
-    let authMode='login', mailToken='', mailMode='file', pendingMailLink=null, sentAction='resend';
+    let authMode='login', mailToken='', mailMode='file', pendingMailLink=null, sentAction='resend', invitesEnabled=false;
     const $ = id => document.getElementById(id);
     const labels = {loading:'正在读取账号资料',saved:'已保存',unsaved:'有未保存修改',saving:'正在保存',conflict:'资料冲突',expired:'登录已失效，草稿已保留',error:'保存失败'};
     async function request(method,path,body) {
@@ -30,7 +30,7 @@
         else message.textContent=text;
     }
     function clearPasswords() {
-        $('accountPassword').value='';$('accountPasswordConfirm').value='';
+        $('accountPassword').value='';$('accountPasswordConfirm').value='';$('accountInviteCode').value='';
     }
     function focusAuth() {
         if(!authDialog.open)return;
@@ -41,7 +41,7 @@
         authMode=mode;mailToken=options.token||'';clearPasswords();
         if(mode==='sent')sentAction=options.sentAction||'resend';
         $('accountAuthMessage').textContent=options.message||'';
-        const titles={login:'登录账号',register:'创建账号',forgot:'找回密码',resend:'重发验证邮件',verify:'验证邮箱',reset:'设置新密码',sent:'请检查邮箱',verified:'邮箱验证完成',resetDone:'密码已重置'};
+        const titles={login:'登录账号',register:'创建账号',forgot:'找回密码',resend:'重发验证邮件',verify:'验证邮箱',reset:'设置新密码',sent:'请检查邮箱',verified:'邮箱验证完成',resetDone:'密码已重置',invite:'兑换管理员邀请码',relogin:'权限已更新'};
         $('accountAuthTitle').textContent=mode==='sent'?(sentAction==='forgot'?'请检查重置邮件':'请检查验证邮件'):titles[mode];
         const email=['login','register','forgot','resend'].includes(mode);
         const password=['login','register','reset'].includes(mode);
@@ -49,21 +49,24 @@
         for(const [id,visible] of [['accountEmail',email],['accountPassword',password],['accountPasswordConfirm',confirmation]]) {
             const input=$(id);input.parentElement.hidden=!visible;input.disabled=!visible;input.required=visible;
         }
+        $('accountInviteCode').parentElement.hidden=!(invitesEnabled&&['register','invite'].includes(mode));
+        $('accountInviteCode').disabled=!(invitesEnabled&&['register','invite'].includes(mode));
+        $('accountInviteCode').required=invitesEnabled&&mode==='invite';
         $('accountPasswordLabel').textContent=mode==='reset'?'新密码':'密码';
         $('accountPassword').autocomplete=mode==='login'?'current-password':'new-password';
-        const buttons={login:'登录',register:'注册并发送验证邮件',forgot:'发送重置邮件',resend:'重新发送验证邮件',verify:'确认验证邮箱',reset:'确认重置密码'};
+        const buttons={login:'登录',register:'注册并发送验证邮件',forgot:'发送重置邮件',resend:'重新发送验证邮件',verify:'确认验证邮箱',reset:'确认重置密码',invite:'激活管理员权限'};
         $('accountAuthForm').hidden=!buttons[mode];
         $('accountAuthSubmit').textContent=buttons[mode]||'确认';
         $('accountAuthContinue').hidden=!!buttons[mode];
-        $('accountAuthContinue').textContent=mode==='resetDone'?'重新登录':'返回登录';
+        $('accountAuthContinue').textContent=['resetDone','relogin'].includes(mode)?'重新登录':'返回登录';
         $('accountAuthLinks').hidden=!['login','register','forgot','resend','sent'].includes(mode);
         $('accountSwitchRegister').hidden=mode!=='login';
         $('accountSwitchLogin').hidden=['login','sent'].includes(mode);
         $('accountForgot').hidden=mode!=='login';
         $('accountResend').hidden=!['login','sent'].includes(mode);
         $('accountResend').textContent=mode==='sent'&&sentAction==='forgot'?'重发重置邮件':'重发验证邮件';
-        $('accountAuthHelp').textContent=mode==='verify'?'点击确认完成邮箱验证。打开邮件链接本身不会完成验证。':mode==='reset'?'请输入两次新密码。重置成功后，原有登录会话将失效。':mode==='login'?'登录后可同步车库和星级，提交成绩并查看审核反馈。':mode==='register'?'使用邮箱创建账号。密码为12–128字符，请勿使用邮箱本身的密码。':mode==='forgot'?'输入注册邮箱，我们会发送一次性密码重置链接。':mode==='resend'?'输入尚未验证的注册邮箱；新链接生成后，旧链接失效。':'';
-        $('accountMailHelp').hidden=mode==='login'||mode==='verified'||mode==='resetDone';
+        $('accountAuthHelp').textContent=mode==='verify'?'点击确认完成邮箱验证。打开邮件链接本身不会完成验证。':mode==='reset'?'请输入两次新密码。重置成功后，原有登录会话将失效。':mode==='login'?'登录后可同步车库和星级，提交成绩并查看审核反馈。':mode==='register'?(invitesEnabled?'普通玩家无需邀请码；受邀管理员请填写与本邮箱绑定的邀请码，验证邮箱后生效。密码为12–128字符。':'使用邮箱创建账号，密码为12–128字符。'):mode==='forgot'?'输入注册邮箱，我们会发送一次性密码重置链接。':mode==='resend'?'输入尚未验证的注册邮箱；新链接生成后，旧链接失效。':mode==='invite'?'邀请码必须绑定当前账号邮箱。激活后需重新登录；不能通过邀请码获得超级管理员权限。':'';
+        $('accountMailHelp').hidden=['login','verified','resetDone','invite','relogin'].includes(mode);
         $('accountMailHelp').textContent=mailMode==='smtp'?'真实邮件测试：仅向启动时指定的邮箱发送。请在运行服务的这台电脑打开邮件链接，30分钟内有效。':'本地模拟模式：邮件在 .local-accounts/outbox，打开最新邮件文件中的链接。';
         if(!authDialog.open)authDialog.showModal();
         if(!busy)focusAuth();
@@ -133,6 +136,7 @@
             <label>邮箱<input id="accountEmail" type="email" autocomplete="username" maxlength="254" required></label>
             <label><span id="accountPasswordLabel">密码</span><input id="accountPassword" type="password" autocomplete="current-password" minlength="12" maxlength="128" required></label>
             <label>确认密码<input id="accountPasswordConfirm" type="password" autocomplete="new-password" minlength="12" maxlength="128"></label>
+            <label>管理员邀请码（玩家注册可留空）<input id="accountInviteCode" type="text" autocomplete="off" spellcheck="false" maxlength="128"></label>
             <button class="account-primary" type="submit" id="accountAuthSubmit">登录</button>
           </fieldset></form>
           <p id="accountAuthProgress" role="status" hidden>正在处理，请稍候…</p>
@@ -144,20 +148,25 @@
         authDialog.addEventListener('cancel',e=>{if(busy)e.preventDefault();});
         authDialog.addEventListener('close',()=>{clearPasswords();mailToken='';});
         message=$('accountMessage'); accountLabel=$('accountLabel'); statusLabel=$('accountStatus');
-        const session = await request('GET','/auth/me'); csrf=session.csrf; owner=session.user;mailMode=session.mail_mode||'file';
+        const session = await request('GET','/auth/me'); csrf=session.csrf; owner=session.user;mailMode=session.mail_mode||'file';invitesEnabled=session.admin_invites===true;
         if (owner) {
             store=ProfileStore.create({request,storage:sessionStorage,userId:owner.id,notify:status});
             await store.init();
             if (current()) validate(current());
         }
-        accountLabel.textContent=owner ? owner.email : '游客 · 资料保存在本机';
+        accountLabel.textContent=owner ? owner.email+(owner.role==='superadmin'?' · 超级管理员':owner.role==='admin'?' · 管理员':'') : '游客 · 资料保存在本机';
         $('accountGuestActions').hidden=!!owner; $('accountActions').hidden=!owner;
         if(owner) {
             const link=document.createElement('a'); link.href='/submissions'; link.className='account-link'; link.textContent='提交成绩 / 我的投稿';
             $('accountActions').append(link);
-            if(owner.role==='admin') {
+            if(['admin','superadmin'].includes(owner.role)) {
                 const review=document.createElement('a'); review.href='/submissions#review'; review.className='account-link'; review.textContent='审核工作台';
                 $('accountActions').append(review);
+            }
+            if(owner.role==='superadmin') {
+                const access=document.createElement('a');access.href='/admin-access';access.className='account-link';access.textContent='管理员与邀请码';$('accountActions').append(access);
+            } else if(owner.role==='player'&&invitesEnabled) {
+                const redeem=document.createElement('button');redeem.type='button';redeem.textContent='兑换管理员邀请码';redeem.onclick=()=>showAuth('invite');$('accountActions').append(redeem);
             }
         }
         $('accountOpenLogin').onclick=()=>showAuth('login');
@@ -166,12 +175,12 @@
         $('accountSwitchLogin').onclick=()=>showAuth('login');
         $('accountForgot').onclick=()=>showAuth('forgot');
         $('accountResend').onclick=()=>showAuth(authMode==='sent'&&sentAction==='forgot'?'forgot':'resend');
-        $('accountAuthContinue').onclick=()=>{if(authMode==='resetDone')location.reload();else showAuth('login');};
+        $('accountAuthContinue').onclick=()=>{if(['resetDone','relogin'].includes(authMode))location.reload();else showAuth('login');};
         $('accountAuthForm').onsubmit=e=>{
             e.preventDefault();
             if(busy||!$('accountAuthForm').reportValidity())return;
             const mode=authMode,token=mailToken;
-            const email=$('accountEmail').value,password=$('accountPassword').value;
+            const email=$('accountEmail').value,password=$('accountPassword').value,invite_code=$('accountInviteCode').value.trim();
             if(['register','reset'].includes(mode)&&password!==$('accountPasswordConfirm').value){
                 report('两次输入的密码不一致，请重新确认。');$('accountPasswordConfirm').focus();return;
             }
@@ -180,10 +189,14 @@
                     if(store)await store.flush();
                     await request('POST','/auth/login',{email,password});clearPasswords();location.reload();
                 }else if(mode==='register'){
-                    const result=await request('POST','/auth/register',{email,password});showAuth('sent',{message:result.message,sentAction:mode});
+                    const result=await request('POST','/auth/register',{email,password,...(invitesEnabled&&invite_code?{invite_code}:{})});showAuth('sent',{message:result.message,sentAction:mode});
                 }else if(mode==='forgot'||mode==='resend'){
                     const result=await request('POST',mode==='forgot'?'/auth/forgot-password':'/auth/resend-verification',{email});
                     showAuth('sent',{message:result.message,sentAction:mode});
+                }else if(mode==='invite'){
+                    if(store)await store.flush();
+                    const result=await request('POST','/auth/redeem-invitation',{invite_code});
+                    if(store)await store.freeze();showAuth('relogin',{message:result.message});
                 }else if(mode==='verify'){
                     const result=await request('POST','/auth/verify-email',{token});showAuth('verified',{message:result.message});
                 }else if(mode==='reset'){

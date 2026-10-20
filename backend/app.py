@@ -40,6 +40,10 @@ class Credentials(BaseModel):
         return value
 
 
+class Registration(Credentials):
+    invite_code: str = Field(default='',max_length=128)
+
+
 class EmailInput(BaseModel):
     model_config = ConfigDict(extra='forbid')
     email: str = Field(max_length=254)
@@ -89,6 +93,8 @@ class Store:
             migrate(db)
             from backend.mailing import migrate_mail
             migrate_mail(db)
+            from backend.roles import migrate_roles
+            migrate_roles(db)
 
     @contextmanager
     def connect(self):
@@ -142,7 +148,9 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
             result = db.execute('SELECT id,email,verified,role FROM users WHERE id=?', (row['user_id'],)).fetchone()
         if not result:
             raise HTTPException(401, '账号不存在')
-        return dict(result)
+        from backend.roles import effective_role
+        with store.connect() as db:
+            return {**dict(result),'role':effective_role(db,result['id'],result['role'])}
 
     def new_session(response, user_id=None, transaction=None):
         raw, csrf = secrets.token_urlsafe(32), secrets.token_urlsafe(32)
@@ -190,11 +198,11 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
     def me(request:Request, response:Response):
         current=session(request,False)
         if not current:
-            return {'user':None,'csrf':new_session(response),'mail_mode':mail_service.config.mode}
-        return {'user':user(request) if current['user_id'] else None,'csrf':current['csrf'],'mail_mode':mail_service.config.mode}
+            return {'user':None,'csrf':new_session(response),'mail_mode':mail_service.config.mode,'admin_invites':True}
+        return {'user':user(request) if current['user_id'] else None,'csrf':current['csrf'],'mail_mode':mail_service.config.mode,'admin_invites':True}
 
     @app.post('/api/auth/register')
-    def register(data:Credentials, request:Request):
+    def register(data:Registration, request:Request):
         mail_service.check_recipient(data.email)
         store.throttle('register:'+request.client.host,20)
         prepared = None
@@ -202,9 +210,14 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
         with store.connect() as db:
             db.execute('BEGIN IMMEDIATE')
             exists=db.execute('SELECT id FROM users WHERE email=?',(data.email,)).fetchone()
+            if exists and data.invite_code.strip():
+                raise HTTPException(409,'该邮箱已有账号，请先验证邮箱并登录，再兑换管理员邀请码；忘记密码可先重置')
             if not exists:
                 uid=secrets.token_hex(16)
                 db.execute('INSERT INTO users(id,email,password_hash,created_at) VALUES (?,?,?,?)',(uid,data.email,hashed,int(time.time())))
+                if data.invite_code.strip():
+                    from backend.roles import reserve
+                    reserve(db,data.invite_code,data.email,uid)
                 prepared = mail_service.prepare(db,uid,data.email,'verify')
         mail_service.deliver(prepared)
         return {'message':mail_service.notice('register')}
@@ -226,7 +239,9 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
                 db.execute('UPDATE users SET password_hash=? WHERE id=?',(HASHER.hash(data.password),row['id']))
             db.execute('DELETE FROM sessions WHERE token_hash=?',(digest(request.cookies.get(cookie_name,'')),))
             csrf=new_session(response,row['id'],db)
-        return {'csrf':csrf,'user':{'id':row['id'],'email':row['email'],'role':row['role'],'verified':True}}
+            from backend.roles import effective_role
+            login_role=effective_role(db,row['id'],row['role'])
+        return {'csrf':csrf,'user':{'id':row['id'],'email':row['email'],'role':login_role,'verified':True}}
 
     @app.post('/api/auth/logout')
     def logout(request:Request,response:Response):
@@ -271,7 +286,9 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
                 db.execute('UPDATE users SET password_hash=?,verified=1 WHERE id=?',(HASHER.hash(password),row['user_id']))
                 db.execute('DELETE FROM sessions WHERE user_id=?',(row['user_id'],))
                 db.execute('DELETE FROM auth_tokens WHERE user_id=?',(row['user_id'],))
-        return {'message':'邮箱已验证，请登录' if purpose=='verify' else '密码已重置，原会话已退出，请重新登录'}
+            from backend.roles import complete_pending_invitation
+            invite_message=complete_pending_invitation(db,row['user_id'])
+        return {'message':('邮箱已验证，请登录' if purpose=='verify' else '密码已重置，原会话已退出，请重新登录')+invite_message}
 
     @app.post('/api/auth/verify-email')
     def verify(data:TokenInput,request:Request):
@@ -312,6 +329,8 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
 
     from backend.submissions import install
     install(app,store,ROOT,user,reference_dir)
+    from backend.roles import install as install_roles
+    install_roles(app,store,ROOT,user)
 
     @app.get('/')
     def index():
@@ -319,7 +338,7 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
         html=html.replace('</head>','<script src="/profile_store.js"></script><script src="/auth.js"></script><link rel="stylesheet" href="/accounts.css">\n</head>')
         return HTMLResponse(html)
 
-    assets={'styles.css','config.js','api.js','app_state.js','allocator.js','race_scores.js','cars.json','gauntlet_data.json','auth.js','profile_store.js','accounts.css','submissions.js','submissions.css'}
+    assets={'styles.css','config.js','api.js','app_state.js','allocator.js','race_scores.js','cars.json','gauntlet_data.json','auth.js','profile_store.js','accounts.css','submissions.js','submissions.css','admin_access.js'}
     @app.get('/{name}')
     def asset(name:str):
         if name not in assets: raise HTTPException(404)

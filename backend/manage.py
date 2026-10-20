@@ -16,7 +16,7 @@ def copy_database(source, target):
     dst=sqlite3.connect(target)
     try:
         if src.execute('PRAGMA integrity_check').fetchone()[0]!='ok': raise ValueError('源数据库完整性检查失败')
-        if src.execute('SELECT max(version) FROM schema_version').fetchone()[0] not in (1,2,3,4): raise ValueError('数据库版本不支持')
+        if src.execute('SELECT max(version) FROM schema_version').fetchone()[0] not in (1,2,3,4,5): raise ValueError('数据库版本不支持')
         src.backup(dst)
         if dst.execute('PRAGMA integrity_check').fetchone()[0]!='ok': raise ValueError('目标数据库完整性检查失败')
         if dst.execute('PRAGMA foreign_key_check').fetchall(): raise ValueError('数据库外键检查失败')

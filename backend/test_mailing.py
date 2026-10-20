@@ -127,10 +127,10 @@ class MailTests(unittest.TestCase):
         self.register()
         with self.app.state.store.connect() as db:
             before=[tuple(r) for r in db.execute('SELECT * FROM users')]
-            db.execute('DROP TABLE mail_deliveries');db.execute('DELETE FROM schema_version WHERE version=4')
+            db.execute('DROP TABLE mail_deliveries');db.execute('DELETE FROM schema_version WHERE version>=4')
         restored=Store(self.path)
         with restored.connect() as db:
             self.assertEqual(before,[tuple(r) for r in db.execute('SELECT * FROM users')])
-            self.assertEqual(db.execute('SELECT max(version) FROM schema_version').fetchone()[0],4)
+            self.assertEqual(db.execute('SELECT max(version) FROM schema_version').fetchone()[0],5)
 
 if __name__=='__main__':unittest.main()

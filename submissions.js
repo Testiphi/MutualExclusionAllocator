@@ -138,8 +138,8 @@
                 await request('DELETE',`/submissions/${item.id}/images/${img.id}`,{revision:item.revision});await refreshItem(item.id);say('已移除当前证据，历史记录保留。');
             }));images.append(card);}root.append(images);
         if(item.owner_id===user.id&&['draft','needs_info'].includes(item.status))renderEdit(root,item);
-        if(user.role==='admin'&&item.status==='pending')renderReview(root,item);
-        if(user.role==='admin'&&['accepted','ignored'].includes(item.status)){
+        if(['admin','superadmin'].includes(user.role)&&item.status==='pending')renderReview(root,item);
+        if(['admin','superadmin'].includes(user.role)&&['accepted','ignored'].includes(item.status)){
             const label=el('label','重新审核原因'),reason=el('textarea');reason.maxLength=2000;label.append(reason);root.append(label,button('重新打开审核',async()=>{
                 if(!reason.value.trim()){say('请填写重新审核原因。',reason);return;}
                 if(!await ask('撤回当前决定并重新进入待审核？原决定会保留在历史中。'))return;
@@ -195,9 +195,9 @@
     async function init(){
         const session=await request('GET','/auth/me');user=session.user;csrf=session.csrf;
         if(!user){const text='请先返回选车助手注册或登录，再进入投稿页。';$('identity').textContent=text;say(text);return;}
-        $('identity').textContent=`${user.email} · ${user.role==='admin'?'管理员':'玩家'}`;
+        $('identity').textContent=`${user.email} · ${user.role==='superadmin'?'超级管理员':user.role==='admin'?'管理员':'玩家'}`;
         catalog=await request('GET','/submissions/catalog');$('reference').textContent=catalog.reference_label+' · '+catalog.basis.data.slice(0,12);
-        $('navigation').hidden=false;$('reviewTab').hidden=user.role!=='admin';
+        $('navigation').hidden=false;$('reviewTab').hidden=!['admin','superadmin'].includes(user.role);
         $('newTab').onclick=()=>run(()=>switchView('new'));$('mineTab').onclick=()=>run(()=>switchView('mine'));$('reviewTab').onclick=()=>run(()=>switchView('review'));
         $('addRow').onclick=newRow;
         $('saveBatch').onclick=()=>run(async()=>{
@@ -210,7 +210,7 @@
         $('statusFilter').onchange=()=>run(async()=>{offset=0;await loadList();});
         $('previous').onclick=()=>run(async()=>{offset=Math.max(0,offset-50);await loadList();});$('next').onclick=()=>run(async()=>{offset+=50;await loadList();});
         addEventListener('beforeunload',e=>{if(unsaved){e.preventDefault();e.returnValue='';}});
-        await switchView(location.hash==='#review'&&user.role==='admin'?'review':'mine');
+        await switchView(location.hash==='#review'&&['admin','superadmin'].includes(user.role)?'review':'mine');
     }
     void init().catch(e=>say(e.message));
 })();

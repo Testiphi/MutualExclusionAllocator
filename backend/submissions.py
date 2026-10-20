@@ -25,9 +25,9 @@ def packed(value):
 def migrate(db):
     db.execute('BEGIN IMMEDIATE')
     version = db.execute('SELECT max(version) FROM schema_version').fetchone()[0]
-    if version not in (1, 2, 3, 4):
+    if version not in (1, 2, 3, 4, 5):
         raise RuntimeError('不支持的数据库版本')
-    if version in (3, 4):
+    if version in (3, 4, 5):
         return
     if version == 2:
         db.execute('ALTER TABLE submissions ADD COLUMN review_score INTEGER CHECK(review_score BETWEEN 0 AND 5)')
@@ -192,12 +192,12 @@ def install(app,store,root,user,reference_root=None):
         if header and request.headers.get('x-account-id') != owner['id']:
             raise HTTPException(401,'账号已切换，请刷新后重试')
         if not owner['verified']: raise HTTPException(403,'请先验证邮箱')
-        if admin and owner['role']!='admin': raise HTTPException(403,'需要管理员权限')
+        if admin and owner['role'] not in ('admin','superadmin'): raise HTTPException(403,'需要管理员权限')
         return owner
 
     def get_row(db,sid,owner):
         row=db.execute('SELECT * FROM submissions WHERE id=?',(sid,)).fetchone()
-        if not row or (row['owner_id']!=owner['id'] and (owner['role']!='admin' or row['status']=='draft')):
+        if not row or (row['owner_id']!=owner['id'] and (owner['role'] not in ('admin','superadmin') or row['status']=='draft')):
             raise HTTPException(404,'投稿不存在')
         return row
 
@@ -279,7 +279,7 @@ def install(app,store,root,user,reference_root=None):
             result['images']=[{'id':r['id'],'digest':r['digest'],'url':f'/api/submissions/{sid}/images/{r["id"]}'} for r in db.execute('SELECT id,digest FROM submission_images WHERE submission_id=? AND active=1 ORDER BY created_at',(sid,))]
             result['events']=[{**dict(r),'snapshot':json.loads(r['snapshot'])} for r in db.execute('SELECT revision,actor_id,action,snapshot,created_at FROM submission_events WHERE submission_id=? ORDER BY revision',(sid,))]
             result['same_target']=[]
-            if owner['role']=='admin' and row['target_key']:
+            if owner['role'] in ('admin','superadmin') and row['target_key']:
                 result['same_target']=[dict(r) for r in db.execute("SELECT id,status FROM submissions WHERE target_key=? AND id!=? AND status!='draft' ORDER BY updated_at DESC LIMIT 20",(row['target_key'],sid))]
         try:
             data,cars,basis=reference(reference_root)

@@ -19,7 +19,7 @@ python -B -X utf8 -m backend.app
 python -m backend.manage backup --file .local-accounts/before-submissions.sqlite3
 ```
 
-管理员由本地维护命令明确授予，替换下面的邮箱为你已注册并验证的本地账号：
+以下为最初本地维护方式；2026-10-20已新增由超级管理员签发的邮箱绑定邀请码，日常新增管理员使用INVITATIONS_LOCAL.md中的流程。可信本地维护命令仍保留用于维护，不能暴露给普通用户。
 
 ```powershell
 python -m backend.roles --email "你的注册邮箱" --role admin
@@ -111,3 +111,5 @@ node test_boot_smoke.js
 用户已确认本地管理员入口及测试成绩提交正常。此前受用户明确授权，已通过本地维护命令将其已验证账号设为管理员；真实邮箱不记录到仓库。完整补充重提、评分及调整归档的开发者浏览器验收见上文，不能混同为用户已完成全部验收。
 
 这次收尾仅更新文档和推送既有实现，沿用上述测试结果，未重复执行应用测试。Excel导入、正式成绩应用/发布、激励解锁和排行榜仍未实现；未合并main、未操作ECS/DNS/Nginx。主工作簿存在用户未提交修改，保持原样，不纳入功能分支提交。
+
+2026-10-20：超级管理员继承投稿审核能力，普通管理员不具备邀请管理权限。新角色和主号保护说明见INVITATIONS_LOCAL.md。

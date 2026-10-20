@@ -321,3 +321,5 @@ Account support is local-only on this feature branch and has not been deployed. 
 Local web submissions, moderation, 0–5 ratings and tier classification are documented in [submission workflow](SUBMISSIONS_LOCAL.md). No official score writes, Excel import or reward-based access is enabled.
 
 Local email verification and password reset can explicitly use Aliyun SMTP. File delivery remains the default; see [isolated email test instructions](MAIL_LOCAL.md).
+
+Local owner protection, email-bound administrator invitations and permission revocation are described in [administrator invitation instructions](INVITATIONS_LOCAL.md).
