@@ -141,7 +141,7 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
         reference_dir=preview_source
         if mail_config is not None and mail_config.mode!='file': raise ValueError('测试写回仅使用本地文件邮件')
     store = Store(data_dir or ROOT / '.local-accounts')
-    app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None)
+    app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None, redirect_slashes=not production)
     app.state.store = store
     from backend.mailing import MailConfig, MailService
     mail_service = MailService(store,origin,mail_config or MailConfig())

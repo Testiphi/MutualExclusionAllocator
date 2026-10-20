@@ -51,6 +51,7 @@ class ProductionTests(unittest.TestCase):
  def test_proxy_host_csrf_and_recipient_validation(self):
   self.assertEqual(self.client.get('/api/health').status_code,200)
   self.assertEqual(self.client.head('/').status_code,200)
+  self.assertEqual(self.client.get('/api/health/',follow_redirects=False).status_code,404)
   for headers in ({'Host':'evil.example'},{'X-Forwarded-Proto':'http'},{'X-Real-IP':'bad'}):self.assertEqual(self.client.get('/api/health',headers=headers).status_code,400)
   self.assertEqual(self.client.post('/api/auth/register',json={'email':'a@example.com','password':'Production-test-12345'},headers={'Origin':'https://evil.example'}).status_code,403)
   self.assertEqual(self.post('forgot-password',{'email':'x\r\nBcc:a@example.com'}).status_code,422)
