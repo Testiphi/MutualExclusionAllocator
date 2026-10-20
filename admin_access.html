@@ -1,0 +1,13 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>管理员与邀请码 · 擂台选车助手</title><link rel="stylesheet" href="/submissions.css"><script defer src="/admin_access.js"></script></head>
+<body><header><a href="/">← 返回选车助手</a><h1>管理员与邀请码</h1><p id="accessIdentity">正在检查身份…</p></header>
+<main id="accessMain" hidden>
+<section><h2>邀请管理员</h2><p>邀请码绑定受邀邮箱，仅可使用一次。新账号完成邮箱验证后生效；已有玩家账号请登录后兑换。邀请码不能授予超级管理员权限。</p>
+<form id="inviteForm"><div class="fields"><label>受邀邮箱<input id="inviteEmail" type="email" maxlength="254" autocomplete="off" required></label><label>有效期<select id="inviteHours"><option value="24">24小时</option><option value="72" selected>3天</option><option value="168">7天</option></select></label></div><div class="actions"><button type="submit">生成邀请码</button><button id="accessRefresh" type="button">刷新列表</button></div></form></section>
+<section><h2>最近的邀请</h2><p class="muted">完整邀请码仅生成时显示一次。丢失后需撤销并重新生成；不自动发送邀请邮件。</p><div id="inviteList"></div></section>
+<section><h2>管理员</h2><p>主号超级管理员受到保护。收回普通管理员权限后，其账号、车库与投稿仍保留。</p><div id="memberList"></div></section>
+</main>
+<dialog id="accessNotice" role="alertdialog" aria-labelledby="accessNoticeTitle"><h2 id="accessNoticeTitle">操作提示</h2><p id="accessNoticeText"></p><button id="accessNoticeClose" type="button">知道了</button></dialog>
+<dialog id="inviteCodeDialog" aria-labelledby="inviteCodeTitle"><h2 id="inviteCodeTitle">邀请码已生成</h2><p id="inviteCodeInfo"></p><label>邀请码（仅本次显示）<textarea id="inviteCode" readonly autocomplete="off" spellcheck="false"></textarea></label><p>仅将此码交给绑定邮箱的本人。新管理员注册并验证邮箱后获得权限。</p><button id="inviteCopy" type="button">复制邀请码</button><span id="inviteCopyStatus" role="status"></span><button id="inviteCodeClose" type="button">已保存，关闭</button></dialog>
+<dialog id="accessConfirm" aria-labelledby="accessConfirmTitle"><h2 id="accessConfirmTitle">确认操作</h2><p id="accessConfirmText"></p><label id="revokeReasonLabel">收回权限原因<textarea id="revokeReason" maxlength="200"></textarea></label><p id="accessConfirmError" role="alert"></p><div class="actions"><button id="accessCancel" type="button">取消</button><button id="accessConfirmYes" type="button">确认</button></div></dialog>
+<footer>本地开发版 · 管理员邀请码不改变公开网站。</footer></body></html>

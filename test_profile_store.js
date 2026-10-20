@@ -1,0 +1,22 @@
+const test=require('node:test');
+const assert=require('node:assert/strict');
+const {create}=require('./profile_store.js');
+function memory(){const map=new Map();return {getItem:k=>map.get(k)??null,setItem:(k,v)=>map.set(k,v),removeItem:k=>map.delete(k),map};}
+const empty={cars:[],stars:{}};
+const clone=x=>JSON.parse(JSON.stringify(x));
+function server(){let revision=0,profile=null,fail=false;return {
+ request:async(method,path,body)=>{if(method==='GET')return {revision,profile:clone(profile)}; if(fail)throw new Error('offline'); if(body.revision!==revision){const e=new Error('conflict');e.status=409;throw e;} revision++;profile={cars:body.cars,stars:body.stars};return {revision};},
+ get:()=>({revision,profile}), advance:p=>{revision++;profile=p;},fail:v=>fail=v
+};}
+test('null and intentionally empty profile remain distinct',async()=>{const s=server(),p=create({request:s.request,storage:memory(),userId:'a'});await p.init();assert.equal(p.snapshot(),null);p.update(empty);await p.flush();assert.deepEqual(s.get().profile,empty);});
+test('rapid changes serialize writes and retain final snapshot',async()=>{
+ const s=server();let release,active=0,max=0,first=true;
+ const request=async(m,p,b)=>{if(m==='GET')return s.request(m,p,b);active++;max=Math.max(max,active);if(first){first=false;await new Promise(r=>release=r);}const v=await s.request(m,p,b);active--;return v;};
+ const p=create({request,storage:memory(),userId:'a'});await p.init();p.update(empty);p.update({cars:['a'],stars:{a:3}});release();await p.flush();assert.equal(max,1);assert.equal(s.get().revision,2);assert.deepEqual(s.get().profile,{cars:['a'],stars:{a:3}});
+});
+test('offline draft survives recreation and requires retry',async()=>{const s=server(),storage=memory(),p=create({request:s.request,storage,userId:'a'});await p.init();s.fail(true);p.update(empty);await assert.rejects(p.flush());assert.equal(p.state().dirty,true);s.fail(false);const next=create({request:s.request,storage,userId:'a'});await next.init();assert.equal(next.state().status,'unsaved');await next.flush();assert.equal(s.get().revision,1);assert.equal(storage.map.size,0);});
+test('different users never share drafts',async()=>{const s=server(),storage=memory(),p=create({request:s.request,storage,userId:'a'});await p.init();s.fail(true);p.update({cars:['a'],stars:{}});await assert.rejects(p.flush());const other=create({request:s.request,storage,userId:'b'});await other.init();assert.equal(other.snapshot(),null);});
+test('conflict requires explicit reload or overwrite',async()=>{const s=server(),p=create({request:s.request,storage:memory(),userId:'a'});await p.init();s.advance({cars:['other'],stars:{}});p.update(empty);await assert.rejects(p.flush());assert.equal(p.state().status,'conflict');assert.deepEqual(s.get().profile.cars,['other']);await p.overwrite();assert.deepEqual(s.get().profile,empty);s.advance({cars:['new'],stars:{}});await p.useRemote();assert.deepEqual(p.snapshot().cars,['new']);});
+test('recovered stale draft does not adopt current revision silently',async()=>{const s=server(),storage=memory();storage.setItem('racepick.account-draft.v1.a',JSON.stringify({revision:0,profile:empty}));s.advance({cars:['new'],stars:{}});const p=create({request:s.request,storage,userId:'a'});await p.init();assert.equal(p.state().status,'conflict');await assert.rejects(p.flush());assert.equal(s.get().revision,1);});
+test('quota failure leaves visible unsaved memory and no false success',async()=>{const s=server(),storage=memory();storage.setItem=()=>{throw new Error('quota');};const p=create({request:s.request,storage,userId:'a'});await p.init();p.update(empty);assert.equal(p.state().dirty,true);assert.equal(p.state().status,'error');assert.equal(s.get().revision,0);await assert.rejects(p.flush());});
+test('freeze waits for an in-flight write and blocks later changes',async()=>{const s=server(),p=create({request:s.request,storage:memory(),userId:'a'});await p.init();p.update(empty);await p.freeze();assert.equal(s.get().revision,1);assert.throws(()=>p.update(empty));p.unfreeze();p.update(empty);await p.flush();assert.equal(s.get().revision,2);});

@@ -1,0 +1,14 @@
+.table-wrap { overflow-x: auto; margin: 14px 0; }
+.preview-table { width: 100%; border-collapse: collapse; font-size: .9rem; min-width: 640px; }
+.preview-table th,.preview-table td { border-bottom: 1px solid #30363d; padding: 12px 10px; text-align: left; vertical-align: top; overflow-wrap: anywhere; }
+.preview-table th { color: #a6b2c0; background: #161b22; }
+.preview-table .slower { color: #ffcf87; }
+.preview-summary { display: flex; flex-wrap: wrap; gap: 12px; margin: 16px 0; }
+.preview-summary span { padding: 10px 14px; border: 1px solid #30363d; border-radius: 8px; }
+#sourceInfo { white-space: pre-wrap; overflow-wrap: anywhere; }
+#previewNotice { max-height: 80vh; overflow: auto; }
+#previewNoticeText { white-space: pre-wrap; overflow-wrap: anywhere; }
+.preview-target { white-space: pre-line; }
+.preview-warning { padding: 12px; background: #292319; color: #ffcf87; white-space: pre-wrap; overflow-wrap: anywhere; }
+.preview-downloads { display: flex; flex-wrap: wrap; gap: 12px; }
+#previewHistory { min-width: min(320px, 75vw); }
