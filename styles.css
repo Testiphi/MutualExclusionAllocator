@@ -161,6 +161,42 @@ h1 {
     flex: 1 1 210px;
     min-width: 170px;
 }
+.track-top-cars {
+    flex: 1 1 100%;
+    min-width: 0;
+    font-size: 0.85rem;
+    color: #c9d1d9;
+}
+.track-top-cars summary {
+    cursor: pointer;
+    padding: 8px 0;
+    color: #8ab4f8;
+}
+.track-top-cars summary:focus-visible {
+    outline: 2px solid #8ab4f8;
+    outline-offset: 2px;
+}
+.track-top-note, .track-top-empty {
+    color: #8b949e;
+    font-size: 0.75rem;
+    margin: 4px 0 8px;
+}
+.track-top-list {
+    margin: 0;
+    padding-left: 24px;
+}
+.track-top-list li {
+    padding: 6px 0;
+}
+.track-top-name {
+    overflow-wrap: anywhere;
+}
+.track-top-score {
+    display: inline-block;
+    margin-left: 12px;
+    color: #8b949e;
+    font-variant-numeric: tabular-nums;
+}
 .select-wrapper label {
     display: block;
     font-size: 0.7rem;

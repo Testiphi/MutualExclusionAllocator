@@ -80,6 +80,7 @@ test('真实页面清空选择后不会发布排队的旧结果', () => {
         const currentZone='zone5',SCHEME_LIMIT=25,NO_CAR_PRIORITY=99,ROWS=5;
         const allocator={generateParetoSchemes:()=>[{assignment:['X'],vector:[0]}]};
         const mapSchemesToRows=s=>s,updateUIWithSchemes=s=>published.push(s);
+        const renderTopCars=()=>{};
         const computation=appState.createScheduler(f=>requestAnimationFrame(()=>setTimeout(f,0)));
         const computationError=e=>{throw e;};
         ${fn('computeAndDisplay')}

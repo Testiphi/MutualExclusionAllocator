@@ -202,6 +202,7 @@ config.js → app_state.js → api.js → index.html (state, candidate preparati
 - **Scoring module** — `race_scores.js` has no DOM/network dependencies and owns the star curve and independent route estimates; an empty four-zone candidate list remains empty instead of borrowing five-zone entries
 - **State boundaries** — `app_state.js` validates garage/route selections and publishes only the latest queued computation. Storage failures are shown in the page; invalid saved garage data is not overwritten at startup.
 - **State persistence** — garage, star ratings and UI preferences use this browser's localStorage; there are no accounts or cross-device sync
+- **Per-track top three** — expand the collapsed list below a selected track to see up to three owned cars from the current zone, using the current tier, stars and SC setting. Each track is ranked independently; other tracks do not reserve cars here. Normal/auto tiers retain candidate priority order, and missing scores show “暂无成绩”. Changing tracks collapses the list; garage and settings changes refresh its contents.
 - **Local maintenance** — Python tools maintain JSON/Excel and are not part of the web runtime
 
 No server, no build step, no database.

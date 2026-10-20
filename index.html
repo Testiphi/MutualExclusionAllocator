@@ -136,6 +136,7 @@
 
     let bigSelects = [];
     let smallSelects = [];
+    let topCarPanels = [];
 
     let selectedCars = new Set();            // 车库拥有车辆
     let searchQuery = '';                    // 车库搜索关键字
@@ -441,6 +442,7 @@
         mapRowsContainer.innerHTML = '';
         bigSelects = [];
         smallSelects = [];
+        topCarPanels = [];
         for (let i = 0; i < ROWS; i++) {
             const rowDiv = document.createElement('div');
             rowDiv.className = 'map-row';
@@ -455,6 +457,12 @@
                         <label>小地图</label>
                         <select class="small-map-select" data-index="${i}" disabled></select>
                     </div>
+                    <details class="track-top-cars" hidden>
+                        <summary>查看本图前三可用车</summary>
+                        <p class="track-top-note">单图参考，未扣除其他图用车。成绩沿用当前档位与星级口径。</p>
+                        <ol class="track-top-list"></ol>
+                        <p class="track-top-empty" hidden>当前车库下无可用车</p>
+                    </details>
                 </div>
             `;
             mapRowsContainer.appendChild(rowDiv);
@@ -462,7 +470,54 @@
             const smallSel = rowDiv.querySelector('.small-map-select');
             bigSelects.push(bigSel);
             smallSelects.push(smallSel);
+            topCarPanels.push(rowDiv.querySelector('.track-top-cars'));
         }
+    }
+
+    /** 候选已按页面口径排序；单图参考不扣除其他图分配的车。 */
+    function getTopCars(candidate, ownedInZone, big, small, zone) {
+        const cars = [...new Set(candidate.groups.flat())].filter(car => ownedInZone.has(car)).slice(0, 3);
+        return cars.map(car => ({
+            car,
+            stars: currentTier === '理论' ? null : getCarStars(car),
+            score: getCarScore(big, small, car, zone),
+        }));
+    }
+
+    /** 保留同图的展开状态；换图、清空后重新默认折叠。只更新内容，不触发求解。 */
+    function renderTopCars(validMaps, candidates, ownedInZone) {
+        topCarPanels.forEach((panel, row) => {
+            const index = validMaps.findIndex(map => map.originalIndex === row);
+            const map = validMaps[index];
+            const key = map ? JSON.stringify([map.big, map.small]) : '';
+            if (panel.dataset.mapKey !== key) panel.open = false;
+            panel.dataset.mapKey = key;
+            panel.hidden = !map;
+            const list = panel.querySelector('.track-top-list');
+            list.replaceChildren();
+            if (!map) return;
+            panel.querySelector('summary').textContent = currentTier === '普通' || currentTier === '自动'
+                ? '查看本图优先候选前三' : '查看本图前三可用车';
+            const top = getTopCars(candidates[index], ownedInZone, map.big, map.small, currentZone);
+            panel.querySelector('.track-top-empty').hidden = top.length !== 0;
+            for (const item of top) {
+                const li = document.createElement('li');
+                const name = document.createElement('span');
+                name.className = 'track-top-name';
+                name.textContent = item.car + (item.stars === null ? '' : ` ★${item.stars}`);
+                const score = document.createElement('span');
+                score.className = 'track-top-score';
+                score.textContent = item.score == null ? '暂无成绩' : `${Number(item.score).toFixed(2)} 秒`;
+                li.append(name, score);
+                list.appendChild(li);
+            }
+        });
+    }
+
+    function refreshTopCars() {
+        const maps = getCurrentValidMaps();
+        renderTopCars(maps, prepareMapCandidates(maps, currentZone),
+            new Set(getCurrentCarList().filter(car => selectedCars.has(car))));
     }
 
     // 刷新大地图选项(互斥避免同一大地图重复)
@@ -641,6 +696,7 @@
         saveGarage();
         updateGarageUI();
         renderCarTags();
+        refreshTopCars();
     }
 
     function renderGarage() {
@@ -991,6 +1047,7 @@
         computation.cancel();
         const validMaps = getCurrentValidMaps();
         if (validMaps.length === 0) {
+            renderTopCars([], [], new Set());
             loadingOverlay.classList.remove('show');
             currentBestSchemes = [];
             schemeSelect.innerHTML = '';
@@ -1009,6 +1066,7 @@
             // 输入在当前事件中准备完毕，排队任务不读取后来变化的界面状态。
             const candidates = prepareMapCandidates(validMaps, currentZone);
             const ownedInZone = new Set(getCurrentCarList().filter(car => selectedCars.has(car)));
+            renderTopCars(validMaps, candidates, ownedInZone);
             computation.run({
                 compute: () => {
                     const schemes = allocator.generateParetoSchemes(candidates, ownedInZone, SCHEME_LIMIT, NO_CAR_PRIORITY);
