@@ -1,5 +1,7 @@
 # 超级管理员与管理员邀请码（本地开发）
 
+当前状态（2026-10-20）：账号与投稿审核已上线，用户公网验收通过，自动备份已开启；正式成绩写回仍仅本地。详见[生产上线验收记录](PRODUCTION_DEPLOYMENT.md)。下文保留本地开发与历史阶段说明，不代表当前尚未上线。
+
 2026-10-20，feature/accounts-local本地实现，未合入main、未上线。原主号库为`.local-accounts/accounts.sqlite3`（8000）；8002的`.local-accounts/mail-live-test`是独立邮件验收库，不自动同步角色、密码或数据。
 
 ## 角色边界

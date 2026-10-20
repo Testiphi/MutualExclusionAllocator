@@ -329,3 +329,5 @@ Accepted submissions can produce read-only change reports and previews against a
 Local disposable writeback lab: [WRITEBACK_LAB.md](WRITEBACK_LAB.md). Writes are restricted to fresh test data and a separate account database.
 
 Production accounts release: [PRODUCTION_DEPLOYMENT.md](PRODUCTION_DEPLOYMENT.md). Separate fresh database and HTTPS/SMTP entry point; no public score writeback.
+
+2026-10-20 production acceptance: the user confirmed registration/email verification, password reset and session revocation, garage/star persistence, submissions/review, and role isolation. Manual database backup succeeded; the automatic backup timer is enabled, with its first scheduled run still pending verification. Score writeback remains local only. See [deployment and acceptance record](PRODUCTION_DEPLOYMENT.md).

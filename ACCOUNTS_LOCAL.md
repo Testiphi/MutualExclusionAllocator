@@ -1,6 +1,8 @@
 # 本地账号开发版（2026-10-18）
 
-状态：第一版本地实现及用户本地验收已完成；仅推送feature/accounts-local，不合入main、不部署、不修改ECS/DNS/Nginx。生产站仍使用既有静态版本。
+当前状态（2026-10-20）：账号与投稿审核已上线，用户公网验收通过，自动备份已开启；正式成绩写回仍仅本地。详见[生产上线验收记录](PRODUCTION_DEPLOYMENT.md)。下文保留本地开发与历史阶段说明，不代表当前尚未上线。
+
+本地阶段历史：第一版本地实现及本地验收完成时仅推送feature/accounts-local，生产站当时仍使用静态版本。
 开发工作树：`accounts-local`，分支：`feature/accounts-local`，基于 `a3d01fb`。
 
 ## 启动
