@@ -87,6 +87,8 @@ class Store:
             ''')
             from backend.submissions import migrate
             migrate(db)
+            from backend.mailing import migrate_mail
+            migrate_mail(db)
 
     @contextmanager
     def connect(self):
@@ -110,7 +112,7 @@ class Store:
             db.execute('INSERT INTO attempts VALUES (?,1,?) ON CONFLICT(bucket) DO UPDATE SET count=count+1', (key, now+600))
 
 
-def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None):
+def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None, mail_config=None):
     parsed = urlsplit(origin)
     if parsed.scheme != 'http' or parsed.hostname not in ('127.0.0.1', 'localhost') or parsed.path or parsed.query or parsed.fragment or parsed.username:
         raise ValueError('本地开发仅允许 localhost/127.0.0.1 HTTP origin')
@@ -118,6 +120,9 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
     store = Store(data_dir or ROOT / '.local-accounts')
     app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None)
     app.state.store = store
+    from backend.mailing import MailConfig, MailService
+    mail_service = MailService(store,origin,mail_config or MailConfig())
+    app.state.mail_service = mail_service
     catalog = json.loads((ROOT/'cars.json').read_text(encoding='utf-8'))
     known = {c['nickname'] for c in catalog['cars'] if c.get('nickname') and c.get('zones')}
 
@@ -150,16 +155,6 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
         else: insert(transaction)
         response.set_cookie(cookie_name, raw, httponly=True, samesite='strict', secure=False, max_age=duration, path='/')
         return csrf
-
-    def mail(db, uid, email, purpose):
-        raw = secrets.token_urlsafe(32)
-        db.execute('DELETE FROM auth_tokens WHERE user_id=? AND purpose=?', (uid,purpose))
-        db.execute('INSERT INTO auth_tokens VALUES (?,?,?,?)', (digest(raw),uid,purpose,int(time.time())+1800))
-        outbox=store.directory/'outbox'
-        outbox.mkdir(exist_ok=True)
-        # Explicit local-only file transport; never available over HTTP.
-        payload={'to':email,'purpose':purpose,'url':f'{origin}/#action={purpose}&token={raw}', 'expires_in_seconds':1800}
-        (outbox/f'{time.time_ns()}-{secrets.token_hex(4)}.json').write_text(json.dumps(payload,ensure_ascii=False,indent=2),encoding='utf-8')
 
     @app.middleware('http')
     async def boundary(request, call_next):
@@ -195,12 +190,14 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
     def me(request:Request, response:Response):
         current=session(request,False)
         if not current:
-            return {'user':None,'csrf':new_session(response)}
-        return {'user':user(request) if current['user_id'] else None,'csrf':current['csrf']}
+            return {'user':None,'csrf':new_session(response),'mail_mode':mail_service.config.mode}
+        return {'user':user(request) if current['user_id'] else None,'csrf':current['csrf'],'mail_mode':mail_service.config.mode}
 
     @app.post('/api/auth/register')
     def register(data:Credentials, request:Request):
+        mail_service.check_recipient(data.email)
         store.throttle('register:'+request.client.host,20)
+        prepared = None
         hashed=HASHER.hash(data.password)
         with store.connect() as db:
             db.execute('BEGIN IMMEDIATE')
@@ -208,8 +205,9 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
             if not exists:
                 uid=secrets.token_hex(16)
                 db.execute('INSERT INTO users(id,email,password_hash,created_at) VALUES (?,?,?,?)',(uid,data.email,hashed,int(time.time())))
-                mail(db,uid,data.email,'verify')
-        return {'message':'如可注册，验证邮件已写入本地测试收件箱；已有账号请登录或重置密码。'}
+                prepared = mail_service.prepare(db,uid,data.email,'verify')
+        mail_service.deliver(prepared)
+        return {'message':mail_service.notice('register')}
 
     @app.post('/api/auth/login')
     def login(data:Credentials, request:Request, response:Response):
@@ -223,7 +221,7 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
             except (VerificationError,InvalidHashError):
                 raise HTTPException(401,'邮箱或密码不正确')
             if not row: raise HTTPException(401,'邮箱或密码不正确')
-            if not row['verified']: raise HTTPException(403,'请先通过本地测试邮件验证邮箱')
+            if not row['verified']: raise HTTPException(403,'请先完成邮箱验证，再登录')
             if HASHER.check_needs_rehash(row['password_hash']):
                 db.execute('UPDATE users SET password_hash=? WHERE id=?',(HASHER.hash(data.password),row['id']))
             db.execute('DELETE FROM sessions WHERE token_hash=?',(digest(request.cookies.get(cookie_name,'')),))
@@ -239,21 +237,27 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
 
     @app.post('/api/auth/resend-verification')
     def resend(data:EmailInput,request:Request):
+        mail_service.check_recipient(data.email)
         store.throttle('resend:'+request.client.host,10)
+        prepared = None
         with store.connect() as db:
             db.execute('BEGIN IMMEDIATE')
             row=db.execute('SELECT id FROM users WHERE email=? AND verified=0',(data.email.strip().lower(),)).fetchone()
-            if row: mail(db,row['id'],data.email.strip().lower(),'verify')
-        return {'message':'如果账号尚未验证，新验证邮件已写入本地测试收件箱。'}
+            if row: prepared = mail_service.prepare(db,row['id'],data.email.strip().lower(),'verify')
+        mail_service.deliver(prepared)
+        return {'message':mail_service.notice('resend')}
 
     @app.post('/api/auth/forgot-password')
     def forgot(data:EmailInput,request:Request):
+        mail_service.check_recipient(data.email)
         store.throttle('forgot:'+request.client.host,10)
+        prepared = None
         with store.connect() as db:
             db.execute('BEGIN IMMEDIATE')
             row=db.execute('SELECT id FROM users WHERE email=?',(data.email.strip().lower(),)).fetchone()
-            if row: mail(db,row['id'],data.email.strip().lower(),'reset')
-        return {'message':'如果账号存在，重置邮件已写入本地测试收件箱。'}
+            if row: prepared = mail_service.prepare(db,row['id'],data.email.strip().lower(),'reset')
+        mail_service.deliver(prepared)
+        return {'message':mail_service.notice('reset')}
 
     def consume(token,purpose,password=None):
         with store.connect() as db:
@@ -327,8 +331,21 @@ def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--port',type=int,default=8000)
     parser.add_argument('--data-dir',type=Path,default=ROOT/'.local-accounts')
+    parser.add_argument('--mail-mode',choices=['file','smtp'],default='file')
+    parser.add_argument('--mail-to',help='SMTP本地测试唯一允许的收件邮箱')
     args=parser.parse_args()
+    from backend.mailing import MailConfig, read_password
+    try:
+        if args.mail_mode=='smtp':
+            if not args.mail_to: parser.error('SMTP模式必须提供 --mail-to')
+            print('真实邮件测试：仅发送至 '+args.mail_to+'；密码仅保存在当前进程内存，不写文件。')
+            config=MailConfig('smtp',args.mail_to,read_password())
+        else:
+            if args.mail_to: parser.error('--mail-to仅用于smtp模式')
+            config=MailConfig()
+    except (ValueError,KeyboardInterrupt) as error:
+        parser.exit(1, ('已取消' if isinstance(error,KeyboardInterrupt) else str(error))+'\n')
     import uvicorn
-    uvicorn.run(create_app(args.data_dir,f'http://127.0.0.1:{args.port}'),host='127.0.0.1',port=args.port,proxy_headers=False)
+    uvicorn.run(create_app(args.data_dir,f'http://127.0.0.1:{args.port}',mail_config=config),host='127.0.0.1',port=args.port,proxy_headers=False)
 
 if __name__=='__main__': main()

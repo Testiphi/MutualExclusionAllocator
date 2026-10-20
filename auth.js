@@ -6,7 +6,7 @@
     const labels = {loading:'正在读取账号资料',saved:'已保存',unsaved:'有未保存修改',saving:'正在保存',conflict:'资料冲突',expired:'登录已失效，草稿已保留',error:'保存失败'};
     async function request(method,path,body) {
         const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 10000);
+        const timeout = setTimeout(() => controller.abort(), path.startsWith('/auth/') ? 60000 : 10000);
         try {
             const response = await fetch('/api' + path, {
                 method, credentials:'same-origin', signal:controller.signal,
@@ -20,7 +20,7 @@
             }
             return data;
         } catch (e) {
-            if (e.name === 'AbortError') throw new Error('请求超时，草稿已保留；重试时可能需要处理版本冲突');
+            if (e.name === 'AbortError') throw new Error('请求超时，操作可能仍在处理中。邮件操作请先检查收件箱和发信日志，勿立即重复申请；资料保存请核对版本后重试');
             throw e;
         } finally { clearTimeout(timeout); }
     }
@@ -71,7 +71,7 @@
           <label>邮箱 <input id="accountEmail" type="email" autocomplete="username" maxlength="254" required></label>
           <label>密码（12–128字符） <input id="accountPassword" type="password" autocomplete="current-password" minlength="12" maxlength="128" required></label>
           <button type="submit">登录</button><button type="button" id="accountRegister">注册</button><button type="button" id="accountForgot">忘记密码</button><button type="button" id="accountResend">重发验证邮件</button>
-          <p class="account-help">本地测试邮件保存在 .local-accounts/outbox；打开最新邮件文件中的链接完成验证或重置。</p>
+          <p class="account-help" id="accountMailHelp">本地测试邮件保存在 .local-accounts/outbox；打开最新邮件文件中的链接完成验证或重置。</p>
         </form>
         <div id="accountActions" hidden>
           <button type="button" id="accountImport">导入本机游客车库</button><button type="button" id="accountRetry">重试保存</button>
@@ -85,6 +85,7 @@
         document.querySelector('.card').insertBefore(box, document.querySelector('.sub').nextSibling);
         message=$('accountMessage'); accountLabel=$('accountLabel'); statusLabel=$('accountStatus');
         const session = await request('GET','/auth/me'); csrf=session.csrf; owner=session.user;
+        if(session.mail_mode==='smtp') $('accountMailHelp').textContent='真实邮件测试：仅向启动时指定的邮箱发送。请在运行服务的这台电脑打开邮件链接；链接30分钟有效。';
         if (owner) {
             store=ProfileStore.create({request,storage:sessionStorage,userId:owner.id,notify:status});
             await store.init();
@@ -138,21 +139,25 @@
             try { await request('POST','/auth/logout',{}); location.reload(); }
             catch (error) { store.unfreeze(); throw error; }
         });
-        const fragment=new URLSearchParams(location.hash.slice(1));
-        const purpose=fragment.get('action'), token=fragment.get('token');
-        if (token && ['verify','reset'].includes(purpose)) {
-            history.replaceState(null,'',location.pathname);
-            $('accountTokenForm').hidden=false;
-            $('accountTokenHelp').textContent=purpose==='verify'?'确认验证此邮箱':'设置新密码，成功后所有原登录会话会失效';
-            $('accountNewPasswordLabel').hidden=purpose==='verify';
-            $('accountNewPassword').required=purpose==='reset';
-            $('accountTokenForm').addEventListener('submit',e=>{e.preventDefault(); void action(async()=>{
-                const result=await request('POST',purpose==='verify'?'/auth/verify-email':'/auth/reset-password',
-                    purpose==='verify'?{token}:{token,password:$('accountNewPassword').value});
-                $('accountTokenForm').hidden=true; $('accountNewPassword').value=''; report(result.message);
-                if (purpose==='reset') { if(store) await store.freeze(); report(result.message+'。请刷新页面。'); }
-            });});
+        function openMailLink() {
+            const fragment=new URLSearchParams(location.hash.slice(1));
+            const purpose=fragment.get('action'), token=fragment.get('token');
+            if (token && ['verify','reset'].includes(purpose)) {
+                history.replaceState(null,'',location.pathname);
+                $('accountTokenForm').hidden=false;
+                $('accountTokenHelp').textContent=purpose==='verify'?'确认验证此邮箱':'设置新密码，成功后所有原登录会话会失效';
+                $('accountNewPasswordLabel').hidden=purpose==='verify';
+                $('accountNewPassword').required=purpose==='reset';
+                $('accountTokenForm').onsubmit=e=>{e.preventDefault(); void action(async()=>{
+                    const result=await request('POST',purpose==='verify'?'/auth/verify-email':'/auth/reset-password',
+                        purpose==='verify'?{token}:{token,password:$('accountNewPassword').value});
+                    $('accountTokenForm').hidden=true; $('accountNewPassword').value=''; report(result.message);
+                    if (purpose==='reset') { if(store) await store.freeze(); report(result.message+'。请刷新页面。'); }
+                });};
+            }
         }
+        openMailLink();
+        addEventListener('hashchange',openMailLink);
         addEventListener('beforeunload',e=>{if(store?.state().dirty){e.preventDefault();e.returnValue='';}});
     }
     root.accountUI = {

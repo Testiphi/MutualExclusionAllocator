@@ -18,7 +18,7 @@ python -m venv .venv
 服务固定监听127.0.0.1；不支持通过此入口公开部署。
 
 当前开发机已安装所需依赖，也可直接 `python -B -X utf8 -m backend.app`。
-数据库/测试收件箱位于 `.local-accounts/`，已被Git忽略。环境配置和数据库均不会作为静态资源返回。
+数据库/测试收件箱位于 `.local-accounts/`，已被Git忽略。默认仍是file模式；真实SMTP注册验证/密码重置的隔离验收步骤见 [真实邮件说明](MAIL_LOCAL.md)。环境配置和数据库均不会作为静态资源返回。
 
 ## 如何试用
 
@@ -49,7 +49,7 @@ python -m venv .venv
 - POST `/api/auth/verify-email`、`resend-verification`、`forgot-password`、`reset-password`。
 - GET/PUT `/api/me/profile`：当前用户的cars/stars/revision，不接受请求指定其他user_id。
 
-账号基础表包含users、sessions、profiles、auth_tokens及attempts。2026-10-18投稿开发扩展到模式v3，迁移与新增表见SUBMISSIONS_LOCAL.md；不靠删库升级。
+账号基础表包含users、sessions、profiles、auth_tokens及attempts。投稿开发扩展到模式v3，2026-10-20邮件通道扩展到v4；迁移与新增表分别见SUBMISSIONS_LOCAL.md、MAIL_LOCAL.md，不靠删库升级。
 
 ## 备份与恢复
 

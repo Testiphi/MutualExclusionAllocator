@@ -219,24 +219,25 @@ class SubmissionsTests(unittest.TestCase):
     def test_migration_from_v2_preserves_existing_submission(self):
         sid=self.create();self.submit(sid)
         with self.app.state.store.connect() as db:
+            db.execute('DROP TABLE mail_deliveries')
             db.execute('ALTER TABLE submissions DROP COLUMN review_score')
-            db.execute('DELETE FROM schema_version WHERE version=3')
+            db.execute('DELETE FROM schema_version WHERE version>=3')
         migrated=Store(self.path)
         with migrated.connect() as db:
             row=db.execute('SELECT status,revision,review_score FROM submissions WHERE id=?',(sid,)).fetchone()
             self.assertEqual((row['status'],row['revision'],row['review_score']),('pending',2,None))
-            self.assertEqual(db.execute('SELECT max(version) FROM schema_version').fetchone()[0],3)
+            self.assertEqual(db.execute('SELECT max(version) FROM schema_version').fetchone()[0],4)
 
     def test_migration_from_v1_preserves_users_and_profile(self):
         self.client.put('/api/me/profile',json={'revision':0,'cars':[],'stars':{}})
         with self.app.state.store.connect() as db:
             count=db.execute('SELECT count(*) FROM users').fetchone()[0]
-            for table in ['submission_events','submission_images','submission_requests','submissions','role_events']:
+            for table in ['mail_deliveries','submission_events','submission_images','submission_requests','submissions','role_events']:
                 db.execute('DROP TABLE '+table)
             db.execute('DELETE FROM schema_version WHERE version>=2')
         migrated=Store(self.path)
         with migrated.connect() as db:
-            self.assertEqual(db.execute('SELECT max(version) FROM schema_version').fetchone()[0],3)
+            self.assertEqual(db.execute('SELECT max(version) FROM schema_version').fetchone()[0],4)
             self.assertEqual(db.execute('SELECT count(*) FROM users').fetchone()[0],count)
             self.assertEqual(db.execute('SELECT revision FROM profiles').fetchone()[0],1)
             self.assertEqual(db.execute('PRAGMA foreign_key_check').fetchall(),[])
