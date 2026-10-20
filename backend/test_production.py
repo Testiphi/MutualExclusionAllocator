@@ -84,4 +84,27 @@ class ProductionTests(unittest.TestCase):
    self.assertEqual(db.execute('PRAGMA integrity_check').fetchone()[0],'ok')
   self.assertEqual(len(list((self.path/'backups').glob('*.sqlite3'))),2)
 
+class CredentialTests(unittest.TestCase):
+ def test_systemd_readonly_acl_modes_and_unsafe_modes(self):
+  import stat
+  from types import SimpleNamespace as Info
+  from backend.production import validate_credential_metadata
+  directory=lambda mode,uid=0:Info(st_mode=stat.S_IFDIR|mode,st_uid=uid)
+  secret=lambda mode,uid=0:Info(st_mode=stat.S_IFREG|mode,st_uid=uid)
+  for dm in (0o500,0o550):
+   for fm in (0o400,0o440):validate_credential_metadata(directory(dm),secret(fm))
+  for dm in (0o555,0o570,0o750):
+   with self.assertRaises(ValueError):validate_credential_metadata(directory(dm),secret(0o440))
+  for fm in (0o444,0o460,0o640,0o600,0o4777):
+   with self.assertRaises(ValueError):validate_credential_metadata(directory(0o550),secret(fm))
+  with self.assertRaises(ValueError):validate_credential_metadata(directory(0o550,999),secret(0o440))
+  with self.assertRaises(ValueError):validate_credential_metadata(directory(0o550),secret(0o440,999))
+  with self.assertRaises(ValueError):validate_credential_metadata(directory(0o550),Info(st_mode=stat.S_IFLNK|0o440,st_uid=0))
+ def test_unexpected_credential_paths_are_rejected_before_open(self):
+  from backend.production import load_smtp_credential
+  for value in ('','/etc/racepick','/run/credentials/other.service'):
+   with patch.dict('os.environ',{'CREDENTIALS_DIRECTORY':value}),patch('backend.production.os.open') as opened:
+    with self.assertRaises(ValueError):load_smtp_credential()
+    opened.assert_not_called()
+
 if __name__=='__main__':unittest.main()

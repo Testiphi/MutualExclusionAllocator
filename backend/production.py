@@ -90,6 +90,30 @@ def restore(config,source):
             os.replace(temp,path/'accounts.sqlite3')
         finally:temp.unlink(missing_ok=True)
 
+def validate_credential_metadata(directory_info,file_info):
+    # systemd may expose root-owned 0550/0440 copies using per-service ACLs.
+    # These are not ordinary shared-group secret files: the directory below is fixed.
+    if not stat.S_ISDIR(directory_info.st_mode) or directory_info.st_uid!=0 or stat.S_IMODE(directory_info.st_mode) not in (0o500,0o550):
+        raise ValueError('systemd凭据目录权限或所有者异常')
+    if not stat.S_ISREG(file_info.st_mode) or file_info.st_uid!=0 or stat.S_IMODE(file_info.st_mode) not in (0o400,0o440):
+        raise ValueError('systemd凭据副本权限或所有者异常')
+
+def load_smtp_credential():
+    value=os.environ.get('CREDENTIALS_DIRECTORY')
+    expected=Path('/run/credentials/racepick-accounts.service')
+    if not value or Path(value)!=expected or expected.resolve()!=expected:
+        raise ValueError('必须从本服务的systemd专用凭据目录读取SMTP密码')
+    directory_info=expected.lstat()
+    secret=expected/'smtp-password'
+    fd=os.open(secret,os.O_RDONLY|os.O_NOFOLLOW)
+    with os.fdopen(fd,'r',encoding='utf-8') as stream:
+        validate_credential_metadata(directory_info,os.fstat(stream.fileno()))
+        password=stream.read(4097)
+    if len(password)>4096:raise ValueError('SMTP凭据长度异常')
+    password=password.rstrip('\r\n')
+    if not password:raise ValueError('SMTP凭据为空')
+    return password
+
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('action',choices=['init','serve','bootstrap-owner','backup','restore'])
@@ -107,11 +131,7 @@ def main():
         else:
             import uvicorn
             path=require_database(config)
-            credential_dir=os.environ.get('CREDENTIALS_DIRECTORY')
-            if not credential_dir:raise ValueError('必须通过systemd凭据启动，不接受命令行或环境变量SMTP明文密码')
-            secret=Path(credential_dir)/'smtp-password'
-            if secret.stat().st_mode & (stat.S_IRWXG|stat.S_IRWXO):raise ValueError('SMTP凭据权限过宽')
-            password=secret.read_text(encoding='utf-8').rstrip('\r\n')
+            password=load_smtp_credential()
             with service_lock(path):uvicorn.run(make_app(config,password),host='127.0.0.1',port=8001,proxy_headers=False,access_log=False)
     except (OSError,ValueError,sqlite3.Error) as error:parser.exit(1,str(error)+'\n')
 

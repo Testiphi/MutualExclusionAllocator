@@ -157,3 +157,10 @@ systemctl start racepick-accounts
 本轮Python应用回归82项执行81通过、1项Linux专用跳过；生产包校验/暂存/篡改/路径白名单测试3项通过，总计84通过、1跳过。JS回归51项、启动冒烟和账号脚本语法检查通过。生产SMTP测试使用mock，不发送邮件；临时生产数据库HTTP冒烟通过；Linux Python3.12离线wheel集合按哈希离线解析通过，版本与本地验收版本一致。Windows不能替代Ubuntu原生运行，install-runtime.sh会在服务器切流前进行原生冒烟与Linux独占恢复锁校验。
 
 实际发布、主号注册验证、服务器收发邮件、Nginx切流、Certbot续签及在线恢复演练尚未在服务器执行，不宣称已经上线。
+
+
+### 2026-10-20 systemd凭据兼容修复
+
+服务器实际LoadCredential呈现root:root目录550、文件440，原始SMTP文件600 root:root。原启动检查把组读权限一律拒绝，导致服务启动前退出，尚未发生SMTP认证。修复只接受本服务固定/run/credentials/racepick-accounts.service下的root所有只读目录500/550及普通文件400/440，拒绝符号链接、可写/其他用户权限、异常所有者及路径，不修改原始秘密权限。新增元数据和路径回归测试。
+
+此前原生HTTP冒烟没有通过systemd凭据加载入口，因此不能覆盖此兼容问题；修复后仍须实际启动systemd服务并检查health。更新时保留/etc/racepick及/var/lib/racepick，仅暂存新版本、安装该版本venv，再切换应用版本和重启服务；不要重跑configure.py或production init，不切换Nginx。
