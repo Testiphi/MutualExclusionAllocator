@@ -10,6 +10,14 @@
 
 const api = (() => {
   const cfg = APP_CONFIG;
+  let versionedSnapshot;
+  function scoreSnapshot() {
+    if (!versionedSnapshot) versionedSnapshot = fetch('/api/scores/snapshot', {cache:'no-store'}).then(response => {
+      if (!response.ok) throw new Error('成绩版本加载失败，请刷新后重试');
+      return response.json();
+    });
+    return versionedSnapshot;
+  }
 
   // =======================================================================
   //  内部工具
@@ -43,6 +51,7 @@ const api = (() => {
 
     /** 获取车辆列表 + 昵称映射 */
     async getCars() {
+      if (globalThis.RACEPICK_VERSIONED_SCORES) return (await scoreSnapshot()).cars;
       if (cfg.dataSource === 'api') {
         return apiFetch('GET', '/cars');
       }
@@ -54,6 +63,7 @@ const api = (() => {
 
     /** 获取赛道数据 */
     async getRaceData() {
+      if (globalThis.RACEPICK_VERSIONED_SCORES) return (await scoreSnapshot()).data;
       if (cfg.dataSource === 'api') {
         return apiFetch('GET', '/races');
       }

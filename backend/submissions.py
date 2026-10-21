@@ -106,6 +106,7 @@ class Picture(Revision):
 
 
 def reference(root):
+    if callable(root):root=root()
     data_bytes = (root/'gauntlet_data.json').read_bytes()
     cars_bytes = (root/'cars.json').read_bytes()
     return (json.loads(data_bytes), json.loads(cars_bytes),

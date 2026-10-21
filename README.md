@@ -347,3 +347,5 @@ Static packaging and rollback are documented in [DEPLOYMENT.md](DEPLOYMENT.md), 
 | [Read-only change previews](PREVIEWS_LOCAL.md) | Local only: additions, updates, slower results and ordinary mirrors |
 | [Disposable writeback lab](WRITEBACK_LAB.md) | Local testing only: item confirmation, backup/rollback and workbook sync |
 | [Data maintenance tools](PYTHON_TOOLS.md) | JSON/Excel maintenance, change review and validation |
+
+New local phase: [versioned score data and release confirmation](SCORE_VERSIONS_LOCAL.md). An independent sandbox supports code/data separation, superadministrator item/slower approvals, backup and rollback. Not merged into main or enabled in production; existing workbooks are not synchronized automatically.

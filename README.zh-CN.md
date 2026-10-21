@@ -335,3 +335,5 @@ python -B -m backend.app --port 8000
 | [只读变更预览](PREVIEWS_LOCAL.md) | 仅本地：新增、更新、更慢成绩和普通镜像影响 |
 | [隔离写回实验室](WRITEBACK_LAB.md) | 仅本地测试：逐项确认、备份回滚及工作簿同步 |
 | [数据维护工具](PYTHON_TOOLS.md) | JSON/Excel维护、差异审核和校验 |
+
+新增本地阶段：[成绩数据版本与发布确认](SCORE_VERSIONS_LOCAL.md)。在独立测试目录实现代码/数据分离、超级管理员逐项及更慢确认、备份回滚；尚未合入main或启用生产。现有工作簿不自动同步。

@@ -1,0 +1,7 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>成绩版本测试台</title><link rel="stylesheet" href="/submissions.css"><script defer src="/score_versions.js"></script><style>label{display:flex;align-items:center;gap:10px;margin:12px 0}input[type=checkbox]{width:auto;flex:none}section{margin-bottom:24px}pre{white-space:pre-wrap;overflow-wrap:anywhere}.versions{overflow-wrap:anywhere}#busy{padding:12px;color:#f3cf83}</style></head><body>
+<header><a href="/">← 返回测试站</a><h1>成绩版本测试台</h1><p>独立测试环境 · 发布只影响本环境数据版本，不修改代码、线上成绩或工作簿。</p><p id="source" class="versions"></p></header>
+<p id="busy" role="status" hidden>正在核对与处理，请稍候…</p><main id="main">
+<section><h2>已采纳投稿</h2><button id="refresh">刷新候选和版本</button><div id="picks"></div><button id="prepare">为所选投稿生成确认预览</button><p>默认不选择。改变选择后须生成新批次，普通镜像将随所选内容重新计算。</p></section>
+<section><h2>执行前身份确认</h2><label>当前超级管理员密码<input id="password" type="password" autocomplete="current-password"></label><button id="reauth">验证身份（5分钟有效）</button><p id="reauthStatus"></p></section>
+<section><h2>批次历史与确认</h2><select id="batches" aria-label="选择批次"></select><button id="show">查看或重新检查批次</button><div id="result"></div></section>
+</main><dialog id="notice"><h2>操作提示</h2><p id="message"></p><button id="close">知道了</button></dialog><dialog id="confirm"><h2>确认测试操作</h2><p id="question"></p><button id="cancel">取消</button><button id="yes">确认继续</button></dialog></body></html>
