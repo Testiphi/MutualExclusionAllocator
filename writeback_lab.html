@@ -1,0 +1,7 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>隔离写回实验室</title><link rel="stylesheet" href="/submissions.css"><link rel="stylesheet" href="/data_previews.css"><script defer src="/writeback_lab.js"></script><style>label{display:flex;align-items:center;gap:10px;margin:12px 0}input[type=checkbox]{width:auto;flex:none}section{margin-bottom:24px}#busy{padding:12px;color:#f4d58d}pre{white-space:pre-wrap;overflow-wrap:anywhere}</style></head><body>
+<header><a href="/data-previews">← 只读预览</a><h1>隔离写回实验室</h1><p>仅操作新建测试环境。不会连接真实成绩库、现有工作簿或主账号库。</p><p id="lab"></p></header>
+<p id="busy" role="status" hidden>正在核对或处理测试文件，请稍候。执行中请勿编辑测试目录。</p><main id="main"><section><h2>选择预览及条目</h2><select id="previews" aria-label="选择预览"></select><button id="load">加载预览</button><div id="picks"></div><button id="prepare">准备所选条目的确认批次</button></section>
+<section><h2>批次历史</h2><select id="batches" aria-label="选择批次"></select><button id="refresh">查看状态</button><div id="result"></div></section></main>
+<dialog id="notice"><h2>操作提示</h2><p id="message"></p><button id="close">知道了</button></dialog>
+<dialog id="confirm"><h2>确认测试环境操作</h2><p id="confirmText"></p><button id="cancel">取消</button><button id="yes">确认继续</button></dialog>
+</body></html>

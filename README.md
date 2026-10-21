@@ -2,9 +2,26 @@
 
 **English** | [中文](README.zh-CN.md)
 
-> 🌐 **Website**: [RacePick](https://racepick.cn/) · **Live demo**: [testiphi.github.io/MutualExclusionAllocator](https://testiphi.github.io/MutualExclusionAllocator/)
+> 🌐 **Website**: [RacePick](https://racepick.cn/) · **Static guest demo**: [testiphi.github.io/MutualExclusionAllocator](https://testiphi.github.io/MutualExclusionAllocator/)
 
 A car allocator for Gauntlet challenges, supporting five-zone/four-zone pools, four data tiers, star ratings and special routes. It returns Pareto-optimal schemes without reusing cars.
+
+## Current Features and Release Status
+
+Latest data deployment: on 2026-10-21, three five-zone theory time improvements went live in release `09897d5f81a696dca0b95c8e` (source `7a2f164`). The user confirmed the updated results and account features work correctly. See the [deployment record](PRODUCTION_DEPLOYMENT.md). Official score writeback remains local only.
+
+The account feature branch was merged into main on 2026-10-20, preserving the latest main-branch score data and existing workbooks. This source merge did not redeploy the production service; official score writeback remains local only.
+
+Accounts and submission review went live on 2026-10-20. The user completed production acceptance for registration/email verification, password reset with old-password and session invalidation, garage/star persistence, submission review and role isolation.
+
+- Guests can continue allocating cars without an account; signed-in users can save their garage and star ratings.
+- Players submit results and provide requested follow-up information. Administrators can rate results, adjust tiers, accept or ignore submissions, and provide feedback.
+- A protected superadministrator manages email-bound administrator invitations and permissions.
+
+Acceptance saves a review decision; it does not update official scores automatically. Change previews, confirmed writeback, rollback and workbook synchronization remain local only, without public endpoints. Excel bulk import, contribution rewards and leaderboards are not implemented.
+
+Manual database backup succeeded and the automatic backup timer is enabled. Its first scheduled execution was still pending verification at the time of this record. See [production deployment and acceptance](PRODUCTION_DEPLOYMENT.md).
+
 
 ---
 
@@ -184,16 +201,20 @@ scripts (see "Architecture").
 
 ## Architecture
 
-Pure client-side static application:
+Allocation runs in the browser. The production website uses Nginx HTTPS and FastAPI, with SQLite for accounts, garages, submissions and review records:
 
 ```
 config.js → app_state.js → api.js → index.html (state, candidate preparation, rendering)
                          ├→ allocator.js (pure allocation algorithm)
                          └→ race_scores.js (time calculation)
+
+auth.js / profile_store.js / submissions.js / admin_access.js
+        → Nginx HTTPS → FastAPI → SQLite
+                              └→ Aliyun SMTP (verification and reset)
 ```
 
 - **Config** — paths, keys, storage settings
-- **Data loader** — currently fetches static JSON; API mode is a reserved interface with no backend implementation in this repository
+- **Score data loader** — still fetches public JSON; the score-data API mode in `api.js` remains reserved and is separate from the implemented account/submission APIs
 - **Rule derivation** — the zone pools (`zones`) and star rules (`star_rule`) are derived from
   `cars.json` by `buildCarRules()` in `index.html`; **this is the single source of truth** and the page
   no longer keeps a hardcoded copy
@@ -201,11 +222,11 @@ config.js → app_state.js → api.js → index.html (state, candidate preparati
 - **Algorithm module** — `allocator.js` has no DOM/network dependencies and incrementally maintains the Pareto front during backtracking
 - **Scoring module** — `race_scores.js` has no DOM/network dependencies and owns the star curve and independent route estimates; an empty four-zone candidate list remains empty instead of borrowing five-zone entries
 - **State boundaries** — `app_state.js` validates garage/route selections and publishes only the latest queued computation. Storage failures are shown in the page; invalid saved garage data is not overwritten at startup.
-- **State persistence** — garage, star ratings and UI preferences use this browser's localStorage; there are no accounts or cross-device sync
+- **State persistence** — guest garages and stars remain browser-local; signed-in profiles are saved to the account through `auth.js`/`profile_store.js`. UI preferences remain local
+- **Local maintenance** — Python tools maintain JSON/Excel; the production account backend does not automatically apply score changes
 - **Per-track top three** — expand the collapsed list below a selected track to see up to three owned cars from the current zone, using the current tier, stars and SC setting. Each track is ranked independently; other tracks do not reserve cars here. Normal/auto tiers retain candidate priority order, and missing scores show “暂无成绩”. Changing tracks collapses the list; garage and settings changes refresh its contents.
-- **Local maintenance** — Python tools maintain JSON/Excel and are not part of the web runtime
 
-No server, no build step, no database.
+Static guest hosting needs no backend or database. Production accounts require a Python service, SQLite and SMTP. The frontend still needs no bundling step.
 
 > **Single source of truth for rules**: the pools and star rules used to be hardcoded in `index.html`,
 > with a second, simplified table on the Python side (`data_tools.ZONE4_MAX`). The two had drifted —
@@ -279,28 +300,28 @@ The boot test uses a DOM stub and does not validate real-browser interaction or 
 
 ---
 
-## Deployment
+## Deployment and Local Development
 
-- **GitHub Pages**: [testiphi.github.io/MutualExclusionAllocator](https://testiphi.github.io/MutualExclusionAllocator/)
-- **Repo**: [github.com/Testiphi/MutualExclusionAllocator](https://github.com/Testiphi/MutualExclusionAllocator)
+### Production Accounts Website
 
-Static hosting (GitHub Pages, Netlify, any web server).
+[RacePick](https://racepick.cn/) runs accounts, real email and submission review. It uses a separate production database and a loopback-only application listener behind Nginx HTTPS. systemd supplies credentials; secrets are not committed or bundled.
 
-Deployment files: `index.html`, `styles.css`, `config.js`, `app_state.js`, `api.js`, `allocator.js`, `race_scores.js`, `gauntlet_data.json`, `cars.json`.
-When updating an older deployment, add `app_state.js` and update `index.html` and `api.js` together. `race_scores.js` remains required.
-Besides vehicle data, `cars.json` carries the zone pools and star rules, so it is a **hard dependency** —
-if it fails to load the page reports the error instead of degrading.
+See [production deployment](PRODUCTION_DEPLOYMENT.md) for packaging, installation, owner bootstrap, backups and rollback. Use `build_production.py` and `deploy_production.py`: staging is the default, and application activation is separate from switching Nginx traffic. Do not upload local account databases or test workbooks to production.
 
-For complete release packages and rollback, see [Deployment](DEPLOYMENT.md). Staging is the default; activation is explicit. Linux link switching still requires server verification.
-
-For local preview, run from the repository directory:
+### Local Account Development
 
 ```bash
-python -m http.server 8000
+python -m pip install -r backend/requirements.txt
+python -B -m backend.app --port 8000
 ```
 
-Open [localhost:8000](http://localhost:8000/) in a browser. Use HTTP; opening the HTML directly may prevent JSON loading due to browser restrictions.
-Python is used only for this preview server and local maintenance; the deployed static page does not require it.
+Open [127.0.0.1:8000](http://127.0.0.1:8000/). The default uses a separate local database and file-based test emails; SMTP testing is opt-in. See [ACCOUNTS_LOCAL.md](ACCOUNTS_LOCAL.md). This local entry point is not a public deployment command.
+
+### Static Guest Version
+
+The [GitHub Pages demo](https://testiphi.github.io/MutualExclusionAllocator/) provides static guest functionality. Deploy nine files: `index.html`, `styles.css`, `config.js`, `app_state.js`, `api.js`, `allocator.js`, `race_scores.js`, `gauntlet_data.json`, and `cars.json`. The vehicle rules in `cars.json` are a required dependency.
+
+Static packaging and rollback are documented in [DEPLOYMENT.md](DEPLOYMENT.md), separately from production accounts. To preview the static version, run `python -m http.server 8000` and open [localhost:8000](http://localhost:8000/); accounts are not loaded. Use HTTP rather than opening the HTML directly, which may block JSON loading.
 
 ---
 
@@ -314,3 +335,16 @@ Python is used only for this preview server and local maintenance; the deployed 
 | Browser-side stress test | Desktop Chromium solve time and timer delay measured with real page candidates. Phones, full-page interaction latency and peak memory remain untested. |
 | Thin candidate lists | 13 "zone/tier" combinations are down to 1–2 candidates (weakest: `大桥海湾/喧闹铁路` four-zone expert has only `9x8★6`; `极昼之地/凌云狂飙` four-zone expert has only `ssc★2`). |
 | Redundant `max` field | `star_rule.max` matches `cars.json`'s `max_stars` for all 9 cars that declare it (`att`/`杰弟`/`dose` use 6 = unconstrained). Whether to merge them is undecided. |
+
+## Feature and Maintenance Documentation
+
+| Document | Scope |
+|---|---|
+| [Production deployment and acceptance](PRODUCTION_DEPLOYMENT.md) | Live release, real email, backup, rollback and user acceptance |
+| [Local accounts](ACCOUNTS_LOCAL.md) | Local startup, profile persistence and historical acceptance |
+| [Email integration](MAIL_LOCAL.md) | File delivery, restricted SMTP tests and production integration |
+| [Submissions and review](SUBMISSIONS_LOCAL.md) | Submission, follow-up, ratings, tier adjustment and feedback |
+| [Administrator invitations](INVITATIONS_LOCAL.md) | Superadministrator, invitations and role isolation |
+| [Read-only change previews](PREVIEWS_LOCAL.md) | Local only: additions, updates, slower results and ordinary mirrors |
+| [Disposable writeback lab](WRITEBACK_LAB.md) | Local testing only: item confirmation, backup/rollback and workbook sync |
+| [Data maintenance tools](PYTHON_TOOLS.md) | JSON/Excel maintenance, change review and validation |

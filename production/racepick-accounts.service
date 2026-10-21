@@ -1,0 +1,25 @@
+[Unit]
+Description=RacePick accounts and submissions
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=racepick
+Group=racepick
+WorkingDirectory=/opt/racepick/current
+ExecStart=/opt/racepick/current/.venv/bin/python -B -m backend.production serve --config /etc/racepick/production.json
+LoadCredential=smtp-password:/etc/racepick/smtp-password
+Restart=on-failure
+RestartSec=5
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/racepick
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+TimeoutStopSec=30
+
+[Install]
+WantedBy=multi-user.target

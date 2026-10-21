@@ -239,7 +239,7 @@
     /** 加载已保存的星级映射 */
     function loadStarsMap() {
         try {
-            const saved = api.loadPref(APP_CONFIG.storageKeys.starMap);
+            const saved = globalThis.accountUI?.active() ? accountUI.stars() : api.loadPref(APP_CONFIG.storageKeys.starMap);
             if (saved && typeof saved === 'object' && !Array.isArray(saved)) {
                 starsMap = saved;
             }
@@ -248,7 +248,14 @@
 
     /** 保存星级映射 */
     function saveStarsMap() {
-        savePreference(APP_CONFIG.storageKeys.starMap, starsMap);
+        if (globalThis.accountUI?.active()) {
+            try {
+                accountUI.saveStars(starsMap);
+                storageResult(APP_CONFIG.storageKeys.starMap, null);
+            } catch (error) {
+                storageResult(APP_CONFIG.storageKeys.starMap, '星级未能保存，请等待账号操作结束后重试');
+            }
+        } else savePreference(APP_CONFIG.storageKeys.starMap, starsMap);
     }
 
     /** 用户未设置时的分区默认星级：五区=最高星，四区=规则默认值 */
@@ -1284,6 +1291,14 @@
             }
             buildCarRules();            // 由 zones / star_rule 派生车池与星级规则
 
+            if (globalThis.accountUI) await accountUI.init({
+                known: new Set([...zone5Cars, ...zone4Cars]),
+                apply: profile => {
+                    selectedCars = appState.garage(profile.cars, new Set([...zone5Cars, ...zone4Cars]));
+                    starsMap = profile.stars;
+                    buildMapIndex(); renderGarage(); computeAndDisplay();
+                }
+            });
             await loadGarage();        // 加载车库（现在 zone5Cars/zone4Cars 已就绪）
             loadStarsMap();             // 加载星级
             buildMapIndex();            // 用恢复后的分区和星级构建优先级
