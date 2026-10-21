@@ -1,5 +1,8 @@
 # [MutualExclusionAllocator](https://github.com/Testiphi/MutualExclusionAllocator)
 
+> Local feature branch: announcements, account management and manual garage saving are implemented but not deployed. Temporary car/star changes do not overwrite the saved garage. See [local development and acceptance notes](COMMUNITY_LOCAL.md).
+
+
 **English** | [中文](README.zh-CN.md)
 
 > 🌐 **Website**: [RacePick](https://racepick.cn/) · **Static guest demo**: [testiphi.github.io/MutualExclusionAllocator](https://testiphi.github.io/MutualExclusionAllocator/)
@@ -8,9 +11,11 @@ A car allocator for Gauntlet challenges, supporting five-zone/four-zone pools, f
 
 ## Current Features and Release Status
 
-Latest data deployment: on 2026-10-21, three five-zone theory time improvements went live in release `09897d5f81a696dca0b95c8e` (source `7a2f164`). The user confirmed the updated results and account features work correctly. See the [deployment record](PRODUCTION_DEPLOYMENT.md). Official score writeback remains local only.
+Latest user-reported status (2026-10-22): production runs `7a0f2927404cab20f0a5a020`, initially using score version `c8889ff96eb29714d80248cca283b9fa`. Migration, coherent backup and isolated restore drill passed; the user then confirmed write enablement. No server inspection or deployment was performed in this development task. Announcements and account controls remain local only.
 
-The account feature branch was merged into main on 2026-10-20, preserving the latest main-branch score data and existing workbooks. This source merge did not redeploy the production service; official score writeback remains local only.
+Latest data deployment: on 2026-10-21, three five-zone theory time improvements went live in release `09897d5f81a696dca0b95c8e` (source `7a2f164`). The user confirmed the updated results and account features work correctly. See the [deployment record](PRODUCTION_DEPLOYMENT.md). Official score writeback had not yet been deployed at that point.
+
+The account feature branch was merged into main on 2026-10-20, preserving the latest main-branch score data and existing workbooks. This source merge did not redeploy the production service; official score writeback had not yet been deployed at that point.
 
 Accounts and submission review went live on 2026-10-20. The user completed production acceptance for registration/email verification, password reset with old-password and session invalidation, garage/star persistence, submission review and role isolation.
 
@@ -18,9 +23,9 @@ Accounts and submission review went live on 2026-10-20. The user completed produ
 - Players submit results and provide requested follow-up information. Administrators can rate results, adjust tiers, accept or ignore submissions, and provide feedback.
 - A protected superadministrator manages email-bound administrator invitations and permissions.
 
-Acceptance saves a review decision; it does not update official scores automatically. Change previews, confirmed writeback, rollback and workbook synchronization remain local only, without public endpoints. Excel bulk import, contribution rewards and leaderboards are not implemented.
+Acceptance saves a review decision; it does not update official scores automatically. The user has since confirmed deployment and enablement of versioned score writes, which require explicit superadministrator confirmation. Workbook synchronization remains local. Excel bulk import, contribution rewards and leaderboards are not implemented.
 
-Manual database backup succeeded and the automatic backup timer is enabled. Its first scheduled execution was still pending verification at the time of this record. See [production deployment and acceptance](PRODUCTION_DEPLOYMENT.md).
+Manual database backup succeeded and the automatic backup timer is enabled. The user has since confirmed the scheduled run, coherent backup and isolated restore drill. See [production deployment and acceptance](PRODUCTION_DEPLOYMENT.md).
 
 
 ---

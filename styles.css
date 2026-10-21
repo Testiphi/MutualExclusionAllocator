@@ -523,3 +523,5 @@ select:disabled {
     color: #83a0d8;
     margin-top: 2px;
 }
+
+.garage-actions button,.garage-confirm button{background:#21262d;color:#e6edf3;border:1px solid #484f58;border-radius:6px;padding:7px 12px;cursor:pointer}.garage-confirm{background:#161b22;color:#e6edf3;border:1px solid #484f58;border-radius:12px;max-width:440px}.garage-confirm::backdrop{background:#0009}#garageSaveStatus{color:#d2a85b;font-size:.85rem}

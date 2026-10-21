@@ -43,3 +43,5 @@
 .account-dialog-links button { border: 0; background: transparent; padding: 5px 0; color: #79b8ff; font-size: .85rem; }
 #accountAuthClose { border: 0; background: transparent; font-size: 1.5rem; padding: 0 5px; line-height: 1; }
 @media(max-width:480px) { .account-dialog { padding: 20px; } .account-guest-actions { margin-left: 0; } }
+
+.announcement-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}.announcement-dialog{max-width:600px}.announcement-dialog button{margin:4px}

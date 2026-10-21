@@ -235,7 +235,7 @@ def install(app,store,root,user,reference_root=None,production=False):
         data,cars,_=reference(reference_root)
         fingerprint=hashlib.sha256(packed(body.model_dump()).encode()).hexdigest()
         with store.connect() as db:
-            db.execute('BEGIN IMMEDIATE')
+            db.execute('BEGIN IMMEDIATE');app.state.require_active_session(request,db)
             prior=db.execute('SELECT * FROM submission_requests WHERE owner_id=? AND request_key=?',(owner['id'],body.request_key)).fetchone()
             if prior:
                 if prior['fingerprint']!=fingerprint: raise HTTPException(409,'提交标识已用于其他内容，请刷新后重新操作')
@@ -308,7 +308,7 @@ def install(app,store,root,user,reference_root=None,production=False):
         owner=actor(request); data,cars,_=reference(reference_root)
         value=normalize(body.entry,data,cars,False)
         with store.connect() as db:
-            db.execute('BEGIN IMMEDIATE'); row=get_row(db,sid,owner); expected(row,body.revision)
+            db.execute('BEGIN IMMEDIATE');app.state.require_active_session(request,db); row=get_row(db,sid,owner); expected(row,body.revision)
             if row['owner_id']!=owner['id'] or row['status'] not in ('draft','needs_info'):
                 raise HTTPException(409,'仅本人草稿或待补充投稿可以修改')
             db.execute('UPDATE submissions SET payload=?,revision=revision+1,updated_at=? WHERE id=?',(packed(value),int(time.time()),sid))
@@ -319,7 +319,7 @@ def install(app,store,root,user,reference_root=None,production=False):
     def submit(sid:str,body:Revision,request:Request):
         owner=actor(request); data,cars,basis=reference(reference_root)
         with store.connect() as db:
-            db.execute('BEGIN IMMEDIATE'); row=get_row(db,sid,owner); expected(row,body.revision)
+            db.execute('BEGIN IMMEDIATE');app.state.require_active_session(request,db); row=get_row(db,sid,owner); expected(row,body.revision)
             if row['owner_id']!=owner['id'] or row['status'] not in ('draft','needs_info'):
                 raise HTTPException(409,'此状态不能重复提交或修改')
             value=normalize(Score(**json.loads(row['payload'])),data,cars)
@@ -344,7 +344,7 @@ def install(app,store,root,user,reference_root=None,production=False):
     def review(sid:str,body:Review,request:Request):
         owner=actor(request,True)
         with store.connect() as db:
-            db.execute('BEGIN IMMEDIATE'); row=get_row(db,sid,owner); expected(row,body.revision)
+            db.execute('BEGIN IMMEDIATE');app.state.require_active_session(request,db); row=get_row(db,sid,owner); expected(row,body.revision)
             if hasattr(app.state,'writeback'): app.state.writeback.guard(db,sid)
             if body.action=='reopen':
                 if row['status'] not in ('accepted','ignored') or not body.reason.strip():
@@ -399,7 +399,7 @@ def install(app,store,root,user,reference_root=None,production=False):
         except (ValueError,OSError,UnidentifiedImageError,Image.DecompressionBombError,Image.DecompressionBombWarning):
             raise HTTPException(422,'仅支持2MB以内静态PNG/JPEG/WebP图片，最多1600万像素')
         with store.connect() as db:
-            db.execute('BEGIN IMMEDIATE'); row=get_row(db,sid,owner); expected(row,body.revision)
+            db.execute('BEGIN IMMEDIATE');app.state.require_active_session(request,db); row=get_row(db,sid,owner); expected(row,body.revision)
             if row['owner_id']!=owner['id'] or row['status'] not in ('draft','needs_info'): raise HTTPException(409,'投稿状态已变化')
             if db.execute('SELECT count(*) FROM submission_images WHERE submission_id=? AND active=1',(sid,)).fetchone()[0]>=3: raise HTTPException(422,'每条投稿最多3张证据图片')
             if db.execute('SELECT count(*) FROM submission_images WHERE submission_id=?',(sid,)).fetchone()[0]>=10: raise HTTPException(422,'每条投稿累计最多10张图片（含历史），请使用来源链接补充')
@@ -413,7 +413,7 @@ def install(app,store,root,user,reference_root=None,production=False):
     def remove_image(sid:str,iid:str,body:Revision,request:Request):
         owner=actor(request)
         with store.connect() as db:
-            db.execute('BEGIN IMMEDIATE'); row=get_row(db,sid,owner); expected(row,body.revision)
+            db.execute('BEGIN IMMEDIATE');app.state.require_active_session(request,db); row=get_row(db,sid,owner); expected(row,body.revision)
             if row['owner_id']!=owner['id'] or row['status'] not in ('draft','needs_info'): raise HTTPException(409,'只可编辑本人草稿或待补充证据')
             if not db.execute('SELECT 1 FROM submission_images WHERE id=? AND submission_id=? AND active=1',(iid,sid)).fetchone(): raise HTTPException(404)
             db.execute('UPDATE submission_images SET active=0 WHERE id=?',(iid,))

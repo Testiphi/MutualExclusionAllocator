@@ -101,6 +101,8 @@ class Store:
             migrate_roles(db)
             from backend.previews import migrate_previews
             migrate_previews(db)
+            from backend.community import migrate as migrate_community
+            migrate_community(db)
 
     @contextmanager
     def connect(self):
@@ -176,11 +178,20 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
             raise HTTPException(401, '请先登录')
         with store.connect() as db:
             result = db.execute('SELECT id,email,verified,role FROM users WHERE id=?', (row['user_id'],)).fetchone()
+            from backend.community import disabled
+            if result and disabled(db,result['id']):raise HTTPException(403,'账号已停用，请联系站长')
         if not result:
             raise HTTPException(401, '账号不存在')
         from backend.roles import effective_role
         with store.connect() as db:
             return {**dict(result),'role':effective_role(db,result['id'],result['role'])}
+
+    def require_active_session(request,db):
+        from backend.community import disabled
+        current=db.execute('SELECT user_id FROM sessions WHERE token_hash=? AND expires_at>?',(digest(request.cookies.get(cookie_name,'')),int(time.time()))).fetchone()
+        if not current or not current['user_id']:raise HTTPException(401,'登录已失效，请重新登录')
+        if disabled(db,current['user_id']):raise HTTPException(403,'账号已停用')
+    app.state.require_active_session=require_active_session
 
     def new_session(response, user_id=None, transaction=None):
         raw, csrf = secrets.token_urlsafe(32), secrets.token_urlsafe(32)
@@ -238,8 +249,8 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
     def me(request:Request, response:Response):
         current=session(request,False)
         if not current:
-            return {'user':None,'csrf':new_session(response),'mail_mode':'production' if production else mail_service.config.mode,'admin_invites':True,'readonly_previews':preview_source is not None,'writeback_lab':writeback_lab is not None,'score_versions_lab':score_version_lab is not None,'score_versions':versioned_scores}
-        return {'user':user(request) if current['user_id'] else None,'csrf':current['csrf'],'mail_mode':'production' if production else mail_service.config.mode,'admin_invites':True,'readonly_previews':preview_source is not None,'writeback_lab':writeback_lab is not None,'score_versions_lab':score_version_lab is not None,'score_versions':versioned_scores}
+            return {'user':None,'csrf':new_session(response),'mail_mode':'production' if production else mail_service.config.mode,'admin_invites':True,'readonly_previews':preview_source is not None,'writeback_lab':writeback_lab is not None,'score_versions_lab':score_version_lab is not None,'score_versions':versioned_scores,'community_controls':True}
+        return {'user':user(request) if current['user_id'] else None,'csrf':current['csrf'],'mail_mode':'production' if production else mail_service.config.mode,'admin_invites':True,'readonly_previews':preview_source is not None,'writeback_lab':writeback_lab is not None,'score_versions_lab':score_version_lab is not None,'score_versions':versioned_scores,'community_controls':True}
 
     @app.post('/api/auth/register')
     def register(data:Registration, request:Request):
@@ -274,7 +285,10 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
             except (VerificationError,InvalidHashError):
                 raise HTTPException(401,'邮箱或密码不正确')
             if not row: raise HTTPException(401,'邮箱或密码不正确')
+            from backend.community import disabled
+            if disabled(db,row['id']):raise HTTPException(403,'账号已停用，请联系站长')
             if not row['verified']: raise HTTPException(403,'请先完成邮箱验证，再登录')
+            db.execute('INSERT INTO account_login_stats VALUES(?,?) ON CONFLICT(user_id) DO UPDATE SET last_login=excluded.last_login',(row['id'],int(time.time())))
             if HASHER.check_needs_rehash(row['password_hash']):
                 db.execute('UPDATE users SET password_hash=? WHERE id=?',(HASHER.hash(data.password),row['id']))
             db.execute('DELETE FROM sessions WHERE token_hash=?',(digest(request.cookies.get(cookie_name,'')),))
@@ -298,7 +312,8 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
         with store.connect() as db:
             db.execute('BEGIN IMMEDIATE')
             row=db.execute('SELECT id FROM users WHERE email=? AND verified=0',(data.email.strip().lower(),)).fetchone()
-            if row: prepared = mail_service.prepare(db,row['id'],data.email.strip().lower(),'verify')
+            from backend.community import disabled
+            if row and not disabled(db,row['id']): prepared = mail_service.prepare(db,row['id'],data.email.strip().lower(),'verify')
         mail_service.deliver(prepared)
         return {'message':mail_service.notice('resend')}
 
@@ -310,7 +325,8 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
         with store.connect() as db:
             db.execute('BEGIN IMMEDIATE')
             row=db.execute('SELECT id FROM users WHERE email=?',(data.email.strip().lower(),)).fetchone()
-            if row: prepared = mail_service.prepare(db,row['id'],data.email.strip().lower(),'reset')
+            from backend.community import disabled
+            if row and not disabled(db,row['id']): prepared = mail_service.prepare(db,row['id'],data.email.strip().lower(),'reset')
         mail_service.deliver(prepared)
         return {'message':mail_service.notice('reset')}
 
@@ -319,6 +335,8 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
             db.execute('BEGIN IMMEDIATE')
             row=db.execute('SELECT user_id FROM auth_tokens WHERE token_hash=? AND purpose=? AND expires_at>?',(digest(token),purpose,int(time.time()))).fetchone()
             if not row: raise HTTPException(400,'链接无效、已使用或已过期')
+            from backend.community import disabled
+            if disabled(db,row['user_id']):raise HTTPException(403,'账号已停用')
             if purpose=='verify':
                 db.execute('UPDATE users SET verified=1 WHERE id=?',(row['user_id'],))
                 db.execute('DELETE FROM auth_tokens WHERE token_hash=?',(digest(token),))
@@ -353,12 +371,14 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
     @app.put('/api/me/profile')
     def put_profile(data:ProfileInput,request:Request):
         owner=user(request)
+        if request.headers.get('x-profile-save')!='explicit':raise HTTPException(409,'车库已改为手动保存，请刷新页面后点击保存车库')
         if request.headers.get('x-account-id') != owner['id']:
             raise HTTPException(401,'账号已在其他窗口切换，请刷新后重新确认身份')
         if len(set(data.cars))!=len(data.cars) or any(c not in known for c in data.cars) or any(c not in known or s<1 or s>6 for c,s in data.stars.items()):
             raise HTTPException(422,'车辆或星级无效；星级保存原始1–6值，分区显示仍沿用现有规则')
         with store.connect() as db:
             db.execute('BEGIN IMMEDIATE')
+            require_active_session(request,db)
             row=db.execute('SELECT revision FROM profiles WHERE user_id=?',(owner['id'],)).fetchone()
             revision=row['revision'] if row else 0
             if data.revision!=revision: raise HTTPException(409,'账号资料已在其他窗口更新，请重新加载或明确覆盖')
@@ -369,6 +389,8 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
 
     from backend.submissions import install
     install(app,store,ROOT,user,reference_dir,production=production)
+    from backend.community import install as install_community
+    install_community(app,store,ROOT,user)
     from backend.roles import install as install_roles
     install_roles(app,store,ROOT,user,production=production)
     from backend.previews import install as install_previews
@@ -386,7 +408,7 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
     @app.api_route('/',methods=['GET','HEAD'])
     def index():
         html=(ROOT/'index.html').read_text(encoding='utf-8')
-        html=html.replace('</head>','<script src="/profile_store.js"></script><script src="/auth.js"></script><link rel="stylesheet" href="/accounts.css">\n</head>')
+        html=html.replace('</head>','<script src="/profile_store.js"></script><script src="/announcements.js"></script><script src="/auth.js"></script><link rel="stylesheet" href="/accounts.css">\n</head>')
         if versioned_scores:html=html.replace('</head>','<script>globalThis.RACEPICK_VERSIONED_SCORES=true;</script></head>')
         return HTMLResponse(html)
 
@@ -396,7 +418,7 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
     if writeback_lab is not None:
         from backend.writeback import install as install_writeback
         install_writeback(app,store,ROOT,user,writeback_lab,preview_source)
-    assets={'styles.css','config.js','api.js','app_state.js','allocator.js','race_scores.js','cars.json','gauntlet_data.json','auth.js','profile_store.js','accounts.css','submissions.js','submissions.css','admin_access.js','data_previews.js','data_previews.css','writeback_lab.js'}
+    assets={'styles.css','config.js','api.js','app_state.js','allocator.js','race_scores.js','cars.json','gauntlet_data.json','auth.js','profile_store.js','accounts.css','submissions.js','submissions.css','admin_access.js','data_previews.js','data_previews.css','writeback_lab.js','announcements.js','admin_accounts.js'}
     if versioned_scores:assets.add('score_versions.js')
     @app.api_route('/{name}',methods=['GET','HEAD'])
     def asset(name:str):

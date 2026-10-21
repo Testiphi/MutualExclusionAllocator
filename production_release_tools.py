@@ -16,8 +16,10 @@ APP_FILES=('index.html','styles.css','config.js','app_state.js','api.js','alloca
  'production/configure.py','production/requirements-linux-py312.lock','production/install-runtime.sh','production/selfcheck.py','PRODUCTION_DEPLOYMENT.md')
 
 BASE_FILES=APP_FILES
-APP_FILES=BASE_FILES+('backend/score_repository.py','backend/score_versions.py','backend/score_production.py',
+SCORE_FILES=('backend/score_repository.py','backend/score_versions.py','backend/score_production.py',
                      'score_versions.html','score_versions.js','production/score-capability.json','SCORE_PRODUCTION_DEPLOYMENT.md')
+COMMUNITY_FILES=('backend/community.py','announcements.js','admin_accounts.html','admin_accounts.js')
+APP_FILES=BASE_FILES+SCORE_FILES+COMMUNITY_FILES
 
 def digest(raw):return hashlib.sha256(raw).hexdigest()
 def allowed(name):return name in APP_FILES or bool(re.fullmatch(r'wheels/[A-Za-z0-9_.+\-]+\.whl',name))
@@ -44,7 +46,8 @@ def read_bundle(bundle):
   names=z.namelist()
   if len(names)!=len(set(names)) or 'manifest.json' not in names or not set(BASE_FILES)<=set(names) or any(n!='manifest.json' and not allowed(n) for n in names):raise ValueError('发布包文件白名单不匹配')
   if any(i.file_size>40*1024*1024 for i in z.infolist()) or sum(i.file_size for i in z.infolist())>200*1024*1024:raise ValueError('包体积异常')
-  if (set(names)&(set(APP_FILES)-set(BASE_FILES))) and not set(APP_FILES)<=set(names):raise ValueError('版本化成绩发布包缺少必要组件')
+  for group in (SCORE_FILES,COMMUNITY_FILES):
+   if set(names)&set(group) and not set(group)<=set(names):raise ValueError('发布包缺少必要组件')
   contents={n:z.read(n) for n in names if n!='manifest.json'};info=json.loads(z.read('manifest.json'))
  if info!=manifest(contents,info['provenance']):raise ValueError('发布包校验失败')
  return contents,info
@@ -54,7 +57,8 @@ def verify(target):
  if target.is_symlink():raise ValueError('版本目录不能是链接')
  info=json.loads((target/'manifest.json').read_text(encoding='utf-8'))
  if not set(BASE_FILES)<=set(info['files']) or any(not allowed(n) for n in info['files']):raise ValueError('版本文件白名单异常')
- if (set(info['files'])&(set(APP_FILES)-set(BASE_FILES))) and not set(APP_FILES)<=set(info['files']):raise ValueError('版本化成绩发布目录缺少必要组件')
+ for group in (SCORE_FILES,COMMUNITY_FILES):
+  if set(info['files'])&set(group) and not set(group)<=set(info['files']):raise ValueError('发布目录缺少必要组件')
  contents={n:(target/n).read_bytes() for n in info['files']}
  if any((target/n).is_symlink() for n in info['files']) or info!=manifest(contents,info['provenance']) or target.name!=info['id']:raise ValueError('版本校验失败')
  return info
@@ -77,6 +81,15 @@ def stage(bundle,base):
  return target
 
 def check_score_compatibility(target,info,data_dir):
+ import sqlite3
+ from contextlib import closing
+ account_db=Path(data_dir).resolve()/'accounts.sqlite3'
+ if account_db.exists():
+  with closing(sqlite3.connect(account_db.as_uri()+'?mode=ro',uri=True)) as db:
+   if db.execute("SELECT 1 FROM sqlite_master WHERE name='community_schema'").fetchone():
+    version=db.execute('SELECT max(version) FROM community_schema').fetchone()[0]
+    cap=Path(target)/'production/score-capability.json'
+    if 'backend/community.py' not in info['files'] or 'production/score-capability.json' not in info['files'] or json.loads(cap.read_text()).get('account_controls_schema')!=version:raise ValueError('账号管理已升级，禁止回退到不能执行停用权限的旧应用')
  root=Path(data_dir)/'score-state'
  if not root.exists():return
  capability=Path(target)/'production/score-capability.json'

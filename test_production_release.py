@@ -44,6 +44,17 @@ class ReleaseTests(unittest.TestCase):
   (version_dir/'manifest.json').write_text(json.dumps({'schema':2}))
   with self.assertRaises(ValueError):check_score_compatibility(target,self.info,data)
 
+ def test_account_controls_block_old_release_without_score_state(self):
+  import sqlite3
+  from production_release_tools import check_score_compatibility
+  target=stage(self.bundle,self.path/'releases');data=self.path/'accounts-only';data.mkdir()
+  from contextlib import closing
+  with closing(sqlite3.connect(data/'accounts.sqlite3')) as db,db:
+   db.execute('CREATE TABLE community_schema(version INTEGER)');db.execute('INSERT INTO community_schema VALUES(1)')
+  check_score_compatibility(target,self.info,data)
+  legacy={**self.info,'files':{n:v for n,v in self.info['files'].items() if n!='backend/community.py'}}
+  with self.assertRaises(ValueError):check_score_compatibility(target,legacy,data)
+
  def test_explicit_committed_data_snapshot_overrides_checkout_newlines(self):
   snapshot={n:(ROOT/n).read_bytes().replace(b'\r\n',b'\n') for n in ('cars.json','gauntlet_data.json')}
   output=self.path/'canonical.zip';pack(ROOT,ROOT,self.wheels,output,{'snapshot':True},data_contents=snapshot)

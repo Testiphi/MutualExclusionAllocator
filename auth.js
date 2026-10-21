@@ -1,6 +1,6 @@
 /* Loaded only by the local account server; the static deployment does not include this script. */
 (function(root) {
-    let csrf = '', owner = null, store = null, applyProfile = null, known = null, busy = false;
+    let csrf = '', owner = null, store = null, applyProfile = null, readProfile = null, known = null, busy = false;
     let box, message, accountLabel, statusLabel, authDialog;
     let authMode='login', mailToken='', mailMode='file', pendingMailLink=null, sentAction='resend', invitesEnabled=false;
     const $ = id => document.getElementById(id);
@@ -11,7 +11,7 @@
         try {
             const response = await fetch('/api' + path, {
                 method, credentials:'same-origin', signal:controller.signal,
-                headers:{'Content-Type':'application/json','X-CSRF-Token':csrf, ...(owner ? {'X-Account-ID':owner.id} : {})},
+                headers:{'Content-Type':'application/json','X-CSRF-Token':csrf,...(method==='PUT'&&path==='/me/profile'?{'X-Profile-Save':'explicit'}:{}), ...(owner ? {'X-Account-ID':owner.id} : {})},
                 ...(body === undefined ? {} : {body:JSON.stringify(body)})
             });
             const data = await response.json();
@@ -73,6 +73,8 @@
     }
     function status(state) {
         statusLabel.textContent = (labels[state.status] || state.status) + (state.error ? '：' + state.error : '');
+        if (globalThis.dispatchEvent) globalThis.dispatchEvent(new Event('garage-save-state'));
+        $('accountRetry').disabled=state.status==='saving';
         $('accountReload').hidden = !['conflict','error','expired','unsaved'].includes(state.status);
         $('accountOverwrite').hidden = state.status !== 'conflict';
     }
@@ -87,6 +89,7 @@
         }
         return {cars:[...new Set(profile.cars.filter(c => known.has(c)))],stars};
     }
+    async function saveNow(){if(current()===null)store.update(readProfile());return store.flush();}
     function current() { return store ? store.snapshot() : null; }
     function ask(text) {
         return new Promise(resolve => {
@@ -116,14 +119,14 @@
         }
     }
     async function init(options) {
-        known = options.known; applyProfile = options.apply;
+        known = options.known; applyProfile = options.apply; readProfile=options.read;
         box = document.createElement('section'); box.className='account-panel';
         box.setAttribute('aria-label','账号');
         box.innerHTML=`<div class="account-heading"><strong id="accountLabel">账号</strong><span id="accountStatus" role="status"></span>
           <div id="accountGuestActions" class="account-guest-actions" hidden><button type="button" id="accountOpenLogin" class="account-primary">登录</button><button type="button" id="accountOpenRegister">注册</button></div></div>
         <p id="accountMessage" role="status"></p>
         <div id="accountActions" hidden>
-          <button type="button" id="accountImport">导入本机游客车库</button><button type="button" id="accountRetry">重试保存</button>
+          <button type="button" id="accountImport">导入本机游客车库</button><button type="button" id="accountRetry">保存车库</button>
           <button type="button" id="accountReload" hidden>加载账号资料</button><button type="button" id="accountOverwrite" hidden>用本窗口资料覆盖</button>
           <button type="button" id="accountLogout">退出账号</button>
         </div>`;
@@ -167,6 +170,7 @@
             }
             if(owner.role==='superadmin') {
                 const access=document.createElement('a');access.href='/admin-access';access.className='account-link';access.textContent='管理员与邀请码';$('accountActions').append(access);
+                const users=document.createElement('a');users.href='/admin-accounts';users.className='account-link';users.textContent='账号与公告管理';$('accountActions').append(users);
             } else if(owner.role==='player'&&invitesEnabled) {
                 const redeem=document.createElement('button');redeem.type='button';redeem.textContent='兑换管理员邀请码';redeem.onclick=()=>showAuth('invite');$('accountActions').append(redeem);
             }
@@ -188,7 +192,7 @@
             }
             void action(async()=>{
                 if(mode==='login'){
-                    if(store)await store.flush();
+                    if(store?.state().dirty&&!await ask('当前有未保存的车库修改。兑换后需重新登录，草稿保留在本窗口，不会自动保存。继续？'))return;
                     await request('POST','/auth/login',{email,password});clearPasswords();location.reload();
                 }else if(mode==='register'){
                     const result=await request('POST','/auth/register',{email,password,...(invitesEnabled&&invite_code?{invite_code}:{})});showAuth('sent',{message:result.message,sentAction:mode});
@@ -196,7 +200,7 @@
                     const result=await request('POST',mode==='forgot'?'/auth/forgot-password':'/auth/resend-verification',{email});
                     showAuth('sent',{message:result.message,sentAction:mode});
                 }else if(mode==='invite'){
-                    if(store)await store.flush();
+                    if(store?.state().dirty&&!await ask('当前有未保存的车库修改。兑换后需重新登录，草稿保留在本窗口，不会自动保存。继续？'))return;
                     const result=await request('POST','/auth/redeem-invitation',{invite_code});
                     if(store)await store.freeze();showAuth('relogin',{message:result.message});
                 }else if(mode==='verify'){
@@ -207,7 +211,7 @@
                 }
             });
         };
-        $('accountRetry').onclick=()=>action(()=>store.flush());
+        $('accountRetry').onclick=()=>action(saveNow);
         $('accountReload').onclick=()=>action(async()=>{
             if (!await ask('放弃本窗口未保存的账号修改，加载服务器中的资料？游客车库不会被删除。')) return;
             await store.useRemote(); applyProfile(current() || {cars:[],stars:{}}); report('已加载账号资料');
@@ -217,11 +221,12 @@
             await store.overwrite(); report('已保存本窗口资料');
         });
         $('accountImport').onclick=()=>action(async()=>{
-            const cars=localStorage.getItem(APP_CONFIG.storageKeys.garage);
+            const unified=api.guestProfile?.();
+            const cars=unified?JSON.stringify(unified.cars):localStorage.getItem(APP_CONFIG.storageKeys.garage);
             if (cars===null) throw new Error('此浏览器来源没有游客车库；线上域名的本地数据不会自动出现在这里');
-            const profile=validate({cars:JSON.parse(cars),stars:JSON.parse(localStorage.getItem(APP_CONFIG.storageKeys.starMap)||'{}')});
-            if (!await ask(`用本机游客车库（${profile.cars.length}辆车、${Object.keys(profile.stars).length}项星级）替换当前账号资料？原游客数据会保留。`)) return;
-            store.update(profile); applyProfile(profile); await store.flush(); report('导入并保存成功');
+            const profile=validate({cars:JSON.parse(cars),stars:unified?.stars||JSON.parse(localStorage.getItem(APP_CONFIG.storageKeys.starMap)||'{}')});
+            if (!await ask(`用本机游客车库（${profile.cars.length}辆车、${Object.keys(profile.stars).length}项星级）作为当前临时选择？需要点击保存车库才会更新账号，原游客数据会保留。`)) return;
+            store.update(profile); applyProfile(profile); report('已导入为临时选择，尚未保存到账号');
         });
         $('accountLogout').onclick=()=>action(async()=>{
             if (store.state().dirty && !await ask('仍有未保存修改。退出后草稿仅保留在本窗口，重新登录此账号可以恢复。继续退出？')) return;
@@ -238,6 +243,7 @@
                 else showAuth(purpose,{token});
             }
         }
+        if(session.community_controls&&globalThis.AnnouncementUI){try{await AnnouncementUI.init({owner,request});}catch(error){report('更新公告暂时无法读取，其他功能可继续使用');}}
         openMailLink();
         addEventListener('hashchange',openMailLink);
         addEventListener('beforeunload',e=>{if(store?.state().dirty){e.preventDefault();e.returnValue='';}});
@@ -246,7 +252,9 @@
         init, active:()=>!!store,
         garage:()=>{const p=current(); return p===null?null:appState.garage(p.cars,known);},
         stars:()=>current()?.stars || {},
-        saveGarage:cars=>store.update({...current() || {stars:{}},cars:[...cars]}),
-        saveStars:stars=>store.update({...current() || {cars:[]},stars})
+        saveNow, state:()=>store?.state(),
+        restore:async()=>{await store.useRemote();applyProfile(current()||{cars:[...known],stars:{}});},
+        saveGarage:cars=>store.update({...readProfile(),cars:[...cars]}),
+        saveStars:stars=>store.update({...readProfile(),stars})
     };
 })(globalThis);
