@@ -224,6 +224,7 @@ auth.js / profile_store.js / submissions.js / admin_access.js
 - **State boundaries** — `app_state.js` validates garage/route selections and publishes only the latest queued computation. Storage failures are shown in the page; invalid saved garage data is not overwritten at startup.
 - **State persistence** — guest garages and stars remain browser-local; signed-in profiles are saved to the account through `auth.js`/`profile_store.js`. UI preferences remain local
 - **Local maintenance** — Python tools maintain JSON/Excel; the production account backend does not automatically apply score changes
+- **Per-track top three** — expand the collapsed list below a selected track to see up to three owned cars from the current zone, using the current tier, stars and SC setting. Each track is ranked independently; other tracks do not reserve cars here. Normal/auto tiers retain candidate priority order, and missing scores show “暂无成绩”. Changing tracks collapses the list; garage and settings changes refresh its contents.
 
 Static guest hosting needs no backend or database. Production accounts require a Python service, SQLite and SMTP. The frontend still needs no bundling step.
 
