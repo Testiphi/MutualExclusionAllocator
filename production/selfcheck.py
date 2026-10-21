@@ -45,5 +45,13 @@ def main():
     except ValueError:pass
     else:raise AssertionError('恢复锁未阻止并发服务')
    restore(config,snapshot)
+   from backend.score_production import source_snapshot,migrate,backup as score_backup,drill,toggle
+   _,hashes=source_snapshot(root)
+   result=migrate(config,root,hashes['gauntlet_data.json'],hashes['cars.json'])
+   assert result['existing_rows_preserved'] and not result['write_enabled']
+   migration_app=make_app(config,'unused-selfcheck-secret')
+   assert migration_app.state.score_versions.current()[0]['id']==result['version']
+   bundle=score_backup(config);assert drill(config,bundle)['version']==result['version']
+   assert toggle(config,True)['write_enabled'];assert not toggle(config,False)['write_enabled']
  print('production runtime smoke: PASS (temporary database; no email sent)')
 if __name__=='__main__':main()

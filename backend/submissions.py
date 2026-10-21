@@ -269,7 +269,12 @@ def install(app,store,root,user,reference_root=None,production=False):
         with store.connect() as db:
             total=db.execute('SELECT count(*) FROM submissions WHERE '+where,args).fetchone()[0]
             rows=db.execute('SELECT id,batch_id,owner_id,revision,status,payload,decision_reason,review_score,updated_at FROM submissions WHERE '+where+' ORDER BY updated_at DESC,id DESC LIMIT 50 OFFSET ?',args+[offset]).fetchall()
-        return {'total':total,'items':[{**dict(r),'payload':json.loads(r['payload'])} for r in rows]}
+            items=[{**dict(r),'payload':json.loads(r['payload'])} for r in rows]
+            if hasattr(app.state,'writeback'):
+                for item in items:
+                    receipt=db.execute('SELECT batch_id,state FROM write_receipts WHERE submission_id=?',(item['id'],)).fetchone()
+                    item['application']=dict(receipt) if receipt else None
+        return {'total':total,'items':items}
 
     @app.get('/api/submissions/{sid}')
     def detail(sid:str,request:Request):
@@ -281,6 +286,7 @@ def install(app,store,root,user,reference_root=None,production=False):
             result['baseline']=json.loads(row['baseline']) if row['baseline'] else None
             result['images']=[{'id':r['id'],'digest':r['digest'],'url':f'/api/submissions/{sid}/images/{r["id"]}'} for r in db.execute('SELECT id,digest FROM submission_images WHERE submission_id=? AND active=1 ORDER BY created_at',(sid,))]
             result['events']=[{**dict(r),'snapshot':json.loads(r['snapshot'])} for r in db.execute('SELECT revision,actor_id,action,snapshot,created_at FROM submission_events WHERE submission_id=? ORDER BY revision',(sid,))]
+            result['application_scope']='production' if production else 'local'
             result['application']=None
             if hasattr(app.state,'writeback'):
                 receipt=db.execute('SELECT batch_id,state FROM write_receipts WHERE submission_id=?',(sid,)).fetchone()

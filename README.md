@@ -349,3 +349,5 @@ Static packaging and rollback are documented in [DEPLOYMENT.md](DEPLOYMENT.md), 
 | [Data maintenance tools](PYTHON_TOOLS.md) | JSON/Excel maintenance, change review and validation |
 
 New local phase: [versioned score data and release confirmation](SCORE_VERSIONS_LOCAL.md). An independent sandbox supports code/data separation, superadministrator item/slower approvals, backup and rollback. Not merged into main or enabled in production; existing workbooks are not synchronized automatically.
+
+Production score-version migration is prepared in [SCORE_PRODUCTION_DEPLOYMENT.md](SCORE_PRODUCTION_DEPLOYMENT.md): preserve accounts, migrate read-only by default, rehearse coherent backup recovery, then enable writes separately. No live migration has been performed. The user has confirmed the first scheduled account backup succeeded.

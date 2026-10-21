@@ -2,6 +2,7 @@
 (() => {
     const $=id=>document.getElementById(id);
     const statuses={draft:'草稿',pending:'待审核',needs_info:'需要补充',accepted:'已采纳，待应用',ignored:'未采纳'};
+    function statusText(item){return item.application?(item.application.state==='applied'?'已采纳，已应用':'已采纳，已回滚'):statuses[item.status];}
     const kinds={new:'新增成绩',placeholder:'填入已有占位',same:'与参考库一致',faster:'比当前更快',slower:'比当前更慢',rule_needed:'需要维护规则',invalid:'暂不能比较',availability_existing:'该档已收录可用性',availability_new:'新增可用性归档建议'};
     const actions={created:'保存草稿',edited:'补充或编辑',submitted:'提交审核',image_added:'补充图片',image_removed:'移除当前证据（历史保留）',accept:'采纳',needs_info:'要求补充',ignore:'忽略',reopened:'重新审核'};
     let user,csrf,catalog,scope='mine',offset=0,selected=null,busy=false,preview=null,formSerial=0;
@@ -108,7 +109,7 @@
                 unsaved=false;await loadDetail(item.id);
             });
             n.className='queue-item';n.setAttribute('aria-current',String(item.id===selected?.id));
-            n.append(el('small',`${statuses[item.status]} · ${item.review_score===null?'未评分':item.review_score+'/5分'} · ${p.zone}/${p.tier} · ${p.time||'未填'}秒`),el('small',new Date(item.updated_at*1000).toLocaleString()));
+            n.append(el('small',`${statusText(item)} · ${item.review_score===null?'未评分':item.review_score+'/5分'} · ${p.zone}/${p.tier} · ${p.time||'未填'}秒`),el('small',new Date(item.updated_at*1000).toLocaleString()));
             $('list').append(n);
         }
         if(!data.items.length)$('list').append(el('p','暂无符合条件的投稿。','muted'));
@@ -123,7 +124,7 @@
     }
     function renderDetail(){
         const item=selected,root=$('detail');root.replaceChildren();
-        root.append(el('h2',item.payload.unlisted?'资料补充建议':item.payload.small+' · '+item.payload.car),el('span',statuses[item.status],'badge'));
+        root.append(el('h2',item.payload.unlisted?'资料补充建议':item.payload.small+' · '+item.payload.car),el('span',statusText(item),'badge'));
         root.append(el('p',item.review_score===null?'质量评分：暂未评分':`质量评分：${item.review_score} / 5`));
         root.append(el('p',`投稿 ${item.id.slice(0,8)} · 版本 ${item.revision} · 投稿人 ${item.owner_id.slice(0,8)}`,'muted'));
         if(item.decision_reason)root.append(el('p','审核反馈：'+item.decision_reason,'warning'));
@@ -139,7 +140,7 @@
             }));images.append(card);}root.append(images);
         if(item.owner_id===user.id&&['draft','needs_info'].includes(item.status))renderEdit(root,item);
         if(['admin','superadmin'].includes(user.role)&&item.status==='pending')renderReview(root,item);
-        if(item.application)root.append(el('p',`测试库应用状态：${item.application.state==='applied'?'已应用':'已回滚'} · 批次 ${item.application.batch_id}；审核历史保留，如需修改请新建投稿。`));
+        if(item.application)root.append(el('p',`${item.application_scope==='production'?'正式成绩':'测试库'}应用状态：${item.application.state==='applied'?'已应用':'已回滚'} · 批次 ${item.application.batch_id}；审核历史保留，如需修改请新建投稿。`));
         if(!item.application&&['admin','superadmin'].includes(user.role)&&['accepted','ignored'].includes(item.status)){
             const label=el('label','重新审核原因'),reason=el('textarea');reason.maxLength=2000;label.append(reason);root.append(label,button('重新打开审核',async()=>{
                 if(!reason.value.trim()){say('请填写重新审核原因。',reason);return;}

@@ -29,4 +29,25 @@ class ReleaseTests(unittest.TestCase):
    import json
    z.writestr('manifest.json',json.dumps(info))
   with self.assertRaises(ValueError):read_bundle(bad)
+ def test_versioned_data_blocks_legacy_application_activation(self):
+  import sqlite3,json
+  from contextlib import closing
+  from production_release_tools import check_score_compatibility
+  target=stage(self.bundle,self.path/'releases');data=self.path/'data';version='a'*32
+  version_dir=data/'score-state/scores/versions'/version;version_dir.mkdir(parents=True)
+  with closing(sqlite3.connect(data/'accounts.sqlite3')) as db, db:
+   db.execute('CREATE TABLE score_current(slot INTEGER,version TEXT)');db.execute('INSERT INTO score_current VALUES(1,?)',(version,))
+  (version_dir/'manifest.json').write_text(json.dumps({'schema':1}))
+  check_score_compatibility(target,self.info,data)
+  legacy={**self.info,'files':{n:v for n,v in self.info['files'].items() if n!='production/score-capability.json'}}
+  with self.assertRaises(ValueError):check_score_compatibility(target,legacy,data)
+  (version_dir/'manifest.json').write_text(json.dumps({'schema':2}))
+  with self.assertRaises(ValueError):check_score_compatibility(target,self.info,data)
+
+ def test_explicit_committed_data_snapshot_overrides_checkout_newlines(self):
+  snapshot={n:(ROOT/n).read_bytes().replace(b'\r\n',b'\n') for n in ('cars.json','gauntlet_data.json')}
+  output=self.path/'canonical.zip';pack(ROOT,ROOT,self.wheels,output,{'snapshot':True},data_contents=snapshot)
+  contents,_=read_bundle(output)
+  for n,raw in snapshot.items():self.assertEqual(contents[n],raw)
+
 if __name__=='__main__':unittest.main()

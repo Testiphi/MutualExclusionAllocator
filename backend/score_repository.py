@@ -36,8 +36,22 @@ def validate_lab(path,accounts=None):
     if accounts is not None and Path(accounts).resolve()!=path/'accounts':raise ValueError('必须使用独立测试账号库')
     return path,marker
 
+def validate_production_root(path,accounts):
+    accounts=Path(accounts).absolute();path=Path(path).absolute()
+    if accounts.resolve()!=accounts or path!=accounts/'score-state' or path.resolve()!=path:raise ValueError('生产成绩必须使用账号数据目录下的score-state')
+    account_marker=json.loads((accounts/'production.json').read_text(encoding='utf-8'))
+    if account_marker.get('kind')!='racepick-production-v1':raise ValueError('缺少生产账号库标记')
+    for part in (accounts,path,path/'scores',path/'scores/versions',path/'backups'):
+        if not part.is_dir() or part.is_symlink() or part.resolve()!=part:raise ValueError('生产成绩目录不存在或包含链接')
+    for part in path.rglob('*'):
+        if part.is_symlink() or part.resolve()!=part or (part.is_file() and part.stat().st_nlink!=1):raise ValueError('生产成绩目录不能含链接')
+    marker=json.loads((path/'production-scores.json').read_text(encoding='utf-8'))
+    if marker.get('kind')!='racepick-score-production-v1' or marker.get('account_marker')!=account_marker:raise ValueError('生产成绩与账号库标记不匹配')
+    return path,marker
+
 class Versions:
-    def __init__(self,lab):self.lab=Path(lab);self.root=self.lab/'scores/versions'
+    def __init__(self,lab,validator=None):
+        self.lab=Path(lab);self.root=self.lab/'scores/versions';self.validator=validator or validate_lab
     def create(self,contents,parent,kind,batch=None):
         data=json.loads(contents['gauntlet_data.json']);cars=json.loads(contents['cars.json'])
         errors,_=validate_data(data,cars)
@@ -64,7 +78,7 @@ class Versions:
         return info,contents
     @contextmanager
     def lock(self):
-        validate_lab(self.lab)
+        self.validator(self.lab)
         with (self.lab/'maintenance.lock').open('a+b') as stream:
             if stream.tell()==0:stream.write(b'0');stream.flush()
             stream.seek(0)

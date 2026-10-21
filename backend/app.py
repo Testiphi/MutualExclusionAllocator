@@ -124,7 +124,7 @@ class Store:
             db.execute('INSERT INTO attempts VALUES (?,1,?) ON CONFLICT(bucket) DO UPDATE SET count=count+1', (key, now+600))
 
 
-def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None, mail_config=None, preview_source=None, writeback_lab=None, production=False, score_version_lab=None):
+def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None, mail_config=None, preview_source=None, writeback_lab=None, production=False, score_version_lab=None, score_state=None):
     parsed = urlsplit(origin)
     if production:
         if parsed.scheme!='https' or not parsed.hostname or parsed.hostname in ('127.0.0.1','localhost') or parsed.port not in (None,443) or parsed.path or parsed.query or parsed.fragment or parsed.username or parsed.password:
@@ -145,18 +145,20 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
         validate_lab(score_version_lab,data_dir or ROOT/'.local-accounts')
         if preview_source is not None or writeback_lab is not None or reference_dir is not None:raise ValueError('数据版本实验室不能混用其他来源')
         if mail_config is not None and mail_config.mode!='file':raise ValueError('数据版本实验室仅使用文件邮件')
+    if score_state is not None and (not production or score_version_lab is not None):raise ValueError('score_state仅供独立生产入口使用')
+    versioned_scores=score_version_lab is not None or score_state is not None
     store = Store(data_dir or ROOT / '.local-accounts')
     app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None, redirect_slashes=not production)
     app.state.store = store
-    if score_version_lab is not None:
+    if versioned_scores:
         from backend.score_versions import ScoreWriter
-        app.state.score_versions=ScoreWriter(score_version_lab,store)
+        app.state.score_versions=ScoreWriter(score_state or score_version_lab,store,production=production)
         app.state.writeback=app.state.score_versions
         reference_dir=app.state.score_versions.current_dir
     from backend.mailing import MailConfig, MailService
     mail_service = MailService(store,origin,mail_config or MailConfig())
     app.state.mail_service = mail_service
-    catalog_root=reference_dir() if score_version_lab is not None else ROOT
+    catalog_root=reference_dir() if versioned_scores else ROOT
     catalog = json.loads((catalog_root/'cars.json').read_text(encoding='utf-8'))
     known = {c['nickname'] for c in catalog['cars'] if c.get('nickname') and c.get('zones')}
 
@@ -236,8 +238,8 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
     def me(request:Request, response:Response):
         current=session(request,False)
         if not current:
-            return {'user':None,'csrf':new_session(response),'mail_mode':'production' if production else mail_service.config.mode,'admin_invites':True,'readonly_previews':preview_source is not None,'writeback_lab':writeback_lab is not None,'score_versions_lab':score_version_lab is not None}
-        return {'user':user(request) if current['user_id'] else None,'csrf':current['csrf'],'mail_mode':'production' if production else mail_service.config.mode,'admin_invites':True,'readonly_previews':preview_source is not None,'writeback_lab':writeback_lab is not None,'score_versions_lab':score_version_lab is not None}
+            return {'user':None,'csrf':new_session(response),'mail_mode':'production' if production else mail_service.config.mode,'admin_invites':True,'readonly_previews':preview_source is not None,'writeback_lab':writeback_lab is not None,'score_versions_lab':score_version_lab is not None,'score_versions':versioned_scores}
+        return {'user':user(request) if current['user_id'] else None,'csrf':current['csrf'],'mail_mode':'production' if production else mail_service.config.mode,'admin_invites':True,'readonly_previews':preview_source is not None,'writeback_lab':writeback_lab is not None,'score_versions_lab':score_version_lab is not None,'score_versions':versioned_scores}
 
     @app.post('/api/auth/register')
     def register(data:Registration, request:Request):
@@ -375,28 +377,32 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
     @app.get('/api/health')
     def health():
         with store.connect() as db:db.execute('SELECT 1').fetchone()
-        return {'status':'ok','mode':'production' if production else 'local','schema':6}
+        result={'status':'ok','mode':'production' if production else 'local','schema':6}
+        if versioned_scores:
+            result['score_version']=app.state.score_versions.current()[0]['id']
+            with store.connect() as db:result['score_writes']=app.state.score_versions.enabled(db)
+        return result
 
     @app.api_route('/',methods=['GET','HEAD'])
     def index():
         html=(ROOT/'index.html').read_text(encoding='utf-8')
         html=html.replace('</head>','<script src="/profile_store.js"></script><script src="/auth.js"></script><link rel="stylesheet" href="/accounts.css">\n</head>')
-        if score_version_lab is not None:html=html.replace('</head>','<script>globalThis.RACEPICK_VERSIONED_SCORES=true;</script></head>')
+        if versioned_scores:html=html.replace('</head>','<script>globalThis.RACEPICK_VERSIONED_SCORES=true;</script></head>')
         return HTMLResponse(html)
 
-    if score_version_lab is not None:
+    if versioned_scores:
         from backend.score_versions import install as install_score_versions
         install_score_versions(app,app.state.score_versions,ROOT,user,session)
     if writeback_lab is not None:
         from backend.writeback import install as install_writeback
         install_writeback(app,store,ROOT,user,writeback_lab,preview_source)
     assets={'styles.css','config.js','api.js','app_state.js','allocator.js','race_scores.js','cars.json','gauntlet_data.json','auth.js','profile_store.js','accounts.css','submissions.js','submissions.css','admin_access.js','data_previews.js','data_previews.css','writeback_lab.js'}
-    if score_version_lab is not None:assets.add('score_versions.js')
+    if versioned_scores:assets.add('score_versions.js')
     @app.api_route('/{name}',methods=['GET','HEAD'])
     def asset(name:str):
         if production and name in ('data_previews.js','data_previews.css','writeback_lab.js'):raise HTTPException(404)
         if name not in assets: raise HTTPException(404)
-        if score_version_lab is not None and name in ('gauntlet_data.json','cars.json'):
+        if versioned_scores and name in ('gauntlet_data.json','cars.json'):
             info,contents=app.state.score_versions.current()
             return Response(contents[name],media_type='application/json',headers={'X-Score-Version':info['id']})
         if writeback_lab is not None and name in ('gauntlet_data.json','cars.json'):

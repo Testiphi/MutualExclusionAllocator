@@ -337,3 +337,5 @@ python -B -m backend.app --port 8000
 | [数据维护工具](PYTHON_TOOLS.md) | JSON/Excel维护、差异审核和校验 |
 
 新增本地阶段：[成绩数据版本与发布确认](SCORE_VERSIONS_LOCAL.md)。在独立测试目录实现代码/数据分离、超级管理员逐项及更慢确认、备份回滚；尚未合入main或启用生产。现有工作簿不自动同步。
+
+生产成绩版本化准备见[SCORE_PRODUCTION_DEPLOYMENT.md](SCORE_PRODUCTION_DEPLOYMENT.md)：现有账号库保留、默认只读迁移、成套备份演练后再单独启用。当前尚未执行线上迁移。服务器首次定时账号备份已由用户日志确认成功。

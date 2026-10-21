@@ -9,7 +9,7 @@ from pydantic import BaseModel, ConfigDict, Field, StrictBool
 from argon2 import PasswordHasher
 from argon2.exceptions import VerificationError, InvalidHashError
 from backend.previews import ROOT, Pick, build_preview, load_source, LOADED_ENGINE, engine_hashes
-from backend.score_repository import Versions, validate_lab, encode, digest, write_new, FILES
+from backend.score_repository import Versions, validate_lab, validate_production_root, encode, digest, write_new, FILES, sync_dir
 from backend.manage import copy_database
 
 EXTRA=('backend/score_versions.py','backend/score_repository.py')
@@ -40,15 +40,35 @@ class Reauth(BaseModel):
     password:str=Field(min_length=1,max_length=128)
 
 class ScoreWriter:
-    def __init__(self,lab,store):
-        self.lab,self.marker=validate_lab(lab,store.directory);self.store=store;self.versions=Versions(self.lab)
-        with self.versions.lock(),store.connect() as db:
-            db.executescript('''CREATE TABLE IF NOT EXISTS score_current(slot INTEGER PRIMARY KEY CHECK(slot=1),version TEXT NOT NULL);
-            CREATE TABLE IF NOT EXISTS score_batches(id TEXT PRIMARY KEY,actor TEXT NOT NULL,request_key TEXT NOT NULL,request_hash TEXT NOT NULL,state TEXT NOT NULL,manifest TEXT NOT NULL,UNIQUE(actor,request_key));
-            CREATE TABLE IF NOT EXISTS write_receipts(submission_id TEXT PRIMARY KEY,batch_id TEXT NOT NULL,state TEXT NOT NULL);
-            CREATE TABLE IF NOT EXISTS score_reauth(session_hash TEXT PRIMARY KEY,user_id TEXT NOT NULL,expires INTEGER NOT NULL);''')
-            db.execute('INSERT OR IGNORE INTO score_current VALUES(1,?)',(self.marker['initial'],))
-        self.current()  # Refuse unsupported or corrupted data instead of silently reseeding.
+    @staticmethod
+    def initialize_tables(db,initial):
+        statements=(
+            'CREATE TABLE IF NOT EXISTS score_current(slot INTEGER PRIMARY KEY CHECK(slot=1),version TEXT NOT NULL)',
+            'CREATE TABLE IF NOT EXISTS score_batches(id TEXT PRIMARY KEY,actor TEXT NOT NULL,request_key TEXT NOT NULL,request_hash TEXT NOT NULL,state TEXT NOT NULL,manifest TEXT NOT NULL,UNIQUE(actor,request_key))',
+            'CREATE TABLE IF NOT EXISTS write_receipts(submission_id TEXT PRIMARY KEY,batch_id TEXT NOT NULL,state TEXT NOT NULL)',
+            'CREATE TABLE IF NOT EXISTS score_reauth(session_hash TEXT PRIMARY KEY,user_id TEXT NOT NULL,expires INTEGER NOT NULL)')
+        for sql in statements:db.execute(sql)
+        db.execute('INSERT OR IGNORE INTO score_current VALUES(1,?)',(initial,))
+
+    def __init__(self,lab,store,production=False):
+        self.production=production;self.store=store
+        if production:
+            self.lab,self.marker=validate_production_root(lab,store.directory)
+            self.versions=Versions(self.lab,lambda p:validate_production_root(p,store.directory))
+            with store.connect() as db:
+                try:control=db.execute('SELECT binding FROM score_control WHERE slot=1').fetchone()
+                except Exception:raise ValueError('成绩迁移尚未完成，禁止自动初始化') from None
+                if not control or control['binding']!=self.marker['binding']:raise ValueError('成绩版本与账号数据库绑定不一致')
+        else:
+            self.lab,self.marker=validate_lab(lab,store.directory);self.versions=Versions(self.lab)
+            with self.versions.lock(),store.connect() as db:
+                db.execute('BEGIN IMMEDIATE');self.initialize_tables(db,self.marker['initial'])
+        self.current()
+
+    def enabled(self,db):
+        return not self.production or bool(db.execute('SELECT enabled FROM score_control WHERE slot=1').fetchone()[0])
+    def writable(self,db):
+        if not self.enabled(db):raise HTTPException(403,'正式成绩写回尚未启用，当前为只读验证阶段')
     def current_id(self,db):return db.execute('SELECT version FROM score_current WHERE slot=1').fetchone()[0]
     def current(self):
         with self.store.connect() as db:identity=self.current_id(db)
@@ -79,7 +99,7 @@ class ScoreWriter:
     def put(self,db,bid,state,m):db.execute('UPDATE score_batches SET state=?,manifest=? WHERE id=?',(state,encode(m),bid))
     def prepare(self,actor,body):
         with self.versions.lock(),self.store.connect() as db:
-            db.execute('BEGIN IMMEDIATE');self.idle(db);self.tools()
+            db.execute('BEGIN IMMEDIATE');self.idle(db);self.writable(db);self.tools()
             fingerprint=digest(encode(body.model_dump()).encode())
             old=db.execute('SELECT id,request_hash FROM score_batches WHERE actor=? AND request_key=?',(actor,body.request_key)).fetchone()
             if old:
@@ -128,7 +148,7 @@ class ScoreWriter:
         for name in FILES:write_new(folder/name,contents[name])
         copy_database(self.store.path,folder/'accounts.sqlite3')
         manifest={'version':version,'files':{n:digest((folder/n).read_bytes()) for n in (*FILES,'accounts.sqlite3')}}
-        write_new(folder/'manifest.json',encode(manifest).encode())
+        write_new(folder/'manifest.json',encode(manifest).encode());sync_dir(folder);sync_dir(folder.parent)
         return {'folder':folder.name,'manifest_hash':digest(encode(manifest).encode()),'version':version}
     def verify_backup(self,receipt):
         folder=self.lab/'backups'/receipt['folder'];raw=(folder/'manifest.json').read_bytes()
@@ -146,7 +166,7 @@ class ScoreWriter:
     def execute(self,actor,session_hash,bid,body):
         with self.versions.lock():
             with self.store.connect() as db:
-                row,m=self.get(db,bid);self.recent(db,actor,session_hash)
+                row,m=self.get(db,bid);self.recent(db,actor,session_hash);self.writable(db)
                 if row['state']=='applied':return {**m,'state':'applied'}
                 if row['state']!='prepared' or body.digest!=m['digest']:reject('批次状态或确认摘要不匹配')
                 self.fresh(db,m)
@@ -159,7 +179,7 @@ class ScoreWriter:
                     if item.get('slower') and (not a.slower_confirmed or not a.slower_reason.strip()):reject('更慢成绩必须再次确认并填写原因')
             backup=self.backup(bid,m['base'],'apply');self.verify_backup(backup)
             with self.store.connect() as db:
-                db.execute('BEGIN IMMEDIATE');self.fresh(db,m);self.recent(db,actor,session_hash)
+                db.execute('BEGIN IMMEDIATE');self.writable(db);self.fresh(db,m);self.recent(db,actor,session_hash)
                 m['backup']=backup;m['approval']={'actor':actor,'at':int(time.time()),**body.model_dump()}
                 m['events'].append({'action':'apply_started','at':int(time.time())});self.put(db,bid,'applying',m)
             try:
@@ -183,7 +203,7 @@ class ScoreWriter:
         if not reason.strip():reject('回滚必须填写原因')
         with self.versions.lock():
             with self.store.connect() as db:
-                row,m=self.get(db,bid);self.recent(db,actor,session_hash);self.idle(db)
+                row,m=self.get(db,bid);self.recent(db,actor,session_hash);self.writable(db);self.idle(db)
                 if row['state']=='rolled_back':return {**m,'state':'rolled_back'}
                 if row['state']!='applied' or self.current_id(db)!=m['target']:reject('已存在后续版本，禁止覆盖回滚；需要新的反向变更批次')
             self.verify_backup(m['backup'])
@@ -226,14 +246,18 @@ class ScoreWriter:
 def install(app,writer,root,user,session):
     def owner(request):
         actor=user(request)
-        if actor['role']!='superadmin' or not actor['verified']:raise HTTPException(403,'仅已验证超级管理员可发布或回滚测试成绩')
+        if actor['role']!='superadmin' or not actor['verified']:raise HTTPException(403,'仅已验证超级管理员可发布或回滚成绩')
         if request.headers.get('x-account-id')!=actor['id']:raise HTTPException(401,'账号变化，请刷新')
         return actor['id'],session(request)['token_hash']
     def safely(fn,*args):
         try:return fn(*args)
         except (OSError,ValueError) as error:raise HTTPException(409,'校验或文件操作失败：'+str(error)) from error
     @app.get('/score-versions')
-    def page():return FileResponse(root/'score_versions.html')
+    def page():
+        if writer.production:
+            from fastapi.responses import HTMLResponse
+            return HTMLResponse((root/'score_versions.html').read_text(encoding='utf-8').replace('成绩版本测试台','正式成绩发布').replace('确认测试操作','确认正式成绩操作').replace('独立测试环境 · 发布只影响本环境数据版本，不修改代码、线上成绩或工作簿。','超级管理员发布与回滚正式成绩；操作前请核对数据版本、完整变更和备份。'))
+        return FileResponse(root/'score_versions.html')
     @app.get('/api/scores/snapshot')
     def snapshot():
         info,contents=safely(writer.current)
@@ -244,7 +268,8 @@ def install(app,writer,root,user,session):
         with writer.store.connect() as db:
             pending=db.execute("SELECT id,revision,accepted_payload FROM submissions WHERE status='accepted' AND NOT EXISTS(SELECT 1 FROM write_receipts WHERE submission_id=submissions.id) ORDER BY updated_at DESC,id LIMIT 100").fetchall()
             batches=db.execute('SELECT id,state,manifest FROM score_batches ORDER BY rowid DESC LIMIT 50').fetchall()
-        return {'current':info,'lab':str(writer.lab),'items':[{**dict(r),'accepted_payload':json.loads(r['accepted_payload'])} for r in pending],
+            enabled=writer.enabled(db)
+        return {'current':info,'production':writer.production,'write_enabled':enabled,'lab':'' if writer.production else str(writer.lab),'items':[{**dict(r),'accepted_payload':json.loads(r['accepted_payload'])} for r in pending],
                 'batches':[{'id':r['id'],'state':r['state'],'created_at':json.loads(r['manifest'])['created_at']} for r in batches]}
     @app.post('/api/admin/score-versions/reauth')
     def reauth(body:Reauth,request:Request):return writer.reauthenticate(*owner(request),body.password)
