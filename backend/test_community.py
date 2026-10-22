@@ -49,6 +49,8 @@ class CommunityTests(unittest.TestCase):
         self.assertEqual(other.post('/api/me/announcements/'+aid+'/dismiss',json={}).status_code,200)
         self.assertEqual(other.get('/api/me/announcement-preferences').json()['ignored'],[aid])
         self.assertEqual(self.client.get('/api/me/announcement-preferences').json()['ignored'],[])
+        self.assertEqual(other.request('DELETE','/api/me/announcements/'+aid+'/dismiss',json={}).status_code,200)
+        self.assertEqual(other.get('/api/me/announcement-preferences').json()['ignored'],[])
         self.assertEqual(other.put('/api/me/announcement-preferences',json={'muted':True,'revision':0}).status_code,200)
         self.assertEqual(other.put('/api/me/announcement-preferences',json={'muted':False,'revision':0}).status_code,409)
         self.assertEqual(other.put('/api/me/announcement-preferences',json={'muted':False,'revision':1}).status_code,200)

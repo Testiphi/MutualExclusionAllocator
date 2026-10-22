@@ -126,6 +126,13 @@ def install(app,store,root,user):
             if not db.execute("SELECT 1 FROM announcements WHERE id=? AND state='published'",(aid,)).fetchone():raise HTTPException(404,'公告不存在或已撤下')
             db.execute('INSERT OR IGNORE INTO announcement_dismissals VALUES(?,?,?)',(current['id'],aid,int(time.time())))
         return {'ignored':True}
+    @app.delete('/api/me/announcements/{aid}/dismiss')
+    def undo_dismiss(aid:str,request:Request):
+        current=actor(request)
+        with store.connect() as db:
+            db.execute('BEGIN IMMEDIATE');app.state.require_active_session(request,db)
+            db.execute('DELETE FROM announcement_dismissals WHERE user_id=? AND announcement_id=?',(current['id'],aid))
+        return {'ignored':False}
     @app.get('/api/admin/announcements')
     def admin_announcements(request:Request):
         actor(request,True)
