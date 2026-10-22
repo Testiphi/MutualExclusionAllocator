@@ -127,3 +127,6 @@ node test_boot_smoke.js
 用户随后授权准备上线。release/contribution-production工作目录整合0938886与main的73e3f8b；原contribution-leaderboard及8009模拟环境保持。新增backend.contribution_production在线只读预检和停服显式迁移，生产启动仅在完整贡献schema存在时启用，不自动迁移；本地开关仍限独立实验室。历史“生产禁止启用”的描述是适配前状态，当前升级步骤以CONTRIBUTIONS_PRODUCTION.md为准。
 生产包纳入排行榜资源、迁移工具与兼容标记；迁移后禁止激活旧贡献不兼容程序。成套备份沿用完整SQLite及成绩版本，恢复演练新增贡献规则/表计数核验。既有账号、当前成绩版本、写回开关、工作簿不变；不导入本地模拟数据或历史贡献。
 本轮后端122项通过；根目录61项执行60通过/1原有Linux检查跳过；JS63项、启动冒烟及语法/空白检查通过。Linux真实锁与Python3.12离线依赖由服务器暂存阶段验证。尚未执行服务器迁移、切换或公网验收。
+
+## 2026-10-22 公网验收与收尾
+用户确认排行榜、公开昵称和主页导航已上线且功能正常。生产应用为1fcc18c06a7b920ed0aa8b0b，成套备份/恢复演练通过，备份timer于20:28:08 CST恢复；两轮旧目录清理均经用户确认执行。以上覆盖前文“尚未上线”的历史状态，完整证据范围见[生产验收记录](CONTRIBUTIONS_PRODUCTION.md)，最新交接入口见[CLOUD_HANDOFF.md](CLOUD_HANDOFF.md)。本轮仅更新文档并推送release/contribution-production，不改代码、数据、工作簿、发布包或生产环境。

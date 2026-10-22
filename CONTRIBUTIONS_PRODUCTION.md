@@ -1,6 +1,6 @@
 # 贡献排行榜与主页导航生产升级
 
-2026-10-22：排行榜、公开昵称与主页导航已通过用户本地验收。本轮在独立release/contribution-production目录准备生产适配，整合功能0938886与main数据73e3f8b，保留8009原验收环境，不合并main。尚未操作服务器。
+2026-10-22：排行榜、公开昵称与主页导航已通过用户本地验收。本轮在独立release/contribution-production目录准备生产适配，整合功能0938886与main数据73e3f8b，保留8009原验收环境，不合并main。生产上线及用户验收已完成；以下保留操作方案，实际结果和清理记录见文末。
 
 ## 范围与数据保护
 
@@ -96,3 +96,58 @@ current和进程cwd均为新ID，服务active/running；health应为production/s
 ## 验证边界
 
 Windows临时库验证生产入口、质量/发布/回滚、历史排除、既有表保留、迁移事务回滚、版本兼容及成套备份恢复。Windows测试使用服务锁替身；Linux真实锁及Python3.12离线环境由服务器暂存安装脚本验证，只有通过才可切换。本地包准备好不表示已上线。
+
+## 2026-10-22 生产上线验收完成及目录清理
+
+本节覆盖上文准备期状态。证据来自用户回传的服务器命令输出及明确的“验收完成，功能均正常”反馈；文档收尾不访问或修改生产环境，不重新打包、不重启、不重复迁移，也不合并main。
+
+### 实际上线版本与验收
+
+- 新应用ID：`1fcc18c06a7b920ed0aa8b0b`；打包源码 `fa23531106e4eec54ccf9cd91164475888f354a9`，数据基线 `73e3f8b0bb1ea0c6b2cafe82d8002e1fe4a775ee`。文档后续提交不改变已部署包。
+- 用户确认9文件上传校验通过、暂存成功、离线依赖安装及Linux临时数据库自检通过。保留原Ubuntu24.04/Python3.12/Nginx配置，没有重跑初始化、成绩分离或community迁移。
+- 迁移回传 `contribution_schema=1`、四张贡献业务表均0、`historical_submissions_enrolled=0`、`existing_rows_preserved=true`、`pending_batches=0`，保持原账号/车库/投稿及成绩写回状态。
+- 在线备份演练时counts为23/13/2；停服后贡献迁移时为24/13/2。两者是不同时间快照，迁移指纹确认原有行保持，不据此认定迁移新增账号，也不能强行恢复历史数量。
+- current与实际进程cwd均指向 `/opt/racepick/releases/1fcc18c06a7b920ed0aa8b0b`，启动时MainPID=130103、服务active/running。首个公网请求502，重试返回健康JSON；未以首次502认定上线失败。
+- 最后回传health：status=ok、mode=production、schema=6、community_schema=1、contribution_schema=1、contributions=true，score_version=`42d62fde9b81197ac0558087a9a25f97`、score_writes=true。
+- 用户明确确认公网功能全部正常，包括本轮排行榜、昵称及导航整理的验收。没有额外回传新规则启用后某条真实投稿的计分/发布回执，不另行声称已完成真实贡献积分闭环验收。公告由用户自行发布，本任务仅提供文案，不推定公告已经发布。
+
+### 成套备份、恢复演练和定时器
+
+以下备份均在 `/var/lib/racepick/backups/`，不能单独拿其中SQLite覆盖活动库。
+
+| 用途 | 文件 | 已知结果 |
+|---|---|---|
+| 升级前在线备份 | scores-20261022T122438120528Z.zip | 校验及独立恢复演练通过；演练目录305f234b5d2a805bfaaec07d，版本42d62fde…，counts23/13/2，active_database_replaced=false |
+| 停服最终备份 | scores-20261022T122554381864Z.zip | 149122字节，racepick:racepick，600；清单校验通过，版本保持 |
+| 贡献迁移自动保护备份 | scores-20261022T122638564366Z.zip | 迁移工具输出实际路径；后续盘点149122字节 |
+| 新版运行后备份 | scores-20261022T122749408259Z.zip | 后续盘点149678字节；用户确认新版校验与恢复演练通过、contribution_schema=1、active_database_replaced=false |
+
+新版演练通过时用户未贴完整原始输出；后续只读盘点出现20:27:50的 `/var/lib/racepick/restore-drills/a7414e7eb5ecc5a5c1ad659c`，时间与新版备份对应，但没有清单映射证明，不把目录与ZIP配对写成已独立核实的事实。
+
+定时器于 **2026-10-22 20:28:08 CST** 恢复，enabled、active(waiting)；NEXT为 **2026-10-23 04:19:44 CST**。最后回传LAST仍为10月22日04:18:37，不能将恢复调度写成新版已完成首次自动执行。网站健康与写回开关正常。后续按需核验该次实际执行结果，不新增监控任务。
+
+### 已授权清理范围与保留项
+
+删除前核对版本清单、进程cwd/exe/命令行/打开文件/内存映射、已加载服务及常见systemd/cron/Nginx配置引用，检查范围内无引用；对上传包还核对了本地完整留档及校验清单。用户分别明确批准后自行执行删除。
+
+已删除 `/opt/racepick/releases/` 下四个旧版本（用户确认完成且网站/定时器正常，未提供该轮完整删除日志）：
+
+- 09897d5f81a696dca0b95c8e
+- 3ac58aba697f3189b751d6ea
+- 7a0f2927404cab20f0a5a020
+- c907541d0c209f9a38a181a5
+
+已删除 `/root/racepick-deploy/` 下四个旧上传目录（完整输出确认逐个删除）：
+
+- accounts-release
+- accounts-credentials-fix
+- data-20261021
+- score-versions-20261021
+
+上传目录从约63M降至21M，释放约42M；结合旧应用目录清理估计总释放约300M，不视为精确磁盘块测量。
+
+保留当前应用1fcc18c…及上一应用651ea3d…；上传目录20261022-contributions-1fcc18c0、community-20261022、20261016-icp、nginx-before-accounts-ghnuwvit及顶层静态发布文件。上一应用不支持贡献计分，不能作为直接回退目标。
+
+`/var/lib/racepick`业务数据、全部成套备份、历史SQLite备份、score-state版本/批次备份、restore-drills全部保留。`/var/www/racepick`与`/var/www/racepick-releases`也保留，Nginx仍有静态root引用，不能推定无用。没有清理其他目录或重命名版本哈希目录。
+
+最后一次删除输出确认：current仍为1fcc18c…，网站active、health正常、成绩42d62fde…和score_writes=true保持，timer active且NEXT仍为10月23日04:19:44。
