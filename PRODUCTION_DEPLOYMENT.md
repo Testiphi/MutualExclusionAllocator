@@ -270,3 +270,7 @@ systemctl start racepick-accounts
 ## 2026-10-21 正式成绩版本化准备（尚未迁移）
 
 用户已确认独立测试功能验收。服务器当前09897d5f81a696dca0b95c8e及JSON/规则哈希已核对，首次定时账号备份于2026-10-21 04:18:40 CST成功（用户回传）。下一阶段迁移、默认只读验证、成套备份演练与单独启用见[SCORE_PRODUCTION_DEPLOYMENT.md](SCORE_PRODUCTION_DEPLOYMENT.md)。当前线上仍未启用成绩写回；迁移后不再使用仅SQLite恢复或用代码包覆盖成绩。
+
+## 2026-10-22 公告、账号管理与手动车库上线
+
+用户确认发布版本 `651ea3d88a27bdff95088b75` 上线验收通过，成套备份和恢复演练成功，自动备份恢复。账号核心schema=6、新增community_schema=1，成绩版本和写回开关保持。详细迁移证据、切换排障及PHP漏洞只读排查结论见 [本次部署记录](COMMUNITY_DEPLOYMENT.md)。本次文档提交不重新部署，不合入main。

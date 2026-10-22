@@ -1,6 +1,6 @@
 # 公告、账号管理与手动车库保存（本地功能分支）
 
-2026-10-22。分支 `feature/announcements-accounts-manual-save`，从已部署成绩版本功能基线 `ae85384` 建立独立工作目录。尚未合入 main、未推送、未发布或迁移线上数据库。保留原账号库、成绩 JSON 与工作簿。
+2026-10-22。分支 `feature/announcements-accounts-manual-save`，从已部署成绩版本功能基线 `ae85384` 建立独立工作目录。该段记录开发初期状态；生产已于2026-10-22部署并验收通过，见 COMMUNITY_DEPLOYMENT.md。功能仍未合入 main。保留原账号库、成绩 JSON 与工作簿。
 
 ## 第一版行为
 
@@ -50,7 +50,7 @@ python -B -X utf8 -m backend.app --port 8008 --data-dir .local-accounts/communit
 
 核心账号 schema 保持 6，新增独立 `community_schema=1` 和附属表。已有 users/profiles/submissions 不改写、不导入、不替换。新的元数据随账号 SQLite 一起备份，版本化成绩成套备份也包含这些表。
 
-生产启动要求显式完成升级，不能通过启动服务偷偷迁移。未来经授权部署时须先做旧版本成套备份与恢复演练、停服，再使用 `python -B -m backend.community --config /etc/racepick/production.json` 迁移；该工具另存迁移前 SQLite 快照，在服务锁下事务创建元数据。新代码可以校验旧数据库但不会直接提供服务。**本次未运行生产迁移，也未准备上线切换。**
+生产启动要求显式完成升级，不能通过启动服务偷偷迁移。未来经授权部署时须先做旧版本成套备份与恢复演练、停服，再使用 `python -B -m backend.community --config /etc/racepick/production.json` 迁移；该工具另存迁移前 SQLite 快照，在服务锁下事务创建元数据。新代码可以校验旧数据库但不会直接提供服务。**以上为升级设计；后续生产迁移与验收已完成，详见 COMMUNITY_DEPLOYMENT.md。**
 
 发布工具保留旧包完整性校验，同时阻止升级数据库后切回不识别停用状态的旧代码。生产回滚应使用支持 community_schema=1 的应用；迁移前数据库恢复属于单独灾难恢复，不能丢弃新账号/公告/停用记录。不能只恢复迁移前 SQLite 而保留新成绩状态。
 
@@ -68,4 +68,4 @@ python -B -X utf8 -m backend.app --port 8008 --data-dir .local-accounts/communit
 
 ## 用户本地验收完成与上线准备
 
-用户已逐项确认：公告关闭/本条忽略/全局静音与恢复、跨会话保留；账号停用恢复/强退/审计/主号保护；临时选车调星级不覆盖保存资料、恢复保留地图；显式保存跨窗口与重登保持、多窗口冲突拦截、玩家及普通管理员权限隔离。现授权准备上线，尚未进行服务器变更。
+用户已逐项确认：公告关闭/本条忽略/全局静音与恢复、跨会话保留；账号停用恢复/强退/审计/主号保护；临时选车调星级不覆盖保存资料、恢复保留地图；显式保存跨窗口与重登保持、多窗口冲突拦截、玩家及普通管理员权限隔离。随后完成生产部署、上线验收与自动备份恢复，详见 [生产验收记录](COMMUNITY_DEPLOYMENT.md)。
