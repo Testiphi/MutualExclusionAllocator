@@ -1256,8 +1256,8 @@
       },
       "四区": {
         "理论": [{"cars":[{"name":"速尾"}],"time":33.95},{"cars":[{"name":"杰哥"}],"time":34.05},{"cars":[{"name":"风龙"}],"time":34.06},{"cars":[{"name":"ssc"}],"time":34.79},{"cars":[{"name":"万达"}],"time":35.2}],
-        "高手": [{"cars":[{"name":"速尾","stars":6}],"time":34.39},{"cars":[{"name":"风龙","stars":5}],"time":34.5},{"cars":[{"name":"杰哥","stars":6}],"time":34.9},{"cars":[{"name":"f5","stars":3}],"time":35.2},{"cars":[{"name":"ssc","stars":2}],"time":35.35},{"cars":[{"name":"ssc","stars":1}],"time":35.6},{"cars":[{"name":"爱音","stars":4}],"time":35.8},{"cars":[{"name":"dose","stars":4}],"time":36.26}],
-        "普通": [{"cars":[{"name":"速尾","stars":6}]},{"cars":[{"name":"杰哥","stars":6}]},{"cars":[{"name":"爱音","stars":4}]},{"cars":[{"name":"f5","stars":3}]},{"cars":[{"name":"ssc","stars":1}]},{"cars":[{"name":"ssc","stars":2}]},{"cars":[{"name":"dose","stars":4}]},{"cars":[{"name":"风龙","stars":5}]}],
+        "高手": [{"cars":[{"name":"速尾","stars":6}],"time":34.39},{"cars":[{"name":"风龙","stars":5}],"time":34.5},{"cars":[{"name":"杰哥","stars":6}],"time":34.9},{"cars":[{"name":"肥龙","stars":6}],"time":34.9},{"cars":[{"name":"f5","stars":3}],"time":35.2},{"cars":[{"name":"ssc","stars":2}],"time":35.35},{"cars":[{"name":"ssc","stars":1}],"time":35.6},{"cars":[{"name":"爱音","stars":4}],"time":35.8},{"cars":[{"name":"dose","stars":4}],"time":36.26}],
+        "普通": [{"cars":[{"name":"速尾","stars":6}]},{"cars":[{"name":"杰哥","stars":6}]},{"cars":[{"name":"爱音","stars":4}]},{"cars":[{"name":"f5","stars":3}]},{"cars":[{"name":"ssc","stars":1}]},{"cars":[{"name":"ssc","stars":2}]},{"cars":[{"name":"dose","stars":4}]},{"cars":[{"name":"风龙","stars":5}]},{"cars":[{"name":"肥龙","stars":6}]}],
         "自动": [{"cars":[{"name":"速尾"}]},{"cars":[{"name":"万达"}]},{"cars":[{"name":"9x8"}]}]
       }
     },
