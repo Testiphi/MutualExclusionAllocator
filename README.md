@@ -11,7 +11,7 @@ A car allocator for Gauntlet challenges, supporting five-zone/four-zone pools, f
 
 ## Current Features and Release Status
 
-Latest user-confirmed status (2026-10-22): application `651ea3d88a27bdff95088b75`, community_schema=1. Existing accounts and profiles were preserved; score version `c8889ff96eb29714d80248cca283b9fa` and write enablement were unchanged. Production acceptance, coherent backup and isolated restore drill passed; scheduled backups are restored. The feature branch has not been merged into main.
+Latest user-confirmed status (2026-10-22): application `651ea3d88a27bdff95088b75`, community_schema=1. Existing accounts and profiles were preserved; score version `c8889ff96eb29714d80248cca283b9fa` and write enablement were unchanged. Production acceptance, coherent backup and isolated restore drill passed; scheduled backups are restored. The feature branch was merged via PR #2 into main at `fdc3a43` on 2026-10-22. This source merge did not redeploy production. See [cloud handoff](CLOUD_HANDOFF.md).
 
 Latest data deployment: on 2026-10-21, three five-zone theory time improvements went live in release `09897d5f81a696dca0b95c8e` (source `7a2f164`). The user confirmed the updated results and account features work correctly. See the [deployment record](PRODUCTION_DEPLOYMENT.md). Official score writeback had not yet been deployed at that point.
 

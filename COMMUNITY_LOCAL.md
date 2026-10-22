@@ -1,6 +1,6 @@
 # 公告、账号管理与手动车库保存（本地功能分支）
 
-2026-10-22。分支 `feature/announcements-accounts-manual-save`，从已部署成绩版本功能基线 `ae85384` 建立独立工作目录。该段记录开发初期状态；生产已于2026-10-22部署并验收通过，见 COMMUNITY_DEPLOYMENT.md。功能仍未合入 main。保留原账号库、成绩 JSON 与工作簿。
+2026-10-22。分支 `feature/announcements-accounts-manual-save`，从已部署成绩版本功能基线 `ae85384` 建立独立工作目录。该段记录开发初期状态；生产已于2026-10-22部署并验收通过，见 COMMUNITY_DEPLOYMENT.md。功能已于2026-10-22经 PR #2 合入 main（fdc3a43），本地阶段记录保留。保留原账号库、成绩 JSON 与工作簿。
 
 ## 第一版行为
 
