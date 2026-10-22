@@ -26,13 +26,17 @@ def settings(path):
 
 def marker(config):return {'kind':'racepick-production-v1','origin':config['origin'],'owner_email':config['owner_email']}
 
-def require_database(config):
+def require_database(config,require_community=True):
     path=Path(config['data_dir'])
     if json.loads((path/'production.json').read_text(encoding='utf-8'))!=marker(config):raise ValueError('生产库标记与配置不一致，禁止导入本地测试库')
     if not (path/'accounts.sqlite3').is_file():raise ValueError('生产数据库不存在')
     with closing(sqlite3.connect((path/'accounts.sqlite3').as_uri()+'?mode=ro',uri=True)) as db:
         if db.execute('SELECT max(version) FROM schema_version').fetchone()[0]!=6:raise ValueError('生产库版本不兼容，先备份并单独评估迁移')
+        if require_community:
+            if not db.execute("SELECT 1 FROM sqlite_master WHERE name='community_schema'").fetchone() or db.execute('SELECT max(version) FROM community_schema').fetchone()[0]!=1:raise ValueError('账号管理升级未完成，请先停服备份并运行backend.community迁移')
         if db.execute("SELECT 1 FROM sqlite_master WHERE name='write_batches'").fetchone():raise ValueError('禁止使用写回实验室数据库')
+        if db.execute("SELECT 1 FROM sqlite_master WHERE name='score_current'").fetchone():
+            if not db.execute("SELECT 1 FROM sqlite_master WHERE name='score_control'").fetchone() or not (path/'score-state/production-scores.json').is_file():raise ValueError('版本化成绩绑定缺失，不能回退到代码包数据')
     return path
 
 def initialize(config):
@@ -47,7 +51,8 @@ def initialize(config):
 
 def make_app(config,password):
     path=require_database(config)
-    return create_app(path,config['origin'],mail_config=MailConfig('smtp','',password,production=True,daily_limit=config['mail_daily_limit']),production=True)
+    score_state=path/'score-state' if (path/'score-state').exists() else None
+    return create_app(path,config['origin'],score_state=score_state,mail_config=MailConfig('smtp','',password,production=True,daily_limit=config['mail_daily_limit']),production=True)
 
 @contextmanager
 def service_lock(path):
@@ -61,7 +66,11 @@ def service_lock(path):
 
 def stamp():return datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S%fZ')
 def backup(config):
-    path=require_database(config);directory=path/'backups';directory.mkdir(exist_ok=True)
+    path=require_database(config)
+    if (path/'score-state').exists():
+        from backend.score_production import backup as scores_backup
+        return scores_backup(config)
+    directory=path/'backups';directory.mkdir(exist_ok=True)
     return copy_database(path/'accounts.sqlite3',directory/('accounts-'+stamp()+'.sqlite3'))
 def bootstrap(config):
     path=require_database(config)
@@ -74,6 +83,7 @@ def bootstrap(config):
 def restore(config,source):
     path=require_database(config)
     with service_lock(path):
+        if (path/'score-state').exists():raise ValueError('版本化成绩库不能只恢复SQLite；先校验成套备份并执行restore-drill，再按停服成套恢复流程处理')
         source=Path(source).resolve()
         if source==path/'accounts.sqlite3':raise ValueError('备份不能是正在使用的数据库')
         temp=path/('restore-'+stamp()+'.sqlite3')
@@ -81,7 +91,8 @@ def restore(config,source):
         try:
             with closing(sqlite3.connect(temp)) as db, db:
                 if db.execute('SELECT max(version) FROM schema_version').fetchone()[0]!=6:raise ValueError('只恢复兼容v6备份')
-                if db.execute("SELECT 1 FROM sqlite_master WHERE name='write_batches'").fetchone():raise ValueError('拒绝测试写回库')
+                if db.execute("SELECT 1 FROM sqlite_master WHERE name IN ('write_batches','score_current')").fetchone():raise ValueError('拒绝实验室或版本化数据库的单文件恢复')
+                if not db.execute("SELECT 1 FROM sqlite_master WHERE name='community_schema'").fetchone() or db.execute("SELECT max(version) FROM community_schema").fetchone()[0]!=1:raise ValueError('备份缺少兼容的账号管理状态，禁止直接回退')
                 owner=db.execute('SELECT email FROM users JOIN super_admins ON users.id=super_admins.user_id').fetchone()
                 if owner and owner[0]!=config['owner_email']:raise ValueError('备份超级管理员与配置不同')
                 db.execute('DELETE FROM sessions');db.execute('DELETE FROM auth_tokens')

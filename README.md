@@ -1,5 +1,8 @@
 # [MutualExclusionAllocator](https://github.com/Testiphi/MutualExclusionAllocator)
 
+> 2026-10-22: Announcements, account controls and manual garage saving are deployed and user-accepted; scheduled backups are restored. Temporary car/star changes do not overwrite saved profiles. See [deployment and security check record](COMMUNITY_DEPLOYMENT.md).
+
+
 **English** | [中文](README.zh-CN.md)
 
 > 🌐 **Website**: [RacePick](https://racepick.cn/) · **Static guest demo**: [testiphi.github.io/MutualExclusionAllocator](https://testiphi.github.io/MutualExclusionAllocator/)
@@ -8,9 +11,11 @@ A car allocator for Gauntlet challenges, supporting five-zone/four-zone pools, f
 
 ## Current Features and Release Status
 
-Latest data deployment: on 2026-10-21, three five-zone theory time improvements went live in release `09897d5f81a696dca0b95c8e` (source `7a2f164`). The user confirmed the updated results and account features work correctly. See the [deployment record](PRODUCTION_DEPLOYMENT.md). Official score writeback remains local only.
+Latest user-confirmed status (2026-10-22): application `651ea3d88a27bdff95088b75`, community_schema=1. Existing accounts and profiles were preserved; score version `c8889ff96eb29714d80248cca283b9fa` and write enablement were unchanged. Production acceptance, coherent backup and isolated restore drill passed; scheduled backups are restored. The feature branch has not been merged into main.
 
-The account feature branch was merged into main on 2026-10-20, preserving the latest main-branch score data and existing workbooks. This source merge did not redeploy the production service; official score writeback remains local only.
+Latest data deployment: on 2026-10-21, three five-zone theory time improvements went live in release `09897d5f81a696dca0b95c8e` (source `7a2f164`). The user confirmed the updated results and account features work correctly. See the [deployment record](PRODUCTION_DEPLOYMENT.md). Official score writeback had not yet been deployed at that point.
+
+The account feature branch was merged into main on 2026-10-20, preserving the latest main-branch score data and existing workbooks. This source merge did not redeploy the production service; official score writeback had not yet been deployed at that point.
 
 Accounts and submission review went live on 2026-10-20. The user completed production acceptance for registration/email verification, password reset with old-password and session invalidation, garage/star persistence, submission review and role isolation.
 
@@ -18,9 +23,9 @@ Accounts and submission review went live on 2026-10-20. The user completed produ
 - Players submit results and provide requested follow-up information. Administrators can rate results, adjust tiers, accept or ignore submissions, and provide feedback.
 - A protected superadministrator manages email-bound administrator invitations and permissions.
 
-Acceptance saves a review decision; it does not update official scores automatically. Change previews, confirmed writeback, rollback and workbook synchronization remain local only, without public endpoints. Excel bulk import, contribution rewards and leaderboards are not implemented.
+Acceptance saves a review decision; it does not update official scores automatically. The user has since confirmed deployment and enablement of versioned score writes, which require explicit superadministrator confirmation. Workbook synchronization remains local. Excel bulk import, contribution rewards and leaderboards are not implemented.
 
-Manual database backup succeeded and the automatic backup timer is enabled. Its first scheduled execution was still pending verification at the time of this record. See [production deployment and acceptance](PRODUCTION_DEPLOYMENT.md).
+Manual database backup succeeded and the automatic backup timer is enabled. The user has since confirmed the scheduled run, coherent backup and isolated restore drill. See [production deployment and acceptance](PRODUCTION_DEPLOYMENT.md).
 
 
 ---
@@ -348,3 +353,7 @@ Static packaging and rollback are documented in [DEPLOYMENT.md](DEPLOYMENT.md), 
 | [Read-only change previews](PREVIEWS_LOCAL.md) | Local only: additions, updates, slower results and ordinary mirrors |
 | [Disposable writeback lab](WRITEBACK_LAB.md) | Local testing only: item confirmation, backup/rollback and workbook sync |
 | [Data maintenance tools](PYTHON_TOOLS.md) | JSON/Excel maintenance, change review and validation |
+
+New local phase: [versioned score data and release confirmation](SCORE_VERSIONS_LOCAL.md). An independent sandbox supports code/data separation, superadministrator item/slower approvals, backup and rollback. Not merged into main or enabled in production; existing workbooks are not synchronized automatically.
+
+Production score-version migration is prepared in [SCORE_PRODUCTION_DEPLOYMENT.md](SCORE_PRODUCTION_DEPLOYMENT.md): preserve accounts, migrate read-only by default, rehearse coherent backup recovery, then enable writes separately. No live migration has been performed. The user has confirmed the first scheduled account backup succeeded.

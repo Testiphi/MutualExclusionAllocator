@@ -89,18 +89,14 @@ test('真实页面清空选择后不会发布排队的旧结果', () => {
         return published;`)();
     assert.deepEqual(result, []);
 });
-test('真实页面保存失败显示通知，后续保存成功清除通知', async () => {
-    const result = await new Function(`
-        const storageFailures=new Map(), notice={};
-        const document={getElementById:()=>notice};
-        const APP_CONFIG={storageKeys:{garage:'garage',zoneMode:'zone'}};
-        let fail=true; const selectedCars=new Set(['X']),currentZone='zone5';
-        const api={saveGarage:async()=>{if(fail)throw Error('quota');},savePref(){}};
-        ${['storageResult','savePreference','saveZoneMode','saveGarage'].map(fn).join('\n')}
-        return (async()=>{await saveGarage();const first={...notice};fail=false;await saveGarage();return {first,last:notice};})();`)();
-    assert.equal(result.first.hidden, false);
-    assert.match(result.first.textContent, /车库未能保存/);
-    assert.equal(result.last.hidden, true);
+test('真实页面选择车库只暂存，不调用持久保存', async () => {
+    const result=await new Function(`
+      let staged=0, saved=0;const selectedCars=new Set(['X']);
+      const stageGuestGarage=()=>staged++,updateGarageSaveStatus=()=>{},saveZoneMode=()=>{},storageResult=()=>{};
+      const api={saveGarage:()=>saved++};
+      ${fn('saveGarage')}
+      return (async()=>{await saveGarage();return {staged,saved};})();`)();
+    assert.deepEqual(result,{staged:1,saved:0});
 });
 test('真实页面损坏车库读取保留原存储，不自动全选并保存', async () => {
     const result = await new Function(`
@@ -125,4 +121,16 @@ test('真实页面SC状态切到不含原类型的区档时恢复默认', () => 
         const theory=getRouteState('A','B');currentTier='高手';
         return {theory,expert:getRouteState('A','B'),stored:specialRouteEnabled['A/B']};`)();
     assert.deepEqual(result, {theory:'新跳图',expert:'all',stored:'all'});
+});
+
+test('游客显式保存合并车库星级并拒绝其他窗口陈旧写入', async()=>{
+ const values=new Map();let writes=0;const storage={getItem:k=>values.get(k)??null,setItem:(k,v)=>{writes++;values.set(k,v);}};
+ const api=apiFor(storage),base=api.guestRevision();
+ api.saveGuestProfile({cars:['X'],stars:{X:3}},base);
+ assert.equal(writes,1);assert.deepEqual([...await api.loadGarage(new Set(['X']))],['X']);
+ assert.deepEqual(api.guestProfile(),{cars:['X'],stars:{X:3}});
+ assert.throws(()=>api.saveGuestProfile({cars:[],stars:{}},base),/另一窗口/);
+ assert.equal(writes,1);
+ const next=api.guestRevision();api.saveGuestProfile({cars:[],stars:{}},next);
+ assert.deepEqual([...await api.loadGarage(new Set(['X']))],[]);
 });

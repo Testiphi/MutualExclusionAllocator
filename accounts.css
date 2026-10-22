@@ -43,3 +43,23 @@
 .account-dialog-links button { border: 0; background: transparent; padding: 5px 0; color: #79b8ff; font-size: .85rem; }
 #accountAuthClose { border: 0; background: transparent; font-size: 1.5rem; padding: 0 5px; line-height: 1; }
 @media(max-width:480px) { .account-dialog { padding: 20px; } .account-guest-actions { margin-left: 0; } }
+
+.account-dialog.announcement-dialog{width:min(760px,calc(100vw - 32px));max-width:760px;max-height:85vh;padding:0;overflow:hidden;box-sizing:border-box}
+.announcement-dialog[open]{display:flex;flex-direction:column}
+.announcement-header{position:relative;display:flex;justify-content:center;align-items:center;padding:24px 60px 6px;flex-shrink:0}
+.announcement-header h2{margin:0;font-size:1.45rem;text-align:center;overflow-wrap:anywhere}
+.announcement-dialog .announcement-close{position:absolute;right:14px;top:10px;margin:0;border:0;background:transparent;font-size:30px;line-height:1;padding:8px;color:#bac3cf}
+.announcement-meta{margin:0 30px 18px;text-align:center;color:#94a0b0;font-size:.85rem}
+.announcement-content{overflow-y:auto;min-height:0;padding:0 30px 24px;flex:1;overscroll-behavior:contain}
+.announcement-content h2{font-size:1.6rem;margin:6px 0 20px;line-height:1.35}
+.announcement-content h3{font-size:1.1rem;margin:24px 0 10px;line-height:1.5}
+.announcement-content p{margin:0 0 14px;line-height:1.8;white-space:pre-wrap}
+.announcement-actions{display:flex;justify-content:space-between;align-items:center;gap:16px;border-top:1px solid #36404b;padding:16px 24px;flex-shrink:0;background:#14191f}
+.announcement-links{display:flex;gap:12px;flex-wrap:wrap}
+.announcement-links button{background:transparent;border:0;color:#83baff;padding:4px 0;font-size:.85rem}
+.announcement-choices{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:10px 16px}
+.announcement-choices label{display:flex;flex-direction:row;align-items:center;gap:6px;font-size:.8rem;color:#c4cdd8;cursor:pointer;white-space:nowrap}
+.announcement-choices input{width:15px;height:15px;accent-color:#75adff;margin:0;padding:0;flex-shrink:0}
+.announcement-error{color:#ffcf87;margin:0;padding:8px 24px;flex-shrink:0}.announcement-error:empty{display:none}
+.announcement-history-item{display:block;width:100%;text-align:left;margin-bottom:10px;padding:12px}
+@media(max-width:560px){.announcement-header{padding:20px 48px 6px}.announcement-content{padding:0 20px 20px}.announcement-content h2{font-size:1.3rem}.announcement-actions{align-items:flex-start;padding:14px 16px}.announcement-choices{flex-direction:column;align-items:flex-end;gap:10px}}

@@ -161,7 +161,7 @@ def install(app,store,root,user,production=False):
         current=actor(request)
         store.throttle('invite-create:'+current['id'],20)
         with store.connect() as db:
-            db.execute('BEGIN IMMEDIATE')
+            db.execute('BEGIN IMMEDIATE');app.state.require_active_session(request,db)
             account=db.execute('SELECT id,role FROM users WHERE email=?',(body.email,)).fetchone()
             if account and effective_role(db,account['id'],account['role'])!='player':raise HTTPException(409,'该邮箱已具备管理权限')
             if db.execute("SELECT 1 FROM admin_invitations WHERE email=? AND status IN ('open','reserved') AND expires_at>?",(body.email,int(time.time()))).fetchone():
@@ -176,7 +176,7 @@ def install(app,store,root,user,production=False):
     def revoke(iid:str,body:InviteRevision,request:Request):
         current=actor(request)
         with store.connect() as db:
-            db.execute('BEGIN IMMEDIATE');row=db.execute('SELECT * FROM admin_invitations WHERE id=?',(iid,)).fetchone()
+            db.execute('BEGIN IMMEDIATE');app.state.require_active_session(request,db);row=db.execute('SELECT * FROM admin_invitations WHERE id=?',(iid,)).fetchone()
             if not row:raise HTTPException(404,'邀请不存在')
             if row['revision']!=body.revision:raise HTTPException(409,'邀请状态已变化，请刷新后操作')
             if row['status'] not in ('open','reserved'):raise HTTPException(409,'该邀请不能撤销；已生效管理员需单独收回权限')
@@ -189,7 +189,7 @@ def install(app,store,root,user,production=False):
         current=actor(request,False)
         store.throttle('invite-redeem:'+current['id'],10)
         with store.connect() as db:
-            db.execute('BEGIN IMMEDIATE')
+            db.execute('BEGIN IMMEDIATE');app.state.require_active_session(request,db)
             row=valid_invitation(db,body.invite_code,current['email'])
             grant(db,row,current['id'])
         return {'message':'管理员权限已激活，旧会话已退出，请重新登录'}
@@ -207,7 +207,7 @@ def install(app,store,root,user,production=False):
         current=actor(request)
         if not body.reason.strip():raise HTTPException(422,'请填写收回权限的原因')
         with store.connect() as db:
-            db.execute('BEGIN IMMEDIATE');row=db.execute('SELECT role FROM users WHERE id=?',(uid,)).fetchone()
+            db.execute('BEGIN IMMEDIATE');app.state.require_active_session(request,db);row=db.execute('SELECT role FROM users WHERE id=?',(uid,)).fetchone()
             if not row:raise HTTPException(404,'账号不存在')
             role=effective_role(db,uid,row['role'])
             if role=='superadmin':raise HTTPException(403,'主号超级管理员不可降级')

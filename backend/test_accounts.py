@@ -20,7 +20,7 @@ class AccountsTests(unittest.TestCase):
     def new_client(self):
         c=TestClient(self.app,base_url=ORIGIN)
         me=c.get('/api/auth/me').json()
-        c.headers.update({'Origin':ORIGIN,'X-CSRF-Token':me['csrf']})
+        c.headers.update({'Origin':ORIGIN,'X-CSRF-Token':me['csrf'],'X-Profile-Save':'explicit'})
         return c
     def post(self,path,data,client=None):
         return (client or self.client).post('/api/auth/'+path,json=data)

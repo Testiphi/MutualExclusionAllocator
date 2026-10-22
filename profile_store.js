@@ -1,7 +1,7 @@
 /* Account profile state machine. No DOM or authentication tokens in persistent storage. */
 (function(root) {
     const copy = value => JSON.parse(JSON.stringify(value));
-    function create({request, storage, userId, notify = () => {}}) {
+    function create({request, storage, userId, notify = () => {}, autoSave = false}) {
         const key = 'racepick.account-draft.v1.' + userId;
         let profile = null, revision = 0, generation = 0, dirty = false;
         let pending = null, frozen = false, status = 'loading', error = '';
@@ -33,8 +33,8 @@
             profile = copy(value); generation++; dirty = true;
             try { persist(); } catch { emit('error', '本窗口草稿无法保存，请勿关闭页面，点击重试'); return; }
             if (conflict) { emit('conflict','账号资料存在冲突，请选择加载账号资料或覆盖'); return; }
-            emit('unsaved');
-            void flush().catch(() => {});
+            emit(pending?'saving':'unsaved',pending?'保存期间的新修改需要再次点击保存':'');
+            if (autoSave) void flush().catch(() => {});
         }
         async function flush() {
             if (pending) return pending;
@@ -49,7 +49,8 @@
                     revision = result.revision;
                     if (ticket === generation) {
                         dirty = false; clearDraft(); emit('saved');
-                    } else persist();
+                    } else {persist();emit('unsaved','保存期间的新修改尚未保存');}
+                    if (!autoSave) break;
                 }
             })().catch(e => {
                 conflict = e.status === 409;

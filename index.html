@@ -46,6 +46,9 @@
         </summary>
         <div class="garage-body">
             <div class="garage-actions">
+                <button type="button" id="garageSaveBtn">保存车库</button>
+                <button type="button" id="garageRestoreBtn">恢复已保存</button>
+                <span id="garageSaveStatus" role="status">手动保存 · 临时选择不会覆盖车库</span>
                 <span class="garage-btn" id="selectAllBtn">全部点亮</span>
                 <span class="garage-btn" id="clearAllBtn">全部清空</span>
                 <span class="garage-btn" id="sortBtn">默认</span>
@@ -255,7 +258,8 @@
             } catch (error) {
                 storageResult(APP_CONFIG.storageKeys.starMap, '星级未能保存，请等待账号操作结束后重试');
             }
-        } else savePreference(APP_CONFIG.storageKeys.starMap, starsMap);
+        } else stageGuestGarage();
+        updateGarageSaveStatus();
     }
 
     /** 用户未设置时的分区默认星级：五区=最高星，四区=规则默认值 */
@@ -594,14 +598,61 @@
     }
 
     // --- 车库持久化 ---
+    let guestDirty=false,guestBase=null;
+    const guestDraftKey='racepick.guest-draft.v1';
+    function profileNow(){return {cars:[...selectedCars],stars:{...starsMap}};}
+    function updateGarageSaveStatus(){
+        const state=globalThis.accountUI?.active()?accountUI.state():{dirty:guestDirty};
+        const node=document.getElementById('garageSaveStatus');
+        if(node)node.textContent=state?.dirty?'临时试算中 · 车库/星级有未保存修改':'手动保存 · 点击保存才会更新车库';
+        const button=document.getElementById('garageSaveBtn');if(button)button.disabled=state?.status==='saving';
+    }
+    function stageGuestGarage(){
+        guestDirty=true;
+        try{globalThis.sessionStorage?.setItem(guestDraftKey,JSON.stringify({base:guestBase,profile:profileNow()}));}
+        catch(e){storageResult(APP_CONFIG.storageKeys.garage,'本窗口草稿无法缓存，请勿关闭页面；可点击保存车库');}
+        updateGarageSaveStatus();
+    }
     async function saveGarage() {
         try {
-            await api.saveGarage(selectedCars);
-            storageResult(APP_CONFIG.storageKeys.garage, null);
-        } catch (error) {
-            storageResult(APP_CONFIG.storageKeys.garage, '车库未能保存，刷新后可能丢失');
-        }
-        saveZoneMode();
+            if(globalThis.accountUI?.active()) accountUI.saveGarage(selectedCars);
+            else stageGuestGarage();
+        } catch(error){storageResult(APP_CONFIG.storageKeys.garage,error.message);}
+        updateGarageSaveStatus();saveZoneMode();
+    }
+    function garagePrompt(text,confirm=false){return new Promise(resolve=>{
+        const dialog=document.createElement('dialog');dialog.className='garage-confirm';const p=document.createElement('p');p.textContent=text;dialog.append(p);
+        const yes=document.createElement('button');yes.textContent=confirm?'确认继续':'知道了';
+        const finish=value=>{dialog.close();dialog.remove();resolve(value);};yes.onclick=()=>finish(true);
+        if(confirm){const no=document.createElement('button');no.textContent='取消';no.onclick=()=>finish(false);dialog.append(no);}
+        dialog.append(yes);dialog.addEventListener('cancel',e=>{e.preventDefault();finish(false);});document.body.append(dialog);dialog.showModal();
+    });}
+    async function commitGarage(){
+        try{
+            if(globalThis.accountUI?.active())await accountUI.saveNow();
+            else {api.saveGuestProfile(profileNow(),guestBase);guestBase=api.guestRevision();guestDirty=false;try{globalThis.sessionStorage?.removeItem(guestDraftKey);}catch(e){}}
+            storageResult(APP_CONFIG.storageKeys.garage,null);updateGarageSaveStatus();
+            if(!globalThis.accountUI?.active()||!accountUI.state().dirty)document.getElementById('garageSaveStatus').textContent='车库已保存';
+        }catch(error){await garagePrompt(error.message);}
+    }
+    async function restoreGarage(){
+        if(!await garagePrompt('放弃当前临时选择和星级，恢复已保存的车库？当前地图不会改变。',true))return;
+        try{
+            if(globalThis.accountUI?.active())await accountUI.restore();
+            else{globalThis.sessionStorage?.removeItem(guestDraftKey);guestDirty=false;selectedCars=new Set();starsMap={};const zone=currentZone;await loadGarage();currentZone=zone;loadStarsMap();guestBase=api.guestRevision();buildMapIndex();renderGarage();computeAndDisplay();}
+            updateGarageSaveStatus();
+        }catch(error){await garagePrompt(error.message);}
+    }
+    function restoreGuestDraft(){
+        if(globalThis.accountUI?.active())return;
+        try{
+            guestBase=api.guestRevision();
+            const raw=globalThis.sessionStorage?.getItem(guestDraftKey);if(!raw)return;
+            const draft=JSON.parse(raw),p=draft.profile;
+            if(draft.base!==guestBase){storageResult(APP_CONFIG.storageKeys.garage,'其他窗口已保存新车库，旧草稿已保留但未自动载入');return;}
+            if(!p||!Array.isArray(p.cars)||!p.stars||typeof p.stars!=='object'||Array.isArray(p.stars)||Object.values(p.stars).some(n=>!Number.isInteger(n)||n<1||n>6))throw Error('草稿格式错误');
+            selectedCars=appState.garage(p.cars,new Set([...zone5Cars,...zone4Cars]));starsMap=p.stars;guestDirty=true;
+        }catch(error){storageResult(APP_CONFIG.storageKeys.garage,'本窗口草稿无法载入，已保存车库未改变');}
     }
     function saveZoneMode() {
         savePreference(APP_CONFIG.storageKeys.zoneMode, currentZone);
@@ -623,7 +674,6 @@
         if (isFirstLoad) {
             const carList = getCurrentCarList();
             carList.forEach(c => selectedCars.add(c));
-            saveGarage();
         }
     }
 
@@ -1293,6 +1343,7 @@
 
             if (globalThis.accountUI) await accountUI.init({
                 known: new Set([...zone5Cars, ...zone4Cars]),
+                read: profileNow,
                 apply: profile => {
                     selectedCars = appState.garage(profile.cars, new Set([...zone5Cars, ...zone4Cars]));
                     starsMap = profile.stars;
@@ -1301,6 +1352,7 @@
             });
             await loadGarage();        // 加载车库（现在 zone5Cars/zone4Cars 已就绪）
             loadStarsMap();             // 加载星级
+            restoreGuestDraft();
             buildMapIndex();            // 用恢复后的分区和星级构建优先级
             // 恢复排序模式
             const savedSort = api.loadPref(APP_CONFIG.storageKeys.sortMode);
@@ -1313,7 +1365,12 @@
             initZoneToggle();
             updateZoneHint();
             updateSubtitle();
-            computeAndDisplay();
+            document.getElementById('garageSaveBtn').onclick=commitGarage;
+            document.getElementById('garageRestoreBtn').onclick=restoreGarage;
+            globalThis.addEventListener?.('garage-save-state',updateGarageSaveStatus);
+            globalThis.addEventListener?.('beforeunload',e=>{if(guestDirty&&!globalThis.accountUI?.active()){e.preventDefault();e.returnValue='';}});
+            updateGarageSaveStatus();computeAndDisplay();
+            globalThis.dispatchEvent?.(new Event('racepick-ready'));
         } catch (err) {
             mapRowsContainer.innerHTML = `<div class="loading" style="color:#f99;padding:30px;">❌ 加载失败: ${err.message}<br>请通过 HTTP 服务打开页面，并确保 gauntlet_data.json 与 cars.json 存在且格式正确</div>`;
             console.error(err);
