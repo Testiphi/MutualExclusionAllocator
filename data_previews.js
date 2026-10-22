@@ -72,7 +72,7 @@
     $('checkPreview').onclick=()=>run(async()=>{if(current)await show(current.id);else notice('请先选择或生成一个预览');});
     async function init(){const session=await request('GET','/auth/me');user=session.user;csrf=session.csrf;
         if(!user||!['admin','superadmin'].includes(user.role)){$('previewIdentity').textContent='请登录管理员账号';notice('此页面仅管理员可用');return;}
-        $('previewIdentity').textContent=user.email+' · '+(user.role==='superadmin'?'超级管理员':'管理员');$('previewMain').hidden=false;if(session.writeback_lab&&user.role==='superadmin'){const a=el('a','隔离测试：逐项确认与写回');a.href='/writeback-lab';$('previewIdentity').after(a);}await source();await candidates();await history();
+        $('previewIdentity').textContent=user.email+' · '+(user.role==='superadmin'?'超级管理员':'管理员');$('previewMain').hidden=false;if(session.writeback_lab&&user.role==='superadmin'){const a=el('a','隔离测试：逐项确认与写回');a.className='ui-button ui-secondary';a.href='/writeback-lab';$('previewIdentity').after(a);}await source();await candidates();await history();
     }
     void init().catch(e=>notice(e.message));
 })();

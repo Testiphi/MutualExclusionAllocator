@@ -190,12 +190,17 @@
                 try{const mine=await request('GET','/contributions/me');if(mine.preference.nickname)accountLabel.textContent=mine.preference.nickname+' · '+roleLabel;}catch(e){report('昵称暂时无法读取，可在个人中心重试');}
             }
         }
+        if(session.feedback&&owner)hubLink(personal,'问题反馈','/feedback?from=%2F','向站长反馈问题，查看处理进度');
         if(owner&&['admin','superadmin'].includes(owner.role)){
             const management=hub('managementCenter','管理工作台','按权限显示审核、发布与账号管理功能。');
             hubLink(management,'投稿审核','/submissions#review','审核玩家投稿，填写反馈与质量评分');
             if((session.score_versions||session.score_versions_lab)&&owner.role==='superadmin')hubLink(management,session.score_versions_lab?'成绩版本测试台':'正式成绩发布','/score-versions','逐项确认发布、查看批次及回滚');
             if(session.readonly_previews)hubLink(management,'变更清单预览','/data-previews','检查已采纳投稿的变更影响');
             if(owner.role==='superadmin'){
+                if(session.feedback){
+                    hubLink(management,'用户反馈','/admin-feedback','查看问题反馈并回复用户');
+                    try{const summary=await request('GET','/admin/feedback/summary');const link=management.querySelector('a[href="/admin-feedback"] strong');link.textContent='用户反馈'+(summary.pending?'（待处理 '+summary.pending+'）':'');}catch(error){report('反馈待处理数量暂时无法读取，可进入工作台刷新');}
+                }
                 hubLink(management,'账号与公告管理','/admin-accounts','管理账号状态和公告内容');
                 hubLink(management,'管理员与邀请码','/admin-access','查看管理员并管理邀请');
             }

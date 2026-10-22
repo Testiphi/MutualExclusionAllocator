@@ -15,7 +15,7 @@
             const d=document.createElement('details'),source=item.sources[0],p=source?JSON.parse(source.payload):{};
             d.append(node('summary',`${p.big||''} / ${p.small||''} · ${p.zone||''}/${p.tier||''} · ${p.car||''} ${p.stars?'★'+p.stars:''} ${p.route||''} — 质量 ${item.quality_points} + 采用 ${item.bonus}`));
             if(item.quality){const q=JSON.parse(item.quality);d.append(node('p',`最近评分：完整性 ${q.completeness}/3，证据 ${q.evidence}/4，参考价值 ${q.value}/3。依据：${q.reason}`));}
-            for(const s of item.sources){const a=node('a','查看关联投稿');a.href='/submissions#'+s.id;d.append(a);if(s.status==='accepted'&&!s.publication_state&&!item.bonus)d.append(node('p','待发布奖励 +10（尚未到账）'));}
+            for(const s of item.sources){const a=node('a','查看关联投稿');a.className='ui-button ui-secondary';a.href='/submissions#'+s.id;d.append(a);if(s.status==='accepted'&&!s.publication_state&&!item.bonus)d.append(node('p','待发布奖励 +10（尚未到账）'));}
             for(const event of item.events){const snap=JSON.parse(event.snapshot),line=node('p',`${new Date(event.created_at*1000).toLocaleString()} · ${actions[event.action]||event.action} · 质量 ${snap.quality_points} / 采用 ${snap.bonus}${snap.reason?' · '+snap.reason:''}`);line.className='event';d.append(line);}root.append(d);
         }
     }

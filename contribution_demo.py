@@ -12,7 +12,7 @@ from backend.score_repository import provision
 ROOT = Path(__file__).resolve().parent
 
 
-def prepare():
+def prepare(feedback=False, port=8009):
     with tempfile.TemporaryDirectory() as temporary:
         seed = Path(temporary)
         (seed/'cars.json').write_bytes((ROOT/'cars.json').read_bytes())
@@ -21,7 +21,7 @@ def prepare():
             '四区': {'理论': [], '高手': [], '普通': [], '自动': []}}]}
         (seed/'gauntlet_data.json').write_text(json.dumps(data, ensure_ascii=False), encoding='utf-8')
         lab = provision(seed)
-    app = create_app(lab/'accounts', score_version_lab=lab, contributions=True)
+    app = create_app(lab/'accounts', score_version_lab=lab, contributions=True, feedback=feedback)
     password = 'Demo-'+secrets.token_urlsafe(16)
     clients = []
 
@@ -70,7 +70,7 @@ def prepare():
     (lab/'acceptance.json').write_text(json.dumps(records, ensure_ascii=False, indent=2), encoding='utf-8')
     print(lab)
     print('Login details: '+str(lab/'LOGIN.txt'))
-    print(f'python -m backend.app --port 8009 --data-dir "{lab / "accounts"}" --score-version-lab "{lab}" --contributions')
+    print(f'python -m backend.app --port {port} --data-dir "{lab / "accounts"}" --score-version-lab "{lab}" --contributions{" --feedback" if feedback else ""}')
     return lab
 
 

@@ -62,16 +62,24 @@ def install(app,store,root,user):
     def accounts(request:Request,q:str='',role:Literal['all','player','admin','superadmin']='all',verified:Literal['all','yes','no']='all',status:Literal['all','active','disabled']='all',offset:int=0):
         actor(request,True)
         if len(q)>254 or offset<0:raise HTTPException(422,'筛选参数不正确')
-        conditions=['1=1'];args=[]
-        if q:conditions.append("u.email LIKE ? ESCAPE '\\'");args.append('%'+q.strip().lower().replace('\\','\\\\').replace('%','\\%').replace('_','\\_')+'%')
-        effective="CASE WHEN sa.user_id IS NOT NULL THEN 'superadmin' ELSE u.role END"
-        if role!='all':conditions.append(effective+'=?');args.append(role)
-        if verified!='all':conditions.append('u.verified=?');args.append(int(verified=='yes'))
-        if status!='all':conditions.append('COALESCE(c.disabled,0)=?');args.append(int(status=='disabled'))
-        source='FROM users u LEFT JOIN account_controls c ON c.user_id=u.id LEFT JOIN super_admins sa ON sa.user_id=u.id LEFT JOIN account_login_stats ls ON ls.user_id=u.id WHERE '+' AND '.join(conditions)
         with store.connect() as db:
+            has_nickname=bool(db.execute("SELECT 1 FROM sqlite_master WHERE name='contribution_preferences'").fetchone())
+            nickname="COALESCE(p.nickname,'')" if has_nickname else "''"
+            anonymous="COALESCE(p.anonymous,1)" if has_nickname else '1'
+            conditions=['1=1'];args=[]
+            if q:
+                conditions.append("(u.email LIKE ? ESCAPE '\\' OR "+nickname+" LIKE ? ESCAPE '\\')")
+                term='%'+q.strip().replace('\\','\\\\').replace('%','\\%').replace('_','\\_')+'%'
+                args.extend([term,term])
+            effective="CASE WHEN sa.user_id IS NOT NULL THEN 'superadmin' ELSE u.role END"
+            if role!='all':conditions.append(effective+'=?');args.append(role)
+            if verified!='all':conditions.append('u.verified=?');args.append(int(verified=='yes'))
+            if status!='all':conditions.append('COALESCE(c.disabled,0)=?');args.append(int(status=='disabled'))
+            source='FROM users u LEFT JOIN account_controls c ON c.user_id=u.id LEFT JOIN super_admins sa ON sa.user_id=u.id LEFT JOIN account_login_stats ls ON ls.user_id=u.id '
+            if has_nickname:source+='LEFT JOIN contribution_preferences p ON p.user_id=u.id '
+            source+='WHERE '+' AND '.join(conditions)
             total=db.execute('SELECT count(*) '+source,args).fetchone()[0]
-            rows=db.execute('SELECT u.id,u.email,u.verified,u.created_at,'+effective+" AS role,COALESCE(c.disabled,0) AS disabled,COALESCE(c.revision,0) AS revision,ls.last_login,(SELECT count(*) FROM submissions s WHERE s.owner_id=u.id) AS submissions "+source+' ORDER BY u.created_at DESC,u.id LIMIT 50 OFFSET ?',args+[offset]).fetchall()
+            rows=db.execute('SELECT u.id,u.email,u.verified,u.created_at,'+nickname+' AS nickname,'+anonymous+' AS leaderboard_anonymous,'+effective+" AS role,COALESCE(c.disabled,0) AS disabled,COALESCE(c.revision,0) AS revision,ls.last_login,(SELECT count(*) FROM submissions s WHERE s.owner_id=u.id) AS submissions "+source+' ORDER BY u.created_at DESC,u.id LIMIT 50 OFFSET ?',args+[offset]).fetchall()
         return {'total':total,'items':[dict(r) for r in rows]}
     @app.post('/api/admin/accounts/{uid}/control')
     def control(uid:str,body:AccountAction,request:Request):

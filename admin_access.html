@@ -1,6 +1,6 @@
 <!doctype html>
-<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>管理员与邀请码 · 擂台选车助手</title><link rel="stylesheet" href="/submissions.css"><script defer src="/admin_access.js"></script></head>
-<body><header><a href="/">← 返回选车助手</a><h1>管理员与邀请码</h1><p id="accessIdentity">正在检查身份…</p></header>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>管理员与邀请码 · 擂台选车助手</title><link rel="stylesheet" href="/submissions.css"><script defer src="/admin_access.js"></script><link rel="stylesheet" href="/ui.css"></head>
+<body><header><a class="ui-button ui-secondary" href="/">← 返回选车助手</a><h1>管理员与邀请码</h1><p id="accessIdentity">正在检查身份…</p></header>
 <main id="accessMain" hidden>
 <section><h2>邀请管理员</h2><p>邀请码绑定受邀邮箱，仅可使用一次。新账号完成邮箱验证后生效；已有玩家账号请登录后兑换。邀请码不能授予超级管理员权限。</p>
 <form id="inviteForm"><div class="fields"><label>受邀邮箱<input id="inviteEmail" type="email" maxlength="254" autocomplete="off" required></label><label>有效期<select id="inviteHours"><option value="24">24小时</option><option value="72" selected>3天</option><option value="168">7天</option></select></label></div><div class="actions"><button type="submit">生成邀请码</button><button id="accessRefresh" type="button">刷新列表</button></div></form></section>
