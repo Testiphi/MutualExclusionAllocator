@@ -52,6 +52,40 @@ def main():
    migration_app=make_app(config,'unused-selfcheck-secret')
    assert migration_app.state.score_versions.current()[0]['id']==result['version']
    bundle=score_backup(config);assert drill(config,bundle)['version']==result['version']
-   assert toggle(config,True)['write_enabled'];assert not toggle(config,False)['write_enabled']
+   assert toggle(config,True)['write_enabled']
+   from backend.contribution_production import migrate as migrate_contributions,preflight
+   before=preflight(config)
+   assert before['contribution_schema']==0
+   with service_lock(Path(config['data_dir'])):
+    try:migrate_contributions(config,result['version'])
+    except ValueError:pass
+    else:raise AssertionError('贡献迁移未拒绝活动服务锁')
+   upgraded=migrate_contributions(config,result['version'])
+   assert upgraded['existing_rows_preserved'] and upgraded['historical_submissions_enrolled']==0
+   assert upgraded['score_writes'] and upgraded['score_version']==result['version']
+   assert not any(upgraded['contribution_counts'].values())
+   assert migrate_contributions(config,result['version'])['already_migrated']
+   bundle=score_backup(config);restored=drill(config,bundle)
+   assert restored['contribution_schema']==1 and not restored['active_database_replaced']
+   upgraded_app=make_app(config,'unused-selfcheck-secret')
+   sock=socket.socket();sock.bind(('127.0.0.1',0));port=sock.getsockname()[1]
+   server=uvicorn.Server(uvicorn.Config(upgraded_app,log_level='error',proxy_headers=False,access_log=False))
+   thread=threading.Thread(target=server.run,kwargs={'sockets':[sock]},daemon=True);thread.start()
+   try:
+    for _ in range(100):
+     if server.started:break
+     time.sleep(.1)
+    assert server.started
+    for route in ('/api/health','/leaderboard','/leaderboard.js','/leaderboard.css','/api/contributions/leaderboard'):
+     conn=http.client.HTTPConnection('127.0.0.1',port,timeout=5)
+     try:
+      conn.request('GET',route,headers={'Host':'racepick.cn','X-Forwarded-Proto':'https','X-Real-IP':'192.0.2.1'})
+      response=conn.getresponse();body=response.read();assert response.status==200,(route,response.status,body)
+      if route=='/api/health':assert json.loads(body)['contribution_schema']==1 and json.loads(body)['score_version']==result['version']
+      if route=='/leaderboard':assert '独立本地验收环境' not in body.decode()
+     finally:conn.close()
+   finally:server.should_exit=True;thread.join(10);sock.close()
+   assert not thread.is_alive()
+   assert not toggle(config,False)['write_enabled']
  print('production runtime smoke: PASS (temporary database; no email sent)')
 if __name__=='__main__':main()

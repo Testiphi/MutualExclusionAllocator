@@ -52,7 +52,10 @@ def initialize(config):
 def make_app(config,password):
     path=require_database(config)
     score_state=path/'score-state' if (path/'score-state').exists() else None
-    return create_app(path,config['origin'],score_state=score_state,mail_config=MailConfig('smtp','',password,production=True,daily_limit=config['mail_daily_limit']),production=True)
+    from backend.contribution_production import state
+    with closing(sqlite3.connect((path/'accounts.sqlite3').as_uri()+'?mode=ro',uri=True)) as db:
+        contribution_ready=state(db)['contribution_schema']==1
+    return create_app(path,config['origin'],score_state=score_state,contributions=contribution_ready,mail_config=MailConfig('smtp','',password,production=True,daily_limit=config['mail_daily_limit']),production=True)
 
 @contextmanager
 def service_lock(path):

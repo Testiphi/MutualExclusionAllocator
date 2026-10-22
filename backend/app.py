@@ -127,8 +127,8 @@ class Store:
 
 
 def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None, mail_config=None, preview_source=None, writeback_lab=None, production=False, score_version_lab=None, score_state=None, contributions=False):
-    if contributions and (production or score_version_lab is None):
-        raise ValueError("排行榜仅允许显式启用的独立成绩版本本地环境")
+    if contributions and ((production and score_state is None) or (not production and score_version_lab is None)):
+        raise ValueError("排行榜需要已绑定的成绩版本环境")
     parsed = urlsplit(origin)
     if production:
         if parsed.scheme!='https' or not parsed.hostname or parsed.hostname in ('127.0.0.1','localhost') or parsed.port not in (None,443) or parsed.path or parsed.query or parsed.fragment or parsed.username or parsed.password:
@@ -160,7 +160,11 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
         if available(db) and not contributions:
             raise ValueError("此环境已启用排行榜，必须带 --contributions 启动")
         if contributions:
-            db.execute("BEGIN IMMEDIATE"); migrate(db)
+            if production:
+                from backend.contribution_production import state
+                if state(db)["contribution_schema"]!=1: raise ValueError("贡献迁移尚未完成，生产启动不自动迁移")
+            else:
+                db.execute("BEGIN IMMEDIATE"); migrate(db)
     if versioned_scores:
         from backend.score_versions import ScoreWriter
         app.state.score_versions=ScoreWriter(score_state or score_version_lab,store,production=production)
@@ -412,6 +416,9 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
     def health():
         with store.connect() as db:db.execute('SELECT 1').fetchone()
         result={'status':'ok','mode':'production' if production else 'local','schema':6}
+        result['community_schema']=1
+        result['contribution_schema']=1 if contributions else 0
+        result['contributions']=contributions
         if versioned_scores:
             result['score_version']=app.state.score_versions.current()[0]['id']
             with store.connect() as db:result['score_writes']=app.state.score_versions.enabled(db)

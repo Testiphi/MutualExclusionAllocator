@@ -4,7 +4,7 @@ import re
 import time
 from datetime import datetime, timedelta, timezone
 from fastapi import HTTPException, Request
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, HTMLResponse
 from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictInt
 from backend.submissions import identity, packed
 
@@ -193,7 +193,10 @@ def install(app, store, root, user):
         return period
 
     @app.get('/leaderboard')
-    def page(): return FileResponse(root / 'leaderboard.html')
+    def page():
+        if getattr(getattr(app.state,'score_versions',None),'production',False):
+            return HTMLResponse((root/'leaderboard.html').read_text(encoding='utf-8').replace('独立本地验收环境 · ',''))
+        return FileResponse(root/'leaderboard.html')
 
     @app.get('/api/contributions/leaderboard')
     def leaderboard(period: str = 'month'):

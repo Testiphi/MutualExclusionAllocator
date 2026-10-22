@@ -178,11 +178,13 @@ def drill(config,source):
         rows=db.execute('SELECT manifest FROM score_batches').fetchall()
         pending=db.execute("SELECT count(*) FROM score_batches WHERE state IN ('applying','rolling_back','recovery_required')").fetchone()[0]
         counts={n:db.execute('SELECT count(*) FROM '+n).fetchone()[0] for n in ('users','profiles','submissions')}
+        from backend.contribution_production import state as contribution_state
+        contribution=contribution_state(db)
     versions=Versions(destination/'score-state',lambda p:validate_production_root(p,destination));versions.read(version)
     for row in rows:
         item=json.loads(row[0]);versions.read(item['base']);versions.read(item['target'])
         if item.get('rollback'):versions.read(item['rollback']['version'])
-    return {'drill_directory':str(destination),'version':version,'counts':counts,'pending_batches':pending,'active_database_replaced':False}
+    return {'drill_directory':str(destination),'version':version,'counts':counts,'pending_batches':pending,'active_database_replaced':False,**contribution}
 
 
 def revert_migration(config,source):

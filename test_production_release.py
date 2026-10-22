@@ -61,4 +61,17 @@ class ReleaseTests(unittest.TestCase):
   contents,_=read_bundle(output)
   for n,raw in snapshot.items():self.assertEqual(contents[n],raw)
 
+ def test_contribution_ledger_blocks_legacy_activation(self):
+  import sqlite3,json
+  from contextlib import closing
+  from production_release_tools import check_score_compatibility,CONTRIBUTION_FILES
+  target=stage(self.bundle,self.path/'releases');data=self.path/'contribution-state';data.mkdir()
+  with closing(sqlite3.connect(data/'accounts.sqlite3')) as db,db:
+   db.execute('CREATE TABLE contribution_rules(version INTEGER,enabled_at INTEGER)');db.execute('INSERT INTO contribution_rules VALUES(1,1)')
+  check_score_compatibility(target,self.info,data)
+  legacy={**self.info,'files':{n:v for n,v in self.info['files'].items() if n not in CONTRIBUTION_FILES}}
+  with self.assertRaises(ValueError):check_score_compatibility(target,legacy,data)
+  cap=target/'production/score-capability.json';old=json.loads(cap.read_text());old.pop('contribution_schema');cap.write_text(json.dumps(old))
+  with self.assertRaises(ValueError):check_score_compatibility(target,self.info,data)
+
 if __name__=='__main__':unittest.main()
