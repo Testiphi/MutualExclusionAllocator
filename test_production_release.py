@@ -74,4 +74,22 @@ class ReleaseTests(unittest.TestCase):
   cap=target/'production/score-capability.json';old=json.loads(cap.read_text());old.pop('contribution_schema');cap.write_text(json.dumps(old))
   with self.assertRaises(ValueError):check_score_compatibility(target,self.info,data)
 
+ def test_feedback_schema_blocks_old_packages_and_partial_components(self):
+  import sqlite3,json
+  from contextlib import closing
+  from production_release_tools import check_score_compatibility,FEEDBACK_FILES,manifest
+  target=stage(self.bundle,self.path/'releases');data=self.path/'feedback-state';data.mkdir()
+  with closing(sqlite3.connect(data/'accounts.sqlite3')) as db,db:
+   db.execute('CREATE TABLE feedback_schema(version INTEGER)');db.execute('INSERT INTO feedback_schema VALUES(1)')
+  check_score_compatibility(target,self.info,data)
+  legacy={**self.info,'files':{n:v for n,v in self.info['files'].items() if n not in FEEDBACK_FILES}}
+  with self.assertRaises(ValueError):check_score_compatibility(target,legacy,data)
+  cap=target/'production/score-capability.json';content=json.loads(cap.read_text());content.pop('feedback_schema');cap.write_text(json.dumps(content))
+  with self.assertRaises(ValueError):check_score_compatibility(target,self.info,data)
+  contents,_=read_bundle(self.bundle);contents.pop('feedback.js');bad=self.path/'partial-feedback.zip'
+  with zipfile.ZipFile(bad,'w') as z:
+   for n,v in contents.items():z.writestr(n,v)
+   z.writestr('manifest.json',json.dumps(manifest(contents,{'partial':True})))
+  with self.assertRaises(ValueError):read_bundle(bad)
+
 if __name__=='__main__':unittest.main()

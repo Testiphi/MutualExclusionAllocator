@@ -1,4 +1,4 @@
-"""Private, text-only feedback. Explicit local sandbox activation only."""
+"""Private text feedback; production requires an explicit offline migration."""
 import hashlib
 import json
 import secrets
@@ -13,11 +13,21 @@ Status = Literal['pending', 'processing', 'needs_info', 'resolved', 'closed']
 Filter = Literal['all', 'pending', 'processing', 'needs_info', 'resolved', 'closed']
 
 
+TABLES = ('feedback_schema','feedback_tickets','feedback_events','feedback_requests')
+
+
+def state(db):
+    present = {r[0] for r in db.execute("SELECT name FROM sqlite_master WHERE type='table'")}
+    owned = present.intersection(TABLES)
+    if not owned: return {'feedback_schema': 0, 'feedback_counts': {}}
+    if owned != set(TABLES): raise ValueError('反馈表不完整，保留现场，不自动重建')
+    rows = db.execute('SELECT version FROM feedback_schema').fetchall()
+    if len(rows) != 1 or rows[0][0] != 1: raise ValueError('反馈版本不兼容')
+    return {'feedback_schema': 1, 'feedback_counts': {n:db.execute('SELECT count(*) FROM '+n).fetchone()[0] for n in TABLES[1:]}}
+
+
 def migrate(db):
-    if db.execute("SELECT 1 FROM sqlite_master WHERE name='feedback_schema'").fetchone():
-        if db.execute('SELECT version FROM feedback_schema').fetchall()[0][0] != 1:
-            raise ValueError('问题反馈版本不兼容')
-        return
+    if state(db)['feedback_schema']==1: return
     for sql in (
         'CREATE TABLE feedback_schema(version INTEGER PRIMARY KEY)',
         '''CREATE TABLE feedback_tickets(id TEXT PRIMARY KEY, owner_id TEXT NOT NULL REFERENCES users(id),
@@ -78,6 +88,13 @@ class Handle(Reply):
 def install(app, store, root, user):
     # Only an allowlisted release label is attached, never environment/configuration or cookies.
     version = 'local-feedback-v1'
+    if getattr(getattr(app.state,'score_versions',None),'production',False):
+        version='production-source'
+        manifest=root/'manifest.json'
+        if manifest.is_file():
+            import re
+            version=json.loads(manifest.read_text(encoding='utf-8')).get('id','')
+            if not re.fullmatch('[a-f0-9]{24}',version): raise ValueError('发布清单版本无效')
 
     def actor(request, admin=False, db=None):
         current = user(request)

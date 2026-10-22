@@ -127,8 +127,8 @@ class Store:
 
 
 def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None, mail_config=None, preview_source=None, writeback_lab=None, production=False, score_version_lab=None, score_state=None, contributions=False, feedback=False):
-    if feedback and (production or not contributions or score_version_lab is None):
-        raise ValueError("问题反馈仅允许在独立本地成绩实验室显式启用")
+    if feedback and (not contributions or (production and score_state is None) or (not production and score_version_lab is None)):
+        raise ValueError("问题反馈需要已绑定成绩及贡献环境")
     if contributions and ((production and score_state is None) or (not production and score_version_lab is None)):
         raise ValueError("排行榜需要已绑定的成绩版本环境")
     parsed = urlsplit(origin)
@@ -160,10 +160,14 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
     app.state.feedback = feedback
     with store.connect() as db:
         present=db.execute("SELECT 1 FROM sqlite_master WHERE name='feedback_schema'").fetchone()
-        if present and not feedback: raise ValueError("此测试库已启用反馈，请带--feedback启动")
+        if present and not feedback: raise ValueError("此数据库已启用反馈，启动必须启用反馈功能")
         if feedback:
             from backend.feedback import migrate as migrate_feedback
-            db.execute("BEGIN IMMEDIATE"); migrate_feedback(db)
+            if production:
+                from backend.feedback import state as feedback_state
+                if feedback_state(db)["feedback_schema"]!=1: raise ValueError("反馈迁移尚未完成，生产启动不自动迁移")
+            else:
+                db.execute("BEGIN IMMEDIATE"); migrate_feedback(db)
     with store.connect() as db:
         from backend.contributions import available, migrate
         if available(db) and not contributions:
@@ -431,6 +435,8 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
         result['community_schema']=1
         result['contribution_schema']=1 if contributions else 0
         result['contributions']=contributions
+        result['feedback']=feedback
+        result['feedback_schema']=1 if feedback else 0
         if versioned_scores:
             result['score_version']=app.state.score_versions.current()[0]['id']
             with store.connect() as db:result['score_writes']=app.state.score_versions.enabled(db)

@@ -180,11 +180,13 @@ def drill(config,source):
         counts={n:db.execute('SELECT count(*) FROM '+n).fetchone()[0] for n in ('users','profiles','submissions')}
         from backend.contribution_production import state as contribution_state
         contribution=contribution_state(db)
+        from backend.feedback import state as feedback_state
+        feedback=feedback_state(db)
     versions=Versions(destination/'score-state',lambda p:validate_production_root(p,destination));versions.read(version)
     for row in rows:
         item=json.loads(row[0]);versions.read(item['base']);versions.read(item['target'])
         if item.get('rollback'):versions.read(item['rollback']['version'])
-    return {'drill_directory':str(destination),'version':version,'counts':counts,'pending_batches':pending,'active_database_replaced':False,**contribution}
+    return {'drill_directory':str(destination),'version':version,'counts':counts,'pending_batches':pending,'active_database_replaced':False,**contribution,**feedback}
 
 
 def revert_migration(config,source):

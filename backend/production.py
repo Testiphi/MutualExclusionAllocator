@@ -54,8 +54,10 @@ def make_app(config,password):
     score_state=path/'score-state' if (path/'score-state').exists() else None
     from backend.contribution_production import state
     with closing(sqlite3.connect((path/'accounts.sqlite3').as_uri()+'?mode=ro',uri=True)) as db:
+        from backend.feedback import state as feedback_state
+        feedback_ready=feedback_state(db)["feedback_schema"]==1
         contribution_ready=state(db)['contribution_schema']==1
-    return create_app(path,config['origin'],score_state=score_state,contributions=contribution_ready,mail_config=MailConfig('smtp','',password,production=True,daily_limit=config['mail_daily_limit']),production=True)
+    return create_app(path,config['origin'],score_state=score_state,contributions=contribution_ready,feedback=feedback_ready,mail_config=MailConfig('smtp','',password,production=True,daily_limit=config['mail_daily_limit']),production=True)
 
 @contextmanager
 def service_lock(path):

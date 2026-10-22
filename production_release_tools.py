@@ -20,7 +20,8 @@ SCORE_FILES=('backend/score_repository.py','backend/score_versions.py','backend/
                      'score_versions.html','score_versions.js','production/score-capability.json','SCORE_PRODUCTION_DEPLOYMENT.md')
 COMMUNITY_FILES=('backend/community.py','announcements.js','admin_accounts.html','admin_accounts.js')
 CONTRIBUTION_FILES=('backend/contribution_production.py','leaderboard.html','leaderboard.js','leaderboard.css','CONTRIBUTIONS_PRODUCTION.md')
-APP_FILES=BASE_FILES+SCORE_FILES+COMMUNITY_FILES+CONTRIBUTION_FILES
+FEEDBACK_FILES=('backend/feedback.py','backend/feedback_production.py','feedback.html','feedback.js','FEEDBACK_PRODUCTION.md')
+APP_FILES=BASE_FILES+SCORE_FILES+COMMUNITY_FILES+CONTRIBUTION_FILES+FEEDBACK_FILES
 
 def digest(raw):return hashlib.sha256(raw).hexdigest()
 def allowed(name):return name in APP_FILES or bool(re.fullmatch(r'wheels/[A-Za-z0-9_.+\-]+\.whl',name))
@@ -47,7 +48,7 @@ def read_bundle(bundle):
   names=z.namelist()
   if len(names)!=len(set(names)) or 'manifest.json' not in names or not set(BASE_FILES)<=set(names) or any(n!='manifest.json' and not allowed(n) for n in names):raise ValueError('发布包文件白名单不匹配')
   if any(i.file_size>40*1024*1024 for i in z.infolist()) or sum(i.file_size for i in z.infolist())>200*1024*1024:raise ValueError('包体积异常')
-  for group in (SCORE_FILES,COMMUNITY_FILES,CONTRIBUTION_FILES):
+  for group in (SCORE_FILES,COMMUNITY_FILES,CONTRIBUTION_FILES,FEEDBACK_FILES):
    if set(names)&set(group) and not set(group)<=set(names):raise ValueError('发布包缺少必要组件')
   contents={n:z.read(n) for n in names if n!='manifest.json'};info=json.loads(z.read('manifest.json'))
  if info!=manifest(contents,info['provenance']):raise ValueError('发布包校验失败')
@@ -58,7 +59,7 @@ def verify(target):
  if target.is_symlink():raise ValueError('版本目录不能是链接')
  info=json.loads((target/'manifest.json').read_text(encoding='utf-8'))
  if not set(BASE_FILES)<=set(info['files']) or any(not allowed(n) for n in info['files']):raise ValueError('版本文件白名单异常')
- for group in (SCORE_FILES,COMMUNITY_FILES,CONTRIBUTION_FILES):
+ for group in (SCORE_FILES,COMMUNITY_FILES,CONTRIBUTION_FILES,FEEDBACK_FILES):
   if set(info['files'])&set(group) and not set(group)<=set(info['files']):raise ValueError('发布目录缺少必要组件')
  contents={n:(target/n).read_bytes() for n in info['files']}
  if any((target/n).is_symlink() for n in info['files']) or info!=manifest(contents,info['provenance']) or target.name!=info['id']:raise ValueError('版本校验失败')
@@ -87,6 +88,10 @@ def check_score_compatibility(target,info,data_dir):
  account_db=Path(data_dir).resolve()/'accounts.sqlite3'
  if account_db.exists():
   with closing(sqlite3.connect(account_db.as_uri()+'?mode=ro',uri=True)) as db:
+   if db.execute("SELECT 1 FROM sqlite_master WHERE name='feedback_schema'").fetchone():
+    rows=db.execute('SELECT version FROM feedback_schema').fetchall()
+    cap=Path(target)/'production/score-capability.json'
+    if len(rows)!=1 or not set(FEEDBACK_FILES)<=set(info['files']) or 'production/score-capability.json' not in info['files'] or json.loads(cap.read_text()).get('feedback_schema')!=rows[0][0]:raise ValueError('反馈schema已启用，禁止切回不能处理反馈的旧应用')
    if db.execute("SELECT 1 FROM sqlite_master WHERE name='contribution_rules'").fetchone():
     rows=db.execute('SELECT version FROM contribution_rules').fetchall()
     cap=Path(target)/'production/score-capability.json'
