@@ -1,6 +1,6 @@
 # 账号昵称、按钮与反馈生产升级
 
-2026-10-22。账号昵称展示、统一按钮和站内文字反馈已由用户本地验收通过，功能提交28d4c96。本轮在独立account-feedback-production工作目录、release/account-feedback-production分支准备上线，保留8010及8009环境，不合并main。服务器尚未执行本次升级。
+2026-10-22。账号昵称展示、统一按钮和站内文字反馈已完成生产升级，用户确认公网验收通过。功能提交28d4c96，生产适配b17d6fc，发布版本4a28f6d76b9d3e93d3227120。下文保留部署方案，最新实际结果与证据边界见文末。8010及8009环境保留，不合并main。
 
 ## 本次范围
 
@@ -97,3 +97,42 @@ runuser -u racepick -- .venv/bin/python -B -m backend.feedback_production migrat
 Windows临时库验证只读预检、事务迁移保留、幂等、版本漂移/未完成批次/部分表拒绝、生产HTTP反馈及完整备份恢复、兼容激活与包白名单。Windows使用服务锁替身；Linux真实锁与Python3.12离线依赖必须由服务器暂存安装脚本验证。本地准备完成不等于上线完成。
 
 本轮实测：后端132项通过；根目录62项执行61通过、1项原有Linux专用检查跳过；JS63项通过；页面启动、生产入口临时库HTTP冒烟、语法和Git空白检查通过。包解压验证与交付哈希校验另行在生成后执行。服务器实际安装、迁移及公网验收尚未执行。
+
+## 2026-10-22 公网上线验收完成
+
+本节覆盖上文准备期状态。证据来自用户服务器完整回传及明确的“公网验收通过，功能均正常”反馈，不是代理独立登录服务器的结论。本次收尾只更新文档并推送release/account-feedback-production，不访问或修改生产环境、不重启、不重复迁移、不重新打包、不合并main。
+
+### 发布与运行
+
+- 应用ID：`4a28f6d76b9d3e93d3227120`；打包源码 `b17d6fcfe1c831b3f7fbb2b4923ea0a9efb33168`，数据基线 `73e3f8b0bb1ea0c6b2cafe82d8002e1fe4a775ee`。文档后续提交不改变已部署发布包。
+- 上传目录：`/root/racepick-deploy/20261022-feedback-4a28f6d7`。用户简述确认10文件上传、9文件校验全部OK、暂存成功、离线安装和临时数据库原生自检通过，未提供这些步骤的完整原始日志。
+- 激活完整输出确认current及实际进程cwd均为 `/opt/racepick/releases/4a28f6d76b9d3e93d3227120`，当时MainPID=132627，服务active/running。首个公网请求502，重试得到健康JSON，最终服务正常。
+- 最后完整health：status=ok、mode=production、schema6、community_schema1、contribution_schema1、contributions=true、feedback_schema1、feedback=true；成绩版本 `42d62fde9b81197ac0558087a9a25f97`，score_writes=true。
+- 用户确认账号昵称展示/搜索、按钮统一和文字反馈公网验收通过，功能均正常。未获取真实反馈正文或逐条处理回执，不编造或公开这些内容。
+
+### 预检、迁移与备份演练
+
+预检完整输出：feedback_schema=0、contribution_schema=1、pending_batches=0，27个账号/15份车库/2条投稿；contributions、contribution_sources、contribution_events均0，contribution_preferences=1。数量是当时快照，不强制修回。活动cars.json哈希469aca118891c398d1aa2777721d50449cffa2e48c984bbd57ede0c7cde92d3c；成绩文件哈希bed4cf05fd8d2332e043513820adae39d9c01453dedb602dd374fe64355ae9a9。
+
+旧版在线成套备份与演练有完整回传：
+
+- `/var/lib/racepick/backups/scores-20261022T134206474628Z.zip`，153533字节，racepick:racepick，600权限，清单校验通过。
+- 演练目录 `/var/lib/racepick/restore-drills/6ed23e688a30ec2f6f7418fd`；版本42d62fde…、counts27/15/2、贡献schema及数量与预检一致，pending_batches=0、active_database_replaced=false；网站及timer当时保持active。
+
+用户随后简述确认网站和timer暂停、停服最终成套备份生成并校验通过，成绩不变；反馈迁移返回feedback_schema=1、existing_rows_preserved=true、test_feedback_imported=0，成绩版本和写回开关保持。没有提供这两步的完整输出，故不填写停服最终备份或迁移保护备份的具体文件名，也不将迁移时账号数量写成重新核实的值。
+
+切换后用户简述确认新版备份和独立恢复演练通过，feedback_schema=1、contribution_schema=1、active_database_replaced=false，网站健康正常。没有提供新版ZIP路径、演练目录或反馈表数量，不补造；将来需要精确恢复点时，现场只读核对备份清单。
+
+账号、昵称、贡献、成绩及备份沿用原持久化目录，没有导入本地模拟反馈、覆盖服务器成绩或改动工作簿，没有重跑旧贡献或成绩分离迁移。
+
+### 定时备份恢复
+
+完整输出确认timer于 **2026-10-22 21:46:12 CST** 恢复，enabled、active(waiting)，NEXT为 **2026-10-23 04:15:58 CST**，覆盖上一轮04:19:44的计划时间。
+
+LAST仍为2026-10-22 04:18:37；确认的是调度恢复，不是新版首次定时执行已成功。最后网站active、反馈和贡献功能启用、成绩版本及写回开关不变。后续按需核验实际执行，不自行新增监控任务。
+
+### 本轮收尾边界
+
+新版本4a28f6d…、上一版本1fcc18c…及上传包保留，本轮不继续清理任何旧目录或备份。反馈schema1后不能直接切回不兼容旧代码，不用旧部署脚本或手工链接绕过检查，不单独恢复SQLite。
+
+原8010/8009和测试数据保留。本轮只更新文档并推送release/account-feedback-production，main未合并；后续先fetch核对分支，再按新任务核对生产状态，不能把源码同步当成部署。

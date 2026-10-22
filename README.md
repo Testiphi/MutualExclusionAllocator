@@ -358,5 +358,5 @@ New local phase: [versioned score data and release confirmation](SCORE_VERSIONS_
 
 Production score-version migration is prepared in [SCORE_PRODUCTION_DEPLOYMENT.md](SCORE_PRODUCTION_DEPLOYMENT.md): preserve accounts, migrate read-only by default, rehearse coherent backup recovery, then enable writes separately. No live migration has been performed. The user has confirmed the first scheduled account backup succeeded.
 
-## New local acceptance build (not deployed)
-Account nickname display/search, shared button styling and private text feedback are implemented and user-accepted in an isolated local environment; they are not deployed. Feedback is visible only to its author and the superadministrator. See [local setup and acceptance steps](FEEDBACK_LOCAL.md). Production adaptation is prepared; follow [feedback deployment notes](FEEDBACK_PRODUCTION.md) for the staged upgrade, which has not been executed on the server. International-server support is outside this change.
+## Account nicknames, shared buttons and private feedback (deployed)
+Account nickname display/search, shared button styling and private text feedback are deployed and user-accepted in production. Feedback is visible only to its author and the superadministrator. Deployment, backup-drill and timer-restoration evidence is recorded in [feedback deployment notes](FEEDBACK_PRODUCTION.md); start future operations from the [cloud handoff](CLOUD_HANDOFF.md). The [local environment and acceptance steps](FEEDBACK_LOCAL.md) are retained. International-server support is outside this change.

@@ -1,6 +1,22 @@
 # RacePick 云端运维交接（2026-10-22 更新）
 
-## 当前已验收状态
+## 最新交接：反馈功能已上线验收（2026-10-22）
+
+本节为最新状态，覆盖下文上一轮排行榜升级的历史快照。所有生产事实来自用户服务器回传或明确反馈，本次文档收尾未访问生产环境。
+
+- 当前应用 **4a28f6d76b9d3e93d3227120**，打包源码b17d6fcfe1c831b3f7fbb2b4923ea0a9efb33168，数据基线73e3f8b0bb1ea0c6b2cafe82d8002e1fe4a775ee。current与实际进程cwd已确认一致，切换时PID132627仅作历史记录。
+- health：production、schema6/community1/contribution1/feedback1，contributions=true、feedback=true；最后成绩42d62fde9b81197ac0558087a9a25f97、score_writes=true。用户确认昵称展示、按钮统一、文字反馈公网验收通过，功能正常。不能重新执行已完成的反馈/贡献/成绩迁移。
+- 新版成套备份及独立恢复演练由用户简述确认通过，feedback_schema=1、contribution_schema=1、active_database_replaced=false；新版ZIP和演练目录未回传，不编造路径。
+- timer于 **2026-10-22 21:46:12 CST** 恢复enabled/active(waiting)，NEXT为 **2026-10-23 04:15:58 CST**，替代下文旧的04:19:44计划；LAST仍为10月22日04:18:37，尚无新版首次定时执行成功证据。
+- 本次已核实的旧版在线备份为scores-20261022T134206474628Z.zip，演练目录6ed23e688a30ec2f6f7418fd，counts27/15/2、昵称偏好1、未替换活动库。停服最终备份、迁移保护备份、新版备份的具体路径未提供，若需恢复点须现场只读核验。
+- 当前文档分支 **release/account-feedback-production**；功能基线feature/account-feedback=28d4c96，生产适配b17d6fc；main最后核对73e3f8b，未合并。先fetch核对最新状态，源码同步不等于部署。
+- 本次交付account-feedback-production/.production-build/delivery-20261022-feedback，共10文件，绑定4a28f6d…；ZIP SHA256为89fc52c23d5aea9f16eee985124f4eb51dd73706d0799b44d1529fac1cfe4b78。服务器上传目录/root/racepick-deploy/20261022-feedback-4a28f6d7保留。文档更新不修改已部署包。
+- 先读本节和[反馈生产验收记录](FEEDBACK_PRODUCTION.md)文末，再查下文的历史部署、清理和保护约束。原8010及8009测试环境、账号、工作簿和未跟踪文件继续保留。
+- 本轮未进一步清理目录。当前4a28f6d…、上一1fcc18c…及此前保留的651ea3d…不因新部署被自动删除。反馈schema1后不能直接切回不支持反馈的旧程序；禁止单SQLite恢复或用旧工具绕过兼容检查。
+
+后续待证据：10月23日04:15:58计划备份的实际结果；本次未回传的具体备份路径。此处不自行新增监控或重复生产操作。本轮仅提交推送文档，不合main、不修改生产。
+
+## 上一轮排行榜已验收状态（历史）
 
 本交接依据用户服务器回传和明确验收反馈，不是代理独立登录服务器的结论。历史文档中的“仅本地/尚未上线”以最新验收记录覆盖；未来操作前重新只读核验。
 
@@ -42,5 +58,5 @@
 
 本次收尾仅更新并推送文档，不合并main，不修改生产、发布包或任何账号/成绩/工作簿数据。
 
-## 新一轮反馈生产准备（尚未执行服务器步骤）
-用户授权将昵称展示、统一按钮、站内文字反馈准备上线。功能基线28d4c96；在独立release/account-feedback-production准备生产适配与交付，当前线上仍以上述已验收版本为历史基线，不能把准备状态当成已上线。后续本次部署从FEEDBACK_PRODUCTION.md开始，先只读复核，再按回传逐步执行；保留原8010和8009、账号库、成绩、贡献与备份。main不合并，旧目录不继续清理。
+## 反馈生产准备阶段记录（已被文首验收结果覆盖）
+功能基线28d4c96，在独立release/account-feedback-production准备生产适配与交付。随后用户逐步完成安装、迁移、切换、备份演练及timer恢复，并确认公网功能正常。完整证据边界见FEEDBACK_PRODUCTION.md文末，最新状态以本文件首节为准。

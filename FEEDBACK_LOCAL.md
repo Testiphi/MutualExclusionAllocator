@@ -84,3 +84,9 @@ python -X utf8 -B -m backend.app --port 8010 --data-dir "E:\hzz\work\MutualExclu
 ## 独立生产准备（尚未上线）
 用户随后授权准备上线。独立account-feedback-production目录/release/account-feedback-production基于已验收28d4c96完成backend.feedback_production只读预检、停服显式迁移、已有表指纹保护、生产资源及真实发布ID、反馈schema兼容激活保护、成套备份恢复反馈数量校验。生产启动仅在完整反馈schema存在时启用，不自动迁移；上文“生产模式拒绝反馈”是适配前历史状态。
 原8010环境不改，账号/工作簿/原测试库不改，不导入测试反馈。后端132项通过、根目录61通过/1原有Linux专用跳过、JS63项及启动冒烟通过。Linux真实服务锁和Python3.12离线依赖仍待服务器暂存自检。具体升级顺序见FEEDBACK_PRODUCTION.md，不重跑既有贡献/成绩迁移。
+
+## 2026-10-22 公网验收与运维收尾
+
+用户确认公网验收通过、功能均正常。生产版本4a28f6d76b9d3e93d3227120，反馈schema1、贡献schema1，成套备份及独立恢复演练通过。timer于21:46:12 CST恢复，NEXT为2026-10-23 04:15:58 CST，实际执行结果尚待后续证据。以上覆盖前文“尚未上线”的历史状态。
+
+完整回传和简述确认的区别、未提供的备份路径边界见[生产记录](FEEDBACK_PRODUCTION.md)文末，后续从[CLOUD_HANDOFF.md](CLOUD_HANDOFF.md)接手。本轮仅更新文档并推送release/account-feedback-production，不改生产、代码、发布包、数据库或工作簿，不合并main。
