@@ -3,7 +3,7 @@
  const el=(tag,text)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;return n;};
  async function init({owner,request}){
   let preferences=null,latest=null,ready=false,opened=false,busy=false,page=0;
-  const button=el('button','更新公告');button.type='button';button.className='account-link';document.getElementById(owner?'accountActions':'accountGuestActions').append(button);
+  const button=el('button','更新公告');button.type='button';button.className='account-link';(document.getElementById('accountNavigation')||document.getElementById(owner?'accountActions':'accountGuestActions')).append(button);
   const dialog=el('dialog');dialog.className='account-dialog announcement-dialog';dialog.setAttribute('aria-label','更新公告');
   const header=el('header'),title=el('h2'),closeButton=el('button','×'),meta=el('p'),body=el('div'),error=el('p'),actions=el('footer'),links=el('div'),choices=el('div');
   header.className='announcement-header';closeButton.type='button';closeButton.className='announcement-close';closeButton.setAttribute('aria-label','关闭公告');

@@ -12,7 +12,7 @@ from backend.previews import ROOT, Pick, build_preview, load_source, LOADED_ENGI
 from backend.score_repository import Versions, validate_lab, validate_production_root, encode, digest, write_new, FILES, sync_dir
 from backend.manage import copy_database
 
-EXTRA=('backend/score_versions.py','backend/score_repository.py')
+EXTRA=('backend/score_versions.py','backend/score_repository.py','backend/contributions.py')
 LOADED_EXTRA={n:digest((ROOT/n).read_bytes()) for n in EXTRA}
 HASHER=PasswordHasher()
 def reject(text):raise HTTPException(409,text)
@@ -192,6 +192,9 @@ class ScoreWriter:
                     db.execute('UPDATE score_current SET version=? WHERE slot=1',(m['target'],))
                     for i in m['result']['items']:
                         if i['kind']!='unchanged':db.execute('INSERT INTO write_receipts VALUES(?,?,?)',(i['submission_id'],bid,'applied'))
+                    from backend.contributions import publication
+                    for i in m['result']['items']:
+                        if i['kind']!='unchanged': publication(db,i['submission_id'],actor)
                     m['events'].append({'action':'applied','actor':actor,'at':int(time.time())});self.put(db,bid,'applied',m)
                     self.checkpoint('apply_before_commit')
                 self.checkpoint('apply_after_commit')
@@ -230,6 +233,9 @@ class ScoreWriter:
                     self.verify_backup(m['backup']);self.verify_backup(m['rollback']['backup']);self.versions.read(m['rollback']['version'])
                     db.execute('UPDATE score_current SET version=? WHERE slot=1',(m['rollback']['version'],))
                     db.execute("UPDATE write_receipts SET state='rolled_back' WHERE batch_id=?",(bid,));state='rolled_back'
+                    from backend.contributions import publication
+                    for receipt in db.execute('SELECT submission_id FROM write_receipts WHERE batch_id=?',(bid,)).fetchall():
+                        publication(db,receipt[0],actor)
                 else:
                     if self.current_id(db)!=m['base']:reject('当前版本不符合执行日志，保留现场')
                     self.versions.read(m['base']);state='aborted'

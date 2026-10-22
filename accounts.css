@@ -63,3 +63,17 @@
 .announcement-error{color:#ffcf87;margin:0;padding:8px 24px;flex-shrink:0}.announcement-error:empty{display:none}
 .announcement-history-item{display:block;width:100%;text-align:left;margin-bottom:10px;padding:12px}
 @media(max-width:560px){.announcement-header{padding:20px 48px 6px}.announcement-content{padding:0 20px 20px}.announcement-content h2{font-size:1.3rem}.announcement-actions{align-items:flex-start;padding:14px 16px}.announcement-choices{flex-direction:column;align-items:flex-end;gap:10px}}
+
+/* Fixed navigation categories; feature links live inside their owning hub. */
+.account-navigation{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.account-recovery{display:flex;flex-wrap:wrap;gap:8px}
+.account-recovery:has(button:not([hidden])){margin-top:10px}
+.account-hub{width:min(580px,calc(100vw - 32px));box-sizing:border-box}
+.account-hub-items{display:grid;gap:12px;margin-top:18px}
+.account-panel .account-hub-link{display:flex;align-items:flex-start;flex-direction:column;gap:6px;text-align:left;padding:14px 16px}
+.account-hub-link small{font-size:.85rem;color:#a6b2c0;font-weight:400;line-height:1.5}
+.account-hub #accountActions{display:flex;flex-wrap:wrap;gap:10px}
+.account-hub #personalIdentity{margin:0;overflow-wrap:anywhere}
+#personalMessage:empty{display:none}
+#personalMessage{color:#ffcf87}
+@media(max-width:480px){.account-navigation>button{flex:1 1 auto}.account-hub{padding:18px}.account-panel .account-hub-link{padding:12px}}

@@ -99,6 +99,7 @@ class Review(Revision):
     basis: dict[str,str] = Field(default_factory=dict,max_length=2)
     slower_confirmed: StrictBool = False
     review_score: StrictInt | None = Field(default=None,ge=0,le=5)
+    quality: dict | None = None
 
 
 class Picture(Revision):
@@ -248,6 +249,9 @@ def install(app,store,root,user,reference_root=None,production=False):
                 sid=secrets.token_hex(16); now=int(time.time())
                 db.execute('INSERT INTO submissions(id,owner_id,batch_id,revision,status,payload,created_at,updated_at) VALUES (?,?,?,1,\'draft\',?,?,?)',
                            (sid,owner['id'],batch,packed(value),now,now))
+                if app.state.contributions:
+                    from backend.contributions import enroll
+                    enroll(db,sid)
                 event(db,sid,owner,'created',entry.model_dump()); ids.append(sid)
             result={'ids':ids,'batch_id':batch}
             db.execute('INSERT INTO submission_requests VALUES (?,?,?,?)',(owner['id'],body.request_key,fingerprint,packed(result)))
@@ -270,6 +274,9 @@ def install(app,store,root,user,reference_root=None,production=False):
             total=db.execute('SELECT count(*) FROM submissions WHERE '+where,args).fetchone()[0]
             rows=db.execute('SELECT id,batch_id,owner_id,revision,status,payload,decision_reason,review_score,updated_at FROM submissions WHERE '+where+' ORDER BY updated_at DESC,id DESC LIMIT 50 OFFSET ?',args+[offset]).fetchall()
             items=[{**dict(r),'payload':json.loads(r['payload'])} for r in rows]
+            if app.state.contributions:
+                from backend.contributions import info
+                for item in items: item['contribution_info']=info(db,item['id'])
             if hasattr(app.state,'writeback'):
                 for item in items:
                     receipt=db.execute('SELECT batch_id,state FROM write_receipts WHERE submission_id=?',(item['id'],)).fetchone()
@@ -291,6 +298,9 @@ def install(app,store,root,user,reference_root=None,production=False):
             if hasattr(app.state,'writeback'):
                 receipt=db.execute('SELECT batch_id,state FROM write_receipts WHERE submission_id=?',(sid,)).fetchone()
                 result['application']=dict(receipt) if receipt else None
+            if app.state.contributions:
+                from backend.contributions import info
+                result['contribution_info']=info(db,sid)
             result['same_target']=[]
             if owner['role'] in ('admin','superadmin') and row['target_key']:
                 result['same_target']=[dict(r) for r in db.execute("SELECT id,status FROM submissions WHERE target_key=? AND id!=? AND status!='draft' ORDER BY updated_at DESC LIMIT 20",(row['target_key'],sid))]
@@ -343,8 +353,19 @@ def install(app,store,root,user,reference_root=None,production=False):
     @app.post('/api/admin/submissions/{sid}/review')
     def review(sid:str,body:Review,request:Request):
         owner=actor(request,True)
+        quality=None
+        if body.quality is not None:
+            if not app.state.contributions: raise HTTPException(422,'排行榜尚未启用')
+            from backend.contributions import Quality
+            from pydantic import ValidationError
+            try: quality=Quality.model_validate(body.quality)
+            except ValidationError: raise HTTPException(422,'质量评分各项或依据不符合要求') from None
         with store.connect() as db:
             db.execute('BEGIN IMMEDIATE');app.state.require_active_session(request,db); row=get_row(db,sid,owner); expected(row,body.revision)
+            if app.state.contributions:
+                from backend.contributions import check_reviewer,settle_review,eligible
+                check_reviewer(db,row,owner['id'])
+                if eligible(db,sid) and body.review_score is not None: raise HTTPException(422,'新投稿请使用三项质量评分')
             if hasattr(app.state,'writeback'): app.state.writeback.guard(db,sid)
             if body.action=='reopen':
                 if row['status'] not in ('accepted','ignored') or not body.reason.strip():
@@ -352,6 +373,7 @@ def install(app,store,root,user,reference_root=None,production=False):
                 original=json.loads(row['payload'])
                 db.execute("UPDATE submissions SET status='pending',review_score=NULL,accepted_payload=NULL,target_key=?,decision_reason=?,revision=revision+1,updated_at=? WHERE id=?",
                            (identity(original),body.reason.strip(),int(time.time()),sid))
+                if app.state.contributions: settle_review(db,sid,owner['id'],None)
                 event(db,sid,owner,'reopened')
                 return {'revision':body.revision+1,'status':'pending'}
             if row['status']!='pending': raise HTTPException(409,'投稿已处理，不能重复审核')
@@ -376,6 +398,7 @@ def install(app,store,root,user,reference_root=None,production=False):
                 raise HTTPException(422,'要求补充或忽略时请填写反馈原因')
             db.execute('UPDATE submissions SET status=?,accepted_payload=?,decision_reason=?,review_score=?,baseline=COALESCE(?,baseline),target_key=COALESCE(?,target_key),revision=revision+1,updated_at=? WHERE id=?',
                        (status,packed(candidate) if candidate else None,reason,body.review_score,packed(basis) if basis else None,identity(candidate) if candidate else None,int(time.time()),sid))
+            if app.state.contributions: settle_review(db,sid,owner['id'],quality)
             event(db,sid,owner,body.action)
         return {'revision':body.revision+1,'status':status}
 

@@ -27,7 +27,7 @@
     }
     function report(text) {
         if(authDialog?.open) $('accountAuthMessage').textContent=text;
-        else message.textContent=text;
+        else {message.textContent=text;if($('personalMessage'))$('personalMessage').textContent=text;}
     }
     function clearPasswords() {
         $('accountPassword').value='';$('accountPasswordConfirm').value='';$('accountInviteCode').value='';
@@ -38,6 +38,7 @@
         (input||($('accountAuthForm').hidden?$('accountAuthContinue'):$('accountAuthSubmit'))).focus();
     }
     function showAuth(mode,options={}) {
+        box?.querySelectorAll('.account-hub[open]').forEach(d=>d.close());
         authMode=mode;mailToken=options.token||'';clearPasswords();
         if(mode==='sent')sentAction=options.sentAction||'resend';
         $('accountAuthMessage').textContent=options.message||'';
@@ -124,12 +125,24 @@
         box.setAttribute('aria-label','账号');
         box.innerHTML=`<div class="account-heading"><strong id="accountLabel">账号</strong><span id="accountStatus" role="status"></span>
           <div id="accountGuestActions" class="account-guest-actions" hidden><button type="button" id="accountOpenLogin" class="account-primary">登录</button><button type="button" id="accountOpenRegister">注册</button></div></div>
+        <nav id="accountNavigation" class="account-navigation" aria-label="主要功能"></nav>
         <p id="accountMessage" role="status"></p>
-        <div id="accountActions" hidden>
-          <button type="button" id="accountImport">导入本机游客车库</button><button type="button" id="accountRetry">保存车库</button>
-          <button type="button" id="accountReload" hidden>加载账号资料</button><button type="button" id="accountOverwrite" hidden>用本窗口资料覆盖</button>
-          <button type="button" id="accountLogout">退出账号</button>
-        </div>`;
+        <div class="account-recovery"><button type="button" id="accountReload" hidden>加载账号资料</button><button type="button" id="accountOverwrite" hidden>用本窗口资料覆盖</button></div>`;
+        function hub(id,title,description){
+            const dialog=document.createElement('dialog');dialog.id=id;dialog.className='account-dialog account-hub';dialog.setAttribute('aria-labelledby',id+'Title');
+            const heading=document.createElement('div');heading.className='account-dialog-heading';const h=document.createElement('h2');h.id=id+'Title';h.textContent=title;
+            const close=document.createElement('button');close.type='button';close.textContent='×';close.setAttribute('aria-label','关闭'+title);close.onclick=()=>{if(!busy)dialog.close();};heading.append(h,close);
+            const p=document.createElement('p');p.className='account-help';p.textContent=description;
+            const items=document.createElement('div');items.className='account-hub-items';dialog.append(heading,p,items);box.append(dialog);
+            const trigger=document.createElement('button');trigger.type='button';trigger.textContent=title;trigger.setAttribute('aria-haspopup','dialog');trigger.setAttribute('aria-controls',id);trigger.onclick=()=>dialog.showModal();box.querySelector('#accountNavigation').append(trigger);
+            dialog.addEventListener('cancel',e=>{if(busy)e.preventDefault();});dialog.addEventListener('close',()=>trigger.focus());
+            return items;
+        }
+        function hubLink(items,title,href,description){
+            const a=document.createElement('a');a.className='account-link account-hub-link';a.href=href;const strong=document.createElement('strong');strong.textContent=title;const small=document.createElement('small');small.textContent=description;a.append(strong,small);items.append(a);
+        }
+        const personal=hub('personalCenter','个人中心','管理账号与公开身份；车库保存和恢复在主页车库区操作。');
+        personal.innerHTML=`<p id="personalIdentity"></p><p id="personalMessage" role="status"></p><div id="accountActions" hidden><button type="button" id="accountImport">导入本机游客车库</button><button type="button" id="accountRetry" hidden>保存车库</button><button type="button" id="accountLogout">退出账号</button></div>`;
         document.querySelector('.card').insertBefore(box, document.querySelector('.sub').nextSibling);
         authDialog=document.createElement('dialog');authDialog.className='account-dialog';authDialog.id='accountAuthDialog';
         authDialog.setAttribute('aria-labelledby','accountAuthTitle');authDialog.setAttribute('aria-describedby','accountAuthHelp');
@@ -157,23 +170,37 @@
             await store.init();
             if (current()) validate(current());
         }
-        accountLabel.textContent=owner ? owner.email+(owner.role==='superadmin'?' · 超级管理员':owner.role==='admin'?' · 管理员':'') : '游客 · 资料保存在本机';
+        const roleLabel=owner?.role==='superadmin'?'超级管理员':owner?.role==='admin'?'管理员':'玩家';
+        accountLabel.textContent=owner?'已登录 · '+roleLabel:'游客 · 资料保存在本机';
+        $('personalIdentity').textContent=owner?owner.email+' · '+roleLabel:'登录后管理昵称、账号与个人贡献。';
         $('accountGuestActions').hidden=!!owner; $('accountActions').hidden=!owner;
-        if(owner) {
-            const link=document.createElement('a'); link.href='/submissions'; link.className='account-link'; link.textContent='提交成绩 / 我的投稿';
-            $('accountActions').append(link);
-            if(['admin','superadmin'].includes(owner.role)) {
-                const review=document.createElement('a'); review.href='/submissions#review'; review.className='account-link'; review.textContent='审核工作台';
-                $('accountActions').append(review);
-                if((session.score_versions||session.score_versions_lab)&&owner.role==='superadmin'){const link=document.createElement('a');link.href='/score-versions';link.className='account-link';link.textContent=session.score_versions_lab?'成绩版本测试台':'正式成绩发布';$('accountActions').append(link);}
-                if(session.readonly_previews){const preview=document.createElement('a');preview.href='/data-previews';preview.className='account-link';preview.textContent='变更清单预览';$('accountActions').append(preview);}
+        $('accountNavigation').querySelector('[aria-controls="personalCenter"]').hidden=!owner;
+        const contributions=hub('contributionCenter','数据贡献',owner?'提交数据、查看审核进度与贡献排名。':'登录后可提交成绩；公开排行榜无需登录。');
+        if(owner){
+            hubLink(contributions,'提交成绩','/submissions#new','补充成绩、来源和证据');
+            hubLink(contributions,'我的投稿','/submissions','查看审核结果，继续补充资料');
+        }else{
+            const login=document.createElement('button');login.type='button';login.textContent='登录后提交成绩';login.onclick=()=>showAuth('login');contributions.append(login);
+        }
+        if(session.contributions){
+            hubLink(contributions,'贡献排行榜','/leaderboard','查看本月榜与总榜');
+            if(owner){
+                hubLink(contributions,'我的贡献','/leaderboard#mine','查看得分明细和调整记录');
+                hubLink(personal,'公开昵称与匿名设置','/leaderboard#mine','设置排行榜展示身份，不公开邮箱');
+                try{const mine=await request('GET','/contributions/me');if(mine.preference.nickname)accountLabel.textContent=mine.preference.nickname+' · '+roleLabel;}catch(e){report('昵称暂时无法读取，可在个人中心重试');}
             }
-            if(owner.role==='superadmin') {
-                const access=document.createElement('a');access.href='/admin-access';access.className='account-link';access.textContent='管理员与邀请码';$('accountActions').append(access);
-                const users=document.createElement('a');users.href='/admin-accounts';users.className='account-link';users.textContent='账号与公告管理';$('accountActions').append(users);
-            } else if(owner.role==='player'&&invitesEnabled) {
-                const redeem=document.createElement('button');redeem.type='button';redeem.textContent='兑换管理员邀请码';redeem.onclick=()=>showAuth('invite');$('accountActions').append(redeem);
+        }
+        if(owner&&['admin','superadmin'].includes(owner.role)){
+            const management=hub('managementCenter','管理工作台','按权限显示审核、发布与账号管理功能。');
+            hubLink(management,'投稿审核','/submissions#review','审核玩家投稿，填写反馈与质量评分');
+            if((session.score_versions||session.score_versions_lab)&&owner.role==='superadmin')hubLink(management,session.score_versions_lab?'成绩版本测试台':'正式成绩发布','/score-versions','逐项确认发布、查看批次及回滚');
+            if(session.readonly_previews)hubLink(management,'变更清单预览','/data-previews','检查已采纳投稿的变更影响');
+            if(owner.role==='superadmin'){
+                hubLink(management,'账号与公告管理','/admin-accounts','管理账号状态和公告内容');
+                hubLink(management,'管理员与邀请码','/admin-access','查看管理员并管理邀请');
             }
+        }else if(owner?.role==='player'&&invitesEnabled){
+            const redeem=document.createElement('button');redeem.type='button';redeem.textContent='兑换管理员邀请码';redeem.onclick=()=>showAuth('invite');$('accountActions').append(redeem);
         }
         $('accountOpenLogin').onclick=()=>showAuth('login');
         $('accountOpenRegister').onclick=()=>showAuth('register');

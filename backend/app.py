@@ -126,7 +126,9 @@ class Store:
             db.execute('INSERT INTO attempts VALUES (?,1,?) ON CONFLICT(bucket) DO UPDATE SET count=count+1', (key, now+600))
 
 
-def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None, mail_config=None, preview_source=None, writeback_lab=None, production=False, score_version_lab=None, score_state=None):
+def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None, mail_config=None, preview_source=None, writeback_lab=None, production=False, score_version_lab=None, score_state=None, contributions=False):
+    if contributions and (production or score_version_lab is None):
+        raise ValueError("排行榜仅允许显式启用的独立成绩版本本地环境")
     parsed = urlsplit(origin)
     if production:
         if parsed.scheme!='https' or not parsed.hostname or parsed.hostname in ('127.0.0.1','localhost') or parsed.port not in (None,443) or parsed.path or parsed.query or parsed.fragment or parsed.username or parsed.password:
@@ -152,6 +154,13 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
     store = Store(data_dir or ROOT / '.local-accounts')
     app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None, redirect_slashes=not production)
     app.state.store = store
+    app.state.contributions = contributions
+    with store.connect() as db:
+        from backend.contributions import available, migrate
+        if available(db) and not contributions:
+            raise ValueError("此环境已启用排行榜，必须带 --contributions 启动")
+        if contributions:
+            db.execute("BEGIN IMMEDIATE"); migrate(db)
     if versioned_scores:
         from backend.score_versions import ScoreWriter
         app.state.score_versions=ScoreWriter(score_state or score_version_lab,store,production=production)
@@ -249,8 +258,8 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
     def me(request:Request, response:Response):
         current=session(request,False)
         if not current:
-            return {'user':None,'csrf':new_session(response),'mail_mode':'production' if production else mail_service.config.mode,'admin_invites':True,'readonly_previews':preview_source is not None,'writeback_lab':writeback_lab is not None,'score_versions_lab':score_version_lab is not None,'score_versions':versioned_scores,'community_controls':True}
-        return {'user':user(request) if current['user_id'] else None,'csrf':current['csrf'],'mail_mode':'production' if production else mail_service.config.mode,'admin_invites':True,'readonly_previews':preview_source is not None,'writeback_lab':writeback_lab is not None,'score_versions_lab':score_version_lab is not None,'score_versions':versioned_scores,'community_controls':True}
+            return {'user':None,'csrf':new_session(response),'mail_mode':'production' if production else mail_service.config.mode,'admin_invites':True,'readonly_previews':preview_source is not None,'writeback_lab':writeback_lab is not None,'score_versions_lab':score_version_lab is not None,'score_versions':versioned_scores,'community_controls':True,'contributions':contributions}
+        return {'user':user(request) if current['user_id'] else None,'csrf':current['csrf'],'mail_mode':'production' if production else mail_service.config.mode,'admin_invites':True,'readonly_previews':preview_source is not None,'writeback_lab':writeback_lab is not None,'score_versions_lab':score_version_lab is not None,'score_versions':versioned_scores,'community_controls':True,'contributions':contributions}
 
     @app.post('/api/auth/register')
     def register(data:Registration, request:Request):
@@ -387,6 +396,9 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
                 (owner['id'],json.dumps(data.cars,ensure_ascii=False),json.dumps(data.stars,ensure_ascii=False),revision,int(time.time())))
         return {'revision':revision}
 
+    if contributions:
+        from backend.contributions import install as install_contributions
+        install_contributions(app,store,ROOT,user)
     from backend.submissions import install
     install(app,store,ROOT,user,reference_dir,production=production)
     from backend.community import install as install_community
@@ -419,6 +431,7 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
         from backend.writeback import install as install_writeback
         install_writeback(app,store,ROOT,user,writeback_lab,preview_source)
     assets={'styles.css','config.js','api.js','app_state.js','allocator.js','race_scores.js','cars.json','gauntlet_data.json','auth.js','profile_store.js','accounts.css','submissions.js','submissions.css','admin_access.js','data_previews.js','data_previews.css','writeback_lab.js','announcements.js','admin_accounts.js'}
+    if contributions: assets.update({'leaderboard.js','leaderboard.css'})
     if versioned_scores:assets.add('score_versions.js')
     @app.api_route('/{name}',methods=['GET','HEAD'])
     def asset(name:str):
@@ -439,6 +452,7 @@ def main():
     parser.add_argument('--data-dir',type=Path,default=ROOT/'.local-accounts')
     parser.add_argument('--preview-source',type=Path,help='正式成绩库只读预览来源；需显式指定，不接收网页路径参数')
     parser.add_argument('--writeback-lab',type=Path,help='仅允许专门创建的隔离写回测试环境')
+    parser.add_argument('--contributions',action='store_true',help='仅独立本地成绩版本环境启用排行榜')
     parser.add_argument('--score-version-lab',type=Path,help='独立数据版本测试环境，不用于生产')
     parser.add_argument('--mail-mode',choices=['file','smtp'],default='file')
     parser.add_argument('--mail-to',help='SMTP本地测试唯一允许的收件邮箱')
@@ -455,6 +469,6 @@ def main():
     except (ValueError,KeyboardInterrupt) as error:
         parser.exit(1, ('已取消' if isinstance(error,KeyboardInterrupt) else str(error))+'\n')
     import uvicorn
-    uvicorn.run(create_app(args.data_dir,f'http://127.0.0.1:{args.port}',mail_config=config,preview_source=args.preview_source,writeback_lab=args.writeback_lab,score_version_lab=args.score_version_lab),host='127.0.0.1',port=args.port,proxy_headers=False)
+    uvicorn.run(create_app(args.data_dir,f'http://127.0.0.1:{args.port}',mail_config=config,preview_source=args.preview_source,writeback_lab=args.writeback_lab,score_version_lab=args.score_version_lab,contributions=args.contributions),host='127.0.0.1',port=args.port,proxy_headers=False)
 
 if __name__=='__main__': main()

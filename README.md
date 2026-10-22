@@ -23,7 +23,7 @@ Accounts and submission review went live on 2026-10-20. The user completed produ
 - Players submit results and provide requested follow-up information. Administrators can rate results, adjust tiers, accept or ignore submissions, and provide feedback.
 - A protected superadministrator manages email-bound administrator invitations and permissions.
 
-Acceptance saves a review decision; it does not update official scores automatically. The user has since confirmed deployment and enablement of versioned score writes, which require explicit superadministrator confirmation. Workbook synchronization remains local. Excel bulk import, contribution rewards and leaderboards are not implemented.
+Acceptance saves a review decision; it does not update official scores automatically. The user has since confirmed deployment and enablement of versioned score writes, which require explicit superadministrator confirmation. Workbook synchronization remains local. Excel bulk import and contribution-based access unlocking are not implemented. A contribution leaderboard is available only in an isolated local environment (0–10 quality points plus 10 adoption points, public nicknames, all-time and monthly rankings); it is not deployed. See [local setup and acceptance](CONTRIBUTIONS_LOCAL.md).
 
 Manual database backup succeeded and the automatic backup timer is enabled. The user has since confirmed the scheduled run, coherent backup and isolated restore drill. See [production deployment and acceptance](PRODUCTION_DEPLOYMENT.md).
 

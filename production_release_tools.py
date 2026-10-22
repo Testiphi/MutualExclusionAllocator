@@ -10,7 +10,7 @@ import zipfile
 
 APP_FILES=('index.html','styles.css','config.js','app_state.js','api.js','allocator.js','race_scores.js','gauntlet_data.json','cars.json',
  'auth.js','profile_store.js','accounts.css','submissions.html','submissions.js','submissions.css','admin_access.html','admin_access.js',
- 'backend/__init__.py','backend/app.py','backend/mailing.py','backend/roles.py','backend/submissions.py','backend/manage.py','backend/previews.py','backend/production.py',
+ 'backend/contributions.py','backend/__init__.py','backend/app.py','backend/mailing.py','backend/roles.py','backend/submissions.py','backend/manage.py','backend/previews.py','backend/production.py',
  'apply_changes.py','format_json.py','data_tools.py','validate_data.py',
  'production/racepick-accounts.service','production/racepick-backup.service','production/racepick-backup.timer','production/nginx-rate.conf','production/nginx-https-location.conf',
  'production/configure.py','production/requirements-linux-py312.lock','production/install-runtime.sh','production/selfcheck.py','PRODUCTION_DEPLOYMENT.md')

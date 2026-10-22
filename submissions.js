@@ -5,6 +5,7 @@
     function statusText(item){return item.application?(item.application.state==='applied'?'已采纳，已应用':'已采纳，已回滚'):statuses[item.status];}
     const kinds={new:'新增成绩',placeholder:'填入已有占位',same:'与参考库一致',faster:'比当前更快',slower:'比当前更慢',rule_needed:'需要维护规则',invalid:'暂不能比较',availability_existing:'该档已收录可用性',availability_new:'新增可用性归档建议'};
     const actions={created:'保存草稿',edited:'补充或编辑',submitted:'提交审核',image_added:'补充图片',image_removed:'移除当前证据（历史保留）',accept:'采纳',needs_info:'要求补充',ignore:'忽略',reopened:'重新审核'};
+    let contributions=false;
     let user,csrf,catalog,scope='mine',offset=0,selected=null,busy=false,preview=null,formSerial=0;
     let listTicket=0,detailTicket=0,activeForm=null,batchRequest=null,unsaved=false;
     function el(tag,text,cls){const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(cls)n.className=cls;return n;}
@@ -109,7 +110,7 @@
                 unsaved=false;await loadDetail(item.id);
             });
             n.className='queue-item';n.setAttribute('aria-current',String(item.id===selected?.id));
-            n.append(el('small',`${statusText(item)} · ${item.review_score===null?'未评分':item.review_score+'/5分'} · ${p.zone}/${p.tier} · ${p.time||'未填'}秒`),el('small',new Date(item.updated_at*1000).toLocaleString()));
+            n.append(el('small',`${statusText(item)} · ${item.contribution_info?.eligible?(item.contribution_info.contribution?.quality?'质量 '+item.contribution_info.contribution.quality_points+'/10':'质量未评分')+' + 采用 '+(item.contribution_info.contribution?.bonus||0):item.review_score===null?'未评分':item.review_score+'/5分'} · ${p.zone}/${p.tier} · ${p.time||'未填'}秒`),el('small',new Date(item.updated_at*1000).toLocaleString()));
             $('list').append(n);
         }
         if(!data.items.length)$('list').append(el('p','暂无符合条件的投稿。','muted'));
@@ -125,7 +126,17 @@
     function renderDetail(){
         const item=selected,root=$('detail');root.replaceChildren();
         root.append(el('h2',item.payload.unlisted?'资料补充建议':item.payload.small+' · '+item.payload.car),el('span',statusText(item),'badge'));
-        root.append(el('p',item.review_score===null?'质量评分：暂未评分':`质量评分：${item.review_score} / 5`));
+        if(item.contribution_info?.eligible){
+            const c=item.contribution_info.contribution;
+            root.append(el('p',`贡献：${c?.quality?'质量 '+c.quality_points+' / 10':'质量未评分'} ＋ 采用 ${c?.bonus||0} / 10`));
+            if(item.status==='accepted'&&!item.application&&!c?.bonus)root.append(el('p','待发布奖励 +10（尚未到账）'));
+            if(c?.quality)root.append(el('p','评分依据：'+JSON.parse(c.quality).reason));
+            const audit=el('details');audit.append(el('summary','贡献调整历史'));for(const e of item.contribution_info.events||[]){const s=JSON.parse(e.snapshot);audit.append(el('p',`${new Date(e.created_at*1000).toLocaleString()} · ${e.action} · 质量 ${s.quality_points} / 采用 ${s.bonus} · ${s.reason||''}`));}root.append(audit);
+            if(['admin','superadmin'].includes(user.role)&&item.owner_id!==user.id&&['accepted','ignored'].includes(item.status)){
+                const quality=qualityForm(root,c?.quality?JSON.parse(c.quality):null);
+                root.append(button('保存 / 调整质量评分',async()=>{const q=quality.read();if(!q){say('请填写全部评分项和依据');return;}await request('POST',`/admin/contributions/${item.id}/rating`,{revision:item.revision,quality:q});await refreshItem(item.id);say('质量分已调整，采用状态保持');}));
+            }
+        }else root.append(el('p',item.review_score===null?'历史评分：暂未评分':`历史评分：${item.review_score} / 5（不计贡献）`));
         root.append(el('p',`投稿 ${item.id.slice(0,8)} · 版本 ${item.revision} · 投稿人 ${item.owner_id.slice(0,8)}`,'muted'));
         if(item.decision_reason)root.append(el('p','审核反馈：'+item.decision_reason,'warning'));
         const grid=el('div',undefined,'comparison-grid');grid.append(column('玩家提交（当前版本）',summary(item.payload)),column('参考库对比',compareText(item.comparison)),column('拟采纳 / 已采纳',summary(item.accepted_payload)));root.append(grid);
@@ -139,7 +150,7 @@
                 await request('DELETE',`/submissions/${item.id}/images/${img.id}`,{revision:item.revision});await refreshItem(item.id);say('已移除当前证据，历史记录保留。');
             }));images.append(card);}root.append(images);
         if(item.owner_id===user.id&&['draft','needs_info'].includes(item.status))renderEdit(root,item);
-        if(['admin','superadmin'].includes(user.role)&&item.status==='pending')renderReview(root,item);
+        if(['admin','superadmin'].includes(user.role)&&item.status==='pending'&&!(item.contribution_info?.eligible&&item.owner_id===user.id))renderReview(root,item);
         if(item.application)root.append(el('p',`${item.application_scope==='production'?'正式成绩':'测试库'}应用状态：${item.application.state==='applied'?'已应用':'已回滚'} · 批次 ${item.application.batch_id}；审核历史保留，如需修改请新建投稿。`));
         if(!item.application&&['admin','superadmin'].includes(user.role)&&['accepted','ignored'].includes(item.status)){
             const label=el('label','重新审核原因'),reason=el('textarea');reason.maxLength=2000;label.append(reason);root.append(label,button('重新打开审核',async()=>{
@@ -170,17 +181,32 @@
             await request('POST',`/submissions/${item.id}/submit`,{revision:item.revision});await refreshItem(item.id);say('已提交，等待审核');
         }));root.append(buttons);
     }
+    function qualityForm(root,initial=null){
+        const group=el('fieldset'),title=el('legend','贡献质量评分（0–10，与是否采用独立）');group.append(title);
+        const selects={};
+        for(const [key,label,labels] of [
+            ['completeness','信息完整性',['0 关键目标无法辨认','1 需大量补充','2 基本完整，需少量修正','3 完整准确']],
+            ['evidence','证据可核验性',['0 无有效证据','1 有限线索','2 可核对部分条件','3 主要条件可核实','4 可完整复核']],
+            ['value','参考价值',['0 没有新增价值（总分须为0）','1 有限参考','2 可靠样本或独立验证','3 补齐重要空缺或纠错']]]){
+            const l=el('label',label),select=el('select');option(select,'','暂不评分');labels.forEach((t,i)=>option(select,String(i),t));if(initial)select.value=String(initial[key]);l.append(select);group.append(l);selects[key]=select;
+        }
+        const l=el('label','评分依据（投稿人可见）'),reason=el('textarea');reason.maxLength=1000;reason.value=initial?.reason||'';l.append(reason);group.append(l);const total=el('p',initial?'质量分合计：'+(initial.completeness+initial.evidence+initial.value)+' / 10':'暂未评分');group.append(total);
+        group.addEventListener('input',()=>{unsaved=true;const values=Object.values(selects);total.textContent=values.every(s=>s.value!=='')?'质量分合计：'+values.reduce((n,s)=>n+Number(s.value),0)+' / 10':'请完成三项评分，或全部留空';});root.append(group);
+        return {read(){const values=Object.values(selects);if(values.every(s=>s.value===''))return null;if(values.some(s=>s.value==='')||!reason.value.trim())throw new Error('请完成三项质量评分并填写依据');return {...Object.fromEntries(Object.entries(selects).map(([k,s])=>[k,Number(s.value)])),reason:reason.value.trim()};}};
+    }
     function renderReview(root,item){
         const form=scoreForm(item.payload,'拟采纳内容（不会覆盖玩家原始投稿）');root.append(form.node);
         const reasonLabel=el('label','审核理由 / 给玩家的反馈'),reason=el('textarea');reason.maxLength=2000;reasonLabel.append(reason);root.append(reasonLabel);
         const scoreLabel=el('label','质量评分（与是否采纳分开）'),score=el('select');option(score,'','暂不评分');for(let i=0;i<=5;i++)option(score,String(i),i+' / 5');scoreLabel.append(score);root.append(scoreLabel);
+        const quality=item.contribution_info?.eligible?qualityForm(root):null;if(quality)scoreLabel.hidden=true;
+        function rating(){return quality?{quality:quality.read()}:{review_score:score.value===''?null:Number(score.value)};}
         const result=el('div',undefined,'summary');result.textContent='先预览拟采纳内容，再确认采纳。';root.append(result);
         const slowerLabel=el('label','我已核对并确认采纳这个更慢的成绩','check'),slower=el('input');slower.type='checkbox';slowerLabel.prepend(slower);slowerLabel.hidden=true;root.append(slowerLabel);
         const accept=button('确认采纳',async()=>{
             if(!preview){say('请先预览拟采纳内容');return;}
             if(preview.comparison.kind==='slower'&&!slower.checked){say('请逐条勾选确认较慢成绩');return;}
             if(!await ask('采纳以下内容，仅保存审核决定，尚不写入正式库：\n'+summary(preview.candidate)))return;
-            await request('POST',`/admin/submissions/${item.id}/review`,{revision:item.revision,action:'accept',entry:preview.candidate,basis:preview.basis,reason:reason.value,slower_confirmed:slower.checked,review_score:score.value===''?null:Number(score.value)});
+            await request('POST',`/admin/submissions/${item.id}/review`,{revision:item.revision,action:'accept',entry:preview.candidate,basis:preview.basis,reason:reason.value,slower_confirmed:slower.checked,...rating()});
             await refreshItem(item.id);say('已采纳，等待后续应用到正式数据。');
         });accept.disabled=true;
         form.node.addEventListener('input',()=>{preview=null;accept.disabled=true;slower.checked=false;unsaved=true;result.textContent='拟采纳内容已变化，请重新预览。';});
@@ -192,13 +218,14 @@
             say('预览已更新。修改后采纳或更慢成绩需要审核原因。');
         }),accept,button('要求补充',async()=>decision('needs_info')),button('忽略本条',async()=>decision('ignore')));root.append(buttons);
         async function decision(action){if(!reason.value.trim()){say('请填写给玩家的反馈原因，再选择要求补充或忽略。',reason);return;}if(!await ask(action==='ignore'?'忽略此投稿，不修改正式成绩；历史会保留。':'要求玩家补充资料后重新提交？'))return;
-            await request('POST',`/admin/submissions/${item.id}/review`,{revision:item.revision,action,reason:reason.value,review_score:score.value===''?null:Number(score.value)});await refreshItem(item.id);say(action==='ignore'?'已忽略并保存原因':'已要求补充');}
+            await request('POST',`/admin/submissions/${item.id}/review`,{revision:item.revision,action,reason:reason.value,...rating()});await refreshItem(item.id);say(action==='ignore'?'已忽略并保存原因':'已要求补充');}
     }
     async function init(){
-        const session=await request('GET','/auth/me');user=session.user;csrf=session.csrf;
+        const session=await request('GET','/auth/me');user=session.user;csrf=session.csrf;contributions=!!session.contributions;
         if(!user){const text='请先返回选车助手注册或登录，再进入投稿页。';$('identity').textContent=text;say(text);return;}
         $('identity').textContent=`${user.email} · ${user.role==='superadmin'?'超级管理员':user.role==='admin'?'管理员':'玩家'}`;
         catalog=await request('GET','/submissions/catalog');$('reference').textContent=catalog.reference_label+' · '+catalog.basis.data.slice(0,12);
+        if(contributions){const a=el('a','贡献排行榜 / 设置我的公开昵称');a.href='/leaderboard#mine';$('navigation').append(a);}
         $('navigation').hidden=false;$('reviewTab').hidden=!['admin','superadmin'].includes(user.role);
         if(session.readonly_previews&&['admin','superadmin'].includes(user.role)){const link=el('a','已采纳投稿预览');link.href='/data-previews';$('navigation').append(link);}
         $('newTab').onclick=()=>run(()=>switchView('new'));$('mineTab').onclick=()=>run(()=>switchView('mine'));$('reviewTab').onclick=()=>run(()=>switchView('review'));
@@ -213,7 +240,8 @@
         $('statusFilter').onchange=()=>run(async()=>{offset=0;await loadList();});
         $('previous').onclick=()=>run(async()=>{offset=Math.max(0,offset-50);await loadList();});$('next').onclick=()=>run(async()=>{offset+=50;await loadList();});
         addEventListener('beforeunload',e=>{if(unsaved){e.preventDefault();e.returnValue='';}});
-        await switchView(location.hash==='#review'&&['admin','superadmin'].includes(user.role)?'review':'mine');
+        await switchView(location.hash==='#new'?'new':location.hash==='#review'&&['admin','superadmin'].includes(user.role)?'review':'mine');
+        if(/^#[a-f0-9]{32}$/.test(location.hash))await loadDetail(location.hash.slice(1));
     }
     void init().catch(e=>say(e.message));
 })();
