@@ -106,3 +106,11 @@
 现有生产打包器已补国际组件及独立哈希校验，保留旧包读取兼容；自检增加三JSON及国际入口HTTP检查。发布从干净提交及锁定Linux离线依赖构建，工作簿、账号/成绩状态、反馈、凭据及本地测试库不入包。包内国服JSON新增22.84不会自动覆盖服务器score-state，是否需要单独发布该成绩须现场核对。具体流程见INTERNATIONAL_DEPLOYMENT.md，包内RELEASE.json绑定真实源码/数据提交。
 
 本轮未访问或修改生产，当前运行应用、health、备份timer及公网验收未重核。之后仍由代理给一条命令、用户执行回传后逐步核对，不重跑生产迁移、不初始化、不清理旧文件。
+
+### 本轮发布包已生成并校验（尚未上线）
+
+源码/国服数据提交5ade7ea3598eb104f136365fb0a51574c16d8013已推送main并用ls-remote核对。发布ID bd12e3fb2c2519b0238afd90；完整目录repo/.production-build/delivery-20261024-international共14文件，外层SHA清单13项全部通过，ZIP内85白名单文件（含19锁定离线依赖）。内层racepick-accounts-release.zip SHA256：1ecc93ea6d36eec12a5e3ca0ed96acddf8847dc6f549546c52d1eac9c11939ee。
+
+便于完整上传的归档repo/.production-build/RacePick-International-20261024-bd12e3fb-delivery.zip，SHA256：ac6016cf81b3fa5f900a4d1aea1bc7c538d1b4218916fb8947d1fa8c835c8036；归档含上述完整14文件目录，已逐字节回读。PACKAGE_VERIFICATION.json保留详细回执。使用提交的干净独立检出构建，保护原工作树未跟踪脚本/shared；数据JSON与提交字节一致，Windows代码检出换行差异已独立核对，内层manifest绑定实际交付字节。
+
+本轮Node80+Python125共205项通过，交付目录自带工具的独立本地暂存、解包目录验证和临时库HTTP自检通过；原始434资料哈希保持。Linux/Python3.12离线安装及原生自检尚待上传后用户执行。未操作服务器、未激活、未生产迁移；实际运行版本、健康、备份调度、线上成绩差异和公网验收均留待部署轮核对。后续文档提交不改变该已校验包绑定的源码提交。
