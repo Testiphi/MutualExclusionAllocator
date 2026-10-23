@@ -1,0 +1,50 @@
+{
+  "_meta": {
+    "server_id": "global",
+    "schema_version": 1,
+    "catalog_payload_sha256": "284028653c0f871df85e47e44152ecc82f13072c0a13c2b7fcf889ed65fad2f7",
+    "scores_payload_sha256": "0aafb906866180f1b55cad7334f0e46e176fc6d6acdb6b8412974c9b43f87e7e",
+    "dataset_version": "c7ea2f354e90bf70711c04ae05ced8d894ac9c1168a9b4c18393c9a9fd1b31f0",
+    "manifest_file": "global-data-manifest.json"
+  },
+  "capabilities": {
+    "zones": [
+      "五区"
+    ],
+    "tiers": [
+      "理论"
+    ],
+    "max_stars_only": true,
+    "oc": true
+  },
+  "files": {
+    "cars.global.json": {
+      "sha256": "81a5ca3edb4dc62b1722a219ec3b8cbad0dbd46281df60ad4bfc3a1b94a1b169",
+      "bytes": 18331,
+      "payload_sha256": "284028653c0f871df85e47e44152ecc82f13072c0a13c2b7fcf889ed65fad2f7"
+    },
+    "gauntlet_data.global.json": {
+      "sha256": "d485ae3714a88e172aa8f567cfa15b3eb121dba5a3cfb18e7c0467936283d9b7",
+      "bytes": 74942,
+      "payload_sha256": "0aafb906866180f1b55cad7334f0e46e176fc6d6acdb6b8412974c9b43f87e7e"
+    }
+  },
+  "counts": {
+    "physical_cars": 29,
+    "tracks": 44,
+    "covered_tracks": 42,
+    "score_entries": 321,
+    "non_oc_entries": 315,
+    "oc_entries": 6,
+    "special_entries": 30,
+    "normal_entries": 291
+  },
+  "sources": {
+    "cars-full.json": "88d3829666e5fd9d4cf8ba56573f5af0de6e67919c77bdb33019084ddb013a71",
+    "current-maintenance.json": "3ee698db181e71425071a52c26d435c2ffc3039627d509d76879e7d20c1fadb4",
+    "gauntlet_data_international.json": "88915b9f898e03626bf1280732027a92ef484273823faa3d45eb57924e250d75",
+    "maintenance-car-identities.json": "bbfd510b40f51b512dc956f6f80dfb37aa62be3f62db16d8588cedc597a9ed38",
+    "oc-score-ledger.json": "cb33ee3b3fdb8a309e825d6ee49f25a5a52f8490af4542213c89ccdd466a7c59",
+    "score-ledger.json": "853c63460a7f3c5f70f6169a51fb3f2093f15e42fcea09169bcd2d4a0aab841a"
+  }
+}

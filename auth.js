@@ -278,7 +278,20 @@
         if(session.community_controls&&globalThis.AnnouncementUI){try{await AnnouncementUI.init({owner,request});}catch(error){report('更新公告暂时无法读取，其他功能可继续使用');}}
         openMailLink();
         addEventListener('hashchange',openMailLink);
-        addEventListener('beforeunload',e=>{if(store?.state().dirty){e.preventDefault();e.returnValue='';}});
+        addEventListener('beforeunload',e=>{
+            if(!store?.state().dirty)return;
+            if(globalThis.RACEPICK_SERVER_NAVIGATION?.kind==='server-switch'&&owner){
+                try{
+                    const key='racepick.account-draft.v1.'+owner.id,raw=sessionStorage.getItem(key),draft=JSON.parse(raw);
+                    if(Number.isInteger(draft?.revision)&&JSON.stringify(draft.profile)===JSON.stringify(store.snapshot())){
+                        sessionStorage.setItem(key,raw);
+                        if(sessionStorage.getItem(key)===raw)return;
+                    }
+                }catch(error){}
+                report('账号临时草稿未能缓存，请先保存或加载账号资料后再切换服务器');
+            }
+            e.preventDefault();e.returnValue='';
+        });
     }
     root.accountUI = {
         init, active:()=>!!store,

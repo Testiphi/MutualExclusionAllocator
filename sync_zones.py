@@ -8,7 +8,7 @@
 - 车辆集：`cars.json` 中 `score <= 4200` 的车（按真名 / nickname / `_nickname_map` 别名匹配）
 - 先校验源数据；同步要求双区车池归属及两区星级合规，否则单列跳过原因
 - 档位：理论 + 高手（含特殊跑法，按 `sc_type` 匹配）
-- 键：同赛道同档位下的 `(车名, 星级, sc, sc_type)`
+- 键：同赛道同档位下的 `(车名, 星级, oc, sc, sc_type)`；OC准入未核验时仅报告跳过
   1. 只有一边有 `time` → 另一边填占位；占位不存在则新建条目
   2. 两边都有 `time` 且不等 → **保留更快值**，慢侧被覆盖（预检会逐条列出被覆盖的慢值）
   3. 两边都是占位 / 只有占位 → 不动
@@ -31,7 +31,7 @@ import sys
 from pathlib import Path
 
 from data_tools import (ROOT, atomic_write, car_records, car_zone_names, configure_stdout,
-                        entry_sort_key, read_json, star_limits)
+                        entry_sort_key, format_score_column, read_json, score_car_key, star_limits)
 import format_json
 from validate_data import validate_data
 
@@ -55,19 +55,21 @@ def build_score_map(cars):
     return score_map
 
 
-def find_entry(entries, name, stars, sc, sc_type):
+def find_entry(entries, name, stars, sc, sc_type, oc=False):
     for entry in entries:
         if len(entry.get('cars', [])) != 1:
             continue
         car = entry['cars'][0]
-        if (car.get('name') == name and car.get('stars') == stars
+        if (score_car_key(car) == (name, stars, oc)
                 and bool(entry.get('sc')) == sc and entry.get('sc_type') == sc_type):
             return entry
     return None
 
 
-def make_entry(name, stars, time, sc, sc_type):
+def make_entry(name, stars, time, sc, sc_type, oc=False):
     entry = {'cars': [{'name': name, 'stars': stars}], 'time': time}
+    if oc:
+        entry['cars'][0]['oc'] = True
     if sc:
         entry['sc'] = True
         if sc_type:
@@ -101,13 +103,17 @@ def sync(data, cars, max_score=MAX_SCORE):
                 for entry in entries:
                     if len(entry.get('cars', [])) == 1:
                         car = entry['cars'][0]
-                        if car['name'] in sync_names:
-                            keys.add((car['name'], car.get('stars'),
+                        if car['name'] in sync_names or car.get('oc') is True:
+                            keys.add((*score_car_key(car),
                                       bool(entry.get('sc')), entry.get('sc_type')))
-            for name, stars, sc, sc_type in sorted(keys, key=lambda k: (k[0], k[1] or 0, k[2], k[3] or '')):
-                tag = f'{name}★{stars}' if stars else name
-                e5 = find_entry(zone5, name, stars, sc, sc_type)
-                e4 = find_entry(zone4, name, stars, sc, sc_type)
+            for name, stars, oc, sc, sc_type in sorted(keys, key=lambda k: (k[0], k[1] or 0, k[2], k[3], k[4] or '')):
+                tag = format_score_column(name, stars, oc)
+                if oc:
+                    changes['跳过'].append(
+                        f'{label} {tier} {tag} sc={sc} sc_type={sc_type!r}: OC跨区准入未核验，保留已有记录')
+                    continue
+                e5 = find_entry(zone5, name, stars, sc, sc_type, oc)
+                e4 = find_entry(zone4, name, stars, sc, sc_type, oc)
                 t5, t4 = (e5.get('time') if e5 else None), (e4.get('time') if e4 else None)
                 if t5 is None and t4 is None:
                     continue
@@ -143,19 +149,19 @@ def sync(data, cars, max_score=MAX_SCORE):
                     source, target_zone, target_name = e5, zone4, '四区'
                 else:
                     source, target_zone, target_name = e4, zone5, '五区'
-                existing = find_entry(target_zone, name, stars, sc, sc_type)
+                existing = find_entry(target_zone, name, stars, sc, sc_type, oc)
                 if existing is not None:
                     assert existing.get('time') is None, f'目标已有值: {label} {tier} {tag}'
                     existing['time'] = source['time']
                     dirty[id(target_zone)] = target_zone
                     changes['填占位'].append(f'{label} {tier} {target_name} {tag}: 填占位 = {source["time"]}')
                 else:
-                    target_zone.append(make_entry(name, stars, source['time'], sc, sc_type))
+                    target_zone.append(make_entry(name, stars, source['time'], sc, sc_type, oc))
                     dirty[id(target_zone)] = target_zone
                     changes['创建'].append(f'{label} {tier} {target_name} {tag}: 新建 = {source["time"]}')
                     if tier == '高手' and not sc:
                         normal = track[target_name]['普通']
-                        if find_entry(normal, name, stars, False, None) is None:
+                        if find_entry(normal, name, stars, False, None, oc) is None:
                             normal.append({'cars': [{'name': name, 'stars': stars}]})
                             changes['镜像'].append(f'{label} {tier} {target_name} {tag}: 普通档补镜像')
     for entries in dirty.values():

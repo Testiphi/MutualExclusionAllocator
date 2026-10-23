@@ -1,0 +1,779 @@
+{
+  "_meta": {
+    "server_id": "global",
+    "schema_version": 1,
+    "catalog_payload_sha256": "284028653c0f871df85e47e44152ecc82f13072c0a13c2b7fcf889ed65fad2f7",
+    "scores_payload_sha256": "0aafb906866180f1b55cad7334f0e46e176fc6d6acdb6b8412974c9b43f87e7e",
+    "dataset_version": "c7ea2f354e90bf70711c04ae05ced8d894ac9c1168a9b4c18393c9a9fd1b31f0",
+    "manifest_file": "global-data-manifest.json"
+  },
+  "_comment": "International accepted-score vehicles only; EVO configuration metrics remain unknown.",
+  "capabilities": {
+    "zones": [
+      "五区"
+    ],
+    "tiers": [
+      "理论"
+    ],
+    "max_stars_only": true,
+    "oc": true
+  },
+  "_nickname_map": {
+    "007s": "Glickenhaus 007S",
+    "21c": "Czinger 21C",
+    "9x8": "Peugeot 9x8",
+    "Ultima RS": "Ultima RS",
+    "c2": "Rimac Nevera",
+    "evosf90": "Ferrari SF90 Stradale",
+    "evo女武神": "Aston Martin Valkyrie",
+    "evo狼崽": "W Motors Lykan Hypersport",
+    "evo肥龙": "Bugatti Chiron",
+    "f5": "Hennessey Venom F5",
+    "ps龙": "Bugatti Chiron Pur Sport",
+    "ssc": "SSC Tuatara",
+    "万达": "Vanda Electrics Dendrobium",
+    "塞纳": "McLaren Senna",
+    "帕梅": "Porsche Panamera Turbo S",
+    "帝国": "Arash Imperium",
+    "恶魔": "Devel Sixteen",
+    "无敌牛": "Lamborghini Invencible",
+    "杰哥": "Koenigsegg Jesko",
+    "杰孙": "Koenigsegg Jesko Absolut",
+    "杰弟": "Koenigsegg Gemera",
+    "法拉第": "Faraday Future FFZero1",
+    "火山": "Icona Vulcano Titanium",
+    "玻璃": "Bugatti Bolide",
+    "白龙": "Bugatti Centodieci",
+    "绿兔": "Rimac Nevera Time Attack",
+    "莫斯勒": "Mosler Super GT",
+    "超光孙": "RAESR Tartarus",
+    "黑龙": "Bugatti La Voiture Noire"
+  },
+  "cars": [
+    {
+      "title": "Glickenhaus 007S",
+      "nickname": "007s",
+      "asec_id": 203,
+      "base_title": "Glickenhaus 007S",
+      "base_class": "A",
+      "class": "A",
+      "class_source": "base_vehicle_class",
+      "variant": "regular",
+      "max_stars": 6,
+      "zones": [
+        "五区"
+      ],
+      "star_rule": {
+        "min": 6,
+        "max": 6,
+        "default": 6
+      },
+      "score": 4187,
+      "max_speed": 358.6,
+      "acceleration": 89.33,
+      "handling": 82.63,
+      "nitro": 55.24,
+      "stats_status": "asec_max_star"
+    },
+    {
+      "title": "Czinger 21C",
+      "nickname": "21c",
+      "asec_id": 295,
+      "base_title": "Czinger 21C",
+      "base_class": "S",
+      "class": "S",
+      "class_source": "base_vehicle_class",
+      "variant": "regular",
+      "max_stars": 6,
+      "zones": [
+        "五区"
+      ],
+      "star_rule": {
+        "min": 6,
+        "max": 6,
+        "default": 6
+      },
+      "score": 5059,
+      "max_speed": 423.4,
+      "acceleration": 89.07,
+      "handling": 49.38,
+      "nitro": 51.51,
+      "stats_status": "asec_max_star"
+    },
+    {
+      "title": "Peugeot 9x8",
+      "nickname": "9x8",
+      "asec_id": 195,
+      "base_title": "Peugeot 9x8",
+      "base_class": "A",
+      "class": "A",
+      "class_source": "base_vehicle_class",
+      "variant": "regular",
+      "max_stars": 6,
+      "zones": [
+        "五区"
+      ],
+      "star_rule": {
+        "min": 6,
+        "max": 6,
+        "default": 6
+      },
+      "score": 4108,
+      "max_speed": 344.3,
+      "acceleration": 90.03,
+      "handling": 94.15,
+      "nitro": 69.94,
+      "stats_status": "asec_max_star"
+    },
+    {
+      "title": "Ultima RS",
+      "nickname": "Ultima RS",
+      "asec_id": 266,
+      "base_title": "Ultima RS",
+      "base_class": "S",
+      "class": "S",
+      "class_source": "base_vehicle_class",
+      "variant": "regular",
+      "max_stars": 6,
+      "zones": [
+        "五区"
+      ],
+      "star_rule": {
+        "min": 6,
+        "max": 6,
+        "default": 6
+      },
+      "score": 4644,
+      "max_speed": 418.2,
+      "acceleration": 81.38,
+      "handling": 63.54,
+      "nitro": 63.24,
+      "stats_status": "asec_max_star"
+    },
+    {
+      "title": "Rimac Nevera",
+      "nickname": "c2",
+      "asec_id": 288,
+      "base_title": "Rimac Nevera",
+      "base_class": "S",
+      "class": "S",
+      "class_source": "base_vehicle_class",
+      "variant": "regular",
+      "max_stars": 6,
+      "zones": [
+        "五区"
+      ],
+      "star_rule": {
+        "min": 6,
+        "max": 6,
+        "default": 6
+      },
+      "score": 4897,
+      "max_speed": 421.6,
+      "acceleration": 87.71,
+      "handling": 51.33,
+      "nitro": 56.51,
+      "stats_status": "asec_max_star"
+    },
+    {
+      "title": "Ferrari SF90 Stradale",
+      "nickname": "evosf90",
+      "asec_id": 249,
+      "base_title": "Ferrari SF90 Stradale",
+      "base_class": "S",
+      "class": "S",
+      "class_source": "base_vehicle_class",
+      "variant": "evo",
+      "max_stars": 6,
+      "zones": [
+        "五区"
+      ],
+      "star_rule": {
+        "min": 6,
+        "max": 6,
+        "default": 6
+      },
+      "score": null,
+      "max_speed": null,
+      "acceleration": null,
+      "handling": null,
+      "nitro": null,
+      "stats_status": "evo_configuration_unknown"
+    },
+    {
+      "title": "Aston Martin Valkyrie",
+      "nickname": "evo女武神",
+      "asec_id": 256,
+      "base_title": "Aston Martin Valkyrie",
+      "base_class": "S",
+      "class": "S",
+      "class_source": "base_vehicle_class",
+      "variant": "evo",
+      "max_stars": 6,
+      "zones": [
+        "五区"
+      ],
+      "star_rule": {
+        "min": 6,
+        "max": 6,
+        "default": 6
+      },
+      "score": null,
+      "max_speed": null,
+      "acceleration": null,
+      "handling": null,
+      "nitro": null,
+      "stats_status": "evo_configuration_unknown"
+    },
+    {
+      "title": "W Motors Lykan Hypersport",
+      "nickname": "evo狼崽",
+      "asec_id": 238,
+      "base_title": "W Motors Lykan Hypersport",
+      "base_class": "S",
+      "class": "S",
+      "class_source": "base_vehicle_class",
+      "variant": "evo",
+      "max_stars": 5,
+      "zones": [
+        "五区"
+      ],
+      "star_rule": {
+        "min": 5,
+        "max": 5,
+        "default": 5
+      },
+      "score": null,
+      "max_speed": null,
+      "acceleration": null,
+      "handling": null,
+      "nitro": null,
+      "stats_status": "evo_configuration_unknown"
+    },
+    {
+      "title": "Bugatti Chiron",
+      "nickname": "evo肥龙",
+      "asec_id": 272,
+      "base_title": "Bugatti Chiron",
+      "base_class": "S",
+      "class": "S",
+      "class_source": "base_vehicle_class",
+      "variant": "evo",
+      "max_stars": 6,
+      "zones": [
+        "五区"
+      ],
+      "star_rule": {
+        "min": 6,
+        "max": 6,
+        "default": 6
+      },
+      "score": null,
+      "max_speed": null,
+      "acceleration": null,
+      "handling": null,
+      "nitro": null,
+      "stats_status": "evo_configuration_unknown"
+    },
+    {
+      "title": "Hennessey Venom F5",
+      "nickname": "f5",
+      "asec_id": 301,
+      "base_title": "Hennessey Venom F5",
+      "base_class": "S",
+      "class": "S",
+      "class_source": "base_vehicle_class",
+      "variant": "regular",
+      "max_stars": 6,
+      "zones": [
+        "五区"
+      ],
+      "star_rule": {
+        "min": 6,
+        "max": 6,
+        "default": 6
+      },
+      "score": 5114,
+      "max_speed": 512.3,
+      "acceleration": 80.66,
+      "handling": 49.07,
+      "nitro": 45.61,
+      "stats_status": "asec_max_star"
+    },
+    {
+      "title": "Bugatti Chiron Pur Sport",
+      "nickname": "ps龙",
+      "asec_id": 280,
+      "base_title": "Bugatti Chiron Pur Sport",
+      "base_class": "S",
+      "class": "S",
+      "class_source": "base_vehicle_class",
+      "variant": "regular",
+      "max_stars": 6,
+      "zones": [
+        "五区"
+      ],
+      "star_rule": {
+        "min": 6,
+        "max": 6,
+        "default": 6
+      },
+      "score": 4821,
+      "max_speed": 397.8,
+      "acceleration": 87.01,
+      "handling": 73.62,
+      "nitro": 65.32,
+      "stats_status": "asec_max_star"
+    },
+    {
+      "title": "SSC Tuatara",
+      "nickname": "ssc",
+      "asec_id": 291,
+      "base_title": "SSC Tuatara",
+      "base_class": "S",
+      "class": "S",
+      "class_source": "base_vehicle_class",
+      "variant": "regular",
+      "max_stars": 6,
+      "zones": [
+        "五区"
+      ],
+      "star_rule": {
+        "min": 6,
+        "max": 6,
+        "default": 6
+      },
+      "score": 4969,
+      "max_speed": 490.6,
+      "acceleration": 82.51,
+      "handling": 48.77,
+      "nitro": 62.04,
+      "stats_status": "asec_max_star"
+    },
+    {
+      "title": "Vanda Electrics Dendrobium",
+      "nickname": "万达",
+      "asec_id": 192,
+      "base_title": "Vanda Electrics Dendrobium",
+      "base_class": "A",
+      "class": "A",
+      "class_source": "base_vehicle_class",
+      "variant": "regular",
+      "max_stars": 6,
+      "zones": [
+        "五区"
+      ],
+      "star_rule": {
+        "min": 6,
+        "max": 6,
+        "default": 6
+      },
+      "score": 4099,
+      "max_speed": 339.9,
+      "acceleration": 86.24,
+      "handling": 95.92,
+      "nitro": 84.92,
+      "stats_status": "asec_max_star"
+    },
+    {
+      "title": "McLaren Senna",
+      "nickname": "塞纳",
+      "asec_id": 251,
+      "base_title": "McLaren Senna",
+      "base_class": "S",
+      "class": "S",
+      "class_source": "base_vehicle_class",
+      "variant": "regular",
+      "max_stars": 6,
+      "zones": [
+        "五区"
+      ],
+      "star_rule": {
+        "min": 6,
+        "max": 6,
+        "default": 6
+      },
+      "score": 4406,
+      "max_speed": 358.7,
+      "acceleration": 82.91,
+      "handling": 101.81,
+      "nitro": 78.25,
+      "stats_status": "asec_max_star"
+    },
+    {
+      "title": "Porsche Panamera Turbo S",
+      "nickname": "帕梅",
+      "asec_id": 93,
+      "base_title": "Porsche Panamera Turbo S",
+      "base_class": "C",
+      "class": "C",
+      "class_source": "base_vehicle_class",
+      "variant": "regular",
+      "max_stars": 5,
+      "zones": [
+        "五区"
+      ],
+      "star_rule": {
+        "min": 5,
+        "max": 5,
+        "default": 5
+      },
+      "score": 3971,
+      "max_speed": 326.3,
+      "acceleration": 88.03,
+      "handling": 72.48,
+      "nitro": 58.56,
+      "stats_status": "asec_max_star"
+    },
+    {
+      "title": "Arash Imperium",
+      "nickname": "帝国",
+      "asec_id": 308,
+      "base_title": "Arash Imperium",
+      "base_class": "S",
+      "class": "S",
+      "class_source": "base_vehicle_class",
+      "variant": "regular",
+      "max_stars": 6,
+      "zones": [
+        "五区"
+      ],
+      "star_rule": {
+        "min": 6,
+        "max": 6,
+        "default": 6
+      },
+      "score": 5315,
+      "max_speed": 535.3,
+      "acceleration": 89.83,
+      "handling": 55.36,
+      "nitro": 33.57,
+      "stats_status": "asec_max_star"
+    },
+    {
+      "title": "Devel Sixteen",
+      "nickname": "恶魔",
+      "asec_id": 306,
+      "base_title": "Devel Sixteen",
+      "base_class": "S",
+      "class": "S",
+      "class_source": "base_vehicle_class",
+      "variant": "regular",
+      "max_stars": 6,
+      "zones": [
+        "五区"
+      ],
+      "star_rule": {
+        "min": 6,
+        "max": 6,
+        "default": 6
+      },
+      "score": 5255,
+      "max_speed": 556.5,
+      "acceleration": 81.38,
+      "handling": 56.38,
+      "nitro": 38.47,
+      "stats_status": "asec_max_star"
+    },
+    {
+      "title": "Lamborghini Invencible",
+      "nickname": "无敌牛",
+      "asec_id": 152,
+      "base_title": "Lamborghini Invencible",
+      "base_class": "B",
+      "class": "B",
+      "class_source": "base_vehicle_class",
+      "variant": "regular",
+      "max_stars": 5,
+      "zones": [
+        "五区"
+      ],
+      "star_rule": {
+        "min": 5,
+        "max": 5,
+        "default": 5
+      },
+      "score": 4091,
+      "max_speed": 340.4,
+      "acceleration": 88.49,
+      "handling": 75.74,
+      "nitro": 67.64,
+      "stats_status": "asec_max_star"
+    },
+    {
+      "title": "Koenigsegg Jesko",
+      "nickname": "杰哥",
+      "asec_id": 281,
+      "base_title": "Koenigsegg Jesko",
+      "base_class": "S",
+      "class": "S",
+      "class_source": "base_vehicle_class",
+      "variant": "regular",
+      "max_stars": 6,
+      "zones": [
+        "五区"
+      ],
+      "star_rule": {
+        "min": 6,
+        "max": 6,
+        "default": 6
+      },
+      "score": 4826,
+      "max_speed": 496.6,
+      "acceleration": 80.07,
+      "handling": 48.19,
+      "nitro": 58.23,
+      "stats_status": "asec_max_star"
+    },
+    {
+      "title": "Koenigsegg Jesko Absolut",
+      "nickname": "杰孙",
+      "asec_id": 305,
+      "base_title": "Koenigsegg Jesko Absolut",
+      "base_class": "S",
+      "class": "S",
+      "class_source": "base_vehicle_class",
+      "variant": "regular",
+      "max_stars": 6,
+      "zones": [
+        "五区"
+      ],
+      "star_rule": {
+        "min": 6,
+        "max": 6,
+        "default": 6
+      },
+      "score": 5223,
+      "max_speed": 541,
+      "acceleration": 83.36,
+      "handling": 61.28,
+      "nitro": 33.34,
+      "stats_status": "asec_max_star"
+    },
+    {
+      "title": "Koenigsegg Gemera",
+      "nickname": "杰弟",
+      "asec_id": 299,
+      "base_title": "Koenigsegg Gemera",
+      "base_class": "S",
+      "class": "S",
+      "class_source": "base_vehicle_class",
+      "variant": "regular",
+      "max_stars": 6,
+      "zones": [
+        "五区"
+      ],
+      "star_rule": {
+        "min": 6,
+        "max": 6,
+        "default": 6
+      },
+      "score": 5085,
+      "max_speed": 413.1,
+      "acceleration": 88.58,
+      "handling": 66.06,
+      "nitro": 48.36,
+      "stats_status": "asec_max_star"
+    },
+    {
+      "title": "Faraday Future FFZero1",
+      "nickname": "法拉第",
+      "asec_id": 263,
+      "base_title": "Faraday Future FFZero1",
+      "base_class": "S",
+      "class": "S",
+      "class_source": "base_vehicle_class",
+      "variant": "regular",
+      "max_stars": 6,
+      "zones": [
+        "五区"
+      ],
+      "star_rule": {
+        "min": 6,
+        "max": 6,
+        "default": 6
+      },
+      "score": 4602,
+      "max_speed": 423,
+      "acceleration": 86.06,
+      "handling": 42.83,
+      "nitro": 51.7,
+      "stats_status": "asec_max_star"
+    },
+    {
+      "title": "Icona Vulcano Titanium",
+      "nickname": "火山",
+      "asec_id": 237,
+      "base_title": "Icona Vulcano Titanium",
+      "base_class": "S",
+      "class": "S",
+      "class_source": "base_vehicle_class",
+      "variant": "regular",
+      "max_stars": 5,
+      "zones": [
+        "五区"
+      ],
+      "star_rule": {
+        "min": 5,
+        "max": 5,
+        "default": 5
+      },
+      "score": 3957,
+      "max_speed": 381.7,
+      "acceleration": 81.38,
+      "handling": 43.38,
+      "nitro": 65.89,
+      "stats_status": "asec_max_star"
+    },
+    {
+      "title": "Bugatti Bolide",
+      "nickname": "玻璃",
+      "asec_id": 304,
+      "base_title": "Bugatti Bolide",
+      "base_class": "S",
+      "class": "S",
+      "class_source": "base_vehicle_class",
+      "variant": "regular",
+      "max_stars": 6,
+      "zones": [
+        "五区"
+      ],
+      "star_rule": {
+        "min": 6,
+        "max": 6,
+        "default": 6
+      },
+      "score": 5190,
+      "max_speed": 497.1,
+      "acceleration": 84.28,
+      "handling": 51.07,
+      "nitro": 27.5,
+      "stats_status": "asec_max_star"
+    },
+    {
+      "title": "Bugatti Centodieci",
+      "nickname": "白龙",
+      "asec_id": 283,
+      "base_title": "Bugatti Centodieci",
+      "base_class": "S",
+      "class": "S",
+      "class_source": "base_vehicle_class",
+      "variant": "regular",
+      "max_stars": 6,
+      "zones": [
+        "五区"
+      ],
+      "star_rule": {
+        "min": 6,
+        "max": 6,
+        "default": 6
+      },
+      "score": 4843,
+      "max_speed": 402.7,
+      "acceleration": 86.51,
+      "handling": 62.58,
+      "nitro": 77.09,
+      "stats_status": "asec_max_star"
+    },
+    {
+      "title": "Rimac Nevera Time Attack",
+      "nickname": "绿兔",
+      "asec_id": 282,
+      "base_title": "Rimac Nevera Time Attack",
+      "base_class": "S",
+      "class": "S",
+      "class_source": "base_vehicle_class",
+      "variant": "regular",
+      "max_stars": 6,
+      "zones": [
+        "五区"
+      ],
+      "star_rule": {
+        "min": 6,
+        "max": 6,
+        "default": 6
+      },
+      "score": 4835,
+      "max_speed": 409.7,
+      "acceleration": 89.13,
+      "handling": 63.68,
+      "nitro": 45.99,
+      "stats_status": "asec_max_star"
+    },
+    {
+      "title": "Mosler Super GT",
+      "nickname": "莫斯勒",
+      "asec_id": 303,
+      "base_title": "Mosler Super GT",
+      "base_class": "S",
+      "class": "S",
+      "class_source": "base_vehicle_class",
+      "variant": "regular",
+      "max_stars": 6,
+      "zones": [
+        "五区"
+      ],
+      "star_rule": {
+        "min": 6,
+        "max": 6,
+        "default": 6
+      },
+      "score": 5169,
+      "max_speed": 506.7,
+      "acceleration": 83.27,
+      "handling": 49.79,
+      "nitro": 44.54,
+      "stats_status": "asec_max_star"
+    },
+    {
+      "title": "RAESR Tartarus",
+      "nickname": "超光孙",
+      "asec_id": 307,
+      "base_title": "RAESR Tartarus",
+      "base_class": "S",
+      "class": "S",
+      "class_source": "base_vehicle_class",
+      "variant": "regular",
+      "max_stars": 6,
+      "zones": [
+        "五区"
+      ],
+      "star_rule": {
+        "min": 6,
+        "max": 6,
+        "default": 6
+      },
+      "score": 5285,
+      "max_speed": 538.7,
+      "acceleration": 90.64,
+      "handling": 61.77,
+      "nitro": 30.57,
+      "stats_status": "asec_max_star"
+    },
+    {
+      "title": "Bugatti La Voiture Noire",
+      "nickname": "黑龙",
+      "asec_id": 294,
+      "base_title": "Bugatti La Voiture Noire",
+      "base_class": "S",
+      "class": "S",
+      "class_source": "base_vehicle_class",
+      "variant": "regular",
+      "max_stars": 6,
+      "zones": [
+        "五区"
+      ],
+      "star_rule": {
+        "min": 6,
+        "max": 6,
+        "default": 6
+      },
+      "score": 5041,
+      "max_speed": 443.4,
+      "acceleration": 84.89,
+      "handling": 54.63,
+      "nitro": 63.79,
+      "stats_status": "asec_max_star"
+    }
+  ]
+}

@@ -2,7 +2,18 @@
  * MutualExclusionAllocator — 全局配置
  * 集中管理所有可配置项，切换部署方式只需修改 dataSource / apiBaseUrl。
  */
-const APP_CONFIG = {
+const APP_CONFIG = (() => {
+  const requestedServer = new URLSearchParams(globalThis.location?.search || '').get('server');
+  const serverError = requestedServer !== null && !['cn', 'global'].includes(requestedServer) ? '未知服务器，请使用国服或国际服入口' : null;
+  const server = requestedServer === 'global' ? 'global' : 'cn';
+  const international = server === 'global';
+  globalThis.RACEPICK_SERVER = server;
+  const scoped = key => international ? key + '.global' : key;
+  return {
+  server,
+  serverError,
+  localOnly: international,
+  capabilities: international ? {zones: ['zone5'], tiers: ['理论'], maxStarsOnly: true} : {zones: ['zone5', 'zone4'], tiers: ['理论', '高手', '普通', '自动'], maxStarsOnly: false},
   // ---- 版本 ----
   version: '1.1',
 
@@ -17,16 +28,19 @@ const APP_CONFIG = {
 
   // ---- 静态资源路径（dataSource='static' 时生效）----
   staticPaths: {
-    carsJson: 'cars.json',
-    dataJson: 'gauntlet_data.json',
+    carsJson: international ? 'cars.global.json' : 'cars.json',
+    dataJson: international ? 'gauntlet_data.global.json' : 'gauntlet_data.json',
+    manifestJson: 'global-data-manifest.json',
   },
 
   // ---- 本地存储键名 ---- 
   storageKeys: {
-    garage: 'garageCars',
-    zoneMode: 'zoneMode',
-    sortMode: 'sortMode',
-    starMap: 'starsMap',
+    guestProfile: scoped('racepick.guest-profile.v1'),
+    guestDraft: scoped('racepick.guest-draft.v1'),
+    garage: scoped('garageCars'),
+    zoneMode: scoped('zoneMode'),
+    sortMode: scoped('sortMode'),
+    starMap: scoped('starsMap'),
   },
 
   // ---- 算法参数 ----
@@ -34,3 +48,4 @@ const APP_CONFIG = {
     noCarPriority: 99,           // 无车优先级标记
   },
 };
+})();

@@ -29,6 +29,26 @@ class ReleaseTests(unittest.TestCase):
    import json
    z.writestr('manifest.json',json.dumps(info))
   with self.assertRaises(ValueError):read_bundle(bad)
+
+ def test_global_components_and_independent_data_binding(self):
+  import json
+  from production_release_tools import GLOBAL_FILES,manifest
+  original,_=read_bundle(self.bundle)
+  for case in ('missing','mixed','legacy'):
+   contents=dict(original)
+   if case=='missing':contents.pop('cars.global.json')
+   elif case=='mixed':
+    scores=json.loads(contents['gauntlet_data.global.json']);scores['_meta']['dataset_version']='0'*64
+    contents['gauntlet_data.global.json']=json.dumps(scores).encode()
+   else:
+    for n in GLOBAL_FILES:contents.pop(n)
+   bundle=self.path/(case+'.zip')
+   with zipfile.ZipFile(bundle,'w') as z:
+    for n,v in contents.items():z.writestr(n,v)
+    z.writestr('manifest.json',json.dumps(manifest(contents,{'case':case})))
+   if case=='legacy':self.assertEqual(read_bundle(bundle)[0],contents)
+   else:
+    with self.assertRaises(ValueError):read_bundle(bundle)
  def test_versioned_data_blocks_legacy_application_activation(self):
   import sqlite3,json
   from contextlib import closing

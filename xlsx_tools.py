@@ -1,6 +1,6 @@
 """Keyed workbook parsing; reject ambiguous rows, columns and formulas."""
 import openpyxl
-from data_tools import parse_column, parse_sheet_name
+from data_tools import parse_score_column, parse_sheet_name
 
 
 def load_workbook_data(path):
@@ -21,8 +21,9 @@ def load_workbook_data(path):
             present = [h for h in headers if h not in (None, '')]
             if len(set(present)) != len(present):
                 raise ValueError(f'重复车辆列: {sheet.title}')
-            for header in present:
-                parse_column(header)
+            identities = [parse_score_column(header) for header in present]
+            if len(set(identities)) != len(identities):
+                raise ValueError(f'重复车辆状态列: {sheet.title}')
             rows = {}
             big = None
             for row in sheet.iter_rows(min_row=2, values_only=True):

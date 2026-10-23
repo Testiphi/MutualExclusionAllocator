@@ -10,20 +10,55 @@
 
 const api = (() => {
   const cfg = APP_CONFIG;
-  const guestKey='racepick.guest-profile.v1';
+  const international = cfg.server === 'global';
+  const guestKey = cfg.storageKeys?.guestProfile || 'racepick.guest-profile.v1';
   function guestProfile(){
     const raw=localStorage.getItem(guestKey);if(raw===null)return null;
     const p=JSON.parse(raw);
     if(!p||!Array.isArray(p.cars)||p.cars.some(c=>typeof c!=='string')||!p.stars||typeof p.stars!=='object'||Array.isArray(p.stars))throw Error('已保存的游客车库格式损坏，未覆盖');
+    if (international && p.ocMap !== undefined && (!p.ocMap || typeof p.ocMap !== 'object' || Array.isArray(p.ocMap) || Object.values(p.ocMap).some(value => typeof value !== 'boolean'))) throw Error('已保存的国际服OC设置格式损坏，未覆盖');
     return p;
   }
-  let versionedSnapshot;
+  const snapshots = new Map();
   function scoreSnapshot() {
-    if (!versionedSnapshot) versionedSnapshot = fetch('/api/scores/snapshot', {cache:'no-store'}).then(response => {
+    const key = 'cn:versioned';
+    if (!snapshots.has(key)) snapshots.set(key, fetch('/api/scores/snapshot', {cache:'no-store'}).then(response => {
       if (!response.ok) throw new Error('成绩版本加载失败，请刷新后重试');
       return response.json();
-    });
-    return versionedSnapshot;
+    }));
+    return snapshots.get(key);
+  }
+
+
+  async function internationalSnapshot() {
+    const key = 'global:static';
+    if (!snapshots.has(key)) snapshots.set(key, (async () => {
+      const paths = [cfg.staticPaths.manifestJson, cfg.staticPaths.carsJson, cfg.staticPaths.dataJson];
+      const responses = await Promise.all(paths.map(path => fetch(path, {cache: 'no-store'})));
+      if (responses.some(response => !response.ok)) throw Error('国际服数据加载失败，请刷新后重试');
+      const bytes = await Promise.all(responses.map(response => response.arrayBuffer()));
+      const [manifest, cars, data] = bytes.map(raw => JSON.parse(new TextDecoder().decode(raw)));
+      const meta = manifest._meta;
+      const fields = ['server_id', 'schema_version', 'dataset_version', 'catalog_payload_sha256', 'scores_payload_sha256', 'manifest_file'];
+      if (!meta || meta.server_id !== 'global' || meta.schema_version !== 1 || meta.manifest_file !== 'global-data-manifest.json' ||
+          fields.some(field => typeof meta[field] === 'undefined') ||
+          [cars, data].some(value => !value._meta || fields.some(field => value._meta[field] !== meta[field]))) {
+        throw Error('国际服车辆与成绩版本不一致，请刷新后重试');
+      }
+      if (!globalThis.crypto?.subtle) throw Error('此环境无法校验国际服数据，请通过HTTPS或本机localhost打开');
+      for (let i = 1; i < paths.length; i++) {
+        const entry = manifest.files?.[paths[i]];
+        const digest = await crypto.subtle.digest('SHA-256', bytes[i]);
+        const hash = [...new Uint8Array(digest)].map(value => value.toString(16).padStart(2, '0')).join('');
+        const payload = i === 1 ? meta.catalog_payload_sha256 : meta.scores_payload_sha256;
+        if (!entry || entry.sha256 !== hash || entry.bytes !== bytes[i].byteLength || entry.payload_sha256 !== payload) {
+          throw Error('国际服数据完整性校验失败，请刷新后重试');
+        }
+      }
+      if (!Array.isArray(cars.cars) || !Array.isArray(data.tracks)) throw Error('国际服数据结构无效');
+      return {version: meta.dataset_version, cars, data};
+    })().catch(error => { snapshots.delete(key); throw error; }));
+    return snapshots.get(key);
   }
 
   // =======================================================================
@@ -53,10 +88,10 @@ const api = (() => {
 
   return {
     guestProfile,
-    guestRevision:()=>localStorage.getItem(guestKey)??JSON.stringify([localStorage.getItem(cfg.storageKeys.garage),localStorage.getItem(cfg.storageKeys.starMap)]),
+    guestRevision:()=>localStorage.getItem(guestKey)??(international ? null : JSON.stringify([localStorage.getItem(cfg.storageKeys.garage),localStorage.getItem(cfg.storageKeys.starMap)])),
     saveGuestProfile(value,expected){
       if(expected!==this.guestRevision())throw Error('另一窗口已更新车库，请先恢复已保存的车库再修改');
-      localStorage.setItem(guestKey,JSON.stringify({cars:value.cars,stars:value.stars}));
+      localStorage.setItem(guestKey,JSON.stringify({cars:value.cars,stars:value.stars,...(international ? {ocMap: value.ocMap || {}} : {})}));
     },
     // ---------------------------------------------------------------------
     //  车辆数据
@@ -64,6 +99,8 @@ const api = (() => {
 
     /** 获取车辆列表 + 昵称映射 */
     async getCars() {
+      if (cfg.serverError) throw Error(cfg.serverError);
+      if (international) return (await internationalSnapshot()).cars;
       if (globalThis.RACEPICK_VERSIONED_SCORES) return (await scoreSnapshot()).cars;
       if (cfg.dataSource === 'api') {
         return apiFetch('GET', '/cars');
@@ -76,6 +113,8 @@ const api = (() => {
 
     /** 获取赛道数据 */
     async getRaceData() {
+      if (cfg.serverError) throw Error(cfg.serverError);
+      if (international) return (await internationalSnapshot()).data;
       if (globalThis.RACEPICK_VERSIONED_SCORES) return (await scoreSnapshot()).data;
       if (cfg.dataSource === 'api') {
         return apiFetch('GET', '/races');
@@ -91,6 +130,7 @@ const api = (() => {
 
     /** 加载已选车辆集合 */
     async loadGarage(knownCars) {
+      if (international) { const profile = guestProfile(); return profile ? appState.garage(profile.cars, knownCars) : null; }
       if (globalThis.accountUI?.active()) return accountUI.garage();
       if (cfg.dataSource === 'api') {
         return appState.garage(await apiFetch('GET', '/garage'), knownCars);
@@ -102,6 +142,7 @@ const api = (() => {
 
     /** 保存已选车辆集合 */
     async saveGarage(carSet) {
+      if (international) { const profile = guestProfile(); return this.saveGuestProfile({cars: [...carSet], stars: profile?.stars || {}, ocMap: profile?.ocMap || {}}, this.guestRevision()); }
       if (globalThis.accountUI?.active()) return accountUI.saveGarage(carSet);
       if (cfg.dataSource === 'api') {
         return apiFetch('PUT', '/garage', { cars: [...carSet] });

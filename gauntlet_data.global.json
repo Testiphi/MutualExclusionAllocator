@@ -1,0 +1,3602 @@
+{
+  "_meta": {
+    "server_id": "global",
+    "schema_version": 1,
+    "catalog_payload_sha256": "284028653c0f871df85e47e44152ecc82f13072c0a13c2b7fcf889ed65fad2f7",
+    "scores_payload_sha256": "0aafb906866180f1b55cad7334f0e46e176fc6d6acdb6b8412974c9b43f87e7e",
+    "dataset_version": "c7ea2f354e90bf70711c04ae05ced8d894ac9c1168a9b4c18393c9a9fd1b31f0",
+    "manifest_file": "global-data-manifest.json"
+  },
+  "_version": 2,
+  "_comment": "International five-zone maximum-star theory; OC and special routes have independent score identities.",
+  "capabilities": {
+    "zones": [
+      "五区"
+    ],
+    "tiers": [
+      "理论"
+    ],
+    "max_stars_only": true,
+    "oc": true
+  },
+  "tier_info": {
+    "理论": {
+      "label": "理论档",
+      "desc": "国际服满星理论成绩，普通与OC、特殊跑法分别保存"
+    }
+  },
+  "tracks": [
+    {
+      "大地图": "罗马",
+      "小地图": "罗马小道",
+      "international_track_id": "rome::roman-byroads",
+      "international_region": "Rome",
+      "international_track": "Roman Byroads",
+      "label_status": "community_name_candidate",
+      "has_special_route": true,
+      "special_route_note": "跳图",
+      "五区": {
+        "理论": [
+          {
+            "cars": [
+              {
+                "name": "9x8"
+              }
+            ],
+            "time": 16.9,
+            "sc": true,
+            "sc_type": "跳图"
+          },
+          {
+            "cars": [
+              {
+                "name": "evosf90"
+              }
+            ],
+            "time": 18.09
+          },
+          {
+            "cars": [
+              {
+                "name": "杰弟"
+              }
+            ],
+            "time": 18.5
+          },
+          {
+            "cars": [
+              {
+                "name": "恶魔"
+              }
+            ],
+            "time": 18.73
+          },
+          {
+            "cars": [
+              {
+                "name": "c2"
+              }
+            ],
+            "time": 18.86
+          },
+          {
+            "cars": [
+              {
+                "name": "9x8"
+              }
+            ],
+            "time": 18.89
+          },
+          {
+            "cars": [
+              {
+                "name": "帕梅"
+              }
+            ],
+            "time": 18.9,
+            "sc": true,
+            "sc_type": "跳图"
+          },
+          {
+            "cars": [
+              {
+                "name": "白龙"
+              }
+            ],
+            "time": 18.98
+          },
+          {
+            "cars": [
+              {
+                "name": "玻璃"
+              }
+            ],
+            "time": 18.99
+          },
+          {
+            "cars": [
+              {
+                "name": "007s"
+              }
+            ],
+            "time": 19.29
+          }
+        ],
+        "高手": [],
+        "普通": [],
+        "自动": []
+      },
+      "四区": {
+        "理论": [],
+        "高手": [],
+        "普通": [],
+        "自动": []
+      }
+    },
+    {
+      "大地图": "罗马",
+      "小地图": "跌宕罗马",
+      "international_track_id": "rome::roman-tumble",
+      "international_region": "Rome",
+      "international_track": "Roman Tumble",
+      "label_status": "community_name_candidate",
+      "五区": {
+        "理论": [
+          {
+            "cars": [
+              {
+                "name": "evo狼崽"
+              }
+            ],
+            "time": 16.76
+          },
+          {
+            "cars": [
+              {
+                "name": "evo肥龙"
+              }
+            ],
+            "time": 16.93
+          },
+          {
+            "cars": [
+              {
+                "name": "evosf90"
+              }
+            ],
+            "time": 17.13
+          },
+          {
+            "cars": [
+              {
+                "name": "杰弟"
+              }
+            ],
+            "time": 17.25
+          },
+          {
+            "cars": [
+              {
+                "name": "c2"
+              }
+            ],
+            "time": 17.48
+          },
+          {
+            "cars": [
+              {
+                "name": "杰哥"
+              }
+            ],
+            "time": 17.67
+          },
+          {
+            "cars": [
+              {
+                "name": "法拉第"
+              }
+            ],
+            "time": 17.85
+          },
+          {
+            "cars": [
+              {
+                "name": "9x8"
+              }
+            ],
+            "time": 18.15
+          },
+          {
+            "cars": [
+              {
+                "name": "火山"
+              }
+            ],
+            "time": 18.46
+          }
+        ],
+        "高手": [],
+        "普通": [],
+        "自动": []
+      },
+      "四区": {
+        "理论": [],
+        "高手": [],
+        "普通": [],
+        "自动": []
+      }
+    },
+    {
+      "大地图": "旧金山",
+      "小地图": "喧闹铁路",
+      "international_track_id": "sanfrancisco::railroad-bustle",
+      "international_region": "San Francisco",
+      "international_track": "Railroad Bustle",
+      "label_status": "community_name_candidate",
+      "五区": {
+        "理论": [
+          {
+            "cars": [
+              {
+                "name": "evosf90"
+              }
+            ],
+            "time": 17.17
+          },
+          {
+            "cars": [
+              {
+                "name": "evo女武神"
+              }
+            ],
+            "time": 17.49
+          },
+          {
+            "cars": [
+              {
+                "name": "白龙"
+              }
+            ],
+            "time": 17.59
+          },
+          {
+            "cars": [
+              {
+                "name": "杰弟"
+              }
+            ],
+            "time": 17.69
+          },
+          {
+            "cars": [
+              {
+                "name": "c2"
+              }
+            ],
+            "time": 17.79
+          },
+          {
+            "cars": [
+              {
+                "name": "ps龙"
+              }
+            ],
+            "time": 17.89
+          },
+          {
+            "cars": [
+              {
+                "name": "9x8"
+              }
+            ],
+            "time": 17.95
+          }
+        ],
+        "高手": [],
+        "普通": [],
+        "自动": []
+      },
+      "四区": {
+        "理论": [],
+        "高手": [],
+        "普通": [],
+        "自动": []
+      }
+    },
+    {
+      "大地图": "旧金山",
+      "小地图": "隧道",
+      "international_track_id": "sanfrancisco::the-tunnel",
+      "international_region": "San Francisco",
+      "international_track": "The Tunnel",
+      "label_status": "community_name_candidate",
+      "五区": {
+        "理论": [
+          {
+            "cars": [
+              {
+                "name": "帝国"
+              }
+            ],
+            "time": 18.19
+          },
+          {
+            "cars": [
+              {
+                "name": "evo狼崽"
+              }
+            ],
+            "time": 18.37
+          },
+          {
+            "cars": [
+              {
+                "name": "杰孙"
+              }
+            ],
+            "time": 18.5
+          },
+          {
+            "cars": [
+              {
+                "name": "恶魔"
+              }
+            ],
+            "time": 18.86
+          },
+          {
+            "cars": [
+              {
+                "name": "杰弟"
+              }
+            ],
+            "time": 18.93
+          },
+          {
+            "cars": [
+              {
+                "name": "c2"
+              }
+            ],
+            "time": 19.09
+          },
+          {
+            "cars": [
+              {
+                "name": "白龙"
+              }
+            ],
+            "time": 19.39
+          },
+          {
+            "cars": [
+              {
+                "name": "火山"
+              }
+            ],
+            "time": 20.39
+          }
+        ],
+        "高手": [],
+        "普通": [],
+        "自动": []
+      },
+      "四区": {
+        "理论": [],
+        "高手": [],
+        "普通": [],
+        "自动": []
+      }
+    },
+    {
+      "大地图": "苏格兰",
+      "小地图": "幽灵船",
+      "international_track_id": "scotland::ghost-ships",
+      "international_region": "Scotland",
+      "international_track": "Ghost Ships",
+      "label_status": "community_name_candidate",
+      "has_special_route": true,
+      "special_route_note": "跳船",
+      "五区": {
+        "理论": [
+          {
+            "cars": [
+              {
+                "name": "evo狼崽"
+              }
+            ],
+            "time": 21.27,
+            "sc": true,
+            "sc_type": "跳船"
+          },
+          {
+            "cars": [
+              {
+                "name": "evosf90"
+              }
+            ],
+            "time": 21.37,
+            "sc": true,
+            "sc_type": "跳船"
+          },
+          {
+            "cars": [
+              {
+                "name": "evo狼崽"
+              }
+            ],
+            "time": 21.76
+          },
+          {
+            "cars": [
+              {
+                "name": "evo肥龙"
+              }
+            ],
+            "time": 21.77,
+            "sc": true,
+            "sc_type": "跳船"
+          },
+          {
+            "cars": [
+              {
+                "name": "白龙"
+              }
+            ],
+            "time": 21.9,
+            "sc": true,
+            "sc_type": "跳船"
+          },
+          {
+            "cars": [
+              {
+                "name": "evo女武神"
+              }
+            ],
+            "time": 22.09
+          },
+          {
+            "cars": [
+              {
+                "name": "c2"
+              }
+            ],
+            "time": 22.1,
+            "sc": true,
+            "sc_type": "跳船"
+          },
+          {
+            "cars": [
+              {
+                "name": "杰弟"
+              }
+            ],
+            "time": 22.1,
+            "sc": true,
+            "sc_type": "跳船"
+          },
+          {
+            "cars": [
+              {
+                "name": "evosf90"
+              }
+            ],
+            "time": 22.13
+          },
+          {
+            "cars": [
+              {
+                "name": "9x8"
+              }
+            ],
+            "time": 22.5,
+            "sc": true,
+            "sc_type": "跳船"
+          },
+          {
+            "cars": [
+              {
+                "name": "杰弟"
+              }
+            ],
+            "time": 22.5
+          },
+          {
+            "cars": [
+              {
+                "name": "c2"
+              }
+            ],
+            "time": 22.6
+          },
+          {
+            "cars": [
+              {
+                "name": "21c"
+              }
+            ],
+            "time": 22.75
+          },
+          {
+            "cars": [
+              {
+                "name": "杰哥"
+              }
+            ],
+            "time": 22.8
+          },
+          {
+            "cars": [
+              {
+                "name": "白龙"
+              }
+            ],
+            "time": 22.84
+          },
+          {
+            "cars": [
+              {
+                "name": "9x8"
+              }
+            ],
+            "time": 23.42
+          }
+        ],
+        "高手": [],
+        "普通": [],
+        "自动": []
+      },
+      "四区": {
+        "理论": [],
+        "高手": [],
+        "普通": [],
+        "自动": []
+      }
+    },
+    {
+      "大地图": "苏格兰",
+      "小地图": "岩石山谷",
+      "international_track_id": "scotland::rocky-valley",
+      "international_region": "Scotland",
+      "international_track": "Rocky Valley",
+      "label_status": "community_name_candidate",
+      "五区": {
+        "理论": [
+          {
+            "cars": [
+              {
+                "name": "帝国"
+              }
+            ],
+            "time": 19.8
+          },
+          {
+            "cars": [
+              {
+                "name": "evo狼崽"
+              }
+            ],
+            "time": 20.53
+          },
+          {
+            "cars": [
+              {
+                "name": "21c"
+              }
+            ],
+            "time": 20.8
+          },
+          {
+            "cars": [
+              {
+                "name": "白龙"
+              }
+            ],
+            "time": 21
+          },
+          {
+            "cars": [
+              {
+                "name": "杰弟"
+              }
+            ],
+            "time": 21.09
+          },
+          {
+            "cars": [
+              {
+                "name": "绿兔"
+              }
+            ],
+            "time": 21.15
+          },
+          {
+            "cars": [
+              {
+                "name": "c2"
+              }
+            ],
+            "time": 21.19
+          },
+          {
+            "cars": [
+              {
+                "name": "杰哥"
+              }
+            ],
+            "time": 21.75
+          }
+        ],
+        "高手": [],
+        "普通": [],
+        "自动": []
+      },
+      "四区": {
+        "理论": [],
+        "高手": [],
+        "普通": [],
+        "自动": []
+      }
+    },
+    {
+      "大地图": "上海",
+      "小地图": "东方巴黎",
+      "international_track_id": "shanghai::paris-of-the-east",
+      "international_region": "Shanghai",
+      "international_track": "Paris of the East",
+      "label_status": "community_name_candidate",
+      "五区": {
+        "理论": [
+          {
+            "cars": [
+              {
+                "name": "帝国"
+              }
+            ],
+            "time": 23.83
+          },
+          {
+            "cars": [
+              {
+                "name": "恶魔"
+              }
+            ],
+            "time": 24.19
+          },
+          {
+            "cars": [
+              {
+                "name": "莫斯勒"
+              }
+            ],
+            "time": 24.9
+          },
+          {
+            "cars": [
+              {
+                "name": "杰弟"
+              }
+            ],
+            "time": 24.92
+          },
+          {
+            "cars": [
+              {
+                "name": "evosf90"
+              }
+            ],
+            "time": 25.03
+          },
+          {
+            "cars": [
+              {
+                "name": "杰哥"
+              }
+            ],
+            "time": 25.03
+          },
+          {
+            "cars": [
+              {
+                "name": "c2"
+              }
+            ],
+            "time": 25.1
+          },
+          {
+            "cars": [
+              {
+                "name": "超光孙"
+              }
+            ],
+            "time": 25.2
+          },
+          {
+            "cars": [
+              {
+                "name": "9x8"
+              }
+            ],
+            "time": 26.19
+          },
+          {
+            "cars": [
+              {
+                "name": "火山"
+              }
+            ],
+            "time": 26.6
+          }
+        ],
+        "高手": [],
+        "普通": [],
+        "自动": []
+      },
+      "四区": {
+        "理论": [],
+        "高手": [],
+        "普通": [],
+        "自动": []
+      }
+    },
+    {
+      "大地图": "上海",
+      "小地图": "双环岛",
+      "international_track_id": "shanghai::double-roundabout",
+      "international_region": "Shanghai",
+      "international_track": "Double Roundabout",
+      "label_status": "community_name_candidate",
+      "五区": {
+        "理论": [
+          {
+            "cars": [
+              {
+                "name": "帝国"
+              }
+            ],
+            "time": 26.69
+          },
+          {
+            "cars": [
+              {
+                "name": "恶魔"
+              }
+            ],
+            "time": 27.19
+          },
+          {
+            "cars": [
+              {
+                "name": "evo肥龙"
+              }
+            ],
+            "time": 27.3
+          },
+          {
+            "cars": [
+              {
+                "name": "杰哥",
+                "oc": true
+              }
+            ],
+            "time": 27.79
+          },
+          {
+            "cars": [
+              {
+                "name": "evosf90"
+              }
+            ],
+            "time": 27.99
+          },
+          {
+            "cars": [
+              {
+                "name": "杰哥"
+              }
+            ],
+            "time": 27.99
+          },
+          {
+            "cars": [
+              {
+                "name": "莫斯勒"
+              }
+            ],
+            "time": 28.0
+          },
+          {
+            "cars": [
+              {
+                "name": "c2"
+              }
+            ],
+            "time": 28.2
+          },
+          {
+            "cars": [
+              {
+                "name": "9x8"
+              }
+            ],
+            "time": 29.19
+          },
+          {
+            "cars": [
+              {
+                "name": "塞纳"
+              }
+            ],
+            "time": 29.59
+          }
+        ],
+        "高手": [],
+        "普通": [],
+        "自动": []
+      },
+      "四区": {
+        "理论": [],
+        "高手": [],
+        "普通": [],
+        "自动": []
+      }
+    },
+    {
+      "大地图": "开罗",
+      "小地图": "王者回归",
+      "international_track_id": "cairo::a-king-s-revival",
+      "international_region": "Cairo",
+      "international_track": "A King's Revival",
+      "label_status": "community_name_candidate",
+      "五区": {
+        "理论": [
+          {
+            "cars": [
+              {
+                "name": "evo狼崽"
+              }
+            ],
+            "time": 22.13
+          },
+          {
+            "cars": [
+              {
+                "name": "evo肥龙"
+              }
+            ],
+            "time": 22.2
+          },
+          {
+            "cars": [
+              {
+                "name": "c2"
+              }
+            ],
+            "time": 23.0
+          },
+          {
+            "cars": [
+              {
+                "name": "黑龙"
+              }
+            ],
+            "time": 23.3
+          },
+          {
+            "cars": [
+              {
+                "name": "白龙"
+              }
+            ],
+            "time": 23.55
+          },
+          {
+            "cars": [
+              {
+                "name": "火山"
+              }
+            ],
+            "time": 24.49
+          }
+        ],
+        "高手": [],
+        "普通": [],
+        "自动": []
+      },
+      "四区": {
+        "理论": [],
+        "高手": [],
+        "普通": [],
+        "自动": []
+      }
+    },
+    {
+      "大地图": "开罗",
+      "小地图": "杰基拉岛",
+      "international_track_id": "cairo::gezira-island",
+      "international_region": "Cairo",
+      "international_track": "Gezira Island",
+      "label_status": "community_name_candidate",
+      "五区": {
+        "理论": [
+          {
+            "cars": [
+              {
+                "name": "evosf90"
+              }
+            ],
+            "time": 21.37
+          },
+          {
+            "cars": [
+              {
+                "name": "帝国"
+              }
+            ],
+            "time": 21.63
+          },
+          {
+            "cars": [
+              {
+                "name": "evo狼崽"
+              }
+            ],
+            "time": 21.73
+          },
+          {
+            "cars": [
+              {
+                "name": "恶魔"
+              }
+            ],
+            "time": 21.96
+          },
+          {
+            "cars": [
+              {
+                "name": "f5"
+              }
+            ],
+            "time": 22.1
+          },
+          {
+            "cars": [
+              {
+                "name": "杰弟"
+              }
+            ],
+            "time": 22.2
+          },
+          {
+            "cars": [
+              {
+                "name": "莫斯勒"
+              }
+            ],
+            "time": 22.35
+          },
+          {
+            "cars": [
+              {
+                "name": "9x8"
+              }
+            ],
+            "time": 22.4
+          },
+          {
+            "cars": [
+              {
+                "name": "杰哥"
+              }
+            ],
+            "time": 22.49
+          },
+          {
+            "cars": [
+              {
+                "name": "万达"
+              }
+            ],
+            "time": 22.59
+          },
+          {
+            "cars": [
+              {
+                "name": "007s"
+              }
+            ],
+            "time": 22.79
+          },
+          {
+            "cars": [
+              {
+                "name": "无敌牛"
+              }
+            ],
+            "time": 23.3
+          },
+          {
+            "cars": [
+              {
+                "name": "帕梅"
+              }
+            ],
+            "time": 23.75
+          }
+        ],
+        "高手": [],
+        "普通": [],
+        "自动": []
+      },
+      "四区": {
+        "理论": [],
+        "高手": [],
+        "普通": [],
+        "自动": []
+      }
+    },
+    {
+      "大地图": "美国中西部",
+      "小地图": "铁道迷",
+      "international_track_id": "usmidwest::trainspotter",
+      "international_region": "U.S. Midwest",
+      "international_track": "Trainspotter",
+      "label_status": "community_name_candidate",
+      "has_special_route": true,
+      "special_route_note": "滑栏杆",
+      "五区": {
+        "理论": [
+          {
+            "cars": [
+              {
+                "name": "evo肥龙"
+              }
+            ],
+            "time": 21.1,
+            "sc": true,
+            "sc_type": "滑栏杆"
+          },
+          {
+            "cars": [
+              {
+                "name": "超光孙"
+              }
+            ],
+            "time": 21.77
+          },
+          {
+            "cars": [
+              {
+                "name": "evosf90"
+              }
+            ],
+            "time": 21.83,
+            "sc": true,
+            "sc_type": "滑栏杆"
+          },
+          {
+            "cars": [
+              {
+                "name": "杰孙"
+              }
+            ],
+            "time": 21.85
+          },
+          {
+            "cars": [
+              {
+                "name": "c2"
+              }
+            ],
+            "time": 22.19,
+            "sc": true,
+            "sc_type": "滑栏杆"
+          },
+          {
+            "cars": [
+              {
+                "name": "杰弟"
+              }
+            ],
+            "time": 22.26,
+            "sc": true,
+            "sc_type": "滑栏杆"
+          },
+          {
+            "cars": [
+              {
+                "name": "21c"
+              }
+            ],
+            "time": 22.3
+          },
+          {
+            "cars": [
+              {
+                "name": "白龙"
+              }
+            ],
+            "time": 22.3,
+            "sc": true,
+            "sc_type": "滑栏杆"
+          },
+          {
+            "cars": [
+              {
+                "name": "c2"
+              }
+            ],
+            "time": 22.35
+          },
+          {
+            "cars": [
+              {
+                "name": "白龙"
+              }
+            ],
+            "time": 22.6
+          },
+          {
+            "cars": [
+              {
+                "name": "ps龙"
+              }
+            ],
+            "time": 22.82,
+            "sc": true,
+            "sc_type": "滑栏杆"
+          },
+          {
+            "cars": [
+              {
+                "name": "9x8"
+              }
+            ],
+            "time": 23.58,
+            "sc": true,
+            "sc_type": "滑栏杆"
+          }
+        ],
+        "高手": [],
+        "普通": [],
+        "自动": []
+      },
+      "四区": {
+        "理论": [],
+        "高手": [],
+        "普通": [],
+        "自动": []
+      }
+    },
+    {
+      "大地图": "美国中西部",
+      "小地图": "龙卷风山道",
+      "international_track_id": "usmidwest::it-s-a-twister",
+      "international_region": "U.S. Midwest",
+      "international_track": "It's a Twister!",
+      "label_status": "community_name_candidate",
+      "五区": {
+        "理论": [
+          {
+            "cars": [
+              {
+                "name": "evo肥龙"
+              }
+            ],
+            "time": 22.77
+          },
+          {
+            "cars": [
+              {
+                "name": "evo狼崽"
+              }
+            ],
+            "time": 22.99
+          },
+          {
+            "cars": [
+              {
+                "name": "c2"
+              }
+            ],
+            "time": 23.29
+          },
+          {
+            "cars": [
+              {
+                "name": "杰弟"
+              }
+            ],
+            "time": 23.33
+          },
+          {
+            "cars": [
+              {
+                "name": "21c"
+              }
+            ],
+            "time": 23.6
+          },
+          {
+            "cars": [
+              {
+                "name": "evosf90"
+              }
+            ],
+            "time": 23.67
+          },
+          {
+            "cars": [
+              {
+                "name": "火山"
+              }
+            ],
+            "time": 24.89
+          }
+        ],
+        "高手": [],
+        "普通": [],
+        "自动": []
+      },
+      "四区": {
+        "理论": [],
+        "高手": [],
+        "普通": [],
+        "自动": []
+      }
+    },
+    {
+      "大地图": "喜马拉雅山",
+      "小地图": "信仰之跃",
+      "international_track_id": "himalayas::leap-of-faith",
+      "international_region": "Himalayas",
+      "international_track": "Leap of Faith",
+      "label_status": "community_name_candidate",
+      "has_special_route": true,
+      "special_route_note": "滑雪",
+      "五区": {
+        "理论": [
+          {
+            "cars": [
+              {
+                "name": "evo狼崽"
+              }
+            ],
+            "time": 17.1,
+            "sc": true,
+            "sc_type": "滑雪"
+          },
+          {
+            "cars": [
+              {
+                "name": "超光孙"
+              }
+            ],
+            "time": 17.47
+          },
+          {
+            "cars": [
+              {
+                "name": "evosf90"
+              }
+            ],
+            "time": 17.6,
+            "sc": true,
+            "sc_type": "滑雪"
+          },
+          {
+            "cars": [
+              {
+                "name": "evo狼崽"
+              }
+            ],
+            "time": 17.69
+          },
+          {
+            "cars": [
+              {
+                "name": "evo肥龙"
+              }
+            ],
+            "time": 17.79
+          },
+          {
+            "cars": [
+              {
+                "name": "c2"
+              }
+            ],
+            "time": 17.89,
+            "sc": true,
+            "sc_type": "滑雪"
+          },
+          {
+            "cars": [
+              {
+                "name": "白龙"
+              }
+            ],
+            "time": 17.95,
+            "sc": true,
+            "sc_type": "滑雪"
+          },
+          {
+            "cars": [
+              {
+                "name": "法拉第"
+              }
+            ],
+            "time": 18.07,
+            "sc": true,
+            "sc_type": "滑雪"
+          },
+          {
+            "cars": [
+              {
+                "name": "c2"
+              }
+            ],
+            "time": 18.45
+          },
+          {
+            "cars": [
+              {
+                "name": "杰弟"
+              }
+            ],
+            "time": 18.5
+          }
+        ],
+        "高手": [],
+        "普通": [],
+        "自动": []
+      },
+      "四区": {
+        "理论": [],
+        "高手": [],
+        "普通": [],
+        "自动": []
+      }
+    },
+    {
+      "大地图": "喜马拉雅山",
+      "小地图": "自由落体",
+      "international_track_id": "himalayas::freefall",
+      "international_region": "Himalayas",
+      "international_track": "Freefall",
+      "label_status": "community_name_candidate",
+      "五区": {
+        "理论": [
+          {
+            "cars": [
+              {
+                "name": "恶魔"
+              }
+            ],
+            "time": 16.86
+          },
+          {
+            "cars": [
+              {
+                "name": "杰哥"
+              }
+            ],
+            "time": 17.5
+          }
+        ],
+        "高手": [],
+        "普通": [],
+        "自动": []
+      },
+      "四区": {
+        "理论": [],
+        "高手": [],
+        "普通": [],
+        "自动": []
+      }
+    },
+    {
+      "大地图": "加勒比海",
+      "小地图": "地狱谷",
+      "international_track_id": "thecaribbean::hell-vale",
+      "international_region": "The Caribbean",
+      "international_track": "Hell Vale",
+      "label_status": "community_name_candidate",
+      "五区": {
+        "理论": [
+          {
+            "cars": [
+              {
+                "name": "evo狼崽"
+              }
+            ],
+            "time": 21.86
+          },
+          {
+            "cars": [
+              {
+                "name": "evosf90"
+              }
+            ],
+            "time": 21.87
+          },
+          {
+            "cars": [
+              {
+                "name": "杰弟"
+              }
+            ],
+            "time": 22.3
+          },
+          {
+            "cars": [
+              {
+                "name": "杰孙"
+              }
+            ],
+            "time": 22.56
+          },
+          {
+            "cars": [
+              {
+                "name": "恶魔"
+              }
+            ],
+            "time": 22.59
+          },
+          {
+            "cars": [
+              {
+                "name": "c2"
+              }
+            ],
+            "time": 22.6
+          },
+          {
+            "cars": [
+              {
+                "name": "绿兔"
+              }
+            ],
+            "time": 22.8
+          },
+          {
+            "cars": [
+              {
+                "name": "白龙"
+              }
+            ],
+            "time": 22.89
+          },
+          {
+            "cars": [
+              {
+                "name": "9x8"
+              }
+            ],
+            "time": 23.1
+          },
+          {
+            "cars": [
+              {
+                "name": "007s"
+              }
+            ],
+            "time": 23.2
+          },
+          {
+            "cars": [
+              {
+                "name": "万达"
+              }
+            ],
+            "time": 23.29
+          },
+          {
+            "cars": [
+              {
+                "name": "无敌牛"
+              }
+            ],
+            "time": 23.95
+          }
+        ],
+        "高手": [],
+        "普通": [],
+        "自动": []
+      },
+      "四区": {
+        "理论": [],
+        "高手": [],
+        "普通": [],
+        "自动": []
+      }
+    },
+    {
+      "大地图": "加勒比海",
+      "小地图": "胜地冲刺",
+      "international_track_id": "thecaribbean::resort-dash",
+      "international_region": "The Caribbean",
+      "international_track": "Resort Dash",
+      "label_status": "community_name_candidate",
+      "has_special_route": true,
+      "special_route_note": "滑栏杆",
+      "五区": {
+        "理论": [
+          {
+            "cars": [
+              {
+                "name": "evo狼崽"
+              }
+            ],
+            "time": 17.79
+          },
+          {
+            "cars": [
+              {
+                "name": "evo狼崽"
+              }
+            ],
+            "time": 17.87,
+            "sc": true,
+            "sc_type": "滑栏杆"
+          },
+          {
+            "cars": [
+              {
+                "name": "evosf90"
+              }
+            ],
+            "time": 17.89
+          },
+          {
+            "cars": [
+              {
+                "name": "evosf90"
+              }
+            ],
+            "time": 17.9,
+            "sc": true,
+            "sc_type": "滑栏杆"
+          },
+          {
+            "cars": [
+              {
+                "name": "白龙"
+              }
+            ],
+            "time": 18.1,
+            "sc": true,
+            "sc_type": "滑栏杆"
+          },
+          {
+            "cars": [
+              {
+                "name": "白龙"
+              }
+            ],
+            "time": 18.49
+          },
+          {
+            "cars": [
+              {
+                "name": "c2"
+              }
+            ],
+            "time": 18.76
+          },
+          {
+            "cars": [
+              {
+                "name": "9x8"
+              }
+            ],
+            "time": 18.99
+          },
+          {
+            "cars": [
+              {
+                "name": "杰弟"
+              }
+            ],
+            "time": 19.05
+          },
+          {
+            "cars": [
+              {
+                "name": "007s"
+              }
+            ],
+            "time": 19.29
+          }
+        ],
+        "高手": [],
+        "普通": [],
+        "自动": []
+      },
+      "四区": {
+        "理论": [],
+        "高手": [],
+        "普通": [],
+        "自动": []
+      }
+    },
+    {
+      "大地图": "大阪",
+      "小地图": "难波公园",
+      "international_track_id": "osaka::namba-park",
+      "international_region": "Osaka",
+      "international_track": "Namba Park",
+      "label_status": "community_name_candidate",
+      "has_special_route": true,
+      "special_route_note": "跳图",
+      "五区": {
+        "理论": [
+          {
+            "cars": [
+              {
+                "name": "白龙"
+              }
+            ],
+            "time": 18.0,
+            "sc": true,
+            "sc_type": "跳图"
+          },
+          {
+            "cars": [
+              {
+                "name": "evo肥龙"
+              }
+            ],
+            "time": 18.7
+          },
+          {
+            "cars": [
+              {
+                "name": "evosf90"
+              }
+            ],
+            "time": 18.9
+          },
+          {
+            "cars": [
+              {
+                "name": "evo狼崽"
+              }
+            ],
+            "time": 19.17
+          },
+          {
+            "cars": [
+              {
+                "name": "帝国"
+              }
+            ],
+            "time": 19.56
+          },
+          {
+            "cars": [
+              {
+                "name": "杰弟"
+              }
+            ],
+            "time": 19.6
+          },
+          {
+            "cars": [
+              {
+                "name": "9x8"
+              }
+            ],
+            "time": 19.89
+          },
+          {
+            "cars": [
+              {
+                "name": "c2"
+              }
+            ],
+            "time": 19.9
+          },
+          {
+            "cars": [
+              {
+                "name": "万达",
+                "oc": true
+              }
+            ],
+            "time": 19.93
+          },
+          {
+            "cars": [
+              {
+                "name": "007s"
+              }
+            ],
+            "time": 20.15
+          },
+          {
+            "cars": [
+              {
+                "name": "白龙"
+              }
+            ],
+            "time": 20.15
+          },
+          {
+            "cars": [
+              {
+                "name": "万达"
+              }
+            ],
+            "time": 20.21
+          },
+          {
+            "cars": [
+              {
+                "name": "帕梅"
+              }
+            ],
+            "time": 21.09
+          }
+        ],
+        "高手": [],
+        "普通": [],
+        "自动": []
+      },
+      "四区": {
+        "理论": [],
+        "高手": [],
+        "普通": [],
+        "自动": []
+      }
+    },
+    {
+      "大地图": "大阪",
+      "小地图": "明治冲击",
+      "international_track_id": "osaka::meiji-rush",
+      "international_region": "Osaka",
+      "international_track": "Meiji Rush",
+      "label_status": "community_name_candidate",
+      "五区": {
+        "理论": [
+          {
+            "cars": [
+              {
+                "name": "evosf90"
+              }
+            ],
+            "time": 22.13
+          },
+          {
+            "cars": [
+              {
+                "name": "杰弟"
+              }
+            ],
+            "time": 22.3
+          },
+          {
+            "cars": [
+              {
+                "name": "evo女武神"
+              }
+            ],
+            "time": 22.49
+          },
+          {
+            "cars": [
+              {
+                "name": "c2"
+              }
+            ],
+            "time": 22.6
+          },
+          {
+            "cars": [
+              {
+                "name": "恶魔"
+              }
+            ],
+            "time": 22.67
+          },
+          {
+            "cars": [
+              {
+                "name": "白龙"
+              }
+            ],
+            "time": 22.99
+          },
+          {
+            "cars": [
+              {
+                "name": "塞纳"
+              }
+            ],
+            "time": 23.58
+          },
+          {
+            "cars": [
+              {
+                "name": "9x8"
+              }
+            ],
+            "time": 23.59
+          },
+          {
+            "cars": [
+              {
+                "name": "万达"
+              }
+            ],
+            "time": 23.69
+          }
+        ],
+        "高手": [],
+        "普通": [],
+        "自动": []
+      },
+      "四区": {
+        "理论": [],
+        "高手": [],
+        "普通": [],
+        "自动": []
+      }
+    },
+    {
+      "大地图": "纽约",
+      "小地图": "公园竞速",
+      "international_track_id": "newyork::a-run-in-the-park",
+      "international_region": "New York",
+      "international_track": "A Run in the Park",
+      "label_status": "community_name_candidate",
+      "五区": {
+        "理论": [
+          {
+            "cars": [
+              {
+                "name": "恶魔"
+              }
+            ],
+            "time": 21.73
+          },
+          {
+            "cars": [
+              {
+                "name": "杰弟"
+              }
+            ],
+            "time": 22.29
+          },
+          {
+            "cars": [
+              {
+                "name": "杰哥"
+              }
+            ],
+            "time": 22.65
+          },
+          {
+            "cars": [
+              {
+                "name": "9x8"
+              }
+            ],
+            "time": 23.05
+          }
+        ],
+        "高手": [],
+        "普通": [],
+        "自动": []
+      },
+      "四区": {
+        "理论": [],
+        "高手": [],
+        "普通": [],
+        "自动": []
+      }
+    },
+    {
+      "大地图": "纽约",
+      "小地图": "闯荡华尔街",
+      "international_track_id": "newyork::wall-street-ride",
+      "international_region": "New York",
+      "international_track": "Wall Street Ride",
+      "label_status": "community_name_candidate",
+      "五区": {
+        "理论": [
+          {
+            "cars": [
+              {
+                "name": "evo狼崽"
+              }
+            ],
+            "time": 19.5
+          },
+          {
+            "cars": [
+              {
+                "name": "c2"
+              }
+            ],
+            "time": 20.09
+          },
+          {
+            "cars": [
+              {
+                "name": "21c"
+              }
+            ],
+            "time": 20.2
+          },
+          {
+            "cars": [
+              {
+                "name": "白龙"
+              }
+            ],
+            "time": 20.59
+          },
+          {
+            "cars": [
+              {
+                "name": "9x8"
+              }
+            ],
+            "time": 21.48
+          },
+          {
+            "cars": [
+              {
+                "name": "火山"
+              }
+            ],
+            "time": 21.79
+          }
+        ],
+        "高手": [],
+        "普通": [],
+        "自动": []
+      },
+      "四区": {
+        "理论": [],
+        "高手": [],
+        "普通": [],
+        "自动": []
+      }
+    },
+    {
+      "大地图": "内华达",
+      "小地图": "桥间争霸",
+      "international_track_id": "nevada::bridge-to-bridge",
+      "international_region": "Nevada",
+      "international_track": "Bridge to Bridge",
+      "label_status": "community_name_candidate",
+      "五区": {
+        "理论": [
+          {
+            "cars": [
+              {
+                "name": "帝国"
+              }
+            ],
+            "time": 20.24
+          },
+          {
+            "cars": [
+              {
+                "name": "超光孙"
+              }
+            ],
+            "time": 20.7
+          },
+          {
+            "cars": [
+              {
+                "name": "evo肥龙"
+              }
+            ],
+            "time": 21.06
+          },
+          {
+            "cars": [
+              {
+                "name": "恶魔"
+              }
+            ],
+            "time": 21.23
+          },
+          {
+            "cars": [
+              {
+                "name": "杰弟"
+              }
+            ],
+            "time": 21.53
+          },
+          {
+            "cars": [
+              {
+                "name": "c2"
+              }
+            ],
+            "time": 21.57
+          },
+          {
+            "cars": [
+              {
+                "name": "9x8"
+              }
+            ],
+            "time": 22.3
+          }
+        ],
+        "高手": [],
+        "普通": [],
+        "自动": []
+      },
+      "四区": {
+        "理论": [],
+        "高手": [],
+        "普通": [],
+        "自动": []
+      }
+    },
+    {
+      "大地图": "内华达",
+      "小地图": "隧道冲刺",
+      "international_track_id": "nevada::tunnel-sprint",
+      "international_region": "Nevada",
+      "international_track": "Tunnel Sprint",
+      "label_status": "community_name_candidate",
+      "五区": {
+        "理论": [
+          {
+            "cars": [
+              {
+                "name": "超光孙"
+              }
+            ],
+            "time": 21.4
+          },
+          {
+            "cars": [
+              {
+                "name": "c2"
+              }
+            ],
+            "time": 21.6
+          },
+          {
+            "cars": [
+              {
+                "name": "杰弟"
+              }
+            ],
+            "time": 21.6
+          },
+          {
+            "cars": [
+              {
+                "name": "白龙"
+              }
+            ],
+            "time": 21.6
+          },
+          {
+            "cars": [
+              {
+                "name": "evo女武神"
+              }
+            ],
+            "time": 21.63
+          },
+          {
+            "cars": [
+              {
+                "name": "9x8"
+              }
+            ],
+            "time": 22.25
+          },
+          {
+            "cars": [
+              {
+                "name": "evo狼崽"
+              }
+            ],
+            "time": 23.0
+          }
+        ],
+        "高手": [],
+        "普通": [],
+        "自动": []
+      },
+      "四区": {
+        "理论": [],
+        "高手": [],
+        "普通": [],
+        "自动": []
+      }
+    },
+    {
+      "大地图": "奥克兰",
+      "小地图": "弯道终点",
+      "international_track_id": "auckland::hairpin-finish",
+      "international_region": "Auckland",
+      "international_track": "Hairpin Finish",
+      "label_status": "verified_user_game_screenshot",
+      "五区": {
+        "理论": [
+          {
+            "cars": [
+              {
+                "name": "帝国"
+              }
+            ],
+            "time": 29.83
+          },
+          {
+            "cars": [
+              {
+                "name": "超光孙"
+              }
+            ],
+            "time": 30.57
+          },
+          {
+            "cars": [
+              {
+                "name": "恶魔"
+              }
+            ],
+            "time": 30.59
+          },
+          {
+            "cars": [
+              {
+                "name": "杰哥"
+              }
+            ],
+            "time": 31.69
+          },
+          {
+            "cars": [
+              {
+                "name": "杰弟"
+              }
+            ],
+            "time": 32.0
+          },
+          {
+            "cars": [
+              {
+                "name": "c2"
+              }
+            ],
+            "time": 32.2
+          },
+          {
+            "cars": [
+              {
+                "name": "白龙"
+              }
+            ],
+            "time": 32.59
+          }
+        ],
+        "高手": [],
+        "普通": [],
+        "自动": []
+      },
+      "四区": {
+        "理论": [],
+        "高手": [],
+        "普通": [],
+        "自动": []
+      }
+    },
+    {
+      "大地图": "奥克兰",
+      "小地图": "勇往直前",
+      "international_track_id": "auckland::straight-sprint",
+      "international_region": "Auckland",
+      "international_track": "Straight Sprint",
+      "label_status": "verified_user_game_screenshot",
+      "五区": {
+        "理论": [
+          {
+            "cars": [
+              {
+                "name": "帝国"
+              }
+            ],
+            "time": 23.46
+          },
+          {
+            "cars": [
+              {
+                "name": "evo肥龙"
+              }
+            ],
+            "time": 23.56
+          },
+          {
+            "cars": [
+              {
+                "name": "evo狼崽"
+              }
+            ],
+            "time": 23.69
+          },
+          {
+            "cars": [
+              {
+                "name": "超光孙"
+              }
+            ],
+            "time": 24.0
+          },
+          {
+            "cars": [
+              {
+                "name": "恶魔"
+              }
+            ],
+            "time": 24.09
+          },
+          {
+            "cars": [
+              {
+                "name": "c2"
+              }
+            ],
+            "time": 24.1
+          },
+          {
+            "cars": [
+              {
+                "name": "杰弟"
+              }
+            ],
+            "time": 24.12
+          },
+          {
+            "cars": [
+              {
+                "name": "杰哥",
+                "oc": true
+              }
+            ],
+            "time": 24.19
+          },
+          {
+            "cars": [
+              {
+                "name": "杰哥"
+              }
+            ],
+            "time": 24.33
+          },
+          {
+            "cars": [
+              {
+                "name": "白龙"
+              }
+            ],
+            "time": 24.6
+          }
+        ],
+        "高手": [],
+        "普通": [],
+        "自动": []
+      },
+      "四区": {
+        "理论": [],
+        "高手": [],
+        "普通": [],
+        "自动": []
+      }
+    },
+    {
+      "大地图": "布宜诺斯艾利斯",
+      "小地图": "拉博卡区",
+      "international_track_id": "buenosaires::la-boca",
+      "international_region": "Buenos Aires",
+      "international_track": "La Boca",
+      "label_status": "community_name_candidate",
+      "五区": {
+        "理论": [
+          {
+            "cars": [
+              {
+                "name": "evosf90"
+              }
+            ],
+            "time": 25.33
+          },
+          {
+            "cars": [
+              {
+                "name": "超光孙"
+              }
+            ],
+            "time": 25.8
+          },
+          {
+            "cars": [
+              {
+                "name": "杰弟"
+              }
+            ],
+            "time": 25.99
+          },
+          {
+            "cars": [
+              {
+                "name": "万达",
+                "oc": true
+              }
+            ],
+            "time": 26.39
+          },
+          {
+            "cars": [
+              {
+                "name": "9x8"
+              }
+            ],
+            "time": 26.59
+          },
+          {
+            "cars": [
+              {
+                "name": "莫斯勒"
+              }
+            ],
+            "time": 26.6
+          },
+          {
+            "cars": [
+              {
+                "name": "万达"
+              }
+            ],
+            "time": 26.75
+          },
+          {
+            "cars": [
+              {
+                "name": "塞纳"
+              }
+            ],
+            "time": 26.9
+          },
+          {
+            "cars": [
+              {
+                "name": "无敌牛"
+              }
+            ],
+            "time": 27.69
+          }
+        ],
+        "高手": [],
+        "普通": [],
+        "自动": []
+      },
+      "四区": {
+        "理论": [],
+        "高手": [],
+        "普通": [],
+        "自动": []
+      }
+    },
+    {
+      "大地图": "布宜诺斯艾利斯",
+      "小地图": "奔流不息",
+      "international_track_id": "buenosaires::water-run",
+      "international_region": "Buenos Aires",
+      "international_track": "Water Run",
+      "label_status": "community_name_candidate",
+      "五区": {
+        "理论": [
+          {
+            "cars": [
+              {
+                "name": "帝国"
+              }
+            ],
+            "time": 21.83
+          },
+          {
+            "cars": [
+              {
+                "name": "evo肥龙"
+              }
+            ],
+            "time": 22.46
+          },
+          {
+            "cars": [
+              {
+                "name": "超光孙"
+              }
+            ],
+            "time": 22.5
+          },
+          {
+            "cars": [
+              {
+                "name": "c2"
+              }
+            ],
+            "time": 22.9
+          },
+          {
+            "cars": [
+              {
+                "name": "杰弟"
+              }
+            ],
+            "time": 23.1
+          },
+          {
+            "cars": [
+              {
+                "name": "恶魔"
+              }
+            ],
+            "time": 23.19
+          },
+          {
+            "cars": [
+              {
+                "name": "9x8"
+              }
+            ],
+            "time": 24.39
+          }
+        ],
+        "高手": [],
+        "普通": [],
+        "自动": []
+      },
+      "四区": {
+        "理论": [],
+        "高手": [],
+        "普通": [],
+        "自动": []
+      }
+    },
+    {
+      "大地图": "格陵兰",
+      "小地图": "偏离中心",
+      "international_track_id": "greenland::out-of-the-center",
+      "international_region": "Greenland",
+      "international_track": "Out of the Center",
+      "label_status": "community_name_candidate",
+      "五区": {
+        "理论": [
+          {
+            "cars": [
+              {
+                "name": "杰孙"
+              }
+            ],
+            "time": 31.07
+          },
+          {
+            "cars": [
+              {
+                "name": "帝国"
+              }
+            ],
+            "time": 31.13
+          },
+          {
+            "cars": [
+              {
+                "name": "ssc"
+              }
+            ],
+            "time": 31.95
+          },
+          {
+            "cars": [
+              {
+                "name": "超光孙"
+              }
+            ],
+            "time": 32.0
+          },
+          {
+            "cars": [
+              {
+                "name": "杰哥"
+              }
+            ],
+            "time": 32.3
+          }
+        ],
+        "高手": [],
+        "普通": [],
+        "自动": []
+      },
+      "四区": {
+        "理论": [],
+        "高手": [],
+        "普通": [],
+        "自动": []
+      }
+    },
+    {
+      "大地图": "格陵兰",
+      "小地图": "破冰者",
+      "international_track_id": "greenland::ice-breakers",
+      "international_region": "Greenland",
+      "international_track": "Ice Breakers",
+      "label_status": "community_name_candidate",
+      "五区": {
+        "理论": [
+          {
+            "cars": [
+              {
+                "name": "帝国"
+              }
+            ],
+            "time": 30.99
+          },
+          {
+            "cars": [
+              {
+                "name": "evo女武神"
+              }
+            ],
+            "time": 31.73
+          },
+          {
+            "cars": [
+              {
+                "name": "杰孙"
+              }
+            ],
+            "time": 31.79
+          },
+          {
+            "cars": [
+              {
+                "name": "玻璃"
+              }
+            ],
+            "time": 32.13
+          },
+          {
+            "cars": [
+              {
+                "name": "杰弟"
+              }
+            ],
+            "time": 32.53
+          },
+          {
+            "cars": [
+              {
+                "name": "万达",
+                "oc": true
+              }
+            ],
+            "time": 32.63
+          },
+          {
+            "cars": [
+              {
+                "name": "9x8"
+              }
+            ],
+            "time": 32.73
+          },
+          {
+            "cars": [
+              {
+                "name": "塞纳"
+              }
+            ],
+            "time": 32.85
+          },
+          {
+            "cars": [
+              {
+                "name": "万达"
+              }
+            ],
+            "time": 33.3
+          },
+          {
+            "cars": [
+              {
+                "name": "无敌牛"
+              }
+            ],
+            "time": 34.65
+          }
+        ],
+        "高手": [],
+        "普通": [],
+        "自动": []
+      },
+      "四区": {
+        "理论": [],
+        "高手": [],
+        "普通": [],
+        "自动": []
+      }
+    },
+    {
+      "大地图": "巴黎",
+      "小地图": "塞纳河岸",
+      "international_track_id": "paris::along-the-seine",
+      "international_region": "Paris",
+      "international_track": "Along the Seine",
+      "label_status": "community_name_candidate",
+      "五区": {
+        "理论": [
+          {
+            "cars": [
+              {
+                "name": "杰孙"
+              }
+            ],
+            "time": 23.43
+          },
+          {
+            "cars": [
+              {
+                "name": "恶魔"
+              }
+            ],
+            "time": 23.49
+          },
+          {
+            "cars": [
+              {
+                "name": "ssc"
+              }
+            ],
+            "time": 24.29
+          },
+          {
+            "cars": [
+              {
+                "name": "Ultima RS"
+              }
+            ],
+            "time": 26.16
+          }
+        ],
+        "高手": [],
+        "普通": [],
+        "自动": []
+      },
+      "四区": {
+        "理论": [],
+        "高手": [],
+        "普通": [],
+        "自动": []
+      }
+    },
+    {
+      "大地图": "巴黎",
+      "小地图": "巴黎圣母院",
+      "international_track_id": "paris::notre-dame",
+      "international_region": "Paris",
+      "international_track": "Notre Dame",
+      "label_status": "community_name_candidate",
+      "五区": {
+        "理论": [
+          {
+            "cars": [
+              {
+                "name": "evo狼崽"
+              }
+            ],
+            "time": 20.26
+          },
+          {
+            "cars": [
+              {
+                "name": "杰孙"
+              }
+            ],
+            "time": 20.3
+          },
+          {
+            "cars": [
+              {
+                "name": "evosf90"
+              }
+            ],
+            "time": 20.33
+          },
+          {
+            "cars": [
+              {
+                "name": "玻璃"
+              }
+            ],
+            "time": 20.4
+          },
+          {
+            "cars": [
+              {
+                "name": "杰弟"
+              }
+            ],
+            "time": 20.5
+          },
+          {
+            "cars": [
+              {
+                "name": "c2"
+              }
+            ],
+            "time": 20.8
+          },
+          {
+            "cars": [
+              {
+                "name": "杰哥"
+              }
+            ],
+            "time": 21.1
+          },
+          {
+            "cars": [
+              {
+                "name": "9x8"
+              }
+            ],
+            "time": 21.19
+          },
+          {
+            "cars": [
+              {
+                "name": "火山"
+              }
+            ],
+            "time": 22.13
+          }
+        ],
+        "高手": [],
+        "普通": [],
+        "自动": []
+      },
+      "四区": {
+        "理论": [],
+        "高手": [],
+        "普通": [],
+        "自动": []
+      }
+    },
+    {
+      "大地图": "托斯卡纳",
+      "小地图": "畅游葡萄园",
+      "international_track_id": "tuscany::vineyard-voyage",
+      "international_region": "Tuscany",
+      "international_track": "Vineyard Voyage",
+      "label_status": "community_name_candidate",
+      "五区": {
+        "理论": [
+          {
+            "cars": [
+              {
+                "name": "帝国"
+              }
+            ],
+            "time": 19.9
+          },
+          {
+            "cars": [
+              {
+                "name": "evo肥龙"
+              }
+            ],
+            "time": 20.27
+          },
+          {
+            "cars": [
+              {
+                "name": "恶魔"
+              }
+            ],
+            "time": 20.66
+          },
+          {
+            "cars": [
+              {
+                "name": "杰弟"
+              }
+            ],
+            "time": 20.76
+          },
+          {
+            "cars": [
+              {
+                "name": "c2"
+              }
+            ],
+            "time": 20.9
+          },
+          {
+            "cars": [
+              {
+                "name": "9x8"
+              }
+            ],
+            "time": 21.72
+          },
+          {
+            "cars": [
+              {
+                "name": "无敌牛"
+              }
+            ],
+            "time": 22.4
+          },
+          {
+            "cars": [
+              {
+                "name": "火山"
+              }
+            ],
+            "time": 22.5
+          }
+        ],
+        "高手": [],
+        "普通": [],
+        "自动": []
+      },
+      "四区": {
+        "理论": [],
+        "高手": [],
+        "普通": [],
+        "自动": []
+      }
+    },
+    {
+      "大地图": "托斯卡纳",
+      "小地图": "河滨疾驰",
+      "international_track_id": "tuscany::riverine-launch",
+      "international_region": "Tuscany",
+      "international_track": "Riverine Launch",
+      "label_status": "community_name_candidate",
+      "五区": {
+        "理论": [
+          {
+            "cars": [
+              {
+                "name": "杰孙"
+              }
+            ],
+            "time": 22.43
+          },
+          {
+            "cars": [
+              {
+                "name": "evo肥龙"
+              }
+            ],
+            "time": 22.83
+          },
+          {
+            "cars": [
+              {
+                "name": "恶魔"
+              }
+            ],
+            "time": 22.99
+          },
+          {
+            "cars": [
+              {
+                "name": "c2"
+              }
+            ],
+            "time": 23.39
+          },
+          {
+            "cars": [
+              {
+                "name": "杰弟"
+              }
+            ],
+            "time": 23.49
+          },
+          {
+            "cars": [
+              {
+                "name": "杰哥"
+              }
+            ],
+            "time": 23.5
+          },
+          {
+            "cars": [
+              {
+                "name": "玻璃"
+              }
+            ],
+            "time": 23.7
+          },
+          {
+            "cars": [
+              {
+                "name": "9x8"
+              }
+            ],
+            "time": 24.5
+          }
+        ],
+        "高手": [],
+        "普通": [],
+        "自动": []
+      },
+      "四区": {
+        "理论": [],
+        "高手": [],
+        "普通": [],
+        "自动": []
+      }
+    },
+    {
+      "大地图": "挪威",
+      "小地图": "未来融合",
+      "international_track_id": "norway::future-fusion",
+      "international_region": "Norway",
+      "international_track": "Future Fusion",
+      "label_status": "community_name_candidate",
+      "五区": {
+        "理论": [
+          {
+            "cars": [
+              {
+                "name": "evo狼崽"
+              }
+            ],
+            "time": 16.9
+          },
+          {
+            "cars": [
+              {
+                "name": "evo肥龙"
+              }
+            ],
+            "time": 17.17
+          },
+          {
+            "cars": [
+              {
+                "name": "白龙"
+              }
+            ],
+            "time": 17.49
+          },
+          {
+            "cars": [
+              {
+                "name": "c2"
+              }
+            ],
+            "time": 17.59
+          },
+          {
+            "cars": [
+              {
+                "name": "法拉第"
+              }
+            ],
+            "time": 17.9
+          }
+        ],
+        "高手": [],
+        "普通": [],
+        "自动": []
+      },
+      "四区": {
+        "理论": [],
+        "高手": [],
+        "普通": [],
+        "自动": []
+      }
+    },
+    {
+      "大地图": "挪威",
+      "小地图": "飞向未来",
+      "international_track_id": "norway::rocketing-to-the-future",
+      "international_region": "Norway",
+      "international_track": "Rocketing to the Future",
+      "label_status": "community_name_candidate",
+      "五区": {
+        "理论": [
+          {
+            "cars": [
+              {
+                "name": "杰哥",
+                "oc": true
+              }
+            ],
+            "time": 25.8
+          },
+          {
+            "cars": [
+              {
+                "name": "杰哥"
+              }
+            ],
+            "time": 25.93
+          },
+          {
+            "cars": [
+              {
+                "name": "evo狼崽"
+              }
+            ],
+            "time": 26.07
+          }
+        ],
+        "高手": [],
+        "普通": [],
+        "自动": []
+      },
+      "四区": {
+        "理论": [],
+        "高手": [],
+        "普通": [],
+        "自动": []
+      }
+    },
+    {
+      "大地图": "新加坡",
+      "小地图": "滑水道旋流",
+      "international_track_id": "singapore::waterslide-whirl",
+      "international_region": "Singapore",
+      "international_track": "Waterslide Whirl",
+      "label_status": "community_name_candidate",
+      "五区": {
+        "理论": [
+          {
+            "cars": [
+              {
+                "name": "超光孙"
+              }
+            ],
+            "time": 19.9
+          },
+          {
+            "cars": [
+              {
+                "name": "evo肥龙"
+              }
+            ],
+            "time": 20.13
+          },
+          {
+            "cars": [
+              {
+                "name": "c2"
+              }
+            ],
+            "time": 20.14
+          },
+          {
+            "cars": [
+              {
+                "name": "恶魔"
+              }
+            ],
+            "time": 20.26
+          },
+          {
+            "cars": [
+              {
+                "name": "杰弟"
+              }
+            ],
+            "time": 20.3
+          },
+          {
+            "cars": [
+              {
+                "name": "evosf90"
+              }
+            ],
+            "time": 20.53
+          },
+          {
+            "cars": [
+              {
+                "name": "007s"
+              }
+            ],
+            "time": 21.6
+          },
+          {
+            "cars": [
+              {
+                "name": "火山"
+              }
+            ],
+            "time": 22.03
+          }
+        ],
+        "高手": [],
+        "普通": [],
+        "自动": []
+      },
+      "四区": {
+        "理论": [],
+        "高手": [],
+        "普通": [],
+        "自动": []
+      }
+    },
+    {
+      "大地图": "新加坡",
+      "小地图": "城市高峰",
+      "international_track_id": "singapore::urban-rush",
+      "international_region": "Singapore",
+      "international_track": "Urban Rush",
+      "label_status": "community_name_candidate",
+      "五区": {
+        "理论": [
+          {
+            "cars": [
+              {
+                "name": "帝国"
+              }
+            ],
+            "time": 23.75
+          },
+          {
+            "cars": [
+              {
+                "name": "超光孙"
+              }
+            ],
+            "time": 24.57
+          },
+          {
+            "cars": [
+              {
+                "name": "evosf90"
+              }
+            ],
+            "time": 24.73
+          },
+          {
+            "cars": [
+              {
+                "name": "杰弟"
+              }
+            ],
+            "time": 24.8
+          },
+          {
+            "cars": [
+              {
+                "name": "c2"
+              }
+            ],
+            "time": 25.09
+          },
+          {
+            "cars": [
+              {
+                "name": "白龙"
+              }
+            ],
+            "time": 25.3
+          },
+          {
+            "cars": [
+              {
+                "name": "9x8"
+              }
+            ],
+            "time": 25.93
+          },
+          {
+            "cars": [
+              {
+                "name": "万达"
+              }
+            ],
+            "time": 26.1
+          },
+          {
+            "cars": [
+              {
+                "name": "塞纳"
+              }
+            ],
+            "time": 26.15
+          }
+        ],
+        "高手": [],
+        "普通": [],
+        "自动": []
+      },
+      "四区": {
+        "理论": [],
+        "高手": [],
+        "普通": [],
+        "自动": []
+      }
+    },
+    {
+      "大地图": "芝加哥",
+      "小地图": "回声漂移",
+      "international_track_id": "chicago::echo-drift",
+      "international_region": "Chicago",
+      "international_track": "Echo Drift",
+      "label_status": "community_name_candidate",
+      "has_special_route": true,
+      "special_route_note": "滑栏杆",
+      "五区": {
+        "理论": [
+          {
+            "cars": [
+              {
+                "name": "白龙"
+              }
+            ],
+            "time": 18.3,
+            "sc": true,
+            "sc_type": "滑栏杆"
+          },
+          {
+            "cars": [
+              {
+                "name": "c2"
+              }
+            ],
+            "time": 18.6,
+            "sc": true,
+            "sc_type": "滑栏杆"
+          },
+          {
+            "cars": [
+              {
+                "name": "白龙"
+              }
+            ],
+            "time": 18.79
+          },
+          {
+            "cars": [
+              {
+                "name": "c2"
+              }
+            ],
+            "time": 18.89
+          },
+          {
+            "cars": [
+              {
+                "name": "9x8"
+              }
+            ],
+            "time": 18.95,
+            "sc": true,
+            "sc_type": "滑栏杆"
+          },
+          {
+            "cars": [
+              {
+                "name": "万达"
+              }
+            ],
+            "time": 19.15,
+            "sc": true,
+            "sc_type": "滑栏杆"
+          },
+          {
+            "cars": [
+              {
+                "name": "9x8"
+              }
+            ],
+            "time": 19.19
+          },
+          {
+            "cars": [
+              {
+                "name": "万达"
+              }
+            ],
+            "time": 19.4
+          }
+        ],
+        "高手": [],
+        "普通": [],
+        "自动": []
+      },
+      "四区": {
+        "理论": [],
+        "高手": [],
+        "普通": [],
+        "自动": []
+      }
+    },
+    {
+      "大地图": "芝加哥",
+      "小地图": "铁甲疾滑",
+      "international_track_id": "chicago::ironclad-rampage",
+      "international_region": "Chicago",
+      "international_track": "IronClad Rampage",
+      "label_status": "community_name_candidate",
+      "五区": {
+        "理论": [
+          {
+            "cars": [
+              {
+                "name": "evosf90"
+              }
+            ],
+            "time": 16.1
+          },
+          {
+            "cars": [
+              {
+                "name": "9x8"
+              }
+            ],
+            "time": 16.6
+          },
+          {
+            "cars": [
+              {
+                "name": "杰弟"
+              }
+            ],
+            "time": 16.8
+          },
+          {
+            "cars": [
+              {
+                "name": "万达"
+              }
+            ],
+            "time": 17
+          },
+          {
+            "cars": [
+              {
+                "name": "白龙"
+              }
+            ],
+            "time": 17.12
+          }
+        ],
+        "高手": [],
+        "普通": [],
+        "自动": []
+      },
+      "四区": {
+        "理论": [],
+        "高手": [],
+        "普通": [],
+        "自动": []
+      }
+    },
+    {
+      "大地图": "圣地亚哥",
+      "小地图": "太平洋爆冲",
+      "international_track_id": "sandiego::pacific-rampage",
+      "international_region": "San Diego",
+      "international_track": "Pacific Rampage",
+      "label_status": "verified_user_game_screenshot",
+      "has_special_route": true,
+      "special_route_note": "跳图",
+      "五区": {
+        "理论": [
+          {
+            "cars": [
+              {
+                "name": "c2"
+              }
+            ],
+            "time": 25.9,
+            "sc": true,
+            "sc_type": "跳图"
+          },
+          {
+            "cars": [
+              {
+                "name": "帝国"
+              }
+            ],
+            "time": 27.13
+          },
+          {
+            "cars": [
+              {
+                "name": "杰孙"
+              }
+            ],
+            "time": 27.56
+          },
+          {
+            "cars": [
+              {
+                "name": "超光孙"
+              }
+            ],
+            "time": 27.9
+          },
+          {
+            "cars": [
+              {
+                "name": "杰哥"
+              }
+            ],
+            "time": 28.5
+          }
+        ],
+        "高手": [],
+        "普通": [],
+        "自动": []
+      },
+      "四区": {
+        "理论": [],
+        "高手": [],
+        "普通": [],
+        "自动": []
+      }
+    },
+    {
+      "大地图": "圣地亚哥",
+      "小地图": "集装箱风暴",
+      "international_track_id": "sandiego::container-chaos",
+      "international_region": "San Diego",
+      "international_track": "Container Chaos",
+      "label_status": "verified_user_game_screenshot",
+      "五区": {
+        "理论": [
+          {
+            "cars": [
+              {
+                "name": "杰哥"
+              }
+            ],
+            "time": 22.39
+          }
+        ],
+        "高手": [],
+        "普通": [],
+        "自动": []
+      },
+      "四区": {
+        "理论": [],
+        "高手": [],
+        "普通": [],
+        "自动": []
+      }
+    },
+    {
+      "大地图": "印度",
+      "小地图": "崎岖岩道",
+      "international_track_id": "india::rock-terrain",
+      "international_region": "India",
+      "international_track": "Rock Terrain",
+      "label_status": "verified_user_game_screenshot",
+      "五区": {
+        "理论": [
+          {
+            "cars": [
+              {
+                "name": "杰哥"
+              }
+            ],
+            "time": 25.69
+          },
+          {
+            "cars": [
+              {
+                "name": "帝国"
+              }
+            ],
+            "time": 26.0
+          }
+        ],
+        "高手": [],
+        "普通": [],
+        "自动": []
+      },
+      "四区": {
+        "理论": [],
+        "高手": [],
+        "普通": [],
+        "自动": []
+      }
+    },
+    {
+      "大地图": "印度",
+      "小地图": "砾石沟壑",
+      "international_track_id": "india::gravel-grooves",
+      "international_region": "India",
+      "international_track": "Gravel Grooves",
+      "label_status": "verified_user_game_screenshot",
+      "五区": {
+        "理论": [
+          {
+            "cars": [
+              {
+                "name": "帝国"
+              }
+            ],
+            "time": 25.3
+          },
+          {
+            "cars": [
+              {
+                "name": "杰哥"
+              }
+            ],
+            "time": 25.72
+          }
+        ],
+        "高手": [],
+        "普通": [],
+        "自动": []
+      },
+      "四区": {
+        "理论": [],
+        "高手": [],
+        "普通": [],
+        "自动": []
+      }
+    },
+    {
+      "大地图": "富士山",
+      "小地图": "极速列车",
+      "international_track_id": "mountfuji::bullet-train-sprint",
+      "international_region": "Mount Fuji",
+      "international_track": "Bullet Train Sprint",
+      "label_status": "verified_user_game_screenshot",
+      "五区": {
+        "理论": [],
+        "高手": [],
+        "普通": [],
+        "自动": []
+      },
+      "四区": {
+        "理论": [],
+        "高手": [],
+        "普通": [],
+        "自动": []
+      }
+    },
+    {
+      "大地图": "富士山",
+      "小地图": "乡间冲刺",
+      "international_track_id": "mountfuji::countryside-sprint",
+      "international_region": "Mount Fuji",
+      "international_track": "Countryside Sprint",
+      "label_status": "verified_user_game_screenshot",
+      "五区": {
+        "理论": [],
+        "高手": [],
+        "普通": [],
+        "自动": []
+      },
+      "四区": {
+        "理论": [],
+        "高手": [],
+        "普通": [],
+        "自动": []
+      }
+    }
+  ]
+}

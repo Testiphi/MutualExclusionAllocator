@@ -2,12 +2,15 @@
 import argparse
 import json
 from pathlib import Path
-from data_tools import ROOT, atomic_write, configure_stdout, is_time, parse_column, parse_sheet_name
+from data_tools import (ROOT, atomic_write, configure_stdout, format_score_column,
+                        is_time, parse_score_column, parse_sheet_name)
 from xlsx_tools import load_workbook_data
 
 
 def compare_workbooks(base, user):
     changes, structure = [], []
+    uses_oc = any(parse_score_column(column)[2]
+                  for book in (base, user) for sheet in book.values() for column in sheet['headers'])
     for sheet in sorted(set(base) | set(user)):
         if sheet not in base or sheet not in user:
             structure.append({'sheet': sheet, 'kind': 'sheet_added' if sheet in user else 'sheet_missing'})
@@ -29,16 +32,18 @@ def compare_workbooks(base, user):
                 old, new = lrow.get(column), rrow.get(column)
                 if old == new or (column not in left['headers'] and new is None):
                     continue
-                name, stars = parse_column(column)
+                name, stars, oc = parse_score_column(column)
                 changes.append({'sheet': sheet, 'big': key[0], 'small': key[1], 'zone': zone, 'tier': tier,
-                                'car': name, 'stars': stars, 'sc': sc, 'sc_type': route,
+                                'car': name, 'stars': stars, **({'oc': True} if oc else {}),
+                                'sc': sc, 'sc_type': route,
                                 'old': old, 'new': new, 'old_present': old is not None, 'new_present': new is not None})
     for index, change in enumerate(changes, 1):
         old, new = change['old'], change['new']
         change.update(id=index, accepted=False, kind=('added' if not change['old_present'] else 'deleted' if not change['new_present'] else
                       'faster' if is_time(old) and is_time(new) and new < old else
                       'slower' if is_time(old) and is_time(new) and new > old else 'changed'))
-    return {'version': 1, 'structure': structure, 'changes': changes}
+    # Older apply tools must reject a report containing OC instead of overwriting its base score.
+    return {'version': 2 if uses_oc else 1, 'structure': structure, 'changes': changes}
 
 
 def main(argv=None):
@@ -57,7 +62,8 @@ def main(argv=None):
         for finding in report['structure']:
             print('结构差异:', finding)
         for change in report['changes']:
-            print(f"#{change['id']} {change['kind']} {change['sheet']} {change['big']}/{change['small']} {change['car']}★{change['stars']}: {change['old']} → {change['new']}")
+            car = format_score_column(change['car'], change['stars'], change.get('oc', False))
+            print(f"#{change['id']} {change['kind']} {change['sheet']} {change['big']}/{change['small']} {car}: {change['old']} → {change['new']}")
         print(f"值差异 {len(report['changes'])}；结构差异 {len(report['structure'])}；均未自动接受")
     except (OSError, ValueError, KeyError, TypeError) as error:
         parser.exit(1, f'对比失败: {error}\n')

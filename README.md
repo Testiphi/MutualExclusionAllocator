@@ -360,3 +360,7 @@ Production score-version migration is prepared in [SCORE_PRODUCTION_DEPLOYMENT.m
 
 ## Account nicknames, shared buttons and private feedback (deployed)
 Account nickname display/search, shared button styling and private text feedback are deployed and user-accepted in production. Feedback is visible only to its author and the superadministrator. Deployment, backup-drill and timer-restoration evidence is recorded in [feedback deployment notes](FEEDBACK_PRODUCTION.md); start future operations from the [cloud handoff](CLOUD_HANDOFF.md). The [local environment and acceptance steps](FEEDBACK_LOCAL.md) are retained. International-server support is outside this change.
+
+## International mode accepted locally (2026-10-24)
+
+The user accepted local international-mode testing: maximum-star five-zone theory, 321 independent score records, separate local garages, and OC selection. This release has not been deployed; international cloud profiles and submissions are not enabled. See [local acceptance and maintenance](LOCAL_INTERNATIONAL.md) and the [deployment preparation](INTERNATIONAL_DEPLOYMENT.md).

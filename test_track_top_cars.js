@@ -41,9 +41,10 @@ function page() {
         out.render = maps => renderTopCars(maps,prepareMapCandidates(maps,currentZone),
             new Set(getCurrentCarList().filter(c=>selectedCars.has(c))));
     `;
-    new Function('document', 'out', 'panels',
+    new Function('document', 'out', 'panels', 'APP_CONFIG',
         read('app_state.js') + read('race_scores.js') + inline.replace('initApp();', setup))(
-        {getElementById: element, createElement: element}, out, panels);
+        {getElementById: element, createElement: element}, out, panels,
+        {server:'cn',storageKeys:{guestDraft:'racepick.guest-draft.v1'}});
     const expert = [entry('A', 20, 6), entry('A', 24, 3), entry('A', 18, 6, '跳图'),
         entry('A', 19, 6, '滑栏杆'), entry('B', 21), entry('C', 21), entry('D', 22),
         entry('E', 23), entry('outside', 1)];

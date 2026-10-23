@@ -21,9 +21,10 @@
             out.candidates = maps => prepareMapCandidates(maps, currentZone);
         `;
         const out = {};
-        new Function('document', 'carData', 'raceData', 'out',
+        new Function('document', 'carData', 'raceData', 'out', 'APP_CONFIG',
             sources['app_state.js'] + '\n' + sources['race_scores.js'] + '\n' + inline.replace('initApp();', capture))(
-            { getElementById: () => ({}) }, carData, raceData, out);
+            { getElementById: () => ({}) }, carData, raceData, out,
+            {server:'cn',storageKeys:{guestDraft:'racepick.guest-draft.v1'}});
         const cases = [];
         for (const zone of ['zone5', 'zone4']) for (const dense of [false, true]) {
             const tier = dense ? '理论' : '高手';

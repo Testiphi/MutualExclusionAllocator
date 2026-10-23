@@ -18,6 +18,9 @@ def main():
  root=Path(__file__).resolve().parents[1]
  errors,_=validate_data(json.loads((root/'gauntlet_data.json').read_text(encoding='utf-8')),json.loads((root/'cars.json').read_text(encoding='utf-8')))
  assert not errors,errors
+ from tools.build_global_data import validate_global_bundle
+ global_files={n:(root/n).read_bytes() for n in ('cars.global.json','gauntlet_data.global.json','global-data-manifest.json')}
+ validate_global_bundle(*(json.loads(raw) for raw in global_files.values()),raw_files=global_files)
  with tempfile.TemporaryDirectory() as directory:
   config={'origin':'https://racepick.cn','owner_email':'smoke@example.com','data_dir':str(Path(directory)/'state'),'mail_daily_limit':1}
   initialize(config);app=make_app(config,'unused-selfcheck-secret')
@@ -29,11 +32,12 @@ def main():
     if server.started:break
     time.sleep(.1)
    assert server.started,'服务未启动'
-   for path,code in [('/api/health',200),('/api/auth/me',200),('/data-previews',404),('/api/admin/writeback',404),('/production.json',404)]:
+   for path,code in [('/api/health',200),('/api/auth/me',200),('/?server=global',200),*((f'/{n}',200) for n in global_files),('/data-previews',404),('/api/admin/writeback',404),('/production.json',404)]:
     conn=http.client.HTTPConnection('127.0.0.1',port,timeout=5)
     try:
      conn.request('GET',path,headers={'Host':'racepick.cn','X-Forwarded-Proto':'https','X-Real-IP':'192.0.2.1'})
      r=conn.getresponse();body=r.read();assert r.status==code,(path,r.status,body)
+     if path[1:] in global_files:assert body==global_files[path[1:]],path
      if path=='/api/auth/me':assert 'Secure' in r.getheader('Set-Cookie') and json.loads(body)['mail_mode']=='production'
     finally:conn.close()
   finally:server.should_exit=True;thread.join(10);sock.close()

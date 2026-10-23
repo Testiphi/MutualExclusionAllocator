@@ -13,7 +13,8 @@ import io
 
 import openpyxl
 from apply_changes import apply_changes
-from data_tools import ROOT, atomic_write, read_json, star_limits
+from data_tools import (ROOT, atomic_write, car_key, format_score_column, parse_column,
+                        parse_score_column, read_json, score_car_key, star_limits)
 from diff_workbooks import compare_workbooks
 from export_xlsx import build_workbook
 from format_json import format_data
@@ -666,6 +667,131 @@ class DataToolsTests(unittest.TestCase):
             result = subprocess.run(command + ['--write'], capture_output=True)
             self.assertEqual(result.returncode, 0, result.stderr)
             self.assertTrue(list(directory.glob('source.json.*.bak')))
+
+
+class OcMaintenanceTests(unittest.TestCase):
+    def oc_report(self, *changes):
+        return {'version': 2, 'changes': list(changes), 'structure': []}
+
+    def score_fixture(self):
+        changes = []
+        for tier, stars, normal, special in [('理论', None, 20, 17), ('高手', 6, 24, 21)]:
+            for oc, delta in [(False, 0), (True, -2)]:
+                changes.append(change(tier=tier, stars=stars, oc=oc, new=normal + delta))
+                changes.append(change(tier=tier, stars=stars, oc=oc,
+                                      sc=True, sc_type='跳图', new=special + delta))
+        data, _ = apply_changes(fixture(), self.oc_report(*changes), CARS)
+        return data
+
+    def test_oc_columns_keep_legacy_tuple2_and_refuse_lossy_keys(self):
+        for label, expected in [('X', ('X', None, False)), ('X★6', ('X', 6, False)),
+                                ('X[OC]', ('X', None, True)), ('X★6[OC]', ('X', 6, True)),
+                                ('evoX★6[OC]', ('evoX', 6, True))]:
+            self.assertEqual(parse_score_column(label), expected)
+            self.assertEqual(format_score_column(*expected), label)
+            if expected[2]:
+                with self.assertRaisesRegex(ValueError, 'OC'):
+                    parse_column(label)
+            else:
+                self.assertEqual(parse_column(label), expected[:2])
+        self.assertEqual(car_key({'name': 'X', 'stars': 6}), ('X', 6))
+        self.assertEqual(score_car_key({'name': 'X'}), ('X', None, False))
+        with self.assertRaisesRegex(ValueError, 'OC'):
+            car_key({'name': 'X', 'oc': True})
+        for value in ['true', 1, None]:
+            with self.assertRaisesRegex(ValueError, 'OC'):
+                score_car_key({'name': 'X', 'oc': value})
+        with self.assertRaisesRegex(ValueError, 'OC'):
+            parse_score_column('X[OC]★6')
+
+    def test_oc_normal_sc_and_stars_export_diff_apply_round_trip(self):
+        data = self.score_fixture()
+        with tempfile.TemporaryDirectory() as temp:
+            base, edited, exported = [Path(temp) / name for name in ('base.xlsx', 'edited.xlsx', 'exported.xlsx')]
+            workbook, _ = build_workbook(data['tracks'])
+            workbook.save(base)
+            for tier, suffix in [('理论', ''), ('高手', '★6')]:
+                expected = ['X' + suffix, 'X' + suffix + '[OC]']
+                self.assertEqual([cell.value for cell in workbook['五区_' + tier][1]][2:], expected)
+                self.assertEqual([cell.value for cell in workbook['五区_' + tier + '_特殊跑法'][1]][3:], expected)
+            sheet = workbook['五区_理论']
+            oc_column = next(c.column for c in sheet[1] if c.value == 'X[OC]')
+            sheet.cell(2, oc_column, 17.5)
+            sc = workbook['五区_高手_特殊跑法']
+            sc_oc_column = next(c.column for c in sc[1] if c.value == 'X★6[OC]')
+            sc.cell(2, sc_oc_column, 18.5)
+            workbook.save(edited)
+            workbook.close()
+            diff = compare_workbooks(load_workbook_data(base), load_workbook_data(edited))
+            self.assertEqual(diff['version'], 2)
+            self.assertEqual(len(diff['changes']), 2)
+            self.assertTrue(all(c['oc'] is True and c['car'] == 'X' for c in diff['changes']))
+            for c in diff['changes']:
+                c['accepted'] = True
+            updated, _ = apply_changes(data, diff, CARS)
+            self.assertEqual(validate_data(updated, CARS)[0], [])
+            theory = updated['tracks'][0]['五区']['理论']
+            self.assertEqual({(score_car_key(e['cars'][0]), bool(e.get('sc'))): e['time'] for e in theory}, {
+                (('X', None, False), False): 20, (('X', None, True), False): 17.5,
+                (('X', None, False), True): 17, (('X', None, True), True): 15})
+            normal = updated['tracks'][0]['五区']['普通']
+            self.assertEqual({score_car_key(e['cars'][0]) for e in normal}, {('X', 6, False), ('X', 6, True)})
+            workbook, _ = build_workbook(updated['tracks'])
+            workbook.save(exported)
+            workbook.close()
+            self.assertEqual(compare_workbooks(load_workbook_data(edited), load_workbook_data(exported))['changes'], [])
+
+    def test_deleting_oc_expert_removes_only_its_matching_mirror(self):
+        data, _ = apply_changes(fixture(), self.oc_report(change(new=20), change(oc=True, new=18)), CARS)
+        updated, _ = apply_changes(data, self.oc_report(
+            change(oc=True, old_present=True, old=18, new=None, new_present=False)), CARS)
+        self.assertEqual(updated['tracks'][0]['五区']['高手'], [expert('X', 20)])
+        self.assertEqual(updated['tracks'][0]['五区']['普通'], [{'cars': [{'name': 'X', 'stars': 6}]}])
+        with self.assertRaisesRegex(ValueError, '版本 2'):
+            apply_changes(fixture(), report(change(oc=True)), CARS)
+
+    def test_oc_validation_separates_duplicates_and_requires_its_own_mirror(self):
+        data = self.score_fixture()
+        self.assertEqual(validate_data(data, CARS)[0], [])
+        broken = deepcopy(data)
+        broken['tracks'][0]['五区']['普通'] = [{'cars': [{'name': 'X', 'stars': 6}]}]
+        self.assertTrue(any('缺普通镜像' in e for e in validate_data(broken, CARS)[0]))
+        broken = deepcopy(data)
+        broken['tracks'][0]['五区']['理论'].append(deepcopy(broken['tracks'][0]['五区']['理论'][0]))
+        self.assertTrue(any('重复条目' in e for e in validate_data(broken, CARS)[0]))
+        for value in ['true', 1, None]:
+            broken = deepcopy(data)
+            broken['tracks'][0]['五区']['理论'][0]['cars'][0]['oc'] = value
+            self.assertTrue(any('无效 OC' in e for e in validate_data(broken, CARS)[0]))
+
+    def test_semantically_duplicate_oc_columns_are_rejected(self):
+        with tempfile.TemporaryDirectory() as temp:
+            path = Path(temp) / 'ambiguous.xlsx'
+            workbook, _ = build_workbook(fixture()['tracks'])
+            sheet = workbook['五区_高手']
+            sheet.cell(1, 3, 'X★06[OC]')
+            sheet.cell(1, 4, 'X★6[OC]')
+            workbook.save(path)
+            workbook.close()
+            with self.assertRaisesRegex(ValueError, '重复车辆状态列'):
+                load_workbook_data(path)
+
+    def test_sync_reports_oc_and_preserves_existing_oc_on_both_zones(self):
+        oc5, oc4 = expert('X', 10), expert('X', 9)
+        oc5['cars'][0]['oc'] = oc4['cars'][0]['oc'] = True
+        data = {'tracks': [sync_track([oc5, expert('X', 20)], [oc4, expert('X', 22)])]}
+        changes, _ = sync(data, SYNC_CARS)
+        self.assertEqual(len(changes['覆盖慢值']), 1)
+        self.assertEqual(len(changes['跳过']), 1)
+        self.assertIn('OC跨区准入未核验', changes['跳过'][0])
+        for zone, expected in [('五区', 10), ('四区', 9)]:
+            rows = data['tracks'][0][zone]['高手']
+            self.assertEqual(next(e['time'] for e in rows if e['cars'][0].get('oc')), expected)
+            self.assertEqual(next(e['time'] for e in rows if not e['cars'][0].get('oc')), 20)
+        # A base score over the old cutoff still gets an explicit OC skip reason.
+        cars = deepcopy(SYNC_CARS)
+        cars['cars'][0]['score'] = 5000
+        self.assertEqual(len(sync(data, cars)[0]['跳过']), 1)
 
 
 if __name__ == '__main__':

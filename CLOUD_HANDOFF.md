@@ -1,5 +1,19 @@
 # RacePick 云端运维交接（2026-10-23 更新）
 
+## 2026-10-23 本轮接手核验（未进行新部署）
+
+以下为本轮只读检查结果；不延续历史部署步骤，不表示已重新核验服务器内部状态。
+
+- 已读取根目录CLAUDE.md/context.md及本仓库交接、车库部署与验收记录。根目录说明仍停在发布准备阶段；README部分版本/合并描述也有历史残留，不能据此判断实时状态。
+- git fetch origin成功；本地main、origin/main及git ls-remote的main均为90db8b90969214f696501455f74a113af8d6e590。已包含3baf0b3车库修复和1760a11上线验收记录。相对打包源码3baf0b3，HEAD只变更CLOUD_HANDOFF.md、CLOUD_HANDOFF_PROMPT.md、GARAGE_DEPLOYMENT.md、GARAGE_LAYOUT_FIX.md四份文档，没有待发布的运行代码。
+- 全部10个已登记工作树没有已跟踪文件的未提交改动（本记录写入前）；repo仍有既存未跟踪_star_curve_fit.py、gauntlet_data_shared.xlsx，均未操作。feature/track-top-three虽显示领先自己的旧远端25项，但它是当前main的祖先（main领先21项、该本地分支独有0项），不构成新的待发布功能。没有合并、切换分支、推送或清理。
+- 本轮直接HTTPS读取/api/health返回200：status=ok、mode=production、schema6/community1/contribution1/feedback1，contributions=true、feedback=true、score_version=42d62fde9b81197ac0558087a9a25f97、score_writes=true。首页/返回200；按backend.app的首页注入规则生成预期内容，与公网响应完全一致；styles.css公网与本地SHA256均为07d51cf3530b3b52ff96fb01ac68409fac214002b0a32c5773e9c5012e2fb4e0。/index.html返回404符合路由白名单，主页实际入口为/。
+- 公网health不包含应用发布ID，因此6ee40a45b00b0e347bf973fe仍是最近用户回传确认的应用版本，不能仅据本轮HTTP检查声称重新确认了current或实际进程cwd。本轮未登录服务器，也未核验当前systemd、备份文件或timer；最近自动备份及下次调度证据仍见下方验收记录，10月24日计划执行不能提前记为成功。
+- 本地8000–8011范围仅发现127.0.0.1:8011监听；PID8776的命令指向garage-toolbar-responsive/.local-accounts/preview，health为local、贡献/反馈关闭。其余历史环境文件保留，端口未监听不代表数据已删除。本轮未启动、停止或重建任何测试环境。
+- 现有11文件车库交付目录保留，ZIP SHA256重新读取仍为fc16b2d678b601c0689e91eee5b2286bfa50c8444a6ce60117933f9b3dbb15fb；没有重打包或变更旧包。本次未重跑回归，沿用既有验收记录；HTTP检查不替代登录、真实邮件及手机交互验收。
+
+当前没有明确的新开发或发布目标，先由用户确定范围。账号、成绩、反馈、备份、测试数据、工作簿和未跟踪文件继续保留；服务器仍按给命令、用户执行并回传的方式逐步推进。本轮交接更新仅保留在工作区，尚未授权提交推送。
+
 ## 主线整合与通用交接入口
 
 用户随后授权合并main。已验收的fix/garage-toolbar-responsive是远端main的后继，使用快进整合，无冲突；本地两份JSON、两份工作簿及保留脚本的哈希与修改时间均未变化。下文“未合并main”属于当时的历史状态，不再作为当前Git结论。源码整合未重新部署或修改生产环境，后续先fetch核对最新状态。
@@ -82,3 +96,13 @@
 
 ## 反馈生产准备阶段记录（已被文首验收结果覆盖）
 功能基线28d4c96，在独立release/account-feedback-production准备生产适配与交付。随后用户逐步完成安装、迁移、切换、备份演练及timer恢复，并确认公网功能正常。完整证据边界见FEEDBACK_PRODUCTION.md文末，最新状态以本文件首节为准。
+
+## 2026-10-24 国际服本地验收通过，提交及发布包准备
+
+用户明确本地验收通过，授权统一Excel为旧字体格式、提交推送并准备完整可校验包；本轮禁止服务器操作。国际服五区满星理论321条（315非OC/6OC），普通291/SC30，29基础车、44图42有值，富士两空图仍在最后。运行版本c7ea2f354e90bf70711c04ae05ced8d894ac9c1168a9b4c18393c9a9fd1b31f0，国际云车库/投稿/版本链及自审免积分/OCR未实现。
+
+国际维护表与shared已统一宋体10pt及旧表头风格，成绩、行列、冻结及OC/SC区分不变；国服主表和同步副本已有宋体，字节保持。修改前原件在数据源/international-prep-20261023/maintenance/change-history/style-unification-20261024，历史表和资料均保留。gauntlet_data.global.xlsx为当前国际321条版本库副本。shared仅格式调整，仍是未跟踪文件；不将其历史缺项当删除授权。
+
+现有生产打包器已补国际组件及独立哈希校验，保留旧包读取兼容；自检增加三JSON及国际入口HTTP检查。发布从干净提交及锁定Linux离线依赖构建，工作簿、账号/成绩状态、反馈、凭据及本地测试库不入包。包内国服JSON新增22.84不会自动覆盖服务器score-state，是否需要单独发布该成绩须现场核对。具体流程见INTERNATIONAL_DEPLOYMENT.md，包内RELEASE.json绑定真实源码/数据提交。
+
+本轮未访问或修改生产，当前运行应用、health、备份timer及公网验收未重核。之后仍由代理给一条命令、用户执行回传后逐步核对，不重跑生产迁移、不初始化、不清理旧文件。

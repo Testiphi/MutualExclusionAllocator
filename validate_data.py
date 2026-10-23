@@ -1,7 +1,7 @@
 """Validate track identities, entries, stars, times, mirrors and ordering."""
 import argparse
 from pathlib import Path
-from data_tools import (ROOT, SC_TYPES, ZONES, TIERS, car_key, car_records, car_zone_names,
+from data_tools import (ROOT, SC_TYPES, ZONES, TIERS, score_car_key, car_records, car_zone_names,
                         configure_stdout, is_time, read_json, star_limits, validate_car_catalog)
 
 
@@ -55,7 +55,11 @@ def validate_data(data, cars):
                     if not isinstance(car, dict) or not isinstance(car.get('name'), str) or not car['name']:
                         errors.append(f'无效车辆结构: {label}')
                         continue
-                    name, stars = car_key(car)
+                    try:
+                        name, stars, oc = score_car_key(car)
+                    except ValueError as error:
+                        errors.append(f'{error}: {label}')
+                        continue
                     if name not in known:
                         errors.append(f'未知车名: {label} {name}')
                     elif name not in pools[zone]:
@@ -85,7 +89,7 @@ def validate_data(data, cars):
                             errors.append(f'未知特殊跑法类型: {label} {name} {route!r}')
                     if stars is not None and type(stars) is not int:
                         continue
-                    identity = (name, stars, bool(entry.get('sc')), str(entry.get('sc_type')))
+                    identity = (name, stars, oc, bool(entry.get('sc')), str(entry.get('sc_type')))
                     if identity in seen:
                         errors.append(f'重复条目: {label} {identity}')
                     seen.add(identity)
@@ -113,11 +117,12 @@ def validate_data(data, cars):
                         continue
                     car = entry_cars[0]
                     if (isinstance(car, dict) and isinstance(car.get('name'), str)
-                            and (car.get('stars') is None or type(car['stars']) is int)):
-                        keys.add(car_key(car))
+                            and (car.get('stars') is None or type(car['stars']) is int)
+                            and type(car.get('oc', False)) is bool):
+                        keys.add(score_car_key(car))
                 return keys
             normal_keys = mirror_keys('普通')
-            for key in sorted(mirror_keys('高手') - normal_keys, key=lambda k: (k[0], k[1] or 0)):
+            for key in sorted(mirror_keys('高手') - normal_keys, key=lambda k: (k[0], k[1] or 0, k[2])):
                 errors.append(f'缺普通镜像: {track_key} {zone} {key}')
     return errors, counts
 

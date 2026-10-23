@@ -15,7 +15,8 @@
 import argparse
 import json
 from pathlib import Path
-from data_tools import ROOT, SC_SUFFIX, atomic_save_workbook, configure_stdout
+from data_tools import (ROOT, SC_SUFFIX, atomic_save_workbook, configure_stdout,
+                        format_score_column, score_car_key)
 import openpyxl
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from openpyxl.utils import get_column_letter
@@ -25,18 +26,18 @@ DEFAULT_INPUT = SCRIPT_DIR / 'gauntlet_data.json'
 DEFAULT_OUTPUT = SCRIPT_DIR / 'gauntlet_data.xlsx'
 
 HEADER_FILL = PatternFill('solid', fgColor='2F5496')
-HEADER_FONT = Font(color='FFFFFF', bold=True, size=10)
+HEADER_FONT = Font(name='宋体', color='FFFFFF', bold=True, size=10)
 ZONE_FILL = PatternFill('solid', fgColor='D9E2F3')   # 大地图分组行底色
-TRACK_FONT = Font(size=10)
-CAR_HEADER_FONT = Font(size=9, bold=True, color='1F3864')
-CELL_FONT = Font(size=10)
+TRACK_FONT = Font(name='宋体', size=10)
+CAR_HEADER_FONT = Font(name='宋体', size=10, bold=True, color='1F3864')
+CELL_FONT = Font(name='宋体', size=10)
 THIN = Side(style='thin', color='BFBFBF')
 BORDER = Border(left=THIN, right=THIN, top=THIN, bottom=THIN)
 CENTER = Alignment(horizontal='center', vertical='center')
 
 def car_combo_key(c):
-    """(车名, 星级) — 高手档拆星级; None 星显示纯车名"""
-    return (c['name'], c.get('stars'))
+    """(车名, 星级, OC)；OC列紧邻同车同星的普通列。"""
+    return score_car_key(c)
 
 # ---------- 列排序: 数据量优先, 其次平均速度, 无数据车按名字排右侧 ----------
 
@@ -80,16 +81,16 @@ def order_combos(combos, stats):
     """列序: 车名按 (数据量↓, 速度↓, 名字) 排, 同车不同星聚在一起按星级升序
     None 星(纯车名)放该车组末尾
     """
-    names = {n for n, s in combos}
+    names = {combo[0] for combo in combos}
     def key(n):
         cnt, spd = stats.get(n, (0, 0.0))
         return (-cnt, -spd, n)
     ranked = sorted(names, key=key)
     cols = []
     for n in ranked:
-        stars = sorted({s for nn, s in combos if nn == n}, key=lambda s: (s is None, s if s is not None else 0))
-        for s in stars:
-            cols.append((n, s))
+        states = sorted((combo for combo in combos if combo[0] == n),
+                        key=lambda c: (c[1] is None, c[1] if c[1] is not None else 0, c[2]))
+        cols.extend(states)
     return cols
 
 def build_pivot_sheet(ws, tracks, zone, tier, show_check=False, stats=None, preset_cols=None):
@@ -108,7 +109,8 @@ def build_pivot_sheet(ws, tracks, zone, tier, show_check=False, stats=None, pres
     if preset_cols is not None:
         # 普通档镜像高手档列序; 防御: 万一有差异, 多余列按名字追加尾部
         cols = [k for k in preset_cols if k in combos]
-        extra = sorted([k for k in combos if k not in preset_cols], key=lambda k: (k[0], k[1] if k[1] is not None else 0))
+        extra = sorted([k for k in combos if k not in preset_cols],
+                       key=lambda k: (k[0], k[1] if k[1] is not None else 0, k[2]))
         cols += extra
     else:
         cols = order_combos(combos, stats)
@@ -116,8 +118,8 @@ def build_pivot_sheet(ws, tracks, zone, tier, show_check=False, stats=None, pres
     # 表头
     ws.cell(1, 1, '大地图')
     ws.cell(1, 2, '小地图')
-    for j, (name, stars) in enumerate(cols, 3):
-        label = f'{name}★{stars}' if stars else name
+    for j, (name, stars, oc) in enumerate(cols, 3):
+        label = format_score_column(name, stars, oc)
         ws.cell(1, j, label)
     for j in range(1, len(cols) + 3):
         c = ws.cell(1, j)
@@ -184,7 +186,7 @@ def build_pivot_sheet(ws, tracks, zone, tier, show_check=False, stats=None, pres
     ws.column_dimensions['A'].width = 14
     ws.column_dimensions['B'].width = 14
     for j in range(3, len(cols) + 3):
-        ws.column_dimensions[get_column_letter(j)].width = 7.5
+        ws.column_dimensions[get_column_letter(j)].width = 11 if cols[j - 3][2] else 7.5
     ws.freeze_panes = 'C2'
     ws.auto_filter.ref = f'A1:{get_column_letter(len(cols)+2)}{r-1}'
     return cols
@@ -214,7 +216,7 @@ def collect_sc_rows(tracks):
     return rows
 
 def collect_sc_combos(tracks, zone, tier):
-    """本区本档 sc 条目涉及的 (车名, 星级) 集合 —— 该表自己的列集"""
+    """本区本档 sc 条目涉及的 (车名, 星级, OC) 集合。"""
     combos = set()
     for t in tracks:
         for e in t.get(zone, {}).get(tier, []):
@@ -224,7 +226,7 @@ def collect_sc_combos(tracks, zone, tier):
     return combos
 
 def sc_cell_values(tracks, zone, tier):
-    """{(大地图, 小地图, 跑法): {(车名, 星级): 成绩}}"""
+    """{(大地图, 小地图, 跑法): {(车名, 星级, OC): 成绩}}"""
     cells = {}
     for t in tracks:
         for e in t.get(zone, {}).get(tier, []):
@@ -254,14 +256,13 @@ def order_sc_combos(combos, cells, stats):
             if value is not None and (combo[0] not in best or value < best[combo[0]]):
                 best[combo[0]] = value
     rank = {combo: index for index, combo in enumerate(main_cols)}
-    names = {name for name, _ in combos}
+    names = {combo[0] for combo in combos}
     def key(name):
         return (best.get(name) is None, best.get(name, 0.0),
                 min([rank[c] for c in combos if c[0] == name] or [len(rank)]))
     cols = []
     for name in sorted(names, key=key):
-        stars = sorted({s for n, s in combos if n == name}, key=lambda s: (s is None, s if s is not None else 0))
-        cols += [(name, s) for s in stars]
+        cols.extend(combo for combo in main_cols if combo[0] == name)
     return cols
 
 def build_sc_pivot_sheet(ws, tracks, zone, tier, row_keys, stats=None):
@@ -273,8 +274,8 @@ def build_sc_pivot_sheet(ws, tracks, zone, tier, row_keys, stats=None):
 
     for j, header in enumerate(('大地图', '小地图', '跑法'), 1):
         ws.cell(1, j, header)
-    for j, (name, stars) in enumerate(cols, 4):
-        ws.cell(1, j, f'{name}★{stars}' if stars else name)
+    for j, (name, stars, oc) in enumerate(cols, 4):
+        ws.cell(1, j, format_score_column(name, stars, oc))
     for j in range(1, len(cols) + 4):
         c = ws.cell(1, j)
         c.fill = HEADER_FILL
@@ -319,7 +320,7 @@ def build_sc_pivot_sheet(ws, tracks, zone, tier, row_keys, stats=None):
     ws.column_dimensions['B'].width = 14
     ws.column_dimensions['C'].width = 12
     for j in range(4, len(cols) + 4):
-        ws.column_dimensions[get_column_letter(j)].width = 7.5
+        ws.column_dimensions[get_column_letter(j)].width = 11 if cols[j - 4][2] else 7.5
     ws.freeze_panes = 'D2'
     if row_keys:
         ws.auto_filter.ref = f'A1:{get_column_letter(len(cols)+3)}{r-1}'

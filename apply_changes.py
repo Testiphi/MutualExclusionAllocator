@@ -3,13 +3,13 @@ import argparse
 from copy import deepcopy
 import hashlib
 from pathlib import Path
-from data_tools import ROOT, atomic_write, car_key, configure_stdout, entry_sort_key, is_time, read_json
+from data_tools import ROOT, atomic_write, score_car_key, configure_stdout, entry_sort_key, is_time, read_json
 from format_json import format_data
 from validate_data import validate_data
 
 
 def apply_changes(data, report, cars):
-    if report.get('version') != 1:
+    if report.get('version') not in (1, 2):
         raise ValueError('不支持的审核清单版本')
     result = deepcopy(data)
     original_tracks = {(t['大地图'], t['小地图']): t for t in data['tracks']}
@@ -33,7 +33,10 @@ def apply_changes(data, report, cars):
             if type(change.get(flag)) is not bool:
                 raise ValueError(f'{flag} 必须是布尔值')
         key = (change['big'], change['small'])
-        car = (change['car'], change['stars'])
+        oc = change.get('oc', False)
+        car = score_car_key({'name': change['car'], 'stars': change['stars'], 'oc': oc})
+        if oc and report['version'] < 2:
+            raise ValueError('OC 成绩必须使用版本 2 审核清单')
         route = change['sc_type'] or 'sc' if sc else None
         identity = (*key, zone, tier, *car, sc, route)
         if identity in identities:
@@ -45,13 +48,13 @@ def apply_changes(data, report, cars):
         if zone not in track or tier not in track[zone]:
             raise ValueError(f'区档不存在: {identity}')
         entries = track[zone][tier]
-        matches = [e for e in entries if len(e['cars']) == 1 and car_key(e['cars'][0]) == car
+        matches = [e for e in entries if len(e['cars']) == 1 and score_car_key(e['cars'][0]) == car
                    and bool(e.get('sc')) == sc and (not sc or (e.get('sc_type') or 'sc') == route)]
         if len(matches) > 1:
             raise ValueError(f'目标不唯一: {identity}')
         entry = matches[0] if matches else None
         original_matches = [e for e in original_tracks[key][zone][tier]
-                            if len(e['cars']) == 1 and car_key(e['cars'][0]) == car
+                            if len(e['cars']) == 1 and score_car_key(e['cars'][0]) == car
                             and bool(e.get('sc')) == sc and (not sc or (e.get('sc_type') or 'sc') == route)]
         if len(original_matches) > 1:
             raise ValueError(f'源数据目标不唯一: {identity}')
@@ -73,7 +76,7 @@ def apply_changes(data, report, cars):
                 entries.remove(entry)
             if tier == '高手' and not sc:
                 track[zone]['普通'][:] = [e for e in track[zone]['普通']
-                                           if not (not e.get('sc') and len(e['cars']) == 1 and car_key(e['cars'][0]) == car)]
+                                           if not (not e.get('sc') and len(e['cars']) == 1 and score_car_key(e['cars'][0]) == car)]
         else:
             if tier in ('理论', '高手') and not is_time(new):
                 raise ValueError(f'成绩必须是正有限数值: {identity} {new!r}')
@@ -83,6 +86,8 @@ def apply_changes(data, report, cars):
                 car_data = {'name': car[0]}
                 if car[1] is not None:
                     car_data['stars'] = car[1]
+                if car[2]:
+                    car_data['oc'] = True
                 entry = {'cars': [car_data]}
                 if sc:
                     entry.update(sc=True, sc_type=route)
@@ -91,7 +96,7 @@ def apply_changes(data, report, cars):
                 entry['time'] = new
             if tier == '高手' and not sc:
                 normal = track[zone]['普通']
-                if not any(not e.get('sc') and len(e['cars']) == 1 and car_key(e['cars'][0]) == car for e in normal):
+                if not any(not e.get('sc') and len(e['cars']) == 1 and score_car_key(e['cars'][0]) == car for e in normal):
                     normal.append({'cars': deepcopy(entry['cars'])})
         logs.append(f'{identity}: {change["old"]!r} → {new!r}')
     # Do not reorder or rewrite unrelated tracks.

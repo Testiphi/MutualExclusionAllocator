@@ -132,7 +132,7 @@ python sync_zones.py --input gauntlet_data.json --max-score 4200 --write
 ```
 
 让性能分 `<= --max-score`（默认 4200）的车辆在「四区 / 五区」两边的成绩一致。
-匹配键为同赛道同档位下的 `(车名, 星级, sc, sc_type)`，档位取理论与高手：
+匹配键为同赛道同档位下的 `(车名, 星级, oc, sc, sc_type)`，档位取理论与高手：
 
 同步前先完整校验源数据，已有违规会直接失败，不通过跳过掩盖。
 符合性能分门槛的条目，还必须同时属于两区车池；带星条目必须满足两区各自星级范围。
@@ -172,3 +172,22 @@ python -B -X utf8 -m unittest test_data_tools test_car_catalog test_release_tool
 历史 `_diff_keyed_*.py`、`_apply_*.py`、校验脚本与用户表格备份**都不在本地保留**（已清理）；
 新任务一律使用上面的固定入口，不再复制并修改日期脚本。追溯某一轮的改动请看 git 提交历史。
 目前工具仍位于仓库根目录，避免同时迁移文件路径。
+
+## 国际服与OC维护（2026-10-24，本地接入）
+
+国际服仍复用本仓库导出、diff、apply、validate与format入口；维护文件在工作区独立maintenance目录，不改国服默认路径。最新JSON/工作簿/身份目录先从`../数据源/international-prep-20261023/maintenance/current-maintenance.json`取得，国际操作必须显式传`--input`、`--output`及适用的`--cars`，不无参数覆盖国服。
+
+OC列为`杰哥[OC]`、`杰哥★6[OC]`，同车同星普通/OC相邻，SC仍由SC表和跑法行区分；JSON在`cars[]`车对象中存布尔`oc:true`，缺省false。完整成绩键增加oc，车辆拥有/分配资源身份不拆成两辆。OC空格不自动用普通值补齐，EVO不自动等于OC。
+
+工具内部用`score_car_key()`/`parse_score_column()`三元接口；旧`car_key()`/`parse_column()`仍二元，遇OC会明确报错，防旧调用静默降维。含OC差异清单version2，`apply_changes`同时接收1/2；普通非OC清单保持version1。预览与逐项accepted=true审核、旧值匹配、哈希复核及原子写入语义不变。
+
+仅非SC高手变更才补同状态的普通档镜像；理论/SC不造镜像。`sync_zones`将OC纳入键，但无OC准入分数时明确跳过自动跨区、保留手工已有OC。国际首期只有五区满星理论，不能用国服4200同步推导国际4400。
+
+国际运行数据在数据获批后生成，命令从repo运行：
+
+```powershell
+python -B -X utf8 tools/build_global_data.py --source-dir ../数据源/international-prep-20261023/maintenance
+python -B -X utf8 tools/build_global_data.py --source-dir ../数据源/international-prep-20261023/maintenance --check
+```
+
+三份独立global JSON为运行投影，不是ASEC全量原始表；目录与成绩由同一manifest和字节SHA256绑定。生成器兼容315普通状态＋OC旁挂或已合入321的OC同值去重，冲突拒绝。EVO真实性能参数未知处留null。具体当前数据、维护表路径、用户原表保护和本地验收见`LOCAL_INTERNATIONAL.md`。

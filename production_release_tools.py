@@ -21,7 +21,24 @@ SCORE_FILES=('backend/score_repository.py','backend/score_versions.py','backend/
 COMMUNITY_FILES=('backend/community.py','announcements.js','admin_accounts.html','admin_accounts.js')
 CONTRIBUTION_FILES=('backend/contribution_production.py','leaderboard.html','leaderboard.js','leaderboard.css','CONTRIBUTIONS_PRODUCTION.md')
 FEEDBACK_FILES=('backend/feedback.py','backend/feedback_production.py','feedback.html','feedback.js','FEEDBACK_PRODUCTION.md')
-APP_FILES=BASE_FILES+SCORE_FILES+COMMUNITY_FILES+CONTRIBUTION_FILES+FEEDBACK_FILES
+GLOBAL_FILES=('cars.global.json','gauntlet_data.global.json','global-data-manifest.json','tools/build_global_data.py')
+COMPONENT_GROUPS=(SCORE_FILES,COMMUNITY_FILES,CONTRIBUTION_FILES,FEEDBACK_FILES,GLOBAL_FILES)
+APP_FILES=BASE_FILES+SCORE_FILES+COMMUNITY_FILES+CONTRIBUTION_FILES+FEEDBACK_FILES+GLOBAL_FILES
+
+def verify_global_data(contents):
+ if not set(contents)&set(GLOBAL_FILES):return # Historical releases remain readable.
+ if not set(GLOBAL_FILES)<=set(contents):raise ValueError('发布包缺少国际服组件')
+ catalog,scores,declared=(json.loads(contents[n]) for n in GLOBAL_FILES[:3])
+ meta=catalog.get('_meta')
+ if not isinstance(meta,dict) or meta.get('server_id')!='global' or meta.get('schema_version')!=1 or meta!=scores.get('_meta') or meta!=declared.get('_meta'):raise ValueError('国际服数据版本不一致')
+ if set(declared.get('files',{}))!=set(GLOBAL_FILES[:2]):raise ValueError('国际服数据文件集合不一致')
+ binding={'server_id':'global','schema_version':1}
+ canonical=lambda value:json.dumps(value,ensure_ascii=False,sort_keys=True,separators=(',',':'),allow_nan=False).encode('utf-8')
+ for name,value,field in zip(GLOBAL_FILES[:2],(catalog,scores),('catalog_payload_sha256','scores_payload_sha256')):
+  raw=contents[name];record=declared['files'][name]
+  payload_hash=digest(canonical({k:v for k,v in value.items() if k!='_meta'}));binding[field]=payload_hash
+  if record.get('sha256')!=digest(raw) or record.get('bytes')!=len(raw) or record.get('payload_sha256')!=payload_hash or meta.get(field)!=payload_hash:raise ValueError('国际服数据哈希不一致')
+ if meta.get('dataset_version')!=digest(canonical(binding)):raise ValueError('国际服数据集版本校验失败')
 
 def digest(raw):return hashlib.sha256(raw).hexdigest()
 def allowed(name):return name in APP_FILES or bool(re.fullmatch(r'wheels/[A-Za-z0-9_.+\-]+\.whl',name))
@@ -37,6 +54,7 @@ def pack(code,data,wheels,output,provenance,data_contents=None):
  content={n:(data_contents[n] if data_contents is not None and n in data_contents else ((data if n in ('cars.json','gauntlet_data.json') else code)/n).read_bytes()) for n in APP_FILES}
  content.update({'wheels/'+p.name:p.read_bytes() for p in wheels.glob('*.whl')})
  if not any(n.startswith('wheels/') for n in content):raise ValueError('缺少离线依赖')
+ verify_global_data(content)
  info=manifest(content,provenance)
  with zipfile.ZipFile(output,'x',zipfile.ZIP_DEFLATED) as z:
   for n,v in content.items():z.writestr(n,v)
@@ -48,10 +66,11 @@ def read_bundle(bundle):
   names=z.namelist()
   if len(names)!=len(set(names)) or 'manifest.json' not in names or not set(BASE_FILES)<=set(names) or any(n!='manifest.json' and not allowed(n) for n in names):raise ValueError('发布包文件白名单不匹配')
   if any(i.file_size>40*1024*1024 for i in z.infolist()) or sum(i.file_size for i in z.infolist())>200*1024*1024:raise ValueError('包体积异常')
-  for group in (SCORE_FILES,COMMUNITY_FILES,CONTRIBUTION_FILES,FEEDBACK_FILES):
+  for group in COMPONENT_GROUPS:
    if set(names)&set(group) and not set(group)<=set(names):raise ValueError('发布包缺少必要组件')
   contents={n:z.read(n) for n in names if n!='manifest.json'};info=json.loads(z.read('manifest.json'))
  if info!=manifest(contents,info['provenance']):raise ValueError('发布包校验失败')
+ verify_global_data(contents)
  return contents,info
 
 def verify(target):
@@ -59,10 +78,11 @@ def verify(target):
  if target.is_symlink():raise ValueError('版本目录不能是链接')
  info=json.loads((target/'manifest.json').read_text(encoding='utf-8'))
  if not set(BASE_FILES)<=set(info['files']) or any(not allowed(n) for n in info['files']):raise ValueError('版本文件白名单异常')
- for group in (SCORE_FILES,COMMUNITY_FILES,CONTRIBUTION_FILES,FEEDBACK_FILES):
+ for group in COMPONENT_GROUPS:
   if set(info['files'])&set(group) and not set(group)<=set(info['files']):raise ValueError('发布目录缺少必要组件')
  contents={n:(target/n).read_bytes() for n in info['files']}
  if any((target/n).is_symlink() for n in info['files']) or info!=manifest(contents,info['provenance']) or target.name!=info['id']:raise ValueError('版本校验失败')
+ verify_global_data(contents)
  return info
 
 def stage(bundle,base):

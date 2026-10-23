@@ -54,6 +54,7 @@ const extract = name => {
 function page(rows, tier = '高手', savedStars = 3) {
     return new Function('rows', 'tier', 'savedStars', `${moduleSource}
         const currentTier = tier; const currentZone = 'zone5';
+        const ocMap = {};
         const specialRouteEnabled = {}; const getRouteState = () => 'all';
         const smallMapsByBig = {A:[{name:'B',zone5Entries:rows,zone4Entries:[]}]};
         const starsMap = {X:savedStars};
@@ -86,4 +87,43 @@ test('损坏的保存星级回退默认值，合法星级仍正常恢复', () =>
         assert.equal(page([], '高手', saved).stars, 6);
     }
     assert.equal(page([], '高手', 3).stars, 3);
+});
+
+const ocRaw = (time, stars, route = null, name = 'X') => {
+    const entry = raw(time, stars, route, name);
+    entry.cars[0].oc = true;
+    return entry;
+};
+test('OC开关按同一车名严格选择，默认关闭且缺OC成绩不回退', () => {
+    const rows = [raw(25, 6), ocRaw(20, 6)];
+    assert.equal(scores.effectiveTime(rows, 'X', '理论', 6), 25);
+    assert.equal(scores.effectiveTime(rows, 'X', '理论', 6, 'all', null, {ocMap:{}}), 25);
+    assert.equal(scores.effectiveTime(rows, 'X', '理论', 6, 'all', null, {ocMap:{X:true}}), 20);
+    assert.equal(scores.effectiveTime([raw(25, 6)], 'X', '理论', 6, 'all', null, {ocMap:{X:true}}), null);
+    assert.equal(scores.effectiveTime([ocRaw(20, 6)], 'X', '理论', 6), null);
+    assert.equal(scores.effectiveTime(rows, 'X', '理论', 6, 'all', null, {ocMap:{Y:true}}), 25);
+    assert.equal(scores.effectiveTime(rows.map(normalized), 'X', '理论', 6, 'all', null, {ocMap:{X:true}}), 20);
+    for (const invalid of [null, 'true', 1]) {
+        const malformed = raw(10, 6);
+        malformed.cars[0].oc = invalid;
+        assert.equal(scores.effectiveTime([malformed, ...rows], 'X', '理论', 6), 25);
+        assert.equal(scores.effectiveTime([malformed, ...rows], 'X', '理论', 6, 'all', null, {ocMap:{X:true}}), 20);
+    }
+});
+test('OC和SC独立过滤，同车普通与特殊跑法不能跨状态混入', () => {
+    const rows = [raw(25, 6), raw(18, 6, '跳图'), ocRaw(21, 6), ocRaw(20, 6, '滑雪')];
+    const ctx = {ocMap:{X:true}};
+    assert.equal(scores.effectiveTime(rows, 'X', '理论', 6, 'off', null, ctx), 21);
+    assert.equal(scores.effectiveTime(rows, 'X', '理论', 6, 'all', null, ctx), 20);
+    assert.equal(scores.effectiveTime(rows, 'X', '理论', 6, '跳图', null, ctx), 21);
+    assert.equal(scores.effectiveTime(rows, 'X', '理论', 6, 'all', true, ctx), 20);
+    assert.equal(scores.effectiveTime(rows, 'X', '理论', 6, 'all', false, ctx), 21);
+    assert.equal(scores.effectiveTime(rows, 'X', '理论', 6), 18);
+});
+test('高手档星级插值只使用当前OC状态的点', () => {
+    const rows = [raw(50, 1), raw(30, 6), ocRaw(22, 1), ocRaw(20, 6)];
+    assert.equal(scores.effectiveTime(rows, 'X', '高手', 3), 42);
+    assert.equal(scores.effectiveTime(rows, 'X', '高手', 3, 'all', null, {ocMap:{X:true}}), 21.2);
+    assert.equal(scores.effectiveTime([raw(50, 1), ocRaw(20, 6)], 'X', '高手', 3, 'all', null, {ocMap:{X:true}}),
+        scores.getStarAdjustedScore([{stars:6,time:20}], 3));
 });

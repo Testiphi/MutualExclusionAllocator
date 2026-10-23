@@ -163,7 +163,24 @@ def atomic_save_workbook(workbook, path):
 
 
 def car_key(car):
-    return car['name'], car.get('stars')
+    """Legacy (name, stars) identity; never silently drop an OC state."""
+    name, stars, oc = score_car_key(car)
+    if oc:
+        raise ValueError('OC 成绩需使用 score_car_key，不能降为普通车辆键')
+    return name, stars
+
+
+def score_car_key(car):
+    """Score identity; OC changes the score, not the owned physical car."""
+    oc = car.get('oc', False)
+    if type(oc) is not bool:
+        raise ValueError(f'无效 OC 状态: {car.get("name")} {oc!r}')
+    return car['name'], car.get('stars'), oc
+
+
+def format_score_column(name, stars=None, oc=False):
+    score_car_key({'name': name, 'stars': stars, 'oc': oc})
+    return (f'{name}★{stars}' if stars is not None else name) + ('[OC]' if oc else '')
 
 
 def entry_sort_key(entry):
@@ -188,14 +205,28 @@ def parse_sheet_name(title):
 
 
 def parse_column(label):
+    """Legacy tuple2 interface; OC-aware consumers use parse_score_column."""
+    name, stars, oc = parse_score_column(label)
+    if oc:
+        raise ValueError('OC 车辆列需使用 parse_score_column')
+    return name, stars
+
+
+def parse_score_column(label):
+    """Read name / name★stars with an optional final [OC] marker."""
     if not isinstance(label, str) or not label:
         raise ValueError(f'无效车辆列: {label!r}')
+    oc = label.upper().endswith('[OC]')
+    if oc:
+        label = label[:-4]
+    if not label or '[OC]' in label.upper():
+        raise ValueError(f'无效 OC 车辆列: {label!r}')
     if '★' in label:
         name, stars = label.rsplit('★', 1)
-        if not name:
+        if not name or '★' in name:
             raise ValueError(f'无效车辆列: {label!r}')
-        return name, int(stars)
-    return label, None
+        return name, int(stars), oc
+    return label, None, oc
 
 
 def configure_stdout():

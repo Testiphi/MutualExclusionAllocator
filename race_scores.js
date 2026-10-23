@@ -43,11 +43,14 @@ const raceScores = (() => {
         return null;
     }
 
-    function effectiveTime(entries, carName, tier, userStars, routeState = 'all', onlySc = null) {
+    function effectiveTime(entries, carName, tier, userStars, routeState = 'all', onlySc = null, context = null) {
         const routes = new Map();
+        const oc = context?.ocMap?.[carName] === true;
         for (const entry of entries) {
             const raw = entry._raw || entry;
             if (raw.cars?.[0]?.name !== carName || raw.time == null) continue;
+            const entryOc = raw.cars[0].oc;
+            if ((entryOc === undefined ? false : entryOc) !== oc) continue;
             const sc = !!raw.sc;
             if (onlySc !== null && sc !== onlySc) continue;
             if (sc && (routeState === 'off' || (routeState !== 'all' && raw.sc_type !== routeState))) continue;
