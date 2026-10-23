@@ -1,6 +1,22 @@
-# RacePick 云端运维交接（2026-10-22 更新）
+# RacePick 云端运维交接（2026-10-23 更新）
 
-## 最新交接：反馈功能已上线验收（2026-10-22）
+## 最新交接：车库布局修复已上线验收，工作暂停
+
+本节覆盖下方历史状态。用户于2026-10-23确认页面验收完成，并要求更新交接、完成必要推送后暂停。以下生产证据来自用户回传，本次文档收尾未访问或修改生产环境。
+
+- 当前应用 **6ee40a45b00b0e347bf973fe**，打包源码3baf0b3970dc638afd9910723943f3a7ad6a0781，数据基线73e3f8b0bb1ea0c6b2cafe82d8002e1fe4a775ee。current与实际进程cwd均已确认，切换时PID138683仅作历史记录。
+- 最后完整health：status=ok、mode=production、schema6/community1/contribution1/feedback1，contributions=true、feedback=true，成绩42d62fde9b81197ac0558087a9a25f97、score_writes=true。本次无数据库迁移，没有用包内JSON覆盖成绩。
+- 用户确认页面验收完成；范围为此前要求的桌面对齐、手机微信分行以及保存/恢复/点亮/清空/排序。没有提供新的真机截图，不声称代理独立完成真机检查。
+- 旧版在线备份演练、停服最终备份校验、新版备份演练均由用户简述确认通过，新版active_database_replaced=false；具体ZIP及演练目录未回传，不编造恢复点路径。
+- 完整回传确认 **10月23日04:16:09–04:16:10 CST自动备份成功，退出码0**，文件scores-20261022T201610532450Z.zip，155551字节。这是升级前反馈版本的自动备份证据，覆盖下文“10月23日自动执行尚未核实”。
+- 本次timer于 **2026-10-23 10:46:44 CST** 恢复enabled/active(waiting)，NEXT为 **2026-10-24 04:16:12 CST**。该次未来计划尚未执行核验；一条health回传被截断，随后单独回传完整JSON确认正常。
+- 交付garage-toolbar-responsive/.production-build/delivery-20261023-garage共11文件，服务器上传目录/root/racepick-deploy/20261023-garage-6ee40a45。ZIP SHA256：fc16b2d678b601c0689e91eee5b2286bfa50c8444a6ce60117933f9b3dbb15fb。包内只有index.html和styles.css有运行内容变化，另一个后端文件仅LF/CRLF不同，逻辑一致；旧包不修改。
+- 最新交接分支 **fix/garage-toolbar-responsive**。main仍73e3f8b，未合并；反馈与其他已验收功能都在本分支历史中。先fetch核对最新状态，不把源码同步当成再次部署。
+- 原8011、8010、8009测试环境及账号库、工作簿、未跟踪文件保留；本轮不清理目录、不改配置、不新增监控。当前6ee40a…与旧4a28f6d…及备份均保留。
+
+详细记录见[GARAGE_DEPLOYMENT.md](GARAGE_DEPLOYMENT.md)和[GARAGE_LAYOUT_FIX.md](GARAGE_LAYOUT_FIX.md)。完成本轮文档推送后暂停，不自动继续合并、部署、清理或核验未来备份。
+
+## 上一轮交接：反馈功能已上线验收（2026-10-22，历史）
 
 本节为最新状态，覆盖下文上一轮排行榜升级的历史快照。所有生产事实来自用户服务器回传或明确反馈，本次文档收尾未访问生产环境。
 

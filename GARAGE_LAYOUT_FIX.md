@@ -1,6 +1,6 @@
 # 车库工具栏对齐与窄屏修复（2026-10-23）
 
-基于已上线源码所在分支提交27a5d20，在独立工作树garage-toolbar-responsive、分支fix/garage-toolbar-responsive修复。用户已确认本地显示正常并授权提交推送；暂不合并main、不部署。
+基于已上线源码所在分支提交27a5d20，在独立工作树garage-toolbar-responsive、分支fix/garage-toolbar-responsive修复。本地验收后已按用户逐步授权上线，2026-10-23用户确认页面验收完成；main仍未合并。最新结果见文末。
 
 根因：garage-actions是默认不换行、交叉轴拉伸的flex行；保存/恢复为居中的button，临时操作为span。全局按钮样式使二者对齐方式不同，手机窄屏压缩后中文逐字换行，整行随提示文字被拉高。
 
@@ -21,3 +21,11 @@ index.html沿用原有CRLF，styles.css沿用检出CRLF；git以cr-at-eol口径�
 2026-10-23用户确认“本地看着正常”，授权将本次代码和文档提交并推送到fix/garage-toolbar-responsive。提交范围仅index.html、styles.css和本说明，不包含测试数据库、日志或截图。
 
 本次收尾保留8011测试环境，沿用已通过的24项回归、启动冒烟及浏览器检查，不重建测试数据、不重启服务、不重复运行测试。原工作簿、账号库及未跟踪保留文件不操作；暂不合并main、不上线，真实微信端最终效果仍待后续验证。
+
+## 2026-10-23 公网验收完成与暂停
+
+上述为本地交付时的历史边界。用户随后授权准备完整包并逐步部署，现应用6ee40a45b00b0e347bf973fe，current/进程cwd/服务/health均已回传核对。首次502后重试成功；本次不需要也未执行数据库迁移。
+
+用户确认新版成套备份和独立恢复演练通过、active_database_replaced=false；timer于10:46:44 CST恢复，NEXT为10月24日04:16:12 CST。完整health确认账号、贡献、反馈及成绩版本和写回开关保持。最后用户确认页面验收完成。
+
+收尾仅更新交接文档并推送本分支，发布包保持不变，不重新运行已通过测试、不合main、不再操作生产环境；保留本地测试数据。详细证据范围见GARAGE_DEPLOYMENT.md和CLOUD_HANDOFF.md。完成必要推送后按用户要求暂停。
