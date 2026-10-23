@@ -46,12 +46,16 @@
         </summary>
         <div class="garage-body">
             <div class="garage-actions">
-                <button type="button" id="garageSaveBtn">保存车库</button>
-                <button type="button" id="garageRestoreBtn">恢复已保存</button>
+                <div class="garage-action-group" role="group" aria-label="保存与恢复车库">
+                    <button type="button" id="garageSaveBtn">保存车库</button>
+                    <button type="button" id="garageRestoreBtn">恢复已保存</button>
+                </div>
+                <div class="garage-action-group" role="group" aria-label="临时选车与排序">
+                    <button type="button" class="garage-btn" id="selectAllBtn">全部点亮</button>
+                    <button type="button" class="garage-btn" id="clearAllBtn">全部清空</button>
+                    <button type="button" class="garage-btn" id="sortBtn">默认</button>
+                </div>
                 <span id="garageSaveStatus" role="status">手动保存 · 临时选择不会覆盖车库</span>
-                <span class="garage-btn" id="selectAllBtn">全部点亮</span>
-                <span class="garage-btn" id="clearAllBtn">全部清空</span>
-                <span class="garage-btn" id="sortBtn">默认</span>
             </div>
         <div class="zone-hint" id="zoneHint">星级代表加速所改装的星级，仅作为参考</div>
         <input class="garage-search" id="garageSearch" type="text" placeholder="搜索车辆(支持昵称/真名)..." autocomplete="off">

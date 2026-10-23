@@ -525,3 +525,22 @@ select:disabled {
 }
 
 .garage-actions button,.garage-confirm button{background:#21262d;color:#e6edf3;border:1px solid #484f58;border-radius:6px;padding:7px 12px;cursor:pointer}.garage-confirm{background:#161b22;color:#e6edf3;border:1px solid #484f58;border-radius:12px;max-width:440px}.garage-confirm::backdrop{background:#0009}#garageSaveStatus{color:#d2a85b;font-size:.85rem}
+
+/* Wrap controls as groups; prevent one-character columns on narrow screens. */
+.garage-actions { flex-wrap: wrap; align-items: center; gap: 8px 12px; }
+.garage-action-group { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; max-width: 100%; }
+.garage-actions button {
+    display: inline-flex; align-items: center; justify-content: center;
+    box-sizing: border-box; flex: 0 0 auto; min-height: 40px;
+    padding: 8px 12px; border: 1px solid #484f58; border-radius: 8px;
+    font: inherit; font-size: 14px; line-height: 1.4;
+    white-space: nowrap; word-break: normal; overflow-wrap: normal;
+}
+.garage-actions button:focus-visible { outline: 2px solid #79b8ff; outline-offset: 3px; }
+.garage-actions #garageSaveStatus { flex: 0 0 100%; min-width: 0; line-height: 1.6; text-align: right; }
+@media (max-width: 640px) {
+    .garage-body > .garage-actions { justify-content: flex-start; }
+    .garage-action-group { flex: 1 1 100%; }
+    .garage-action-group button { flex: 1 0 auto; padding-inline: 8px; }
+    .garage-actions #garageSaveStatus { text-align: left; }
+}
