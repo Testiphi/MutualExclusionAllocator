@@ -102,6 +102,10 @@ cp -a /etc/nginx/sites-available/racepick /etc/nginx/sites-available/racepick.be
 核对预检得到的完整配置后：
 - 将`production/nginx-rate.conf`安装到`/etc/nginx/conf.d/racepick-rate.conf`（http上下文）。
 - 在现有racepick.cn的HTTPS server内，用`production/nginx-https-location.conf`替换原`location /`，不要追加重复location。
+
+**2026-10-24 快速切换修复（尚未上线）**：两份Nginx配置必须成套更新，然后先执行`nginx -t`，核对通过后才能reload。新限流区名为`racepick_api_requests`；旧HTTPS server中的`limit_req zone=racepick_requests ...`必须替换，不能同时保留旧的全站限流。仅更换应用版本不会自动更新`/etc/nginx/`。先只读检查`nginx -T`、实际生效zone和近期429日志，保留现有证书、站点、自定义安全设置及原配置备份，再按用户逐步执行回传流程修改。
+
+新策略对GET/HEAD公开页面资源、成绩快照及启动所需账号/车库/公告读取使用空限流key；其余请求保留每IP 5r/s、burst=30、超限429，包括登录、投稿、保存和管理员接口。不是全局提高额度。前端对成绩启动GET遇到429/503最多请求3次，并保持同一份快照、原始哈希核验和双服隔离；长于5秒的Retry-After不在本页持续等待，不重试写入。详细复现、测试和上线核验要求见[快速切换修复](SERVER_SWITCH_FIX.md)。
 - 保留原有证书路径、Certbot配置及80端口跳转/验证配置。
 - 不把发布目录、数据库、凭据目录设为Nginx公开root；所有应用请求交给上游白名单路由。
 

@@ -1423,6 +1423,7 @@
         try {
             initServerControls();
             // 通过 api 层加载数据
+            if (typeof api === 'undefined') throw Error('页面脚本未完整加载，请稍后刷新重试');
             RACE_DATA = await api.getRaceData();
 
             // 加载车辆度量数据 —— cars.json 同时承载车池（zones）与星级规则（star_rule），
@@ -1473,7 +1474,8 @@
             updateGarageSaveStatus();computeAndDisplay();
             globalThis.dispatchEvent?.(new Event('racepick-ready'));
         } catch (err) {
-            mapRowsContainer.innerHTML = `<div class="loading" style="color:#f99;padding:30px;">❌ 加载失败: ${err.message}<br>请通过 HTTP 服务打开页面，并确保当前服别的数据完整且可读取</div>`;
+            const hint = globalThis.location?.protocol === 'file:' ? '请通过 HTTP 服务打开页面' : '请稍后重试；若持续失败，请反馈当前服别和错误信息';
+            mapRowsContainer.innerHTML = `<div class="loading" style="color:#f99;padding:30px;">❌ 加载失败: ${err.message}<br>${hint}</div>`;
             console.error(err);
         }
     }

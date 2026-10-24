@@ -7,6 +7,7 @@
 - [云端交接记录](CLOUD_HANDOFF.md)：从最新记录开始，区分历史验收与本轮现场证据。
 - [可复用交接提示词](CLOUD_HANDOFF_PROMPT.md)
 - [生产部署流程](PRODUCTION_DEPLOYMENT.md)
+- [快速切换服别的限流修复（本地待发布）](SERVER_SWITCH_FIX.md)
 - [国际服部署与范围](INTERNATIONAL_DEPLOYMENT.md)
 - [成绩版本与生产写回](SCORE_PRODUCTION_DEPLOYMENT.md)
 - [静态部署](DEPLOYMENT.md)

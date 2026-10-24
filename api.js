@@ -20,12 +20,25 @@ const api = (() => {
     return p;
   }
   const snapshots = new Map();
+  // Only bootstrap GETs may retry. Never replay a profile write or submission.
+  async function readBootstrap(path, options) {
+    for (let attempt = 0; ; attempt++) {
+      const response = await fetch(path, options);
+      if (![429, 503].includes(response.status) || attempt === 2) return response;
+      const retryAfter = response.headers?.get('Retry-After');
+      const seconds = retryAfter === null || retryAfter === undefined ? NaN : Number(retryAfter);
+      const requested = Number.isFinite(seconds) ? seconds * 1000 : Date.parse(retryAfter) - Date.now();
+      const delay = Number.isFinite(requested) ? Math.max(0, requested) : 1000 * (attempt + 1);
+      if (delay > 5000) return response;
+      await new Promise(resolve => setTimeout(resolve, delay));
+    }
+  }
   function scoreSnapshot() {
     const key = 'cn:versioned';
-    if (!snapshots.has(key)) snapshots.set(key, fetch('/api/scores/snapshot', {cache:'no-store'}).then(response => {
-      if (!response.ok) throw new Error('成绩版本加载失败，请刷新后重试');
+    if (!snapshots.has(key)) snapshots.set(key, readBootstrap('/api/scores/snapshot', {cache:'no-store'}).then(response => {
+      if (!response.ok) throw new Error(`成绩版本加载失败（HTTP ${response.status}），请稍后重试`);
       return response.json();
-    }));
+    }).catch(error => { snapshots.delete(key); throw error; }));
     return snapshots.get(key);
   }
 
@@ -34,8 +47,9 @@ const api = (() => {
     const key = 'global:static';
     if (!snapshots.has(key)) snapshots.set(key, (async () => {
       const paths = [cfg.staticPaths.manifestJson, cfg.staticPaths.carsJson, cfg.staticPaths.dataJson];
-      const responses = await Promise.all(paths.map(path => fetch(path, {cache: 'no-store'})));
-      if (responses.some(response => !response.ok)) throw Error('国际服数据加载失败，请刷新后重试');
+      const responses = await Promise.all(paths.map(path => readBootstrap(path, {cache: 'no-store'})));
+      const failed = responses.find(response => !response.ok);
+      if (failed) throw Error(`国际服数据加载失败（HTTP ${failed.status}），请稍后重试`);
       const bytes = await Promise.all(responses.map(response => response.arrayBuffer()));
       const [manifest, cars, data] = bytes.map(raw => JSON.parse(new TextDecoder().decode(raw)));
       const meta = manifest._meta;
