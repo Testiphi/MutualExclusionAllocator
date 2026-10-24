@@ -1,5 +1,46 @@
 # RacePick 云端运维交接（2026-10-24 更新）
 
+## 2026-10-24 最新：快速切服修复已上线验收，599条保持，完成文档推送后暂停
+
+本轮部署、备份恢复及公网验收均已完成，没有待续跑的部署步骤。服务器命令由用户逐步执行并回传，代理未登录服务器。下方“尚未部署”“等待范围确认”和旧版本状态均为历史记录，以本节为当前交接结论。
+
+- 用户授权仅部署快速切服修复；沿用599条五区满星理论。本地601条、616键完整维护、工作簿修改和正式公告草稿继续保留，不提交数据、不发布公告。OC插值/外推仍暂缓。用户确认桌面浏览器与手机微信验收通过后，授权仅提交推送本轮部署文档，完成后暂停，不清理或创建监控。
+- 实际应用为`66b9d32c1857d2b3c2cc533f`，源码/包内数据绑定`4ff5f6f159bf579c3dd058f78d7bc7f6659967ce`；2026-10-24 18:18:15 CST启动，current与当时PID150824的cwd均为`/opt/racepick/releases/66b9d32c1857d2b3c2cc533f`，active/running。旧应用`0ee524e31734b44fb7771b79`保留。PID仅为验收时快照。
+- Ubuntu24.04.5/x86_64/Python3.12.3/Nginx1.24.0。上传包10949010字节，SHA256 `f35d888ef61a5a9591a99e1bccecc433946a166136b36322e9963605ca15171a`；用户完整回传交付16项SHA、85文件包校验、五份JSON与旧应用字节相同、暂存未激活成功。19锁定wheel的独立运行环境安装及临时库自检由用户确认通过，完整安装日志未回传，不写成生产全量测试。首次启动等待的一次curl连接失败后健康检查成功，不是最终启动失败。
+- 生产只读证据已确认旧全站5r/s、burst30桶拦截api.js、styles.css、国际三份JSON及/api/scores/snapshot，错误日志和访问日志均明确429。两份配置已成套调整：公开资源/启动只读GET、HEAD使用空key，其他请求保持5r/s、burst30、超限429，新zone为`racepick_api_requests`。站点仅替换旧limit_req的zone名称，证书、转发参数、80重定向及127.0.0.1:8080监听保持。nginx -t通过，18:17:09 CST reload退出0、active/running。未执行生产登录/写入限流压测；保护额度依据实际配置，受保护接口仍触发429的对照为上轮本地证据，不混称本轮生产测试。
+- Nginx原配置保留在`/root/racepick-deploy/20261024-switchfix-66b9d32c/nginx-before-20261024-181645/`：racepick-rate.conf SHA256 `f7114b0c3cce3725a1da3d7f3d19b07712b82beb1253fb6569beec47b40bfb9a`；racepick-site.conf SHA256 `db452b2382fb3493f0198779e363c7e80f5c7427a8d64166e7e4828edf04275d`。不能只回退应用就认为Nginx配置也已回退。
+- 最终health为ok/production/schema6，community/contribution/feedback各schema1，contributions/feedback/score_writes均true；国服成绩版本`42d62fde9b81197ac0558087a9a25f97`保持。国际数据版本`f4f36ae874e2ddec845435efd965db87e27f8b10a7a178da67a8293539399a3e`，仅五区满星理论599=578非OC+21OC、561普通+38特殊，49车44图42有值；四区、高手和完整维护没有进入运行包。未迁移/初始化正式库，未覆盖score-state或导入本地账号/测试数据。
+
+三次成套备份与独立恢复演练均有本轮完整回传，备份目录`/var/lib/racepick/backups/`，演练目录`/var/lib/racepick/restore-drills/`：
+
+| 阶段 | 备份文件 | ZIP SHA256 | 演练目录ID |
+| --- | --- | --- | --- |
+| 旧版在线 | scores-20261024T101536222957Z.zip | 993a1f3d6c558ed5e551494122904a0172cd5f898a5b4da4d845747e8468c916 | 0dab4559cae2d89d0825b079 |
+| 停服最终 | scores-20261024T101744315933Z.zip | 5683d4f1428adce8b485ac815e0af9354cc0be11fc1e8fa6ebfcf38f2b99b66f | 42528d264180abbdfa386c5f |
+| 新版在线 | scores-20261024T101841793136Z.zip | 7baef80f7f2ba7104c785bc1e2d29db050490b7f7da4c5900cff13466bf4b6a5 | 64035cd63ef8aeb26f45cba8 |
+
+三份均161263字节、racepick:racepick、mode600，内部全部文件哈希一致。SQLite快照SHA256 `565aa54f8eda24e49675ae2d83e9783736e81d65ba074fdf041b83f384361d33`；国服活动成绩JSON SHA256 `bed4cf05fd8d2332e043513820adae39d9c01453dedb602dd374fe64355ae9a9`。三次恢复结果均39用户/21车库/3投稿、pending_batches0、active_database_replaced=false；贡献schema1及counts0/1/0/1，反馈schema1及三项counts全0。旧历史部署缺失的最终备份路径仍属旧轮缺项，不以本轮路径替代。
+
+18:18:43 CST恢复racepick-backup.timer，enabled、active(waiting)，LAST2026-10-24 04:16:12 CST，NEXT2026-10-25 04:18:33 CST。恢复后health正常。这证明调度恢复，不表示10月25日任务已执行。
+
+公网78次只读GET（6种启动资源各13次、并发6）全部200，无失败/429；公网api.js逐字节等于新版，SHA256 `3663cfed057fd0158b8d92b03effa104c2e006edd1c51c07a5ade3ba0256f837`。用户明确确认桌面和手机微信均通过：连续切服无报错，计算、OC/特殊跑法、分服车库和草稿正常；代理没有独立操作手机微信，不将此扩写为未回传的其他功能逐项验收。
+
+本地结构化回执：工作区`本地归档/server-switch-fix-deployment-20261024/DEPLOYMENT_RECEIPT.json`。收尾仅改部署/交接文档，不重打包、不修改程序/JSON/Excel/台账或公告，不清理旧应用、备份、演练、测试环境、分支或未跟踪文件。完成授权文档提交推送并核对远端后暂停；无新授权不继续部署、开发、清理或创建监控。
+
+## 2026-10-24 最新暂停交接：OC插值暂缓，下一轮仅继续部署修复
+
+用户决定暂不实施OC插值/外推补缺；等取得更多同图同车、同跑法且配置可比的OC/非OC独立数据对后，再进行数据分析。上一轮提出的万达8条插值候选均未获采纳、未写入，5条外推及滑栏杆也未处理。不将历史公式生成记录反过来当作实测训练或验证样本，不自动扩大OC范围，也不撤回此前已批准的OC估算数据。
+
+分析已核实：当前OC仍21条，杰哥18/万达3，全部普通路线。其中当前直接给定5条、按此前减0.10规则估算16条；追溯勇往直前被替换的24.19可恢复第6个独立直接给定参考点，但当前已接受值仍24.15，不回改。杰哥现有18条非OC均已有OC；万达普通路线8个缺口在参考时长范围内、5个需外推，另1个滑栏杆缺乏同跑法OC参照。所有差值仅为现表配对，包含作者/路线/原成绩质量影响，非受控性能测量。以上仅分析结论，不构成新增成绩采纳。
+
+开发/发布固定状态：main仍d84becdd854dc6156d9517ae4234d9e6795ef058（上轮已推送并核对远端），修复源码绑定4ff5f6f159bf579c3dd058f78d7bc7f6659967ce。完整包release_id=66b9d32c1857d2b3c2cc533f；repo/.production-build/RacePick-SwitchFix599-20261024-66b9d32c-delivery.zip，10949010字节，SHA256=f35d888ef61a5a9591a99e1bccecc433946a166136b36322e9963605ca15171a。暂停前重新核对该包哈希及11份本地数据/工作簿保护哈希均保持；发布包继续仅599条，601条本地数据及国服Excel保存修改仍未提交，公告未发布。85文件manifest、19wheel、86项前端、214项Python（1跳过）、独立暂存与临时库自检为上轮已完成证据，不在本轮重复运行。
+
+本轮只追加此暂停记录到工作区CLAUDE.md、context.md及repo/docs/CLOUD_HANDOFF.md，未提交推送；不重打包、不改代码/成绩/工作簿/台账、不清理环境、不操作服务器。线上仍仅沿用此前0ee524e31734b44fb7771b79/599条用户验收结论，未现场核验。
+
+下一模型可直接使用既有通用交接提示词，从docs/CLOUD_HANDOFF.md最新记录、docs/SERVER_SWITCH_FIX.md及交付说明接续。下一步必须先给用户只读命令核对线上nginx -T及429日志、实际current/进程/health/备份调度；用户执行回传，逐步审核后推进。不能当作半途部署续跑或直接切换。Nginx map/zone与站点limit_req需成套更新、保留原配置备份、nginx -t通过后再按授权reload，应用包不会自动改Nginx；不能夹带601条或覆盖score-state。保留旧版本/备份/演练目录。
+
+按用户要求：完成记录后暂停，不自动继续部署、采集OC、创建监控或提交推送。
+
 
 ## 2026-10-24 最新交接：快速切换修复已推送，599条完整包就绪（尚未部署）
 
@@ -437,3 +478,21 @@ production_release_tools.py和build_production.py改为从docs读取源码文档
 本轮提交仅包含docs/tests/examples分类、README及相对链接、测试/演示导入路径和构包文档来源路径调整，并携带移动文档中既有的本地交接说明。不暂存任何JSON、Excel、用户来源表或本地实验脚本；601条数据保持本地未提交，线上沿用上次599条验收记录，公告未发布。本次推送不涉及生产服务器切换、成绩导入或清理。
 
 分类实现已通过前端81项、Python214项（跳过1项）、示例仅导入检查和Markdown链接核对。本轮再确认数据/工作簿字节未改，提交前检查暂存文件清单和空白错误。推送结果以本地回执layout-push-result.json及远端main提交核对为准。
+
+
+## 2026-10-24 本轮接手核验完成：未开启新部署，等待范围确认
+
+本节为本轮实际核验结果，覆盖历史状态描述；不将上一轮599条已完成部署当作半途部署，也不将后来准备好的切服修复包视为已上线。
+
+- 已读取根目录CLAUDE.md/context.md及docs/INDEX.md、CLOUD_HANDOFF.md、PRODUCTION_DEPLOYMENT.md、INTERNATIONAL_DEPLOYMENT.md、SERVER_SWITCH_FIX.md等入口，结合Git、发布包与公网只读响应核对。git fetch origin成功；本地main、origin/main及git ls-remote均为d84becdd854dc6156d9517ae4234d9e6795ef058。4ff5f6f之后main只有两份交接/部署文档变化。
+- 7个已登记工作树：主repo有原6份已跟踪修改（3份global JSON、国际/国服两工作簿、CLOUD_HANDOFF）及3个未跟踪用户文件（来源Excel、_star_curve_fit.py、gauntlet_data_shared.xlsx），暂存区为空；其余6个工作树无未忽略修改。community-controls相对main仍独有文档提交6ef9062，不自动合并；其余开发工作树HEAD均为main祖先。release-build-switchfix-20261024干净、detached于4ff5f6f。未切分支、合并、暂存、提交、推送或清理。
+- 本轮HTTPS GET /api/health为200：ok/production，schema6/community1/contribution1/feedback1，contributions/feedback/score_writes均true，国服成绩版本42d62fde9b81197ac0558087a9a25f97。公网国际三份JSON逐字节等于已上线0ee524e3包及待发布修复包中的对应数据，版本f4f36ae874e2ddec845435efd965db87e27f8b10a7a178da67a8293539399a3e，599条/49车/44图、38SC/21OC，其他区档为空。公网api.js逐字节等于旧0ee524e3包、与切服修复包不同；styles.css与本地一致。这证明被读取的公网资源仍未含切服修复，不能据此重新证明服务器current或进程cwd。
+- 最近用户回传验收的应用ID仍为0ee524e31734b44fb7771b79，桌面/手机微信验收、备份及timer恢复为此前证据。本轮未登录服务器，未读取Nginx实际配置、429日志、systemd、内部版本、备份文件或timer；10月25日备份未核验，不宣称成功。停服最终备份路径/SHA/演练目录历史缺项仍保留，不补造。
+- 当前本地运行601条（580非OC/21OC，563普通/38特殊），版本7fffdbbb888fb2e0c7d54accf04f12b32719f735adbaf2c057617d34a6f67a71；build_global_data.py --check本轮通过，无写入。完整维护JSON实际616键=五区理论601+四区理论11+两区高手各1+普通镜像各1。601相对已提交599仅新增evo肥龙幽灵船22.02、岩石山谷20.66及版本元数据，未获本轮发布授权。完整维护和36条独立参考不自动进入运行包。工作簿本轮未同步、导出或逐格重验，保留现有保存内容。
+- 切服修复完整包66b9d32c1857d2b3c2cc533f仍在repo/.production-build/RacePick-SwitchFix599-20261024-66b9d32c-delivery.zip，10949010字节，本轮重算SHA256=f35d888ef61a5a9591a99e1bccecc433946a166136b36322e9963605ca15171a；交付16项SHA、外层17项逐项回读及内层85文件manifest大小/哈希全部通过，19个wheel在清单内。国服两份JSON和国际三份JSON与0ee524e3旧包字节相同。仅复核现有包，未重打包或暂存/激活应用。86项前端、214项Python（1跳过）、临时库与Nginx对照为上轮证据，本轮未重复运行，亦不冒充生产Linux验证。
+- 本机Python3.14.4、Node24.15.0；8000–8099未观察到监听，相关进程查询未观察到本项目Python/Nginx服务（不等于其他端口或所有占用均已排除）。现有测试库/邮件/验收资料、3个保留sandbox、各工作树忽略目录继续保留，未启动/停止/重建测试环境。生产目标仍以包内Ubuntu24.04/x86_64/Python3.12为准。
+- 正式公告草稿仍在maintenance/local-hold-announcement-20261024/国际服五区理论更新_正式公告草稿.txt；本轮仅确认文件存在，未发布。OC插值/外推继续暂缓，不新增成绩或扩大范围。
+
+本轮只追加接手记录到根目录CLAUDE.md、context.md及repo/docs/CLOUD_HANDOFF.md；未授权提交推送。现有数据、工作簿、3个未跟踪文件和正式公告草稿在记录前后SHA256及mtime_ns逐项保持。
+
+下一步先由用户确认本轮范围。若决定部署切服修复，复用上述599包及01-readonly-preflight.sh，先仅给用户当前一步只读命令，回传核对nginx -T/实际日志、current/进程/health/备份调度，再决定后续步骤；Nginx map/新zone与站点limit_req须成套调整、保留配置备份并先nginx -t。不能夹带601、覆盖score-state、重复迁移、发布公告或清理旧版/备份/演练。本轮不自动继续部署或创建监控。
