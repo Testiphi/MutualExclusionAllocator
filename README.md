@@ -363,4 +363,4 @@ Account nickname display/search, shared button styling and private text feedback
 
 ## International mode accepted locally (2026-10-24)
 
-The user accepted local international-mode testing: maximum-star five-zone theory, 321 independent score records, separate local garages, and OC selection. This release has not been deployed; international cloud profiles and submissions are not enabled. See [local acceptance and maintenance](LOCAL_INTERNATIONAL.md) and the [deployment preparation](INTERNATIONAL_DEPLOYMENT.md).
+The user accepted local international-mode testing: maximum-star five-zone theory, 321 independent score records, separate local garages, and OC selection. Release bd12e3fb2c2519b0238afd90 is deployed and the user accepted desktop and mobile WeChat testing; international cloud profiles and submissions remain disabled. Later three-row controls and the c2 search alias are committed but not deployed. See [local acceptance and maintenance](LOCAL_INTERNATIONAL.md) and the [deployment preparation](INTERNATIONAL_DEPLOYMENT.md).
