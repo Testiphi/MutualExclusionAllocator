@@ -191,3 +191,7 @@ python -B -X utf8 tools/build_global_data.py --source-dir ../数据源/internati
 ```
 
 三份独立global JSON为运行投影，不是ASEC全量原始表；目录与成绩由同一manifest和字节SHA256绑定。生成器兼容315普通状态＋OC旁挂或已合入321的OC同值去重，冲突拒绝。EVO真实性能参数未知处留null。具体当前数据、维护表路径、用户原表保护和本地验收见`LOCAL_INTERNATIONAL.md`。
+
+### 国际服用户授权OC估算（2026-10-24）
+
+`tools/build_global_data.py`仍只读取已接受维护数据。OC来源除`user_direct_final_theory`外，允许`user_authorized_oc_delta_estimate`；后者必须绑定同图同车非OC普通成绩的`source_time`、`adjustment=-0.1`和两位小数结果，失配拒绝。不得将估算改标为实测；旧更快直接OC保留。Excel存数值，后续修改普通源值须先重新核算/维护台账，再运行生成和`--check`。

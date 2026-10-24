@@ -110,6 +110,20 @@ class GlobalDataTests(unittest.TestCase):
         documents[2]['count'] = 2
         self.assertEqual(self.build(documents)[MANIFEST_FILE]['counts']['score_entries'], 4)
 
+    def test_authorized_oc_estimate_is_bound_to_same_car_ordinary_source_and_delta(self):
+        documents = source_fixture()
+        record = documents[2]['records'][0]
+        record.update(source_kind='user_authorized_oc_delta_estimate',
+                      source_time=22.84, adjustment=-0.1, time=22.74)
+        bundle = self.build(documents)
+        entries = bundle[SCORES_FILE]['tracks'][0]['五区']['理论']
+        self.assertEqual(next(e['time'] for e in entries if e['cars'][0].get('oc')), 22.74)
+        for field, value in [('source_time', 22.8), ('adjustment', -0.2), ('time', 22.73)]:
+            changed = deepcopy(documents)
+            changed[2]['records'][0][field] = value
+            with self.subTest(field=field), self.assertRaisesRegex(ValueError, 'OC delta estimate'):
+                self.build(changed)
+
     def test_unknown_oc_vehicle_unaccepted_reference_or_wrong_identity_is_rejected(self):
         for modification in ('unknown_name', 'unaccepted', 'wrong_id', 'no_oc', 'sc'):
             documents = source_fixture()

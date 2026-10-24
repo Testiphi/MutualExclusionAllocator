@@ -67,7 +67,7 @@
         <input class="garage-search" id="garageSearch" type="text" placeholder="搜索车辆(支持昵称/真名)..." autocomplete="off">
         <div class="class-filter" id="classFilter">
             <span class="class-filter-btn active" data-class="">全部</span>
-            <span class="class-filter-btn" data-class="R">R</span>
+            <span class="class-filter-btn" id="classFilterR" data-class="R">R</span>
             <span class="class-filter-btn" data-class="S">S</span>
             <span class="class-filter-btn" data-class="A">A</span>
             <span class="class-filter-btn" data-class="B">B</span>
@@ -1410,6 +1410,7 @@
             link.addEventListener('click', event => prepareServerNavigation(event, link, server));
             if (server === APP_CONFIG.server) link.setAttribute('aria-current', 'page'); else link.removeAttribute('aria-current');
         }
+        document.getElementById('classFilterR').hidden = APP_CONFIG.server === 'global';
         if (APP_CONFIG.server === 'global') {
             document.title = '国际服 · 擂台选车助手';
             const note = document.getElementById('serverNote'); note.hidden = false;

@@ -2,9 +2,9 @@
   "_meta": {
     "server_id": "global",
     "schema_version": 1,
-    "catalog_payload_sha256": "284028653c0f871df85e47e44152ecc82f13072c0a13c2b7fcf889ed65fad2f7",
-    "scores_payload_sha256": "0aafb906866180f1b55cad7334f0e46e176fc6d6acdb6b8412974c9b43f87e7e",
-    "dataset_version": "c7ea2f354e90bf70711c04ae05ced8d894ac9c1168a9b4c18393c9a9fd1b31f0",
+    "catalog_payload_sha256": "9e1fe53ca9f8ddb6b3be3fd650432bc26072727c65e523c7570adc8c01dd4ab8",
+    "scores_payload_sha256": "6d8bb421850fe2763aac47ee11715f0ed57171651f6341e7e4b1bf6297691eb7",
+    "dataset_version": "f4f36ae874e2ddec845435efd965db87e27f8b10a7a178da67a8293539399a3e",
     "manifest_file": "global-data-manifest.json"
   },
   "capabilities": {
@@ -19,32 +19,32 @@
   },
   "files": {
     "cars.global.json": {
-      "sha256": "81a5ca3edb4dc62b1722a219ec3b8cbad0dbd46281df60ad4bfc3a1b94a1b169",
-      "bytes": 18331,
-      "payload_sha256": "284028653c0f871df85e47e44152ecc82f13072c0a13c2b7fcf889ed65fad2f7"
+      "sha256": "cbf5c380a18fd4e609acbd4d7e7c80eae4cdac974ed2fd3588d624ced0bf86cf",
+      "bytes": 30398,
+      "payload_sha256": "9e1fe53ca9f8ddb6b3be3fd650432bc26072727c65e523c7570adc8c01dd4ab8"
     },
     "gauntlet_data.global.json": {
-      "sha256": "d485ae3714a88e172aa8f567cfa15b3eb121dba5a3cfb18e7c0467936283d9b7",
-      "bytes": 74942,
-      "payload_sha256": "0aafb906866180f1b55cad7334f0e46e176fc6d6acdb6b8412974c9b43f87e7e"
+      "sha256": "25cdb3c70cdc5376113dd5e21680afa277bb60f276360e7ab2af02a4affe095a",
+      "bytes": 118524,
+      "payload_sha256": "6d8bb421850fe2763aac47ee11715f0ed57171651f6341e7e4b1bf6297691eb7"
     }
   },
   "counts": {
-    "physical_cars": 29,
+    "physical_cars": 49,
     "tracks": 44,
     "covered_tracks": 42,
-    "score_entries": 321,
-    "non_oc_entries": 315,
-    "oc_entries": 6,
-    "special_entries": 30,
-    "normal_entries": 291
+    "score_entries": 599,
+    "non_oc_entries": 578,
+    "oc_entries": 21,
+    "special_entries": 38,
+    "normal_entries": 561
   },
   "sources": {
     "cars-full.json": "88d3829666e5fd9d4cf8ba56573f5af0de6e67919c77bdb33019084ddb013a71",
-    "current-maintenance.json": "3ee698db181e71425071a52c26d435c2ffc3039627d509d76879e7d20c1fadb4",
-    "gauntlet_data_international.json": "88915b9f898e03626bf1280732027a92ef484273823faa3d45eb57924e250d75",
-    "maintenance-car-identities.json": "bbfd510b40f51b512dc956f6f80dfb37aa62be3f62db16d8588cedc597a9ed38",
-    "oc-score-ledger.json": "cb33ee3b3fdb8a309e825d6ee49f25a5a52f8490af4542213c89ccdd466a7c59",
-    "score-ledger.json": "853c63460a7f3c5f70f6169a51fb3f2093f15e42fcea09169bcd2d4a0aab841a"
+    "current-maintenance.json": "ca1309762c1470ca084f5c984774575be4fd9351ba48066c105edd85cf886977",
+    "gauntlet_data_international.json": "a28ffc3ef0edddd5b5ec0b25cc759e35ea367963c4d209f73f2a6fe6a84712e4",
+    "maintenance-car-identities.json": "d8304358a600bdaabb684d4532b131cddc148f17b227f712061db3057cfd240c",
+    "oc-score-ledger.json": "f64da7163003bfa41a6cf85359ad91eb55548856a4f8d1f75aceaf07ae96ab4b",
+    "score-ledger.json": "136f1e753cb2ed9fb9de6ac927d04acb5e84c9221d331bfff5d29a57753f29c2"
   }
 }

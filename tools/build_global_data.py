@@ -10,6 +10,7 @@ The pure build_bundle function is also the fixture entry point for tests.
 """
 
 from copy import deepcopy
+from decimal import Decimal, ROUND_HALF_UP
 import argparse
 import hashlib
 import json
@@ -223,8 +224,17 @@ def build_bundle(active, accepted_ledger, oc_ledger, asec, identities,
                  'OC must reuse an accepted physical vehicle identity')
         _require(str(record.get('status', '')).startswith('accepted'),
                  'OC reference is not accepted')
-        _require(record.get('source_kind') == 'user_direct_final_theory',
-                 'OC source must be an explicitly accepted final theory value')
+        if record.get('source_kind') == 'user_authorized_oc_delta_estimate':
+            base_time = active_values.get((tid, key[1], False, False, None))
+            _require(_number(base_time) and record.get('source_time') == base_time
+                     and record.get('adjustment') == -0.1,
+                     'OC delta estimate has no matching ordinary source')
+            estimate = float((Decimal(str(base_time)) - Decimal('0.1')).quantize(
+                Decimal('0.01'), rounding=ROUND_HALF_UP))
+            _require(record['time'] == estimate, 'OC delta estimate differs from source rule')
+        else:
+            _require(record.get('source_kind') == 'user_direct_final_theory',
+                     'OC source must be an explicitly accepted final theory value')
         if key in all_keys:
             _require(runtime_values.get(key) == record['time'],
                      'Active and supplemental OC values conflict')

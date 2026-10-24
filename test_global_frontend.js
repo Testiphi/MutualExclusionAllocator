@@ -81,7 +81,7 @@ test('global boot keeps one verified pair, fixed five-zone theory and skips all 
     assert.deepEqual([...app.page.state().owned].sort(),['evo肥龙','万达','杰哥']);
     assert.equal(app.page.state().zone,'zone5');assert.equal(app.page.state().tier,'理论');
     assert.equal(app.page.stars('万达'),5);app.page.setStars('万达',1);assert.equal(app.page.stars('万达'),5);
-    assert.equal(app.node('tierToggle').hidden,true);assert.equal(app.node('zoneToggle').hidden,true);
+    assert.equal(app.node('tierToggle').hidden,true);assert.equal(app.node('zoneToggle').hidden,true);assert.equal(app.node('classFilterR').hidden,true);
     assert.match(app.node('serverNote').textContent,/国际服车库保存于本机/);
     assert.equal(app.node('serverCnLink').href,'http://127.0.0.1:8000/nested/index.html?foo=1');
     assert.equal(app.requests.length,3);assert.ok(app.requests.every(url=>!url.includes('/api/')&&!['cars.json','gauntlet_data.json'].includes(url)));
@@ -134,21 +134,21 @@ for (const [name, options, message] of [
     assert.equal(app.local.writes.length,0);
 });
 
-test('the actual global runtime bundle boots with 29 shared car identities, 44 tracks and all six accepted OC values', async()=>{
+test('the actual global runtime bundle boots with 49 shared car identities, 44 tracks and all 21 direct or estimated OC values', async()=>{
     const names=['global-data-manifest.json','cars.global.json','gauntlet_data.global.json'];
     const files=new Map(names.map(name=>[name,fs.readFileSync(path.join(__dirname,name))]));
     const data=JSON.parse(files.get('gauntlet_data.global.json'));
     const app=await boot({files,local:storage(cnLocal),session:storage(cnSession)});
-    assert.deepEqual(app.errors,[]);assert.equal(app.page.state().owned.length,29);assert.equal(data.tracks.length,44);
+    assert.deepEqual(app.errors,[]);assert.equal(app.page.state().owned.length,49);assert.equal(data.tracks.length,44);
     assert.equal(app.accountCalls(),0);assert.equal(app.requests.length,3);
     const rows=data.tracks.flatMap(track=>track['五区']['理论'].filter(entry=>entry.cars[0].oc===true).map(entry=>({track,entry})));
-    assert.equal(rows.length,6);
+    assert.equal(rows.length,21);
     for(const {track,entry} of rows){
         const car=entry.cars[0].name;
         if(!app.page.state().ocMap[car])app.node('carGrid').events.get('click')({target:{closest:selector=>selector==='.oc-toggle'?{dataset:{ocCar:car}}:null}});
         assert.equal(app.page.score(track['大地图'],track['小地图'],car,'zone5'),entry.time);
     }
-    const physical=new Set(app.page.state().owned);assert.equal(physical.size,29);
+    const physical=new Set(app.page.state().owned);assert.equal(physical.size,49);
     assert.ok(![...physical].some(name=>name.includes('[OC]')));
     const fuji=data.tracks.slice(-2);assert.ok(fuji.every(track=>track['大地图']==='富士山'&&track['五区']['理论'].length===0));
 });
