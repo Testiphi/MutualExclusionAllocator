@@ -68,9 +68,11 @@ h1 {
 .toggle-group .toggle-choice.inactive:hover::before {
     color: #6e7681;
 }
-/* 服别、档位与分区共享紧凑切换外观，窄屏按组换行。 */
-.mode-controls { display:flex; align-items:center; flex-wrap:wrap; gap:9px 26px; margin:0 0 14px; }
+/* 服别、档位与分区各占一行，组内可换行，浅分隔保持分组清晰。 */
+.mode-controls { display:flex; flex-direction:column; align-items:stretch; gap:9px; margin:0 0 14px; }
 .mode-controls .toggle-group { margin:0; gap:14px; flex-wrap:wrap; row-gap:7px; }
+.mode-controls .toggle-group + .toggle-group { padding-top:9px; border-top:1px solid #21262d; }
+.mode-controls label { white-space:nowrap; }
 .mode-controls .toggle-choice { text-decoration:none; white-space:nowrap; }
 .mode-controls .toggle-choice:focus-visible { outline:2px solid #58a6ff; outline-offset:3px; border-radius:3px; }
 .server-note { color:#9caac3; font-size:.8rem; line-height:1.55; margin:0 0 12px; }
