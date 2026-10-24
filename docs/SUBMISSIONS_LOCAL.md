@@ -84,8 +84,8 @@ SQLite模式升级：v1账号 → v2投稿与审核事件、图片、请求去�
 
 ```powershell
 python -B -X utf8 -m unittest backend.test_submissions backend.test_accounts -v
-node --test test_profile_store.js test_allocator.js test_allocator_pruning.js test_race_scores.js test_app_state.js
-node test_boot_smoke.js
+node --test tests/test_profile_store.js tests/test_allocator.js tests/test_allocator_pruning.js tests/test_race_scores.js tests/test_app_state.js
+node tests/test_boot_smoke.js
 ```
 
 2026-10-18，隔离测试数据库、Chromium实际完成：玩家录入→保存→提交；管理员2分并要求补充；玩家看到评分和反馈→修改后重提；管理员将高手投稿调整为普通可用性建议、5分采纳。原始高手成绩保持不变。图片上传鉴权/重编码和忽略/重开等另由接口集成测试覆盖。

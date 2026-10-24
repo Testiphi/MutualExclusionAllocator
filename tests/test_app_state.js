@@ -2,7 +2,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const read = name => fs.readFileSync(path.join(__dirname, name), 'utf8');
+const read = name => fs.readFileSync(path.join(__dirname, '..', name), 'utf8');
 const source = read('app_state.js');
 const state = new Function(`${source};return appState;`)();
 const apiSource = read('config.js') + source + read('api.js');

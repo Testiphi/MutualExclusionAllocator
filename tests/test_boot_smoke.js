@@ -11,7 +11,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 
-const REPO = __dirname;
+const REPO = path.resolve(__dirname, '..');
 const read = file => fs.readFileSync(path.join(REPO, file), 'utf8');
 
 const failures = [];

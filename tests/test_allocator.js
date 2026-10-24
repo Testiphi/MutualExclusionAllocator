@@ -11,7 +11,7 @@ const path = require('node:path');
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 
-const SOURCE = fs.readFileSync(path.join(__dirname, 'allocator.js'), 'utf8');
+const SOURCE = fs.readFileSync(path.join(__dirname, '..', 'allocator.js'), 'utf8');
 const allocator = new Function(`${SOURCE}; return allocator;`)();
 const { generateParetoSchemes } = allocator;
 

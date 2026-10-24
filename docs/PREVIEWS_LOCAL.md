@@ -64,9 +64,9 @@ python -B -X utf8 -m backend.app --port 8000 --preview-source E:\hzz\work\Mutual
 ## 验收
 
 ```powershell
-python -B -X utf8 -m unittest backend.test_previews backend.test_roles backend.test_mailing backend.test_accounts backend.test_submissions test_release_tools -v
-node --test test_profile_store.js test_allocator.js test_allocator_pruning.js test_race_scores.js test_app_state.js
-node test_boot_smoke.js
+python -B -X utf8 -m unittest backend.test_previews backend.test_roles backend.test_mailing backend.test_accounts backend.test_submissions tests.test_release_tools -v
+node --test tests/test_profile_store.js tests/test_allocator.js tests/test_allocator_pruning.js tests/test_race_scores.js tests/test_app_state.js
+node tests/test_boot_smoke.js
 ```
 
 新增13项覆盖新增/更快/更慢/同值/占位、普通/自动可用性、SC和理论不加镜像、显式与派生镜像去重、源文件哈希和mtime不变、导出全为未确认、校验值一致、权限与路径注入、重复请求、来源/规则/审核/工具变化、生成中漂移、v5迁移及正式库校验失败。

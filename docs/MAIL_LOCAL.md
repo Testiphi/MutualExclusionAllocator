@@ -56,9 +56,9 @@ python -B -X utf8 -m backend.app --port 8002 --data-dir .local-accounts/mail-liv
 8项邮件集成测试使用mock SMTP，覆盖真实模式注册/验证/重置、令牌单次使用、TLS设置、指定收件人、重发冷却和旧链接失效、每日预算、认证失败恢复、发送超时不自动重试且链接有效、file模式不联网、v3迁移及密码不出现在状态记录和错误中。
 
 ```powershell
-python -B -X utf8 -m unittest backend.test_mailing backend.test_accounts backend.test_submissions test_release_tools -v
-node --test test_profile_store.js test_allocator.js test_allocator_pruning.js test_race_scores.js test_app_state.js
-node test_boot_smoke.js
+python -B -X utf8 -m unittest backend.test_mailing backend.test_accounts backend.test_submissions tests.test_release_tools -v
+node --test tests/test_profile_store.js tests/test_allocator.js tests/test_allocator_pruning.js tests/test_race_scores.js tests/test_app_state.js
+node tests/test_boot_smoke.js
 ```
 
 独立的一封投递测试脚本仍为tools/test_directmail.py，默认预览；只有加--send才发送。

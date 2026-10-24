@@ -3,7 +3,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const read = file => fs.readFileSync(path.join(__dirname, file), 'utf8');
+const read = file => fs.readFileSync(path.join(__dirname, '..', file), 'utf8');
 const moduleSource = read('race_scores.js');
 const scores = new Function(`${moduleSource}; return raceScores;`)();
 const raw = (time, stars, route = null, name = 'X') => ({

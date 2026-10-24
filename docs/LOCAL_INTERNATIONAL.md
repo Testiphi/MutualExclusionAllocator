@@ -1,5 +1,73 @@
 # 国际服本地验收
 
+## 2026-10-24 按分级完成工作树与sandbox清理（分支全部保留）
+
+用户本轮明确授权移除allocator-perf，并将3个已合入但含历史构包的工作树和9个冒烟sandbox完整归档校验后清理，其他先保留。已执行：allocator-perf、account-feedback-production、contribution-production、score-versions-local共4个检出均使用git worktree remove正常移除，无--force；所有分支名称/提交指针与操作前逐项一致，主仓库HEAD仍fe0702252b7ddc8c325a37367339391f8c8b678b，未合并或删除分支。
+
+3个工作树（含全部忽略文件、构包/缓存/.git指针元数据）、9个sandbox（含数据库、版本、测试邮件及空目录）共808文件分别封存为12个带日期统一命名ZIP，位于E:/hzz/work/MutualExclusionAllocator/本地归档/retire-worktrees-sandboxes-20261024。每份有ARCHIVE_MANIFEST.json并逐文件SHA256回读通过；sandbox数据库只读完整性通过、无待处理WAL/journal，非阻塞维护锁探测通过；删除前再次检查绝对路径在工作区、无重解析点且完整文件集/哈希不变。再使用PowerShell Remove-Item -LiteralPath清理9个原目录。没有停用其他进程、绕过锁或删分支。
+
+保留主repo及5个开发工作树：account-feedback、accounts-local、community-controls、contribution-leaderboard、garage-toolbar-responsive；保留3个有验收/回滚资料的sandbox：87ead67eb276a87abd6b70ca、a97eb79fdbf9a00e9b1169f1、b3966af9ba0b2695eaae226e。保留目录全部原文件哈希/mtime不变；community-controls独有文档提交继续保留，不自动合入。被归档的9个ID完整值、3个分支及恢复方法见retirement-plan.json和恢复说明.txt。
+
+根目录目录导航.html、directory-review-20261024/directory-index.json和逐项统一命名索引已同步归档状态，仍列原21项以便追溯；不再把已清理的原路径显示为仍可用。恢复sandbox必须用完整24位ID及原父级；恢复工作树先git worktree add，再按需恢复payload，不能覆盖Git新登记的.git指针。归档含本地测试快照，仅留本地，不提交或上传。
+
+清理后601本地运行、616完整维护JSON/Excel一致性与生成器--check通过；国服、工作簿、台账、OC/36参考、正式公告草稿、其余测试环境及当前/上一发布包均保持。当前工作树既有未提交修改和未跟踪文件保持，原434来源和维护SHA校验通过。回执本地归档/retire-worktrees-sandboxes-20261024/retirement-result.json，恢复说明同目录。未提交推送、未发布公告、未上线、未访问或清理服务器；线上仅沿用此前599条已验收结论，未重新做现场核验。
+
+
+## 2026-10-24 历史工作树及sandbox目录标注完成（本轮未删改目录）
+
+用户要求进一步检查根目录.score-version-sandboxes及allocator-perf、contribution-production等，并先统一时间标注/命名、评估清理。已检查9个Git工作树和12个成绩版本隔离环境，统一索引名称为“日期__用途__状态__原名/ID短码”，每目录单独说明保存在本地归档/directory-review-20261024/统一命名索引。根目录可直接打开E:/hzz/work/MutualExclusionAllocator/目录导航.html；完整机器可读元数据同目录directory-index.json。日期依据明确区分工作树最后提交时间、环境初始版本manifest时间和本机文件系统时间，不冒充原始创建/业务使用时间。
+
+12个sandbox中9个为单图单版本且无验收文件的疑似自动化冒烟环境，可先归档后考虑清理；3个含验收/回滚/登录说明或多版本，先保留。backend/score_repository.py的validate_lab要求父级固定、lab.json.id等于目录名，不能直接加日期重命名或换父级。目录索引统一命名不代表已经改物理名称。
+
+9个工作树全部无已跟踪或未忽略的修改，但忽略目录不为空。allocator-perf已在main且仅有pycache，可作为优先清理候选；account-feedback-production、contribution-production、score-versions-local已合入但有历史构包，需先归档；account-feedback、accounts-local、contribution-leaderboard、garage-toolbar-responsive有测试资料/库/邮件/写回环境，先归档保留。community-controls仍有主线没有的文档提交6ef9062（5份文档），不视作完全合入，保留该分支历史；本轮不合并。所有分支仍保留。
+
+本轮只建立21项带日期标签、目录导航和清理分级；没有删除/重命名/移动任何工作树或sandbox，没有新建目录联接，也未停用进程。进程快照未观察到Python服务，与本工作区相关Node进程是Codex CUA运行时，不能据此保证所有文件无占用。数据库只读汇总，不输出邮箱/密码/令牌或LOGIN内容，原始目录文件哈希/mtime核对保持。当前601本地/616维护数据、工作簿、草稿、601待发布状态和599线上最后验收状态均保持，不提交推送、不上线。
+
+
+## 2026-10-24 本轮授权本地清理完成（未提交推送，未操作服务器）
+
+用户本轮明确要求清理杂乱本地备份和历史构包，覆盖此前暂停/保留策略中“不得自行清理”的默认边界；本次只处理已列清单的本地产物。先核验所有目标绝对路径都在工作区内、无重解析点/目录联接，再逐文件SHA比对。旧回代备份、构表材料、20261021交付及源码快照共572文件封存到3个ZIP，逐条回读及内置ARCHIVE_MANIFEST.json校验通过；之后删除原散文件。其余直接清理项均证明为保留发布包中的相同字节副本，或干净、提交仍在主线的专用构建检出。
+
+本次清理2148个文件、27个目录目标及196个单文件目标，原内容约165.59MiB；归档约18.67MiB，净减少约146MiB（另留少量审计脚本/清单）。清理包括三份临时发布暂存、两份wheel副本、上一版冗余展开交付、最新备份中的两份发布ZIP重复拷贝和两份专用构建检出。release-build-20261024用git worktree remove正常解除；release-build-global599-20261024为无修改/无未跟踪或忽略文件的独立构建克隆，全部引用对象已在主仓库中，方才清理。没有删除开发分支或更改其他开发工作树。
+
+保留当前0ee524e3完整上线包、其展开交付及上一bd12e3fb回退完整包与校验文件；保留最新workbook-return2-sort和前一accepted-tier-review备份，当前校验清单引用的旧style两份记录原路径也保留。现有601本地运行数据、616完整维护键、所有工作簿、来源/台账、OC/36参考、正式公告草稿、素材和本地账号/测试库均保持哈希及mtime。外部运行时node_modules联接未删除或遍历。国服未改，线上仍按上次验收599记录，服务器旧版本/备份/演练目录完全未操作。
+
+清理/恢复总索引：E:/hzz/work/MutualExclusionAllocator/本地归档/cleanup-20261024/清理与恢复说明.txt；同目录有3个归档、ARCHIVE_SHA256SUMS.txt、cleanup-plan.json、cleanup-actions.jsonl、cleanup-result.json。旧历史路径被清理后，请先查这里的归档映射；每个ZIP保留原相对路径/SHA/mtime，需要时先解压到新临时目录核验，再按需取回，不能将整个历史备份覆盖当前工作区。被移除的专用构建检出可由保留Git提交重新创建。
+
+清理后601运行生成器--check、616键Excel与完整JSON一致性、原434项来源与当前维护SHA清单、两个完整发布ZIP及保护文件哈希全部通过。Git HEAD仍fe0702252b7ddc8c325a37367339391f8c8b678b；既存未提交数据/提示词/文档改动及3个未跟踪用户文件保留，不reset、不clean、不提交推送、不发布公告、不上线。此次不重跑应用回归，因为代码/数据字节没有变化。
+
+
+## 2026-10-24 最新交接：正式公告草稿已保存，保留本地601条后暂停
+
+正式公告草稿（用户已确认文案）：`E:/hzz/work/MutualExclusionAllocator/数据源/international-prep-20261023/maintenance/local-hold-announcement-20261024/国际服五区理论更新_正式公告草稿.txt`。包含标题“国际服五区理论数据更新与界面优化”、功能版本标签“国际服五区理论更新”及纯文本正文；后续公告使用此正式草稿，旧“更新公告草稿.txt”仅作历史备选保留。预告仅说明后续数据更新和计划探索OCR，不披露两条未上线圈速，也不声称OCR已开放。
+
+本地五区理论601条、完整维护616键及已验收的Excel排序保留，尚未提交、未推送、未打包或上线；Git HEAD仍为fe0702252b7ddc8c325a37367339391f8c8b678b。线上仍保留此前用户验收的0ee524e31734b44fb7771b79/599条版本，本轮未重新访问服务器。公告仅本地草稿，尚未发布、未调用公告平台接口。四区与高手维护数据仍不进入当前五区理论计算。
+
+本次只补交接说明，不改草稿、代码、成绩、台账、工作簿、发布包或服务器，不提交推送。用户要求完成后暂停；后续无新指令不得继续开发、上线、公告发布或清理旧版本/备份/演练目录。
+
+
+
+## 2026-10-24 用户确认排序并保留本地更新；公告仅草稿
+
+用户明确确认“排序没问题”，要求保留本地更新、更新交接记录，暂不提交推送、不上线，并起草更新公告。当前本地五区理论601条、完整维护616键及13页现有Excel保持，原本轮两条evo肥龙普通路线岩石山谷20.66/幽灵船22.02不再变更；排序规则/OC邻接已获用户验收。上轮35项验证为本轮沿用已通过基线，没有为文档动作重复跑测试或再导出工作簿。
+
+最后已知线上仍是已验收的0ee524e31734b44fb7771b79/599条、数据版本f4f36ae…；本地运行601条版本7fffdbbb…未提交推送、未打包、未上线。Git HEAD继续fe0702252b7ddc8c325a37367339391f8c8b678b，后续不得将当前本地状态误作已发布内容。国服、账号、反馈、备份、演练、发布包及未跟踪文件继续保留。
+
+公告按“已上线599条国际服更新与界面调整＋两条本地成绩待发布预告”起草，正文不混入内部维护实现细节，也不把四区/高手或601条写成已上线。草稿在maintenance/local-hold-announcement-20261024/更新公告草稿.txt，未调用公告发布接口、未写服务器或外部平台。用户若后续要求发布，须按当轮明确授权办理，不由本轮起草推导发布授权。
+
+## 2026-10-24 最新本地：用户表新增2条已回代，车辆列按数据量降序（未提交/未推送）
+
+用户保存国际服现有Excel后授权回代，并要求列顺序与国服一样左往右数据量递减。独立差异只有五区理论普通路线evo肥龙：苏格兰/岩石山谷20.66、苏格兰/幽灵船22.02，原键均为空；无改慢、删除、星级/OC/区档或结构变化。按最终表内值原样回代，不减0.1、不自动改SC；普通与已有特殊跑法分别保留。此为用户直接维护值，不冒充已补看2026-05后视频日期。
+
+完整维护JSON/台账/同一Excel现616完整键，含614条有秒数和2普通可用镜像；运行投影601＝580非OC+21OC、563普通路线+38特殊，49车44图42覆盖。四区仍11理论、高手两区各1（爱音E三星33.85）和普通镜像各1，继续只维护，不入运行。原614维护键及线上599运行值全部保持，正好新增两键。运行数据新版本7fffdbbb888fb2e0c7d54accf04f12b32719f735adbaf2c057617d34a6f67a71，仅本地；线上仍是已验收0ee524e31734b44fb7771b79/599条，未发布这两项。
+
+排序复用export_xlsx.py的compute_car_stats/order_combos：主表按本区理论+高手普通路线覆盖赛道数降序，同量按平均相对速度/车名排序；同车星级聚合、普通和OC紧邻。特殊跑法表按本表自身覆盖量降序，次级相对速度；数据空列留最右，不删车型。7张含车辆列的标准表完成重排，其他标准表无车列保持，独立高手参考页不参与横向排序。逐格按列标签回比，排序本身0值变化；地图行序/合并/冻结C2与SC D2、原字体（含中文charset元数据）/样式、逐车列宽、行高及参考页内容保持。
+
+先保存用户原件及所有维护输入于maintenance/change-history/workbook-return2-sort-20261024；对Git已提交614键基准和本轮Artifact Tool独立导出基准分别回比，复用diff_workbooks.py/apply_changes.py/validate_data.py/format_json.py完成预览与回代。更新后Excel=完整JSON=完整台账616、运行JSON=投影=运行台账601，0重复；字段键含区档/星级/OC/SC类型。35项针对性回归（Node14/Python21）、生成器--check、排序单调性/OC邻接/样式映射检查、图像预览和0公式错误扫描通过；未原生Excel打开。
+
+回执/差异/列序见maintenance/workbook-return2-sort-20261024/final-verification.json、approved-workbook-diff.json、column-order-verification.json。国服原表/目录/JSON、源成绩表、原36参考、OC台账、身份目录、旧新发布ZIP及原434来源哈希保持。仅本地数据和排序维护，未改应用功能代码、未提交、未推送、未打包或操作服务器。
+
+
 ## 2026-10-24 当前：599条国际服已部署并验收
 
 用户逐步执行部署并确认桌面、手机微信验收通过。实际应用`0ee524e31734b44fb7771b79`（源码/数据`a0298cd25da9cbf46a9909d7e5b3723e82adea8f`），13:13:28 CST启动，current与当时PID148673的cwd一致，active/running；13:17:20回传健康ok，国服schema6、各组件schema1及成绩版本`42d62fde9b81197ac0558087a9a25f97`保持。
@@ -222,3 +290,25 @@ JSON=同一gauntlet_data.global.xlsx=台账433完整键零重复，34基础车�
 用户明确接受T0352玻璃/格陵兰·破冰者，保留31.85，不回退旧32.13。accepted-tier-review-20261024/bolide-ice-secondary-review.json及对应HTML已由待二审改为用户已接受，源31.8及配置参数冲突、未知作者/无链接等事实继续保留；接受不等于这些缺证已补齐。回执在maintenance/bolide-ice-approved-20261024/approval-receipt.json，原待审记录已备份至maintenance/change-history/bolide-ice-approved-20261024。
 
 本轮没有改任何成绩：运行599、完整维护614键、现有Excel、两份成绩台账、国服/OC/高手参考及程序文件字节和mtime保持；不生成新运行数据，不修改manifest或数据版本。只更新审核记录/交接说明及其校验；未提交推送、打包或上线。
+
+
+## 2026-10-24 仓库目录分类（本地未提交）
+
+本轮按用户要求整理GitHub仓库目录：24份根目录说明文档移至repo/docs/，14个顶层回归测试移至repo/tests/，2个本地隔离演示脚本移至repo/examples/；README中英文入口及文档相对链接、测试命令、示例导入路径已更新。后端测试仍在backend/。文档索引repo/docs/INDEX.md；后续交接入口为repo/docs/CLOUD_HANDOFF.md，可复用提示词repo/docs/CLOUD_HANDOFF_PROMPT.md，国际服维护说明repo/docs/LOCAL_INTERNATIONAL.md。
+
+production_release_tools.py和build_production.py改为从docs读取源码文档，交付包与应用包仍保留原文档文件名及包内位置，历史发布包不重打包。前端资源、JSON、工作簿及数据维护脚本位置不变。移动保留既有未提交文档内容；国服/国际服JSON、当前工作簿、两个完整发布包逐文件哈希未变。现有gauntlet_data.xlsx在本轮开始时也已被Git标记为修改，保留用户保存内容，不自动回代。
+
+本轮发现repo根目录44个.bak文件（合计7798392字节），全部被Git忽略，未在当前Git跟踪清单。自动审批在执行前拦截批量删除命令，仅返回blocked by policy，因此未删除备份、未换工具重试绕过。清单保存在本地归档/repo-layout-20261024/bak-files.json；并非所有历史备份均保证可从GitHub恢复，Git只保存已提交版本。
+
+本地运行仍601条，完整维护与四区/高手隔离策略不变；线上仅沿用此前用户验收599条的结论，未重新访问生产。正式公告草稿路径不变且未发布。未提交、未暂存、未推送、未上线，不删除分支/服务器旧版本/备份/演练目录。文件映射和保护哈希见本地归档/repo-layout-20261024/layout-result.json。
+
+目录调整验证：前端81项全通过；Python214项执行成功（1项环境条件跳过）；示例仅导入检查通过，未启动演示或生成账号库。601条生成器--check、40文件映射、13份数据/工作簿/发布包保护哈希及Markdown相对链接校验通过。44个bak仍保留，删除未执行；Git暂存区为空。
+
+
+## 2026-10-24 目录分类提交范围与备份删除确认
+
+用户确认已自行删除bak，并授权提交推送本轮分类更新。现场只读检查repo根目录.bak为0，确认删除已完成；之前的审批拦截记录保留为历史过程。fetch后main与origin/main在提交前一致（fe070225），没有需要合并的远端更新。
+
+本轮提交仅包含docs/tests/examples分类、README及相对链接、测试/演示导入路径和构包文档来源路径调整，并携带移动文档中既有的本地交接说明。不暂存任何JSON、Excel、用户来源表或本地实验脚本；601条数据保持本地未提交，线上沿用上次599条验收记录，公告未发布。本次推送不涉及生产服务器切换、成绩导入或清理。
+
+分类实现已通过前端81项、Python214项（跳过1项）、示例仅导入检查和Markdown链接核对。本轮再确认数据/工作簿字节未改，提交前检查暂存文件清单和空白错误。推送结果以本地回执layout-push-result.json及远端main提交核对为准。

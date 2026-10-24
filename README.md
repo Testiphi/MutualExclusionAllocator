@@ -1,6 +1,18 @@
 # [MutualExclusionAllocator](https://github.com/Testiphi/MutualExclusionAllocator)
 
-> 2026-10-22: Announcements, account controls and manual garage saving are deployed and user-accepted; scheduled backups are restored. Temporary car/star changes do not overwrite saved profiles. See [deployment and security check record](COMMUNITY_DEPLOYMENT.md).
+## Repository layout and handoff
+
+- `docs/`: development, maintenance, deployment and acceptance notes; see the [documentation index](docs/INDEX.md).
+- `tests/`: frontend and top-level Python regression tests; backend tests remain in `backend/`.
+- `examples/`: isolated local demos; `tools/`, `production/` and `perf/` keep their existing roles.
+- Web assets, data and maintenance entry points remain at the root, preserving website paths.
+
+The latest user-accepted production release on 2026-10-24 is `0ee524e31734b44fb7771b79`, with 599 international five-zone max-star theory entries. This commit publishes only the directory reorganization; the local 601-entry data update remains uncommitted, unpushed and undeployed; the announcement remains a local draft. This is a recorded acceptance, not a fresh server check. Consult the latest [handoff](docs/CLOUD_HANDOFF.md) and live evidence before deployment.
+
+The earlier deployment descriptions below are historical records.
+
+
+> 2026-10-22: Announcements, account controls and manual garage saving are deployed and user-accepted; scheduled backups are restored. Temporary car/star changes do not overwrite saved profiles. See [deployment and security check record](docs/COMMUNITY_DEPLOYMENT.md).
 
 
 **English** | [中文](README.zh-CN.md)
@@ -13,7 +25,7 @@ A car allocator for Gauntlet challenges, supporting five-zone/four-zone pools, f
 
 Latest user-confirmed status (2026-10-22): application `651ea3d88a27bdff95088b75`, community_schema=1. Existing accounts and profiles were preserved; score version `c8889ff96eb29714d80248cca283b9fa` and write enablement were unchanged. Production acceptance, coherent backup and isolated restore drill passed; scheduled backups are restored. The feature branch has not been merged into main.
 
-Latest data deployment: on 2026-10-21, three five-zone theory time improvements went live in release `09897d5f81a696dca0b95c8e` (source `7a2f164`). The user confirmed the updated results and account features work correctly. See the [deployment record](PRODUCTION_DEPLOYMENT.md). Official score writeback had not yet been deployed at that point.
+Latest data deployment: on 2026-10-21, three five-zone theory time improvements went live in release `09897d5f81a696dca0b95c8e` (source `7a2f164`). The user confirmed the updated results and account features work correctly. See the [deployment record](docs/PRODUCTION_DEPLOYMENT.md). Official score writeback had not yet been deployed at that point.
 
 The account feature branch was merged into main on 2026-10-20, preserving the latest main-branch score data and existing workbooks. This source merge did not redeploy the production service; official score writeback had not yet been deployed at that point.
 
@@ -23,9 +35,9 @@ Accounts and submission review went live on 2026-10-20. The user completed produ
 - Players submit results and provide requested follow-up information. Administrators can rate results, adjust tiers, accept or ignore submissions, and provide feedback.
 - A protected superadministrator manages email-bound administrator invitations and permissions.
 
-Acceptance saves a review decision; it does not update official scores automatically. The user has since confirmed deployment and enablement of versioned score writes, which require explicit superadministrator confirmation. Workbook synchronization remains local. Excel bulk import and contribution-based access unlocking are not implemented. The contribution leaderboard (0–10 quality points plus 10 adoption points, public nicknames, all-time and monthly rankings) and grouped homepage navigation are deployed and user-accepted. Deployment, backup and cleanup evidence is recorded in [production upgrade notes](CONTRIBUTIONS_PRODUCTION.md); start future operations from the [cloud handoff](CLOUD_HANDOFF.md). See also [local setup and acceptance](CONTRIBUTIONS_LOCAL.md).
+Acceptance saves a review decision; it does not update official scores automatically. The user has since confirmed deployment and enablement of versioned score writes, which require explicit superadministrator confirmation. Workbook synchronization remains local. Excel bulk import and contribution-based access unlocking are not implemented. The contribution leaderboard (0–10 quality points plus 10 adoption points, public nicknames, all-time and monthly rankings) and grouped homepage navigation are deployed and user-accepted. Deployment, backup and cleanup evidence is recorded in [production upgrade notes](docs/CONTRIBUTIONS_PRODUCTION.md); start future operations from the [cloud handoff](docs/CLOUD_HANDOFF.md). See also [local setup and acceptance](docs/CONTRIBUTIONS_LOCAL.md).
 
-Manual database backup succeeded and the automatic backup timer is enabled. The user has since confirmed the scheduled run, coherent backup and isolated restore drill. See [production deployment and acceptance](PRODUCTION_DEPLOYMENT.md).
+Manual database backup succeeded and the automatic backup timer is enabled. The user has since confirmed the scheduled run, coherent backup and isolated restore drill. See [production deployment and acceptance](docs/PRODUCTION_DEPLOYMENT.md).
 
 
 ---
@@ -245,7 +257,7 @@ Static guest hosting needs no backend or database. Production accounts require a
 
 ### Data Pipeline
 
-See [Python maintenance tools](PYTHON_TOOLS.md) for installation, paths, review steps and recovery.
+See [Python maintenance tools](docs/PYTHON_TOOLS.md) for installation, paths, review steps and recovery.
 
 1. Export a separate baseline: `python export_xlsx.py --output baseline.xlsx`.
 2. Generate a keyed review list: `python diff_xlsx.py --base baseline.xlsx --user user.xlsx --output changes.review.json`.
@@ -264,10 +276,10 @@ Different times across zones use the faster value. Before writing, the source is
 Run regression checks:
 
 ```bash
-python -B -X utf8 -m unittest test_data_tools test_car_catalog test_release_tools -v      # data tools and validation
-node --test test_allocator.js              # allocator boundary cases
-node --test test_race_scores.js test_app_state.js            # score boundaries and page wiring
-node test_boot_smoke.js                    # page boot smoke test (DOM stub, no browser)
+python -B -X utf8 -m unittest tests.test_data_tools tests.test_car_catalog tests.test_release_tools -v      # data tools and validation
+node --test tests/test_allocator.js              # allocator boundary cases
+node --test tests/test_race_scores.js tests/test_app_state.js            # score boundaries and page wiring
+node tests/test_boot_smoke.js                    # page boot smoke test (DOM stub, no browser)
 ```
 
 As of 2026-10-03, 53 Python tests pass (one additional Linux symlink test is skipped on Windows), alongside 15 allocator, 11 scoring, 12 state tests and the boot smoke test; data validation reports zero errors.
@@ -275,7 +287,7 @@ The boot test uses a DOM stub and does not validate real-browser interaction or 
 
 ### Algorithm Notes
 
-- **2026-10-11 exact pruning:** traversal, equal-vector assignments, sorting and truncation are unchanged. Reproducible real-page inputs, proof, full ordered comparisons, desktop Node/browser timings and limitations are in [perf/REPORT.md](perf/REPORT.md). Run `node --test test_allocator_pruning.js` and `node --expose-gc perf/benchmark.js`; open `perf/browser.html` through the local HTTP server for browser measurements. Tiny inputs can regress due to extra comparisons. The 2026-10-01 table below is historical, before branch pruning.
+- **2026-10-11 exact pruning:** traversal, equal-vector assignments, sorting and truncation are unchanged. Reproducible real-page inputs, proof, full ordered comparisons, desktop Node/browser timings and limitations are in [perf/REPORT.md](perf/REPORT.md). Run `node --test tests/test_allocator_pruning.js` and `node --expose-gc perf/benchmark.js`; open `perf/browser.html` through the local HTTP server for browser measurements. Tiny inputs can regress due to extra comparisons. The 2026-10-01 table below is historical, before branch pruning.
 
 - Leaf count is bounded by `O((k+1)^n)` including blanks. Each leaf also scans the front; a large front can still increase comparison cost and memory.
 - Leaves are compared directly against the current front. Dominated assignments are discarded without copying arrays.
@@ -311,7 +323,7 @@ The boot test uses a DOM stub and does not validate real-browser interaction or 
 
 [RacePick](https://racepick.cn/) runs accounts, real email and submission review. It uses a separate production database and a loopback-only application listener behind Nginx HTTPS. systemd supplies credentials; secrets are not committed or bundled.
 
-See [production deployment](PRODUCTION_DEPLOYMENT.md) for packaging, installation, owner bootstrap, backups and rollback. Use `build_production.py` and `deploy_production.py`: staging is the default, and application activation is separate from switching Nginx traffic. Do not upload local account databases or test workbooks to production.
+See [production deployment](docs/PRODUCTION_DEPLOYMENT.md) for packaging, installation, owner bootstrap, backups and rollback. Use `build_production.py` and `deploy_production.py`: staging is the default, and application activation is separate from switching Nginx traffic. Do not upload local account databases or test workbooks to production.
 
 ### Local Account Development
 
@@ -320,13 +332,13 @@ python -m pip install -r backend/requirements.txt
 python -B -m backend.app --port 8000
 ```
 
-Open [127.0.0.1:8000](http://127.0.0.1:8000/). The default uses a separate local database and file-based test emails; SMTP testing is opt-in. See [ACCOUNTS_LOCAL.md](ACCOUNTS_LOCAL.md). This local entry point is not a public deployment command.
+Open [127.0.0.1:8000](http://127.0.0.1:8000/). The default uses a separate local database and file-based test emails; SMTP testing is opt-in. See [ACCOUNTS_LOCAL.md](docs/ACCOUNTS_LOCAL.md). This local entry point is not a public deployment command.
 
 ### Static Guest Version
 
 The [GitHub Pages demo](https://testiphi.github.io/MutualExclusionAllocator/) provides static guest functionality. Deploy nine files: `index.html`, `styles.css`, `config.js`, `app_state.js`, `api.js`, `allocator.js`, `race_scores.js`, `gauntlet_data.json`, and `cars.json`. The vehicle rules in `cars.json` are a required dependency.
 
-Static packaging and rollback are documented in [DEPLOYMENT.md](DEPLOYMENT.md), separately from production accounts. To preview the static version, run `python -m http.server 8000` and open [localhost:8000](http://localhost:8000/); accounts are not loaded. Use HTTP rather than opening the HTML directly, which may block JSON loading.
+Static packaging and rollback are documented in [DEPLOYMENT.md](docs/DEPLOYMENT.md), separately from production accounts. To preview the static version, run `python -m http.server 8000` and open [localhost:8000](http://localhost:8000/); accounts are not loaded. Use HTTP rather than opening the HTML directly, which may block JSON loading.
 
 ---
 
@@ -345,22 +357,22 @@ Static packaging and rollback are documented in [DEPLOYMENT.md](DEPLOYMENT.md), 
 
 | Document | Scope |
 |---|---|
-| [Production deployment and acceptance](PRODUCTION_DEPLOYMENT.md) | Live release, real email, backup, rollback and user acceptance |
-| [Local accounts](ACCOUNTS_LOCAL.md) | Local startup, profile persistence and historical acceptance |
-| [Email integration](MAIL_LOCAL.md) | File delivery, restricted SMTP tests and production integration |
-| [Submissions and review](SUBMISSIONS_LOCAL.md) | Submission, follow-up, ratings, tier adjustment and feedback |
-| [Administrator invitations](INVITATIONS_LOCAL.md) | Superadministrator, invitations and role isolation |
-| [Read-only change previews](PREVIEWS_LOCAL.md) | Local only: additions, updates, slower results and ordinary mirrors |
-| [Disposable writeback lab](WRITEBACK_LAB.md) | Local testing only: item confirmation, backup/rollback and workbook sync |
-| [Data maintenance tools](PYTHON_TOOLS.md) | JSON/Excel maintenance, change review and validation |
+| [Production deployment and acceptance](docs/PRODUCTION_DEPLOYMENT.md) | Live release, real email, backup, rollback and user acceptance |
+| [Local accounts](docs/ACCOUNTS_LOCAL.md) | Local startup, profile persistence and historical acceptance |
+| [Email integration](docs/MAIL_LOCAL.md) | File delivery, restricted SMTP tests and production integration |
+| [Submissions and review](docs/SUBMISSIONS_LOCAL.md) | Submission, follow-up, ratings, tier adjustment and feedback |
+| [Administrator invitations](docs/INVITATIONS_LOCAL.md) | Superadministrator, invitations and role isolation |
+| [Read-only change previews](docs/PREVIEWS_LOCAL.md) | Local only: additions, updates, slower results and ordinary mirrors |
+| [Disposable writeback lab](docs/WRITEBACK_LAB.md) | Local testing only: item confirmation, backup/rollback and workbook sync |
+| [Data maintenance tools](docs/PYTHON_TOOLS.md) | JSON/Excel maintenance, change review and validation |
 
-New local phase: [versioned score data and release confirmation](SCORE_VERSIONS_LOCAL.md). An independent sandbox supports code/data separation, superadministrator item/slower approvals, backup and rollback. Not merged into main or enabled in production; existing workbooks are not synchronized automatically.
+New local phase: [versioned score data and release confirmation](docs/SCORE_VERSIONS_LOCAL.md). An independent sandbox supports code/data separation, superadministrator item/slower approvals, backup and rollback. Not merged into main or enabled in production; existing workbooks are not synchronized automatically.
 
-Production score-version migration is prepared in [SCORE_PRODUCTION_DEPLOYMENT.md](SCORE_PRODUCTION_DEPLOYMENT.md): preserve accounts, migrate read-only by default, rehearse coherent backup recovery, then enable writes separately. No live migration has been performed. The user has confirmed the first scheduled account backup succeeded.
+Production score-version migration is prepared in [SCORE_PRODUCTION_DEPLOYMENT.md](docs/SCORE_PRODUCTION_DEPLOYMENT.md): preserve accounts, migrate read-only by default, rehearse coherent backup recovery, then enable writes separately. No live migration has been performed. The user has confirmed the first scheduled account backup succeeded.
 
 ## Account nicknames, shared buttons and private feedback (deployed)
-Account nickname display/search, shared button styling and private text feedback are deployed and user-accepted in production. Feedback is visible only to its author and the superadministrator. Deployment, backup-drill and timer-restoration evidence is recorded in [feedback deployment notes](FEEDBACK_PRODUCTION.md); start future operations from the [cloud handoff](CLOUD_HANDOFF.md). The [local environment and acceptance steps](FEEDBACK_LOCAL.md) are retained. International-server support is outside this change.
+Account nickname display/search, shared button styling and private text feedback are deployed and user-accepted in production. Feedback is visible only to its author and the superadministrator. Deployment, backup-drill and timer-restoration evidence is recorded in [feedback deployment notes](docs/FEEDBACK_PRODUCTION.md); start future operations from the [cloud handoff](docs/CLOUD_HANDOFF.md). The [local environment and acceptance steps](docs/FEEDBACK_LOCAL.md) are retained. International-server support is outside this change.
 
 ## International mode accepted locally (2026-10-24)
 
-The user accepted local international-mode testing: maximum-star five-zone theory, 321 independent score records, separate local garages, and OC selection. Release bd12e3fb2c2519b0238afd90 is deployed and the user accepted desktop and mobile WeChat testing; international cloud profiles and submissions remain disabled. Later three-row controls and the c2 search alias are committed but not deployed. See [local acceptance and maintenance](LOCAL_INTERNATIONAL.md) and the [deployment preparation](INTERNATIONAL_DEPLOYMENT.md).
+The user accepted local international-mode testing: maximum-star five-zone theory, 321 independent score records, separate local garages, and OC selection. Release bd12e3fb2c2519b0238afd90 is deployed and the user accepted desktop and mobile WeChat testing; international cloud profiles and submissions remain disabled. Later three-row controls and the c2 search alias are committed but not deployed. See [local acceptance and maintenance](docs/LOCAL_INTERNATIONAL.md) and the [deployment preparation](docs/INTERNATIONAL_DEPLOYMENT.md).

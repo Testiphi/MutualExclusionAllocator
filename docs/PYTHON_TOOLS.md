@@ -166,7 +166,7 @@ python sync_zones.py --input gauntlet_data.json --max-score 4200 --write
 ## 维护与测试
 
 ```powershell
-python -B -X utf8 -m unittest test_data_tools test_car_catalog test_release_tools -v
+python -B -X utf8 -m unittest tests.test_data_tools tests.test_car_catalog tests.test_release_tools -v
 ```
 
 历史 `_diff_keyed_*.py`、`_apply_*.py`、校验脚本与用户表格备份**都不在本地保留**（已清理）；

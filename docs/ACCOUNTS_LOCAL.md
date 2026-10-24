@@ -70,8 +70,8 @@ python -m backend.app --data-dir .local-accounts/restored --port 8001
 
 ```powershell
 python -B -X utf8 -m unittest backend.test_accounts -v
-node --test test_profile_store.js test_allocator.js test_allocator_pruning.js test_race_scores.js test_app_state.js
-node test_boot_smoke.js
+node --test tests/test_profile_store.js tests/test_allocator.js tests/test_allocator_pruning.js tests/test_race_scores.js tests/test_app_state.js
+node tests/test_boot_smoke.js
 ```
 
 后端测试覆盖会话、CSRF/Host/Origin、验证和重置、限流、越权、并发版本、非法车辆星级、静态资源允许列表及备份恢复。

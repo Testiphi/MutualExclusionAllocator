@@ -2,7 +2,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const read = f => fs.readFileSync(path.join(__dirname, f), 'utf8');
+const read = f => fs.readFileSync(path.join(__dirname, '..', f), 'utf8');
 const html = read('index.html');
 const inline = html.match(/<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/)[1];
 function element() {

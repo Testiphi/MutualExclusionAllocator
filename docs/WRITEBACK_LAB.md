@@ -55,10 +55,10 @@ python -B -X utf8 -m backend.app --port 8006 --data-dir "$labPath\accounts" --pr
 ## 验证
 
 ```powershell
-python -B -X utf8 -m unittest backend.test_writeback backend.test_previews backend.test_roles backend.test_mailing backend.test_accounts backend.test_submissions test_release_tools -v
+python -B -X utf8 -m unittest backend.test_writeback backend.test_previews backend.test_roles backend.test_mailing backend.test_accounts backend.test_submissions tests.test_release_tools -v
 node --check writeback_lab.js
-node --test test_profile_store.js test_allocator.js test_allocator_pruning.js test_race_scores.js test_app_state.js
-node test_boot_smoke.js
+node --test tests/test_profile_store.js tests/test_allocator.js tests/test_allocator_pruning.js tests/test_race_scores.js tests/test_app_state.js
+node tests/test_boot_smoke.js
 ```
 
 自动化包含逐项/更慢二次确认、子集镜像重算、权限/CSRF/目录隔离、请求幂等、版本漂移、备份/暂存篡改、工作簿编辑保护、锁竞争、文件写入失败恢复、进程中断恢复、恢复失败阻断及重试、回滚中断恢复、历史回执与防止重复应用。

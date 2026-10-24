@@ -51,7 +51,7 @@ def pack(code,data,wheels,output,provenance,data_contents=None):
  code,data,wheels,output=map(Path,(code,data,wheels,output))
  if output.exists():raise ValueError('输出文件已存在，不覆盖')
  if data_contents is not None and set(data_contents)!={'cars.json','gauntlet_data.json'}:raise ValueError('数据快照必须且只能包含两份JSON')
- content={n:(data_contents[n] if data_contents is not None and n in data_contents else ((data if n in ('cars.json','gauntlet_data.json') else code)/n).read_bytes()) for n in APP_FILES}
+ content={n:(data_contents[n] if data_contents is not None and n in data_contents else ((data if n in ('cars.json','gauntlet_data.json') else code)/('docs/'+n if n.endswith('.md') else n)).read_bytes()) for n in APP_FILES}
  content.update({'wheels/'+p.name:p.read_bytes() for p in wheels.glob('*.whl')})
  if not any(n.startswith('wheels/') for n in content):raise ValueError('缺少离线依赖')
  verify_global_data(content)

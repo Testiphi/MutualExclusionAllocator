@@ -42,9 +42,9 @@
 node --expose-gc perf/benchmark.js --baseline > perf/baseline-node.json
 node --expose-gc perf/benchmark.js > perf/comparison-node.json
 node perf/search_cost.js > perf/search-cost.json
-node --test test_allocator.js test_allocator_pruning.js test_race_scores.js test_app_state.js
-node test_boot_smoke.js
-python -B -X utf8 -m unittest test_data_tools test_car_catalog test_release_tools -v
+node --test tests/test_allocator.js test_allocator_pruning.js test_race_scores.js test_app_state.js
+node tests/test_boot_smoke.js
+python -B -X utf8 -m unittest tests.test_data_tools test_car_catalog test_release_tools -v
 python -B -m http.server 8765 --bind 127.0.0.1
 # 浏览器打开 http://127.0.0.1:8765/perf/browser.html，点击 Run benchmark。
 ```

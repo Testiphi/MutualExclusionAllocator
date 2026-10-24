@@ -5,7 +5,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
 const {createHash, webcrypto} = require('node:crypto');
-const read = name => fs.readFileSync(path.join(__dirname, name), 'utf8');
+const read = name => fs.readFileSync(path.join(__dirname, '..', name), 'utf8');
 const encode = value => Buffer.from(JSON.stringify(value));
 const hash = raw => createHash('sha256').update(raw).digest('hex');
 
@@ -136,7 +136,7 @@ for (const [name, options, message] of [
 
 test('the actual global runtime bundle boots with 49 shared car identities, 44 tracks and all 21 direct or estimated OC values', async()=>{
     const names=['global-data-manifest.json','cars.global.json','gauntlet_data.global.json'];
-    const files=new Map(names.map(name=>[name,fs.readFileSync(path.join(__dirname,name))]));
+    const files=new Map(names.map(name=>[name,fs.readFileSync(path.join(__dirname, '..',name))]));
     const data=JSON.parse(files.get('gauntlet_data.global.json'));
     const app=await boot({files,local:storage(cnLocal),session:storage(cnSession)});
     assert.deepEqual(app.errors,[]);assert.equal(app.page.state().owned.length,49);assert.equal(data.tracks.length,44);
@@ -166,7 +166,7 @@ function leaving(app) {
     for(const callback of app.globalEvents.get('beforeunload')||[])callback(event);
     return prevented;
 }
-function nationalFiles(){return new Map(['cars.json','gauntlet_data.json'].map(name=>[name,fs.readFileSync(path.join(__dirname,name))]));}
+function nationalFiles(){return new Map(['cars.json','gauntlet_data.json'].map(name=>[name,fs.readFileSync(path.join(__dirname, '..',name))]));}
 
 test('CN unsaved guest draft can switch server without native unload blocking, without saving the garage or losing either server draft',async()=>{
     const original=JSON.stringify({cars:['白龙'],stars:{白龙:6}}),otherDraft='{"global-draft":"keep"}';

@@ -3,7 +3,7 @@ from pathlib import Path
 import unittest
 import zipfile
 from production_release_tools import APP_FILES,pack,stage,verify,read_bundle
-ROOT=Path(__file__).resolve().parent
+ROOT=Path(__file__).resolve().parents[1]
 
 class ReleaseTests(unittest.TestCase):
  def setUp(self):

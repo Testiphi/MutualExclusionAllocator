@@ -40,7 +40,7 @@
 
 ```powershell
 cd E:\hzz\work\MutualExclusionAllocator\contribution-leaderboard
-python -X utf8 contribution_demo.py
+python -X utf8 examples/contribution_demo.py
 ```
 
 每次运行创建新的随机实验室，不打开或覆盖已有实验室。脚本输出真实目录和启动命令；只使用file邮件。密码随机生成，保存在该目录的LOGIN.txt，不进入Git。需要重启时复用已有实验室路径，不能重复创建并误以为原数据丢失。
@@ -81,12 +81,12 @@ python -X utf8 -m backend.app --port 8009 --data-dir "E:\hzz\work\MutualExclusio
 ```powershell
 python -X utf8 -m unittest backend.test_contributions backend.test_score_versions -v
 python -X utf8 -m unittest discover -s backend -p "test_*.py"
-python -X utf8 -m unittest test_production_release test_release_tools test_car_catalog test_data_tools
+python -X utf8 -m unittest tests.test_production_release tests.test_release_tools tests.test_car_catalog tests.test_data_tools
 node --check submissions.js
 node --check leaderboard.js
 node --check auth.js
-node --test test_allocator.js test_race_scores.js test_app_state.js test_profile_store.js test_api_version_snapshot.js
-node test_boot_smoke.js
+node --test tests/test_allocator.js tests/test_race_scores.js tests/test_app_state.js tests/test_profile_store.js tests/test_api_version_snapshot.js
+node tests/test_boot_smoke.js
 ```
 
 本轮没有实现生产迁移、兼容回退方案或公网验收，也没有构建发布包。完成本地用户验收后，再单独决定代码提交/推送、生产适配及部署范围。

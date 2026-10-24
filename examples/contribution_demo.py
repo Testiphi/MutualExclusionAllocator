@@ -1,5 +1,8 @@
 """Create a NEW disposable contribution demo; never opens an existing account database."""
 import json
+import sys
+from pathlib import Path as _RepoPath
+sys.path.insert(0, str(_RepoPath(__file__).resolve().parents[1]))
 from pathlib import Path
 import secrets
 import tempfile
@@ -9,7 +12,7 @@ from backend.app import create_app
 from backend.roles import set_role
 from backend.score_repository import provision
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parents[1]
 
 
 def prepare(feedback=False, port=8009):

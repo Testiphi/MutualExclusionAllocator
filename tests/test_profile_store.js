@@ -1,6 +1,6 @@
 const test=require('node:test');
 const assert=require('node:assert/strict');
-const {create}=require('./profile_store.js');
+const {create}=require('../profile_store.js');
 function memory(){const map=new Map();return {getItem:k=>map.get(k)??null,setItem:(k,v)=>map.set(k,v),removeItem:k=>map.delete(k),map};}
 const empty={cars:[],stars:{}};
 const clone=x=>JSON.parse(JSON.stringify(x));

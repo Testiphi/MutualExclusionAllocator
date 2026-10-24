@@ -49,7 +49,7 @@ cd E:\hzz\work\MutualExclusionAllocator\account-feedback
 python -X utf8 -B -m backend.app --port 8010 --data-dir "E:\hzz\work\MutualExclusionAllocator\.score-version-sandboxes\b3966af9ba0b2695eaae226e\accounts" --score-version-lab "E:\hzz\work\MutualExclusionAllocator\.score-version-sandboxes\b3966af9ba0b2695eaae226e" --contributions --feedback
 ```
 
-`python -X utf8 -B feedback_demo.py`仅用于另建全新随机环境，每次都新建，不代替已有环境重启。邮件仅使用本地文件模式。
+`python -X utf8 -B examples/feedback_demo.py`仅用于另建全新随机环境，每次都新建，不代替已有环境重启。邮件仅使用本地文件模式。
 
 ## 用户验收步骤
 

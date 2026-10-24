@@ -1,6 +1,18 @@
 # [MutualExclusionAllocator](https://github.com/Testiphi/MutualExclusionAllocator)
 
-> 2026-10-22：公告、账号管理和手动车库保存已上线并经用户验收通过，自动备份已恢复。临时选车/调星级不会覆盖已保存车库。见[上线与安全排查记录](COMMUNITY_DEPLOYMENT.md)。
+## 目录与当前交接入口
+
+- `docs/`：开发、数据维护、部署和验收说明，见[文档索引](docs/INDEX.md)。
+- `tests/`：前端及顶层 Python 回归测试；后端测试仍位于 `backend/`。
+- `examples/`：隔离本地演示；`tools/`、`production/`、`perf/` 保留各自用途。
+- 根目录保留网页资源、数据和维护脚本入口，网站路径不变。
+
+2026-10-24 最近一次用户验收的线上版本为 `0ee524e31734b44fb7771b79`，国际服五区满星理论599条；本轮仅提交推送目录分类；本地601条数据仍未提交推送或上线，公告仍是本地草稿。此处不是本轮服务器实时核验；后续以[云端交接](docs/CLOUD_HANDOFF.md)的最新记录和现场结果为准。
+
+以下早期部署叙述为历史记录。
+
+
+> 2026-10-22：公告、账号管理和手动车库保存已上线并经用户验收通过，自动备份已恢复。临时选车/调星级不会覆盖已保存车库。见[上线与安全排查记录](docs/COMMUNITY_DEPLOYMENT.md)。
 
 
 [English](README.md) | **中文**
@@ -13,7 +25,7 @@
 
 2026-10-22 最新用户回传：应用版本 `651ea3d88a27bdff95088b75`，community_schema=1；账号、车库和投稿迁移保持，成绩版本 `c8889ff96eb29714d80248cca283b9fa` 与写回开关未变。新版成套备份、独立恢复演练及上线验收通过，定时备份已恢复。功能分支尚未合入 main。
 
-最新数据部署：2026-10-21，五区理论三项成绩提速已上线，发布版本`09897d5f81a696dca0b95c8e`（来源`7a2f164`）；用户确认新成绩与账号功能正常。详见[部署记录](PRODUCTION_DEPLOYMENT.md)。当时尚未上线正式成绩写回。
+最新数据部署：2026-10-21，五区理论三项成绩提速已上线，发布版本`09897d5f81a696dca0b95c8e`（来源`7a2f164`）；用户确认新成绩与账号功能正常。详见[部署记录](docs/PRODUCTION_DEPLOYMENT.md)。当时尚未上线正式成绩写回。
 
 源码已于2026-10-20正常合入main，保留主分支最新成绩数据及现有工作簿。本次仅合并源码，未重新部署线上服务；当时尚未上线正式成绩写回。
 
@@ -24,9 +36,9 @@
 - 网页成绩投稿、补充重提、管理员评分和档位调整，以及采纳/忽略反馈。
 - 超级管理员、绑定邮箱的管理员邀请码与角色权限隔离。
 
-采纳只保存审核决定，不自动修改正式成绩。用户已确认版本化成绩服务上线并开启写回；发布仍需超级管理员逐项确认。工作簿同步仍留在本地。Excel批量导入与贡献解锁尚未实现。贡献排行榜（质量0–10分＋正式采用10分、公开昵称、总榜/月榜）及主页导航整理已上线，用户验收通过；部署、备份及清理记录见[生产升级说明](CONTRIBUTIONS_PRODUCTION.md)，最新运维入口见[云端交接](CLOUD_HANDOFF.md)。本地入口和验收步骤见[排行榜本地说明](CONTRIBUTIONS_LOCAL.md)。
+采纳只保存审核决定，不自动修改正式成绩。用户已确认版本化成绩服务上线并开启写回；发布仍需超级管理员逐项确认。工作簿同步仍留在本地。Excel批量导入与贡献解锁尚未实现。贡献排行榜（质量0–10分＋正式采用10分、公开昵称、总榜/月榜）及主页导航整理已上线，用户验收通过；部署、备份及清理记录见[生产升级说明](docs/CONTRIBUTIONS_PRODUCTION.md)，最新运维入口见[云端交接](docs/CLOUD_HANDOFF.md)。本地入口和验收步骤见[排行榜本地说明](docs/CONTRIBUTIONS_LOCAL.md)。
 
-手动数据库备份成功，自动备份定时器已启用；首次定时执行及后续成套备份、独立目录恢复演练已由用户回传确认。发布版本、用户验收与运维步骤见 [生产部署说明](PRODUCTION_DEPLOYMENT.md)。
+手动数据库备份成功，自动备份定时器已启用；首次定时执行及后续成套备份、独立目录恢复演练已由用户回传确认。发布版本、用户验收与运维步骤见 [生产部署说明](docs/PRODUCTION_DEPLOYMENT.md)。
 
 
 ---
@@ -237,7 +249,7 @@ auth.js / profile_store.js / submissions.js / admin_access.js
 
 ### 数据处理流水线
 
-安装、路径、审核步骤与恢复方式见 [Python 维护工具](PYTHON_TOOLS.md)。
+安装、路径、审核步骤与恢复方式见 [Python 维护工具](docs/PYTHON_TOOLS.md)。
 
 1. 导出一份独立基准：`python export_xlsx.py --output baseline.xlsx`。
 2. 生成键控审核清单：`python diff_xlsx.py --base baseline.xlsx --user user.xlsx --output changes.review.json`。
@@ -255,10 +267,10 @@ auth.js / profile_store.js / submissions.js / admin_access.js
 运行回归检查：
 
 ```bash
-python -B -X utf8 -m unittest test_data_tools test_car_catalog test_release_tools -v      # 数据工具与校验
-node --test test_allocator.js              # 分配算法边界
-node --test test_race_scores.js test_app_state.js            # 成绩边界与页面接线
-node test_boot_smoke.js                    # 页面启动冒烟（DOM 桩，不启浏览器）
+python -B -X utf8 -m unittest tests.test_data_tools tests.test_car_catalog tests.test_release_tools -v      # 数据工具与校验
+node --test tests/test_allocator.js              # 分配算法边界
+node --test tests/test_race_scores.js tests/test_app_state.js            # 成绩边界与页面接线
+node tests/test_boot_smoke.js                    # 页面启动冒烟（DOM 桩，不启浏览器）
 ```
 
 截至 2026-10-03，Python 53 项通过（另1项Linux目录链接测试在Windows跳过）、算法15项、成绩11项、状态12项及启动冒烟通过，全库校验0错误。
@@ -266,7 +278,7 @@ node test_boot_smoke.js                    # 页面启动冒烟（DOM 桩，不�
 
 ### 算法说明
 
-- **2026-10-11 精确剪枝**：遍历顺序、同向量不同分配、排序和截断保持不变。真实页面输入、正确性证明、完整有序对照、Node/桌面浏览器测量及限制见 [perf/REPORT.md](perf/REPORT.md)。复跑 `node --test test_allocator_pruning.js`、`node --expose-gc perf/benchmark.js`；通过本地 HTTP 服务打开 `perf/browser.html` 测浏览器。小输入可能因额外比较而退化。下方 2026-10-01 表为分支剪枝前的历史记录。
+- **2026-10-11 精确剪枝**：遍历顺序、同向量不同分配、排序和截断保持不变。真实页面输入、正确性证明、完整有序对照、Node/桌面浏览器测量及限制见 [perf/REPORT.md](perf/REPORT.md)。复跑 `node --test tests/test_allocator_pruning.js`、`node --expose-gc perf/benchmark.js`；通过本地 HTTP 服务打开 `perf/browser.html` 测浏览器。小输入可能因额外比较而退化。下方 2026-10-01 表为分支剪枝前的历史记录。
 
 - 叶子数上界为 `O((k+1)^n)`（含留空），每个叶子还需扫描前沿；前沿很大时比较成本和内存仍会增长。
 - 当前在回溯叶子处维护前沿，被支配的方案直接丢弃，只有进入前沿的方案才复制数组。
@@ -299,7 +311,7 @@ node test_boot_smoke.js                    # 页面启动冒烟（DOM 桩，不�
 
 [RacePick](https://racepick.cn/)运行账号、真实邮件与投稿审核服务。采用独立生产数据库，应用只监听回环端口，由Nginx提供HTTPS；凭据通过systemd加载，不进入Git或发布包。
 
-完整发布包、服务器安装、主号初始化、自动备份与回退见 [生产部署说明](PRODUCTION_DEPLOYMENT.md)。使用`build_production.py`和`deploy_production.py`；默认只暂存，激活应用与Nginx切流分开执行。不要将本地账号库或测试工作簿上传到正式环境。
+完整发布包、服务器安装、主号初始化、自动备份与回退见 [生产部署说明](docs/PRODUCTION_DEPLOYMENT.md)。使用`build_production.py`和`deploy_production.py`；默认只暂存，激活应用与Nginx切流分开执行。不要将本地账号库或测试工作簿上传到正式环境。
 
 ### 本地账号开发
 
@@ -308,13 +320,13 @@ python -m pip install -r backend/requirements.txt
 python -B -m backend.app --port 8000
 ```
 
-打开 [127.0.0.1:8000](http://127.0.0.1:8000/)。默认使用独立本地数据库和文件模拟邮件；SMTP测试需显式启用。详细说明见 [ACCOUNTS_LOCAL.md](ACCOUNTS_LOCAL.md)，这个本地入口不能直接用于公网部署。
+打开 [127.0.0.1:8000](http://127.0.0.1:8000/)。默认使用独立本地数据库和文件模拟邮件；SMTP测试需显式启用。详细说明见 [ACCOUNTS_LOCAL.md](docs/ACCOUNTS_LOCAL.md)，这个本地入口不能直接用于公网部署。
 
 ### 静态游客版本
 
 [GitHub Pages演示](https://testiphi.github.io/MutualExclusionAllocator/)仅提供静态游客功能。部署九个文件：`index.html`、`styles.css`、`config.js`、`app_state.js`、`api.js`、`allocator.js`、`race_scores.js`、`gauntlet_data.json`、`cars.json`。`cars.json`承载车辆规则，是必需依赖。
 
-静态包暂存和回退见 [DEPLOYMENT.md](DEPLOYMENT.md)，与账号生产包分开。本地查看静态版本可运行`python -m http.server 8000`，打开 [localhost:8000](http://localhost:8000/)；不会出现账号功能。通过HTTP加载，直接打开HTML可能无法读取JSON。
+静态包暂存和回退见 [DEPLOYMENT.md](docs/DEPLOYMENT.md)，与账号生产包分开。本地查看静态版本可运行`python -m http.server 8000`，打开 [localhost:8000](http://localhost:8000/)；不会出现账号功能。通过HTTP加载，直接打开HTML可能无法读取JSON。
 
 ---
 
@@ -333,22 +345,22 @@ python -B -m backend.app --port 8000
 
 | 文档 | 范围 |
 |---|---|
-| [生产部署与验收](PRODUCTION_DEPLOYMENT.md) | 当前上线版本、真实邮件、备份、回退与用户验收记录 |
-| [本地账号开发](ACCOUNTS_LOCAL.md) | 本地启动、账号资料保存及历史验收 |
-| [邮件接入](MAIL_LOCAL.md) | 本地文件邮件、受限SMTP测试及生产接入记录 |
-| [投稿与审核](SUBMISSIONS_LOCAL.md) | 投稿、补充、评分、档位调整及审核反馈 |
-| [管理员邀请](INVITATIONS_LOCAL.md) | 超级管理员、邀请码和权限隔离 |
-| [只读变更预览](PREVIEWS_LOCAL.md) | 仅本地：新增、更新、更慢成绩和普通镜像影响 |
-| [隔离写回实验室](WRITEBACK_LAB.md) | 仅本地测试：逐项确认、备份回滚及工作簿同步 |
-| [数据维护工具](PYTHON_TOOLS.md) | JSON/Excel维护、差异审核和校验 |
+| [生产部署与验收](docs/PRODUCTION_DEPLOYMENT.md) | 当前上线版本、真实邮件、备份、回退与用户验收记录 |
+| [本地账号开发](docs/ACCOUNTS_LOCAL.md) | 本地启动、账号资料保存及历史验收 |
+| [邮件接入](docs/MAIL_LOCAL.md) | 本地文件邮件、受限SMTP测试及生产接入记录 |
+| [投稿与审核](docs/SUBMISSIONS_LOCAL.md) | 投稿、补充、评分、档位调整及审核反馈 |
+| [管理员邀请](docs/INVITATIONS_LOCAL.md) | 超级管理员、邀请码和权限隔离 |
+| [只读变更预览](docs/PREVIEWS_LOCAL.md) | 仅本地：新增、更新、更慢成绩和普通镜像影响 |
+| [隔离写回实验室](docs/WRITEBACK_LAB.md) | 仅本地测试：逐项确认、备份回滚及工作簿同步 |
+| [数据维护工具](docs/PYTHON_TOOLS.md) | JSON/Excel维护、差异审核和校验 |
 
-新增本地阶段：[成绩数据版本与发布确认](SCORE_VERSIONS_LOCAL.md)。在独立测试目录实现代码/数据分离、超级管理员逐项及更慢确认、备份回滚；尚未合入main或启用生产。现有工作簿不自动同步。
+新增本地阶段：[成绩数据版本与发布确认](docs/SCORE_VERSIONS_LOCAL.md)。在独立测试目录实现代码/数据分离、超级管理员逐项及更慢确认、备份回滚；尚未合入main或启用生产。现有工作簿不自动同步。
 
-生产成绩版本化准备见[SCORE_PRODUCTION_DEPLOYMENT.md](SCORE_PRODUCTION_DEPLOYMENT.md)：现有账号库保留、默认只读迁移、成套备份演练后再单独启用。当前尚未执行线上迁移。服务器首次定时账号备份已由用户日志确认成功。
+生产成绩版本化准备见[SCORE_PRODUCTION_DEPLOYMENT.md](docs/SCORE_PRODUCTION_DEPLOYMENT.md)：现有账号库保留、默认只读迁移、成套备份演练后再单独启用。当前尚未执行线上迁移。服务器首次定时账号备份已由用户日志确认成功。
 
 ## 账号昵称、统一按钮与站内反馈（已上线）
-账号管理昵称展示/搜索、按钮样式统一和站内文字反馈已上线，用户公网验收通过。反馈仅本人和站长可见，普通管理员无权查看全部。上线、备份演练及定时器恢复记录见[反馈生产说明](FEEDBACK_PRODUCTION.md)，最新运维入口见[云端交接](CLOUD_HANDOFF.md)；本地环境及验收步骤仍保留在[本地反馈说明](FEEDBACK_LOCAL.md)。国际服不在本轮范围。
+账号管理昵称展示/搜索、按钮样式统一和站内文字反馈已上线，用户公网验收通过。反馈仅本人和站长可见，普通管理员无权查看全部。上线、备份演练及定时器恢复记录见[反馈生产说明](docs/FEEDBACK_PRODUCTION.md)，最新运维入口见[云端交接](docs/CLOUD_HANDOFF.md)；本地环境及验收步骤仍保留在[本地反馈说明](docs/FEEDBACK_LOCAL.md)。国际服不在本轮范围。
 
 ## 国际服本地验收（2026-10-24）
 
-用户已确认国际服本地验收通过：五区满星理论、321条独立成绩、分服本地车库及OC切换。已完成公网上线，用户确认桌面和手机微信验收通过；国际云车库和投稿暂未开放。后续三行布局及“兔子”搜索别名仅在源码，尚未部署。范围与维护表见[本地验收说明](LOCAL_INTERNATIONAL.md)，待部署流程见[发布准备](INTERNATIONAL_DEPLOYMENT.md)。
+用户已确认国际服本地验收通过：五区满星理论、321条独立成绩、分服本地车库及OC切换。已完成公网上线，用户确认桌面和手机微信验收通过；国际云车库和投稿暂未开放。后续三行布局及“兔子”搜索别名仅在源码，尚未部署。范围与维护表见[本地验收说明](docs/LOCAL_INTERNATIONAL.md)，待部署流程见[发布准备](docs/INTERNATIONAL_DEPLOYMENT.md)。

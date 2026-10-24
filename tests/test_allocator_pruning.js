@@ -2,7 +2,7 @@ const {test} = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
-const read = f => fs.readFileSync(path.join(__dirname,f),'utf8');
+const read = f => fs.readFileSync(path.join(__dirname, '..',f),'utf8');
 const load = f => new Function(read(f)+';return allocator.generateParetoSchemes;')();
 const reference = load('perf/allocator_reference.js');
 const actual = load('allocator.js');
@@ -54,6 +54,6 @@ test('120 equal-vector assignments survive before the 25-result truncation',()=>
 });
 test('real page candidates: complete ordered frontiers and limits',()=>{
     const sources=Object.fromEntries(['index.html','app_state.js','race_scores.js'].map(f=>[f,read(f)]));
-    const cases=require('./perf/page_inputs').prepare(sources,JSON.parse(read('cars.json')),JSON.parse(read('gauntlet_data.json')));
+    const cases=require('../perf/page_inputs').prepare(sources,JSON.parse(read('cars.json')),JSON.parse(read('gauntlet_data.json')));
     for(const c of cases) compare(c.candidates,new Set(c.owned));
 });

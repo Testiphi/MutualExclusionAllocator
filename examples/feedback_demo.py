@@ -1,8 +1,11 @@
 """Provision a NEW isolated feedback demo; never use an existing account directory."""
 import json
+import sys
+from pathlib import Path as _RepoPath
+sys.path.insert(0, str(_RepoPath(__file__).resolve().parents[1]))
 import secrets
 from fastapi.testclient import TestClient
-from contribution_demo import prepare
+from examples.contribution_demo import prepare
 from backend.app import create_app
 
 
