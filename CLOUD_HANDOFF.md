@@ -1,5 +1,38 @@
 # RacePick 云端运维交接（2026-10-24 更新）
 
+## 2026-10-24 最新：599条国际服更新已上线，桌面与手机微信验收通过
+
+本轮部署及验收已经完成，没有半途部署需要续跑。服务器操作均由用户执行命令并回传，代理未登录服务器；以下是本轮回传与用户确认所证明的状态，不是之后自动持续监控的结果。用户要求本次交接提交推送后暂停，不继续开发、部署、清理或创建监控。
+
+### 实际运行与发布范围
+
+2026-10-24 13:13:28 CST启用应用`0ee524e31734b44fb7771b79`，源码和包内数据均绑定`a0298cd25da9cbf46a9909d7e5b3723e82adea8f`。`current`与`/proc/148673/cwd`均指向`/opt/racepick/releases/0ee524e31734b44fb7771b79`，服务active/running。PID148673仅为当时快照，以后须重新核对。上一应用`bd12e3fb2c2519b0238afd90`保留。
+
+公网global manifest回传数据版本`f4f36ae874e2ddec845435efd965db87e27f8b10a7a178da67a8293539399a3e`，仅五区满星理论599＝578非OC＋21OC，561普通路线/38特殊，49车、44图42有值；四区/高手没有进入运行数据。614键完整维护数据、四区11理论、两区三星高手与普通镜像、36条独立参考及工作簿仍只在维护侧。国服完整health保持ok/production/schema6/community1/contribution1/feedback1，contributions/feedback/score_writes均true，成绩版本`42d62fde9b81197ac0558087a9a25f97`未变。未执行正式库初始化、schema迁移或本地成绩/账号/测试数据导入，也未用代码包覆盖score-state。
+
+上传完整归档SHA256`85ee2e8e26045b51f4b67dbbb439dfda21ce95d0673b1ddc4da57f84cde9c448`及10929698字节核对；交付目录13项SHA、应用包85文件、599/21OC/38SC范围均通过。用户确认19个离线依赖安装、pip check和Linux/Python3.12临时库原生自检通过，新版独立.venv成功；本轮安装完整日志未回传，不扩写成Linux全量测试套件均已重跑。旧包及新包均未重建或修改；包构建记录中的“PENDING server”是构建当时状态，本节是后续实际验收结果。
+
+### 成套备份与独立恢复演练
+
+| 阶段 | 备份（/var/lib/racepick/backups/） | 独立演练（/var/lib/racepick/restore-drills/） | 证据 |
+| --- | --- | --- | --- |
+| 旧版在线 | scores-20261024T050437147757Z.zip | e354e96ad92c1b79e112b266 | 完整回传通过 |
+| 停服最终 | 未回传具体路径 | 未回传具体目录 | 用户明确确认备份/演练通过、正式库未替换；不得猜测路径或SHA |
+| 新版在线 | scores-20261024T051434290756Z.zip | 7fc34c4d8b50be02f8e3713a | 完整回传通过 |
+
+两份已完整回传备份均159785字节、racepick:racepick、mode600；旧版ZIP SHA256`d8d097aca054ab05d9123aa2bf4eda09252b1d862a965f151621c4e04bdf0b38`，新版ZIP SHA256`7342fe3b17eb98dfc1683c3ac5e808b4af6db1d60ac37989bd2f617c41950cd0`。两份解包内容哈希一致：accounts.sqlite3=`7f1cd5db2c7d0d404f00cd1aed3dab6aa68e2e753acbbef26e862130cfe8d81d`，国服当前成绩JSON=`bed4cf05fd8d2332e043513820adae39d9c01453dedb602dd374fe64355ae9a9`。恢复结果39用户、21车库、3投稿，pending_batches0、active_database_replaced=false；贡献schema1，contributions0/sources1/events0/preferences1；反馈schema1，tickets/events/requests均0。上述计数仅对应两份完整回传，不为缺失最终备份日志补造计数。
+
+### 调度与公网验收
+
+2026-10-24 13:17:20 CST回传，racepick-backup.timer已恢复enabled、active(waiting)，LAST2026-10-24 04:16:12 CST，NEXT2026-10-25 04:18:31 CST。这证明调度恢复；不是宣称10月25日任务已执行。上次04:16:13定时备份成功见本轮最初journal回传。恢复调度后health仍ok，成绩版本及开关保持。
+
+用户明确确认桌面浏览器与手机微信公网验收通过。此前所列国服正常、国际五区理论选车计算/OC/SC、分服车库、三行布局、c2兔子搜索与国际服隐藏R筛选的验收，以用户本轮整体通过确认为依据；代理未独立操作微信或取得逐项截图。没有遗留的待执行部署步骤。本轮保留旧版本、全部备份/演练、工作簿和测试数据；没有系统升级、Nginx重配或目录清理。
+
+### 本次收尾边界
+
+仅更新部署/交接文档并按授权提交推送；不改代码、成绩JSON、运行manifest、维护台账或现有Excel，不重新打包、不重启服务、不重复演练或迁移。精确记录在工作区maintenance/deployment-global599-20261024/DEPLOYMENT_RECEIPT.json。唯一记录缺项为停服最终备份路径、SHA及演练目录未回传；其成功由用户确认，不影响已经完成的部署验收结论。以后的新任务先读最新文档并核对现场，不能照历史PID和目录状态续跑。提交推送完成后暂停。
+
+
 ## 2026-10-24 最新：599条更新已提交推送，完整发布包就绪，尚未部署
 
 本轮代码/数据提交a0298cd25da9cbf46a9909d7e5b3723e82adea8f已推送main，git ls-remote核对一致；随后本段交接记录单独提交，不改变发布包源码绑定。构建使用新的干净独立检出release-build-global599-20261024，旧release-build-20261024和旧交付包均保留。原未跟踪源表、shared工作簿和_star_curve_fit.py未加入提交或打包。
