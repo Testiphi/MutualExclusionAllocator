@@ -1,5 +1,22 @@
 # 国际服选车部署与验收（2026-10-24）
 
+## 2026-10-24 最新：599条更新已提交推送，完整发布包就绪，尚未部署
+
+本轮代码/数据提交a0298cd25da9cbf46a9909d7e5b3723e82adea8f已推送main，git ls-remote核对一致；随后本段交接记录单独提交，不改变发布包源码绑定。构建使用新的干净独立检出release-build-global599-20261024，旧release-build-20261024和旧交付包均保留。原未跟踪源表、shared工作簿和_star_curve_fit.py未加入提交或打包。
+
+- 新发布ID：0ee524e31734b44fb7771b79；目标Ubuntu24.04/x86_64/Python3.12。
+- 本地交付目录：repo/.production-build/delivery-20261024-global599，14文件，SHA256SUMS.txt覆盖其余13文件。
+- 完整上传归档：repo/.production-build/RacePick-International599-20261024-0ee524e3-delivery.zip，10929698字节；SHA256：85ee2e8e26045b51f4b67dbbb439dfda21ce95d0673b1ddc4da57f84cde9c448，旁有.sha256.txt。
+- 内层应用ZIP：racepick-accounts-release.zip，10858488字节；SHA256：b39d06f2cec0de56f09be985222921139ed35c8da25174be3ec15ae29220f29d；85个manifest文件，含19个锁定离线依赖。
+- source/data provenance均绑定a0298cd25da9cbf46a9909d7e5b3723e82adea8f；三份国际JSON及国服两份JSON逐字节等于已提交内容，其余文本仅有Windows检出行尾差异，已逐项规范化回比。相较上一发布包仅PRODUCTION_DEPLOYMENT.md、三份global JSON、index.html、styles.css、tools/build_global_data.py改变；账号/成绩/贡献/反馈运行代码和两份国服JSON均与旧包一致。
+
+发布范围仅五区满星理论599（578非OC+21OC，561普通路线+38特殊），49车、44图42有值，数据版本f4f36ae874e2ddec845435efd965db87e27f8b10a7a178da67a8293539399a3e。包内其他区档为空，无显式低星成绩；四区11理论、两区三星高手、2个普通镜像、36参考记录、614键完整维护JSON/台账与所有Excel均未打包。包内国服JSON与上一发布包字节一致，不额外发布国服成绩；更不能覆盖服务器score-state。没有数据库/账号/凭据/反馈/候选/测试数据或未跟踪文件。
+
+本轮验证：JavaScript81通过；Python214执行、213通过、1个Linux专用检查在Windows跳过。完整维护614键/运行599键隔离核对、原434来源与旧发布包哈希、85文件/19wheel锁定哈希、外层13SHA与14文件归档回读均通过。用交付目录内独立deploy_production.py在本地新目录暂存成功，未激活；解包程序production/selfcheck.py以Windows临时数据库通过HTTP、备份/恢复和组件自检，不发邮件、不用现有用户库；19wheel按Linux CPython3.12标签离线解析成功并逐哈希相等。PACKAGE_VERIFICATION.json/RELEASE.json保存可独立核验结果。Linux原生安装/正式库现场兼容性仍待用户上传后执行，不冒充已在Linux或生产运行。
+
+本轮没有登录/读取/修改生产服务器，也没有运行迁移、初始化、切换或清理。最后已知生产仍为用户此前验收的bd12e3fb2c2519b0238afd90；其PID、健康、成绩版本、备份调度和公网情况须部署时先只读重核。下一轮用户开始部署后，再逐步给命令、等待回传核对，不能直接续跑旧部署步骤。国服原表/目录、源工作簿、614维护数据、OC、36参考、旧包/备份/演练/测试数据保持。原完整工作树只保留3个既存未跟踪文件；不clean/reset或自动同步工作簿。
+
+
 ## 2026-10-24 本轮599条国际服更新：提交与完整发布包准备
 
 用户已授权提交推送本轮更新并准备完整可校验发布包，明确暂不操作服务器。发布仍严格限定国际服五区满星理论：599条＝578非OC＋21OC，561普通路线/38特殊，49辆可计算车，44图42有值，富士最后两图空。数据版本f4f36ae874e2ddec845435efd965db87e27f8b10a7a178da67a8293539399a3e。维护侧完整JSON/台账/现有Excel的614键及36条高手参考均保留；四区11理论、两区三星高手和普通可用镜像只用于维护，不装入运行包。Git跟踪的Excel可以提交，但发布白名单排除所有工作簿、完整维护JSON/台账、候选、真实账号/成绩库、凭据和测试数据。
