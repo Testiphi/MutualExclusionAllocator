@@ -1,0 +1,64 @@
+{
+  "release_id": "171d872a414dea28be25eaa1",
+  "provenance": {
+    "code_commit": "7651da519be92b7ae6ea184d2c30a985607c30f5",
+    "data_commit": "cbe9ea3dd3d0c130bef8dd15f890d618167e1539",
+    "created_local": "2026-10-25T09:29:13"
+  },
+  "target": "ubuntu24.04-x86_64-python3.12",
+  "inner_zip_sha256": "3f78707b58a623b1f285072bbd1c0ce4e6932ba0ae34faf1d4665bc087f5e649",
+  "manifest_file_count": 96,
+  "wheels": 19,
+  "per_file_hash_size_and_whitelist": "PASS",
+  "source_provenance": "all code files match source commit, with only Git checkout CRLF permitted; all 5 data files byte-identical to frozen commit",
+  "data_7_and_local_sources_8": "PASS",
+  "protected_inputs_hash_and_mtime": "PASS",
+  "old_archive_preserved": "PASS",
+  "javascript_tests": {
+    "passed": 97,
+    "failed": 0
+  },
+  "python_tests": {
+    "executed": 239,
+    "passed": 238,
+    "skipped_linux_only": 1,
+    "failed": 0
+  },
+  "production_release_tests": {
+    "passed": 10
+  },
+  "linux_py312_offline_wheel_hash_resolution": "PASS - 19 locked wheels; not Linux runtime execution",
+  "staged_windows_http_selfcheck": "PASS",
+  "staged_disposable_component_rehearsal": "PASS - simulated service lock, migrations/idempotence/coherent restore/upgraded HTTP; no Linux native permission/ownership verification",
+  "user_local_acceptance": "PASS for unread and usage before merge; production acceptance pending",
+  "production_accessed": false,
+  "pending": [
+    "Linux native offline installation and selfcheck",
+    "actual current/PID/schema/score version and pending batches",
+    "coherent production backup, restore drill and explicit notification/usage migration",
+    "paired effective Nginx maps/zones/site configuration",
+    "production permissions, ownership, timer backup results",
+    "desktop and mobile WeChat user acceptance"
+  ],
+  "outer_archive": "E:/hzz/work/MutualExclusionAllocator/repo/.production-build/RacePick-UnreadUsage601-20261025-171d872a-delivery.zip",
+  "outer_archive_sha256": "05288fd2552c83d4337ac43d1dc22fce51c419a6f8586a648ac6f163faf4522b",
+  "outer_archive_bytes": 11017686,
+  "outer_delivery_files": 21,
+  "outer_checksums_and_archive_members": "PASS",
+  "shell_syntax_check": "PASS - Git Bash bash -n only; preflight not executed",
+  "worktrees_retained": {
+    "integration-unread-usage-20261025": "release/unread-usage-20261025 at source commit; integration/tests",
+    "release-data-20261025": "detached cbe9ea3; frozen data source",
+    "build-unread-usage-20261025": "detached 7651da5; clean packaging source",
+    "unread-notifications": "feature/unread-notifications b91e0e1; accepted development/demos retained"
+  },
+  "untracked_main_preserved": [
+    "Asphalt Legend - 擂台成绩表.xlsx",
+    "_star_curve_fit.py",
+    "gauntlet_data_shared.xlsx"
+  ],
+  "local_demo_services_unchanged": [
+    "8016",
+    "8017"
+  ]
+}
