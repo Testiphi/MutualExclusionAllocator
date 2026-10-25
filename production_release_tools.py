@@ -22,8 +22,10 @@ COMMUNITY_FILES=('backend/community.py','announcements.js','admin_accounts.html'
 CONTRIBUTION_FILES=('backend/contribution_production.py','leaderboard.html','leaderboard.js','leaderboard.css','CONTRIBUTIONS_PRODUCTION.md')
 FEEDBACK_FILES=('backend/feedback.py','backend/feedback_production.py','feedback.html','feedback.js','FEEDBACK_PRODUCTION.md')
 GLOBAL_FILES=('cars.global.json','gauntlet_data.global.json','global-data-manifest.json','tools/build_global_data.py')
-COMPONENT_GROUPS=(SCORE_FILES,COMMUNITY_FILES,CONTRIBUTION_FILES,FEEDBACK_FILES,GLOBAL_FILES)
-APP_FILES=BASE_FILES+SCORE_FILES+COMMUNITY_FILES+CONTRIBUTION_FILES+FEEDBACK_FILES+GLOBAL_FILES
+NOTIFICATION_FILES=('backend/notifications.py','backend/notification_production.py','notifications.js','NOTIFICATIONS_LOCAL.md')
+USAGE_FILES=('backend/usage.py','backend/usage_production.py','usage.js','usage_admin.js','usage.html','usage.css','USAGE_LOCAL.md')
+COMPONENT_GROUPS=(SCORE_FILES,COMMUNITY_FILES,CONTRIBUTION_FILES,FEEDBACK_FILES,GLOBAL_FILES,NOTIFICATION_FILES,USAGE_FILES)
+APP_FILES=BASE_FILES+SCORE_FILES+COMMUNITY_FILES+CONTRIBUTION_FILES+FEEDBACK_FILES+GLOBAL_FILES+NOTIFICATION_FILES+USAGE_FILES
 
 def verify_global_data(contents):
  if not set(contents)&set(GLOBAL_FILES):return # Historical releases remain readable.
@@ -106,8 +108,15 @@ def check_score_compatibility(target,info,data_dir):
  import sqlite3
  from contextlib import closing
  account_db=Path(data_dir).resolve()/'accounts.sqlite3'
+ if (Path(data_dir).resolve()/'usage.sqlite3').exists():
+  cap=Path(target)/'production/score-capability.json'
+  if not set(USAGE_FILES)<=set(info['files']) or 'production/score-capability.json' not in info['files'] or json.loads(cap.read_text()).get('usage_schema')!=1:raise ValueError('统计库已启用，禁止切回不兼容旧程序')
  if account_db.exists():
   with closing(sqlite3.connect(account_db.as_uri()+'?mode=ro',uri=True)) as db:
+   if db.execute("SELECT 1 FROM sqlite_master WHERE name='notification_schema'").fetchone():
+    rows=db.execute('SELECT version FROM notification_schema').fetchall()
+    cap=Path(target)/'production/score-capability.json'
+    if len(rows)!=1 or not set(NOTIFICATION_FILES)<=set(info['files']) or 'production/score-capability.json' not in info['files'] or json.loads(cap.read_text()).get('notification_schema')!=rows[0][0]:raise ValueError('未读状态已启用，禁止切回不能处理未读状态的旧应用')
    if db.execute("SELECT 1 FROM sqlite_master WHERE name='feedback_schema'").fetchone():
     rows=db.execute('SELECT version FROM feedback_schema').fetchall()
     cap=Path(target)/'production/score-capability.json'

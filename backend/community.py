@@ -59,9 +59,10 @@ def install(app,store,root,user):
     @app.get('/admin-accounts')
     def accounts_page():return FileResponse(root/'admin_accounts.html')
     @app.get('/api/admin/accounts')
-    def accounts(request:Request,q:str='',role:Literal['all','player','admin','superadmin']='all',verified:Literal['all','yes','no']='all',status:Literal['all','active','disabled']='all',offset:int=0):
+    def accounts(request:Request,q:str='',role:Literal['all','player','admin','superadmin']='all',verified:Literal['all','yes','no']='all',status:Literal['all','active','disabled']='all',offset:int=0,activity:Literal['all','today','week','month','inactive','never']='all',order:Literal['registered','interaction','visit']='registered'):
         actor(request,True)
         if len(q)>254 or offset<0:raise HTTPException(422,'筛选参数不正确')
+        if not app.state.usage and (activity!='all' or order!='registered'):raise HTTPException(422,'此环境尚未启用活动统计')
         with store.connect() as db:
             has_nickname=bool(db.execute("SELECT 1 FROM sqlite_master WHERE name='contribution_preferences'").fetchone())
             nickname="COALESCE(p.nickname,'')" if has_nickname else "''"
@@ -75,11 +76,25 @@ def install(app,store,root,user):
             if role!='all':conditions.append(effective+'=?');args.append(role)
             if verified!='all':conditions.append('u.verified=?');args.append(int(verified=='yes'))
             if status!='all':conditions.append('COALESCE(c.disabled,0)=?');args.append(int(status=='disabled'))
+            if app.state.usage:
+                # Server-owned fixed path, SELECTs only; neither database is changed.
+                db.execute('ATTACH DATABASE ? AS usage_stats',(str(app.state.usage.path),))
+                from datetime import datetime,timedelta
+                from backend.usage import BJ
+                today=datetime.now(BJ).replace(hour=0,minute=0,second=0,microsecond=0)
+                days={'today':1,'week':7,'month':30,'inactive':30}
+                if activity in days:
+                    cutoff=int((today-timedelta(days=days[activity]-1)).timestamp())
+                    conditions.append('ua.last_interaction'+(' < ?' if activity=='inactive' else ' >= ?'));args.append(cutoff)
+                elif activity=='never':conditions.append('ua.last_interaction IS NULL')
             source='FROM users u LEFT JOIN account_controls c ON c.user_id=u.id LEFT JOIN super_admins sa ON sa.user_id=u.id LEFT JOIN account_login_stats ls ON ls.user_id=u.id '
             if has_nickname:source+='LEFT JOIN contribution_preferences p ON p.user_id=u.id '
+            if app.state.usage:source+="LEFT JOIN usage_stats.usage_people ua ON ua.actor='a:'||u.id "
             source+='WHERE '+' AND '.join(conditions)
             total=db.execute('SELECT count(*) '+source,args).fetchone()[0]
-            rows=db.execute('SELECT u.id,u.email,u.verified,u.created_at,'+nickname+' AS nickname,'+anonymous+' AS leaderboard_anonymous,'+effective+" AS role,COALESCE(c.disabled,0) AS disabled,COALESCE(c.revision,0) AS revision,ls.last_login,(SELECT count(*) FROM submissions s WHERE s.owner_id=u.id) AS submissions "+source+' ORDER BY u.created_at DESC,u.id LIMIT 50 OFFSET ?',args+[offset]).fetchall()
+            activity_fields=',ua.first_seen,ua.last_visit,ua.last_interaction' if app.state.usage else ''
+            sorting={'registered':'u.created_at DESC,u.id','interaction':'ua.last_interaction DESC,ua.last_visit DESC,u.created_at DESC,u.id','visit':'ua.last_visit DESC,u.created_at DESC,u.id'}[order]
+            rows=db.execute('SELECT u.id,u.email,u.verified,u.created_at,'+nickname+' AS nickname,'+anonymous+' AS leaderboard_anonymous,'+effective+" AS role,COALESCE(c.disabled,0) AS disabled,COALESCE(c.revision,0) AS revision,ls.last_login,(SELECT count(*) FROM submissions s WHERE s.owner_id=u.id) AS submissions "+activity_fields+' '+source+' ORDER BY '+sorting+' LIMIT 50 OFFSET ?',args+[offset]).fetchall()
         return {'total':total,'items':[dict(r) for r in rows]}
     @app.post('/api/admin/accounts/{uid}/control')
     def control(uid:str,body:AccountAction,request:Request):

@@ -1,0 +1,13 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>使用统计 · RacePick</title>
+<link rel="stylesheet" href="/ui.css"><link rel="stylesheet" href="/usage.css"><script defer src="/usage_admin.js"></script></head>
+<body><header><a class="ui-button ui-secondary" href="/">← 返回选车助手</a><h1>使用统计</h1><p id="identity">正在检查权限…</p><p id="message" role="status" aria-live="polite"></p></header>
+<main id="main" hidden>
+<section class="panel"><form id="filters"><label>开始日期<input id="start" type="date" required></label><label>结束日期<input id="end" type="date" required></label><label>服别<select id="server"><option value="all">全部服别（去重）</option><option value="cn">国服</option><option value="global">国际服</option></select></label><button type="submit">查询 / 刷新</button></form><p class="muted">所有日期和小时均为北京时间。范围最多366天；日活、周活、月活固定为截至今天的最近1、7、30个自然日，随服别筛选。</p></section>
+<section class="panel"><h2>实际交互人数</h2><p id="asof" class="muted"></p><div id="windows" class="cards"></div><p class="muted">账号跨设备去重。游客按浏览器随机标识近似统计；换浏览器、清除存储或登录前后可能形成不同身份，两个分组不直接相加当作真实总人数。</p></section>
+<section class="panel"><h2>活跃时段热力图</h2><p class="muted">所选日期范围内，各星期、小时累计观察到操作的活跃分钟；不是精确使用时长。自动轮询、后台放置、单纯资源请求不计活跃。</p><div id="heatmaps"></div></section>
+<section class="panel"><h2>国服 / 国际服比例</h2><p class="muted">按打开次数统计比例；返回页面次数另列。两服分别去重的活跃分钟可能重叠，其和不等于全站去重分钟。</p><div class="table-wrap"><table><thead><tr><th>服别</th><th>打开次数</th><th>占比</th><th>返回次数</th><th>活跃分钟</th></tr></thead><tbody id="proportions"></tbody></table></div></section>
+<section class="panel"><h2>关键功能使用</h2><p class="muted">次数按记录结果分类；生成功能只统计主动生成，未完成的取消计算不计结果。投稿和新建反馈仅统计服务端确认成功且带有效统计上下文的网页操作。</p><div class="table-wrap"><table><thead><tr><th>功能</th><th>结果</th><th>账号次数</th><th>账号人数</th><th>游客次数</th><th>游客人数</th></tr></thead><tbody id="features"></tbody></table></div></section>
+<p class="muted">逐账号的最近访问、活跃筛选及每日明细已整合到<a href="/admin-accounts">账号管理</a>，点击账号查看。游客仍只展示全站汇总。</p>
+<p class="muted">统计为第一方、尽力采集的数据，不回溯上线前历史，不用于贡献计分或精确计时。此统计页本身不采集事件。服务器时间为准，网络延迟和拦截可能造成少量漏记或分钟边界偏差。</p>
+</main></body></html>

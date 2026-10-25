@@ -5,7 +5,7 @@
     function statusText(item){return item.application?(item.application.state==='applied'?'已采纳，已应用':'已采纳，已回滚'):statuses[item.status];}
     const kinds={new:'新增成绩',placeholder:'填入已有占位',same:'与参考库一致',faster:'比当前更快',slower:'比当前更慢',rule_needed:'需要维护规则',invalid:'暂不能比较',availability_existing:'该档已收录可用性',availability_new:'新增可用性归档建议'};
     const actions={created:'保存草稿',edited:'补充或编辑',submitted:'提交审核',image_added:'补充图片',image_removed:'移除当前证据（历史保留）',accept:'采纳',needs_info:'要求补充',ignore:'忽略',reopened:'重新审核'};
-    let contributions=false;
+    let contributions=false,unread=null;
     let user,csrf,catalog,scope='mine',offset=0,selected=null,busy=false,preview=null,formSerial=0;
     let listTicket=0,detailTicket=0,activeForm=null,batchRequest=null,unsaved=false;
     function el(tag,text,cls){const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(cls)n.className=cls;return n;}
@@ -27,7 +27,7 @@
         const controller=new AbortController(), timer=setTimeout(()=>controller.abort(),15000);
         try{
             const response=await fetch('/api'+path,{method,credentials:'same-origin',signal:controller.signal,
-                headers:{'Content-Type':'application/json','X-CSRF-Token':csrf||'',...(user?{'X-Account-ID':user.id}:{})},
+                headers:{'Content-Type':'application/json','X-CSRF-Token':csrf,...(globalThis.Usage?.headers()||{})||'',...(user?{'X-Account-ID':user.id}:{})},
                 ...(body===undefined?{}:{body:JSON.stringify(body)})});
             const data=await response.json().catch(()=>{throw new Error('服务器返回了无法识别的响应，请稍后重试；若刚才进行了保存，请先刷新列表核对结果。');});
             if(!response.ok){const e=new Error(typeof data.detail==='string'?data.detail:'字段格式不正确，请检查星级、成绩和文字长度');e.status=response.status;throw e;}
@@ -109,7 +109,7 @@
                 if(unsaved&&!await ask('当前修改未保存，确认切换投稿？'))return;
                 unsaved=false;await loadDetail(item.id);
             });
-            n.className='queue-item';n.setAttribute('aria-current',String(item.id===selected?.id));
+            n.className='queue-item';if(unread){unread.track(n,scope==='review'?'review':'submissions',item.id);Unread.dot(n,item.unread===true);}n.setAttribute('aria-current',String(item.id===selected?.id));
             n.append(el('small',`${statusText(item)} · ${item.contribution_info?.eligible?(item.contribution_info.contribution?.quality?'质量 '+item.contribution_info.contribution.quality_points+'/10':'质量未评分')+' + 采用 '+(item.contribution_info.contribution?.bonus||0):item.review_score===null?'未评分':item.review_score+'/5分'} · ${p.zone}/${p.tier} · ${p.time||'未填'}秒`),el('small',new Date(item.updated_at*1000).toLocaleString()));
             $('list').append(n);
         }
@@ -121,6 +121,7 @@
         const item=await request('GET','/submissions/'+id);
         if(ticket!==detailTicket)return;
         selected=item;preview=null;activeForm=null;renderDetail();
+        if(unread) await unread.read(item,scope==='review'?'review':'submissions');
         document.querySelectorAll('.queue-item').forEach(n=>n.removeAttribute('aria-current'));
     }
     function renderDetail(){
@@ -240,6 +241,9 @@
         $('statusFilter').onchange=()=>run(async()=>{offset=0;await loadList();});
         $('previous').onclick=()=>run(async()=>{offset=Math.max(0,offset-50);await loadList();});$('next').onclick=()=>run(async()=>{offset+=50;await loadList();});
         addEventListener('beforeunload',e=>{if(unsaved){e.preventDefault();e.returnValue='';}});
+        if(session.notifications){
+            unread=Unread.create({request,user});unread.track($('mineTab'),'submissions');unread.track($('reviewTab'),'review');await unread.refresh();
+        }
         await switchView(location.hash==='#new'?'new':location.hash==='#review'&&['admin','superadmin'].includes(user.role)?'review':'mine');
         if(/^#[a-f0-9]{32}$/.test(location.hash))await loadDetail(location.hash.slice(1));
     }

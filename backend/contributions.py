@@ -4,7 +4,7 @@ import re
 import time
 from datetime import datetime, timedelta, timezone
 from fastapi import HTTPException, Request
-from fastapi.responses import FileResponse, HTMLResponse
+from fastapi.responses import FileResponse, HTMLResponse, HTMLResponse
 from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictInt
 from backend.submissions import identity, packed
 
@@ -196,6 +196,7 @@ def install(app, store, root, user):
     def page():
         if getattr(getattr(app.state,'score_versions',None),'production',False):
             return HTMLResponse((root/'leaderboard.html').read_text(encoding='utf-8').replace('独立本地验收环境 · ',''))
+        if app.state.usage:return HTMLResponse(app.state.usage_html((root/'leaderboard.html').read_text(encoding='utf-8')))
         return FileResponse(root/'leaderboard.html')
 
     @app.get('/api/contributions/leaderboard')
@@ -249,4 +250,8 @@ def install(app, store, root, user):
             if hasattr(app.state, 'score_versions'): app.state.score_versions.idle(db)
             settle_review(db, sid, current['id'], body.quality)
             db.execute('UPDATE submissions SET revision=revision+1 WHERE id=?', (sid,))
+            if app.state.notifications:
+                from backend.notifications import emit
+                updated = db.execute('SELECT owner_id,revision FROM submissions WHERE id=?', (sid,)).fetchone()
+                emit(db, 'submissions', sid, updated['owner_id'], current['id'], updated['revision'])
         return {'revision': body.revision + 1}

@@ -653,6 +653,7 @@
             else {api.saveGuestProfile(profileNow(),guestBase);guestBase=api.guestRevision();guestDirty=false;try{globalThis.sessionStorage?.removeItem(guestDraftKey);}catch(e){}}
             storageResult(APP_CONFIG.storageKeys.garage,null);updateGarageSaveStatus();
             if(!(globalThis.RACEPICK_SERVER !== 'global' && globalThis.accountUI?.active())||!accountUI.state().dirty)document.getElementById('garageSaveStatus').textContent=APP_CONFIG.server === 'global' ? '国际服车库已保存于本机' : '车库已保存';
+            globalThis.Usage?.feature((globalThis.RACEPICK_SERVER!=='global' && globalThis.accountUI?.active())?'garage_save_account':'garage_save_local','success');
         }catch(error){await garagePrompt(error.message);}
     }
     async function restoreGarage(){
@@ -1148,7 +1149,9 @@
         resultGrid.textContent = '计算失败，请重试或刷新页面。';
         console.error(error);
     }
-    function computeAndDisplay() {
+    function computeAndDisplay(event) {
+        const recordUsage=event?.isTrusted && event.currentTarget===recommendBtn;
+        const usageResult=result=>{if(recordUsage)globalThis.Usage?.feature('generate',result);};
         computation.cancel();
         const validMaps = getCurrentValidMaps();
         if (validMaps.length === 0) {
@@ -1163,6 +1166,7 @@
             schemeSelect.disabled = true;
             schemeCountBadge.textContent = '0';
             resultGrid.innerHTML = `<div style="grid-column:1/-1; text-align:center; color:#8f9bcb;">请先选择地图</div>`;
+            usageResult('empty');
             return;
         }
 
@@ -1177,14 +1181,14 @@
                     const schemes = allocator.generateParetoSchemes(candidates, ownedInZone, SCHEME_LIMIT, NO_CAR_PRIORITY);
                     return mapSchemesToRows(schemes, validMaps, ROWS);
                 },
-                publish: updateUIWithSchemes,
-                onError: computationError,
+                publish: schemes=>{updateUIWithSchemes(schemes);usageResult(schemes.length?'success':'empty');},
+                onError: error=>{computationError(error);usageResult('failed');},
                 onStart: () => loadingOverlay.classList.add('show'),
                 onFinish: () => loadingOverlay.classList.remove('show'),
             });
         } catch (error) {
             loadingOverlay.classList.remove('show');
-            computationError(error);
+            computationError(error);usageResult('failed');
         }
     }
 

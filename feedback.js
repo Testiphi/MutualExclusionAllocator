@@ -2,6 +2,7 @@
 (() => {
     const $=id=>document.getElementById(id),labels={pending:'待处理',processing:'处理中',needs_info:'待补充',resolved:'已解决',closed:'已关闭'},categories={bug:'功能异常',data:'数据问题',suggestion:'使用建议',other:'其他'};
     const admin=location.pathname==='/admin-feedback';
+    let unread=null;
     let user,csrf,selected=null,offset=0,busy=false,dirty=false,createAttempt=null,replyAttempt=null,detailTicket=0;
     const prefix=admin?'/admin/feedback':'/feedback';
     const node=(tag,text,cls)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(cls)n.className=cls;return n;};
@@ -10,16 +11,16 @@
     function say(text){$('message').textContent=text;}
     async function request(method,path,body){
         const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),15000);
-        try{const response=await fetch('/api'+path,{method,credentials:'same-origin',signal:controller.signal,headers:{'Content-Type':'application/json','X-CSRF-Token':csrf||'',...(user?{'X-Account-ID':user.id}:{})},...(body===undefined?{}:{body:JSON.stringify(body)})});const data=await response.json();if(!response.ok){const e=new Error(typeof data.detail==='string'?data.detail:'请检查必填内容和字数限制');e.status=response.status;throw e;}return data;}finally{clearTimeout(timeout);}
+        try{const response=await fetch('/api'+path,{method,credentials:'same-origin',signal:controller.signal,headers:{'Content-Type':'application/json','X-CSRF-Token':csrf||'',...(globalThis.Usage?.headers()||{}),...(user?{'X-Account-ID':user.id}:{})},...(body===undefined?{}:{body:JSON.stringify(body)})});const data=await response.json();if(!response.ok){const e=new Error(typeof data.detail==='string'?data.detail:'请检查必填内容和字数限制');e.status=response.status;throw e;}return data;}finally{clearTimeout(timeout);}
     }
     async function run(fn){if(busy)return;busy=true;$('main').inert=true;try{say('');await fn();}catch(e){say(e.name==='AbortError'?'请求超时，可保持内容重试；重复提交不会新建多份反馈。':e.message);if([401,403].includes(e.status)){$('detail').replaceChildren(node('p','会话或权限已变化，请返回主页重新登录。'));$('list').replaceChildren();$('compose').hidden=true;}}finally{busy=false;$('main').inert=false;}}
     function canLeave(){return !dirty||confirm('有未提交的内容，切换会丢弃这些修改，是否继续？');}
     async function listing(){
         const data=await request('GET',prefix+'?'+new URLSearchParams({status:$('status').value,q:$('search').value,offset:String(offset)}));$('list').replaceChildren();$('count').textContent=`共 ${data.total} 条 · 第 ${Math.floor(offset/30)+1} 页`;$('previous').disabled=!offset;$('next').disabled=offset+30>=data.total;
         if(!data.items.length)$('list').append(node('p','暂无符合条件的反馈','feedback-empty'));
-        for(const item of data.items){const b=node('button');b.type='button';b.append(node('strong',item.title),node('span',`${categories[item.category]} · ${labels[item.status]}`,'feedback-meta'),node('small',stamp(item.updated_at)));b.dataset.ticketId=item.id;b.setAttribute('aria-current',String(item.id===selected?.id));b.onclick=()=>run(async()=>{if(!canLeave())return;dirty=false;await load(item.id);});$('list').append(b);}
+        for(const item of data.items){const b=node('button');b.type='button';b.append(node('strong',item.title),node('span',`${categories[item.category]} · ${labels[item.status]}`,'feedback-meta'),node('small',stamp(item.updated_at)));b.dataset.ticketId=item.id;if(unread){unread.track(b,admin?'feedback_admin':'feedback',item.id);Unread.dot(b,item.unread===true);}b.setAttribute('aria-current',String(item.id===selected?.id));b.onclick=()=>run(async()=>{if(!canLeave())return;dirty=false;await load(item.id);});$('list').append(b);}
     }
-    async function load(id){const ticket=++detailTicket,item=await request('GET',prefix+'/'+id);if(ticket!==detailTicket)return;selected=item;replyAttempt=null;for(const b of $('list').querySelectorAll('[data-ticket-id]'))b.setAttribute('aria-current',String(b.dataset.ticketId===id));render(item);}
+    async function load(id){const ticket=++detailTicket,item=await request('GET',prefix+'/'+id);if(ticket!==detailTicket)return;selected=item;replyAttempt=null;for(const b of $('list').querySelectorAll('[data-ticket-id]'))b.setAttribute('aria-current',String(b.dataset.ticketId===id));render(item);if(unread)await unread.read(item,admin?'feedback_admin':'feedback');}
     function render(item){
         const root=$('detail');root.replaceChildren(node('h2',item.title),node('span',labels[item.status],'feedback-badge'),node('p',`编号 ${item.id} · ${categories[item.category]} · ${stamp(item.created_at)}`,'feedback-meta'));
         if(admin)root.append(node('p',`${item.owner_nickname||'未设置昵称'} · ${item.owner_email}`));
@@ -43,5 +44,5 @@
     addEventListener('focus',()=>{if(!user)return;void request('GET','/auth/me').then(session=>{if(!user||session.user?.id!==user.id||session.user?.role!==user.role){++detailTicket;$('main').hidden=true;$('navigation').hidden=true;$('list').replaceChildren();$('detail').replaceChildren();$('createForm').reset();dirty=false;selected=null;user=null;$('identity').textContent='账号或权限已变化，请刷新页面重新确认身份。';}}).catch(()=>{});});
     const requested=new URLSearchParams(location.search).get('from')||'/';const source=/^\/(?:[a-z0-9_-]+)?$/.test(requested)&&requested.length<=100?requested:'/';
     run(async()=>{const session=await request('GET','/auth/me');user=session.user;csrf=session.csrf;if(!user){$('identity').textContent='请先返回选车助手登录，再提交或查看反馈。';return;}if(!session.feedback)throw Error('此环境尚未启用问题反馈');if(admin&&user.role!=='superadmin'){$('identity').textContent='仅站长可处理全部反馈。';return;}
-        $('identity').textContent=user.email+(admin?' · 站长反馈管理':' · 仅你和站长可查看');$('heading').textContent=admin?'用户反馈':'问题反馈';$('navigation').hidden=false;$('main').hidden=false;$('adminLink').hidden=admin||user.role!=='superadmin';$('newTicket').hidden=admin;$('myTickets').textContent=admin?'全部反馈':'我的反馈';const context=await request('GET','/feedback/context');$('context').textContent=`将附带：来源页面 ${source} · 应用版本 ${context.app_version}`;await listing();});
+        $('identity').textContent=user.email+(admin?' · 站长反馈管理':' · 仅你和站长可查看');$('heading').textContent=admin?'用户反馈':'问题反馈';$('navigation').hidden=admin;$('main').hidden=false;$('adminLink').hidden=admin||user.role!=='superadmin';$('newTicket').hidden=admin;$('myTickets').hidden=admin;const context=await request('GET','/feedback/context');$('context').textContent=`将附带：来源页面 ${source} · 应用版本 ${context.app_version}`;if(session.notifications){unread=Unread.create({request,user});if(!admin)unread.track($('myTickets'),'feedback');unread.track($('adminLink'),'feedback_admin');await unread.refresh();}await listing();});
 })();

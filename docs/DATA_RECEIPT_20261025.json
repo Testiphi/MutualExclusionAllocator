@@ -1,0 +1,93 @@
+{
+  "schema": "racepick.data-receipt.v1",
+  "date": "2026-10-25",
+  "data_commit": "cbe9ea3dd3d0c130bef8dd15f890d618167e1539",
+  "verification": "PASS",
+  "files": [
+    {
+      "path": "cars.json",
+      "role": "国服车辆身份/车池/星级规则；含本轮五车准入数据",
+      "sha256": "69c9da789f5ad8682a12f05adb21ed3767647f5067fe59c5d281510ee32702ec",
+      "bytes": 83612,
+      "working_and_committed_bytes_verified": true
+    },
+    {
+      "path": "gauntlet_data.json",
+      "role": "国服完整维护及当前本地运行成绩",
+      "sha256": "bda1569073b751e81abdbbaf0cae742c2b653235eb598060ef9ecdfc9761bd93",
+      "bytes": 221064,
+      "working_and_committed_bytes_verified": true
+    },
+    {
+      "path": "gauntlet_data.xlsx",
+      "role": "国服当前主维护工作簿；不是应用运行文件",
+      "sha256": "73567e42efa4b062a602381176f36050955b94c2cdd1184db863ec72afb09bcc",
+      "bytes": 140997,
+      "working_and_committed_bytes_verified": true
+    },
+    {
+      "path": "cars.global.json",
+      "role": "国际服运行车库，44辆已采纳理论车",
+      "sha256": "eac0fcbc1f9082558933828605aac13f3017d4af7dcb12d43a4693dac30d848b",
+      "bytes": 27428,
+      "working_and_committed_bytes_verified": true
+    },
+    {
+      "path": "gauntlet_data.global.json",
+      "role": "国际服仅五区满星理论601条运行投影",
+      "sha256": "276d955a875071bb78b89cef7cb298f851100bf5032ac7459f9df76605d4f737",
+      "bytes": 118900,
+      "working_and_committed_bytes_verified": true
+    },
+    {
+      "path": "global-data-manifest.json",
+      "role": "国际服三件套版本、字节、SHA及来源绑定",
+      "sha256": "8337199e9ffb03a59fd57a5ea36dfd16256e76bbb4449c1f21ac9227b455b547",
+      "bytes": 1866,
+      "working_and_committed_bytes_verified": true
+    },
+    {
+      "path": "gauntlet_data.global.xlsx",
+      "role": "国际服完整640键维护工作簿，含独立参考页；不是运行文件",
+      "sha256": "2a5bfd096e3c2f3faa815965780862fed6849ac87b7ed3cf8c864deb9a1e030e",
+      "bytes": 38803,
+      "working_and_committed_bytes_verified": true
+    }
+  ],
+  "counts": {
+    "national_keys": 4423,
+    "international_maintenance_keys": 640,
+    "international_timed": 622,
+    "availability_mirrors": 18,
+    "international_runtime_entries": 601,
+    "physical_cars": 44,
+    "tracks": 44,
+    "oc": 21,
+    "special_routes": 39,
+    "normal_routes": 562,
+    "non_oc": 580,
+    "reference_only_records": 36,
+    "dataset_version": "1bb0253ce327210b6c02fb2c2ea49682ee628086fec6c7bc987326121b4a6efc"
+  },
+  "handoff_document_sha256": {
+    "DATA_HANDOFF_20261025.md": "40743a21273d98687c9a2bd39d6a2fa46fc3dea3127602acc5389ca42ac4733c",
+    "DATA_HANDOFF_20261025.json": "71578b7b7d44f3ed13f95d7baf6c8785b807a15e27e113520b6a889b9f95189c"
+  },
+  "local_maintenance_files_verified": 8,
+  "local_maintenance_checks": [
+    "SHA256",
+    "bytes",
+    "mtime_ns"
+  ],
+  "national_validation_errors": 0,
+  "international_generator_check_only": "PASS; no write",
+  "feature_base_commit": "90b2dd9fb84f7ba99556ff71f712d69f1c128045",
+  "data_merged_into_feature_branch": false,
+  "feature_merged_into_main": false,
+  "combined_integration_validation": "PENDING; not authorized this round",
+  "workbooks": "byte SHA verification only; no reexport or cell/native-Excel revalidation",
+  "build": "NOT_RUN",
+  "production": "NOT_ACCESSED",
+  "announcement": "NOT_PUBLISHED",
+  "local_full_receipt": ".local-accounts/usage-validation/data-reception-20261025.json"
+}

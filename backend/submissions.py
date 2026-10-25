@@ -11,7 +11,7 @@ from typing import Literal
 from urllib.parse import urlsplit
 import warnings
 
-from fastapi import HTTPException, Request
+from fastapi import BackgroundTasks, HTTPException, Request
 from fastapi.responses import FileResponse, HTMLResponse, Response
 from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictInt
 from PIL import Image, UnidentifiedImageError
@@ -213,12 +213,17 @@ def install(app,store,root,user,reference_root=None,production=False):
                   'reason':row['decision_reason'],'review_score':row['review_score'],'baseline':json.loads(row['baseline']) if row['baseline'] else None,
                   'images':[r['id'] for r in db.execute('SELECT id FROM submission_images WHERE submission_id=? AND active=1 ORDER BY created_at',(sid,))]}
         if raw is not None: snapshot['raw']=raw
+        if app.state.notifications and action in ('submitted','accept','ignore','needs_info','reopened'):
+            from backend.notifications import emit
+            record = db.execute('SELECT owner_id,revision FROM submissions WHERE id=?', (sid,)).fetchone()
+            emit(db, 'review' if action == 'submitted' else 'submissions', sid, record['owner_id'], owner['id'], record['revision'])
         db.execute('INSERT INTO submission_events(submission_id,revision,actor_id,action,snapshot,created_at) VALUES (?,?,?,?,?,?)',
                    (sid,row['revision'],owner['id'],action,packed(snapshot),int(time.time())))
 
     @app.get('/submissions')
     def page():
-        if production:return HTMLResponse((root/'submissions.html').read_text(encoding='utf-8').replace('本地开发版 · 采纳只保存审核决定，尚未写入正式成绩或发布网站。','采纳只保存审核决定；正式成绩由站长另行维护。'))
+        if production:return HTMLResponse(app.state.usage_html((root/'submissions.html').read_text(encoding='utf-8').replace('本地开发版 · 采纳只保存审核决定，尚未写入正式成绩或发布网站。','采纳只保存审核决定；正式成绩由站长另行维护。')))
+        if app.state.usage:return HTMLResponse(app.state.usage_html((root/'submissions.html').read_text(encoding='utf-8')))
         return FileResponse(root/'submissions.html')
 
     @app.get('/api/submissions/catalog')
@@ -281,6 +286,8 @@ def install(app,store,root,user,reference_root=None,production=False):
                 for item in items:
                     receipt=db.execute('SELECT batch_id,state FROM write_receipts WHERE submission_id=?',(item['id'],)).fetchone()
                     item['application']=dict(receipt) if receipt else None
+            from backend.notifications import decorate
+            decorate(db, app, owner, items, 'review' if scope=='review' else 'submissions')
         return {'total':total,'items':items}
 
     @app.get('/api/submissions/{sid}')
@@ -301,6 +308,8 @@ def install(app,store,root,user,reference_root=None,production=False):
             if app.state.contributions:
                 from backend.contributions import info
                 result['contribution_info']=info(db,sid)
+            from backend.notifications import cursors
+            cursors(db, app, owner, result)
             result['same_target']=[]
             if owner['role'] in ('admin','superadmin') and row['target_key']:
                 result['same_target']=[dict(r) for r in db.execute("SELECT id,status FROM submissions WHERE target_key=? AND id!=? AND status!='draft' ORDER BY updated_at DESC LIMIT 20",(row['target_key'],sid))]
@@ -326,7 +335,7 @@ def install(app,store,root,user,reference_root=None,production=False):
         return {'revision':body.revision+1}
 
     @app.post('/api/submissions/{sid}/submit')
-    def submit(sid:str,body:Revision,request:Request):
+    def submit(sid:str,body:Revision,request:Request,background_tasks:BackgroundTasks):
         owner=actor(request); data,cars,basis=reference(reference_root)
         with store.connect() as db:
             db.execute('BEGIN IMMEDIATE');app.state.require_active_session(request,db); row=get_row(db,sid,owner); expected(row,body.revision)
@@ -338,6 +347,8 @@ def install(app,store,root,user,reference_root=None,production=False):
             db.execute("UPDATE submissions SET payload=?,target_key=?,status='pending',review_score=NULL,baseline=?,revision=revision+1,updated_at=? WHERE id=?",
                        (packed(value),identity(value),packed(basis),int(time.time()),sid))
             event(db,sid,owner,'submitted')
+        if app.state.usage:
+            background_tasks.add_task(app.state.record_usage,request,owner,'submission_submit',sid+':'+str(body.revision+1))
         return {'revision':body.revision+1,'status':'pending'}
 
     @app.post('/api/admin/submissions/{sid}/preview')
