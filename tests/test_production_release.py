@@ -30,6 +30,22 @@ class ReleaseTests(unittest.TestCase):
    z.writestr('manifest.json',json.dumps(info))
   with self.assertRaises(ValueError):read_bundle(bad)
 
+ def test_complete_frozen_dual_server_snapshot_overrides_checkout_data(self):
+  import shutil
+  names=('cars.json','gauntlet_data.json','cars.global.json','gauntlet_data.global.json','global-data-manifest.json')
+  snapshot={n:(ROOT/n).read_bytes() for n in names}
+  code=self.path/'code'
+  for name in APP_FILES:
+   relative=Path('docs')/name if name.endswith('.md') else Path(name)
+   target=code/relative;target.parent.mkdir(parents=True,exist_ok=True);shutil.copyfile(ROOT/relative,target)
+  (code/'cars.global.json').write_bytes(b'checkout data must not be used')
+  bundle=self.path/'frozen.zip'
+  pack(code,ROOT,self.wheels,bundle,{'data_commit':'frozen-fixture'},data_contents=snapshot)
+  contents,_=read_bundle(bundle)
+  for name in names:self.assertEqual(contents[name],snapshot[name],name)
+  with self.assertRaises(ValueError):
+   pack(ROOT,ROOT,self.wheels,self.path/'partial.zip',{},data_contents={**snapshot,'auth.js':b'forbidden'})
+
  def test_global_components_and_independent_data_binding(self):
   import json
   from production_release_tools import GLOBAL_FILES,manifest

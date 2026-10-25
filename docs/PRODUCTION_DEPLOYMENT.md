@@ -1,5 +1,10 @@
 # RacePick 账号与投稿审核：首次生产部署
 
+## 2026-10-25 本轮升级入口：未读提醒、使用统计与冻结601数据
+
+本轮为已有站点升级，不是首次初始化。请优先阅读 [未读/统计升级交接](UNREAD_USAGE_DEPLOYMENT.md) 与同目录RELEASE.json/PACKAGE_VERIFICATION.json；须新增通知schema1和独立统计库，并成套更新统计独立限流配置。国服包内4423键基线不会自动覆盖生产score-state。下方首次init/configure/主号提升及旧回退步骤为历史，不能在现有站点照搬。
+
+
 ## 2026-10-24 当前：快速切服修复已上线并验收，保持599条
 
 用户逐步执行命令并回传：应用`66b9d32c1857d2b3c2cc533f`（源码/包内数据`4ff5f6f159bf579c3dd058f78d7bc7f6659967ce`）于18:18:15 CST启动，current与PID150824实际cwd一致、active/running。两份Nginx配置已备份并成套改为`racepick_api_requests`，nginx -t通过、18:17:09 reload成功；原证书/转发/80和8080监听保留。生产旧限流拦截启动资源的429已由实际配置及日志确认。

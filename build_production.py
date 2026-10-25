@@ -15,9 +15,10 @@ def git(path,*args):return subprocess.check_output(['git','-C',str(path),*args],
 def main():
  p=argparse.ArgumentParser(description=__doc__);p.add_argument('--data-source',type=Path,required=True);p.add_argument('--wheels',type=Path,required=True);p.add_argument('--output',type=Path,required=True);a=p.parse_args()
  if git(ROOT,'status','--porcelain'):raise ValueError('先提交代码，发布包必须绑定干净版本')
- if git(a.data_source,'status','--porcelain','--','gauntlet_data.json','cars.json'):raise ValueError('数据JSON有未提交修改，请先核对，不能默默打包')
+ data_names=('gauntlet_data.json','cars.json','cars.global.json','gauntlet_data.global.json','global-data-manifest.json')
+ if git(a.data_source,'status','--porcelain','--',*data_names):raise ValueError('双服数据JSON有未提交修改，请先核对，不能默默打包')
  data_commit=git(a.data_source,'rev-parse','HEAD')
- data_contents={n:subprocess.check_output(['git','-C',str(a.data_source),'show',data_commit+':'+n]) for n in ('gauntlet_data.json','cars.json')}
+ data_contents={n:subprocess.check_output(['git','-C',str(a.data_source),'show',data_commit+':'+n]) for n in data_names}
  errors,_=validate_data(json.loads(data_contents['gauntlet_data.json']),json.loads(data_contents['cars.json']))
  if errors:raise ValueError(str(errors))
  wheel_hashes={hashlib.sha256(f.read_bytes()).hexdigest() for f in a.wheels.glob('*.whl')}
@@ -26,7 +27,7 @@ def main():
  a.output.mkdir(parents=True,exist_ok=False)
  provenance={'code_commit':git(ROOT,'rev-parse','HEAD'),'data_commit':data_commit,'created_local':datetime.now().isoformat(timespec='seconds')}
  info=pack(ROOT,a.data_source,a.wheels,a.output/'racepick-accounts-release.zip',provenance,data_contents=data_contents);read_bundle(a.output/'racepick-accounts-release.zip')
- for name in ('deploy_production.py','production_release_tools.py','PRODUCTION_DEPLOYMENT.md','SCORE_PRODUCTION_DEPLOYMENT.md','COMMUNITY_DEPLOYMENT.md','CONTRIBUTIONS_PRODUCTION.md','FEEDBACK_PRODUCTION.md','GARAGE_DEPLOYMENT.md','LOCAL_INTERNATIONAL.md','INTERNATIONAL_DEPLOYMENT.md','SERVER_SWITCH_FIX.md','NOTIFICATIONS_LOCAL.md','USAGE_LOCAL.md'):shutil.copyfile(ROOT/('docs/'+name if name.endswith('.md') else name),a.output/name)
+ for name in ('deploy_production.py','production_release_tools.py','PRODUCTION_DEPLOYMENT.md','SCORE_PRODUCTION_DEPLOYMENT.md','COMMUNITY_DEPLOYMENT.md','CONTRIBUTIONS_PRODUCTION.md','FEEDBACK_PRODUCTION.md','GARAGE_DEPLOYMENT.md','LOCAL_INTERNATIONAL.md','INTERNATIONAL_DEPLOYMENT.md','SERVER_SWITCH_FIX.md','NOTIFICATIONS_LOCAL.md','USAGE_LOCAL.md','UNREAD_USAGE_DEPLOYMENT.md'):shutil.copyfile(ROOT/('docs/'+name if name.endswith('.md') else name),a.output/name)
  (a.output/'RELEASE.json').write_text(json.dumps(info,ensure_ascii=False,indent=2),encoding='utf-8')
  checks=[f'{hashlib.sha256(f.read_bytes()).hexdigest()}  {f.name}' for f in sorted(a.output.iterdir()) if f.is_file()]
  (a.output/'SHA256SUMS.txt').write_text('\n'.join(checks)+'\n',encoding='utf-8')
