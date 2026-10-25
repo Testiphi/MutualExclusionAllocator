@@ -1,3 +1,51 @@
+## 2026-10-25 最新上线交接：未读/统计与国际601已激活，真实事件提醒待验证
+
+本轮服务器升级、实际新组件迁移、Nginx配套、激活、新版成套备份恢复及timer恢复均已完成。用户确认桌面浏览器和手机微信的双服计算、登录、分服车库草稿、统计权限及账号活动筛选正常。独立已读及投稿人审核/反馈回复提醒因没有真实新事件，明确留为待验证，不记为生产验收全通过。下方“未部署/待运维”均为构包或历史阶段；本节不构成自动继续操作授权。
+
+### 实际版本与数据边界
+
+服务器命令均由用户逐步执行回传，代理未登录服务器。应用`171d872a414dea28be25eaa1`，源码`7651da519be92b7ae6ea184d2c30a985607c30f5`，包内数据`cbe9ea3dd3d0c130bef8dd15f890d618167e1539`。2026-10-25 11:05:50 CST启动，current和PID156079的cwd均为`/opt/racepick/releases/171d872a414dea28be25eaa1`，active/running；PID仅是当时快照。旧66b9d32c及旧包保留，启用新组件后不能以旧工具或手工链接绕过兼容检查回退。
+
+上传归档11017686字节，SHA256 `05288fd2552c83d4337ac43d1dc22fce51c419a6f8586a648ac6f163faf4522b`。外层20项SHA、内层96文件、19锁定wheel、源码/数据绑定和仅暂存阶段均完整回传核对通过。Linux离线安装和原生临时库自检由用户确认通过，完整安装日志未回传；不把构包时Windows模拟锁证据替代本轮Linux验证，也不扩写为生产全量测试。
+
+正式国服成绩在本轮开始即为`4bdaa0734cbfa4b178d1cbb1a081a8c7`，不是昨日42d62fde；40用户/21车库/3投稿，pending_batches0。激活及最终health均保持此正式版本。国服活动cars.json SHA256 `469aca118891c398d1aa2777721d50449cffa2e48c984bbd57ede0c7cde92d3c`，gauntlet_data.json SHA256 `8524833657eb740cc5d3c4bd8b90b815a1506ad3c3e64b4233a7eed2b9abcf86`。包内国服4423键只是冻结基线，本轮没有整包覆盖score-state，没有同步国服成绩或五车规则；如需同步仍须独立列差异并协调数据维护确认。
+
+国际运行版本`1bb0253ce327210b6c02fb2c2ea49682ee628086fec6c7bc987326121b4a6efc`，五区满星理论601条、44车、44图42覆盖、580非OC/21OC、562普通/39特殊。640键完整维护、四区/高手、36参考及工作簿不进入运行。本轮601与昨日曾保留的601不是同一个数据版本，不以相同条数推断数据相同。
+
+### 新组件与正式库保护
+
+按新包工具及原config执行，未重新初始化正式账号库、未重跑旧成绩/贡献/反馈迁移。停服确认MainPID0、应用inactive及timer暂停后，notification_production migrate绑定上述正式成绩版本：notification_schema1，events/reads均0，existing_rows_preserved=true、test_notification_imported0，旧内容作为已读基线；内部备份`scores-20261025T030202218287Z.zip`。usage_production initialize绑定同一正式成绩版本：usage_schema1，existing_accounts_preserved=true，内部备份`scores-20261025T030232342585Z.zip`。两份内部备份路径有回传，SHA未单独回传，不补造。usage.sqlite3实测racepick:racepick、0600，服务用户读写检查通过。
+
+最终health为ok/production，主schema6，community/contribution/feedback/notification/usage均schema1，各组件开关及score_writes均true。原业务行、贡献counts1/1/1/2及反馈三项counts0保持。未导入演示账号、通知、统计数据，未伪造生产投稿或刷流量。
+
+### 成套备份与独立恢复
+
+新版本工具用于本轮各备份/演练。迁移前在线备份及演练仅获用户确认通过（版本保持、pending0、正式库未替换、两新schema0），具体ZIP路径/SHA/演练目录没有回传，保留缺项。
+
+其余三次均有完整回传。备份目录`/var/lib/racepick/backups/`，演练目录`/var/lib/racepick/restore-drills/`：
+
+| 阶段 | ZIP文件 | 字节 | SHA256 | 演练目录ID |
+| --- | --- | --- | --- | --- |
+| 停服最终（迁移前） | scores-20261025T030050154616Z.zip | 273021 | 2ec55e97544635967940ada3641c9703aaf9c0198c2d86bd5556456be5da65f7 | 88e9d955bb771d251e94720c |
+| 新组件完成（激活前） | scores-20261025T030302148469Z.zip | 274625 | ff6fd2cb40ee914699f9fe05cef90de019912f9b98d40dd3f802e598ba697c71 | 5d9ee3861a70233fb36bfcce |
+| 新版在线（页面验收后） | scores-20261025T030758901428Z.zip | 275367 | 806b6bc5c6e2d5edcefd4e6e76b590506e27cfd841cd240896b85118cfb3fa37 | 7bddb5f56b5f8c95ce0c3272 |
+
+三份均racepick:racepick、0600，恢复结果均40用户/21车库/3投稿、pending_batches0、active_database_replaced=false，成绩版本保持。后两份包含usage.sqlite3，通知/统计schema均1；最终通知events/reads仍0。后两份accounts快照SHA相同`79271fad249c9e9d855f0a5d43b4630b998543a1ae158ef5830f3cd2afe337e0`；统计快照由`5e8b6343d8946cc1cbf8c6638c0654671886aaecbd85420adda3568effdbcd5d`变为`7948d470785891114ea84c1d585d82a0d76d53e80567a89bb5be99463c3d1891`。上线后统计库发生变化，不称全部文件/三份备份完全相同，也不由哈希推断具体事件数量或内容。
+
+### Nginx配置与调度
+
+完整实际配置核对后备份到`/root/racepick-deploy/20261025-unread-usage-171d872a/nginx-before-20261025-110359/`，root:root、0644。原站点SHA `3643f42a86a7237098f442f524e5c75d5d30afa89ea36b44c91260c26517edf2`，原rate SHA `2a48fb2cd84e3ed7cd18018cc458145a52a2e9a3f729e78a59f4af6edbd42a6a`，备份逐字节相同。
+
+成套写入新map/zone及站点第二个limit_req：精确POST `/api/usage/session`与`/api/usage/events`使用独立racepick_usage_events桶2r/s、burst10；原业务racepick_api_requests仍5r/s、burst30，启动GET/HEAD豁免保持，超限429。站点仅新增统计桶引用，证书、80/8080、转发及其他站点保持。nginx -t通过，11:05:06 CST reload退出0，active/running。新rate SHA `9f7c5e7ee70765b9a89a7fdaf6901086fe230e2034cca48f5ba056c62feab428`，新site SHA `d14f300947a4a9d35eab953e2b587f609763c4dab9783eed614aab280e131dee`。本轮未做生产限流压测。
+
+11:08:00 CST，以上新版在线备份演练通过后恢复原racepick-backup.timer，enabled、active(waiting)，NEXT2026-10-26 04:15:51 CST，LAST2026-10-25 04:18:39 CST。只读预检已确认10月25日04:18:40自动备份真实成功，文件`scores-20261024T201840512950Z.zip`，退出0；这是升级前旧版自动执行，不是新组件自动备份证据。本轮新版新组件成套备份实际由CLI执行；10月26日计划未到期，不宣称已成功。
+
+### 验收边界与收尾
+
+用户确认桌面和手机微信的双服计算、登录、分服车库/草稿、统计权限和活动筛选正常。独立已读、投稿人审核及反馈回复提醒待真实新事件验证，不伪造生产事件补验，不创建监控。代理未独立操作手机微信。
+
+本地结构化回执：工作区`本地归档/unread-usage-deployment-20261025/DEPLOYMENT_RECEIPT.json`。用户随后授权仅提交推送本轮4份部署/交接文档，完成远端核验后暂停；独立已读及投稿人提醒继续待真实事件验证。不改程序、数据、台账、工作簿或既有发布包，不发布公告、不清理或创建监控。根CLAUDE/context和本地回执不纳入Git提交。构包时的PACKAGE_VERIFICATION等冻结回执保持原字节，其PENDING由本节后续现场证据补充，不重写历史包。公告未发布；旧包、旧版、备份、演练及测试数据全部保留，不自动清理或创建监控。
+
 ## 2026-10-25 合并构包完成（未部署）
 
 已按本轮授权将未读提醒/使用统计与冻结数据合并至main并推送。构包源码固定 `7651da519be92b7ae6ea184d2c30a985607c30f5`；数据固定 `cbe9ea3dd3d0c130bef8dd15f890d618167e1539`。后续本完成回执是文档提交，不改变包内源码绑定。
