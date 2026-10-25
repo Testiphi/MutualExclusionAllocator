@@ -1,0 +1,249 @@
+{
+  "schema": "racepick.data-handoff.v1",
+  "date": "2026-10-25",
+  "purpose": "Data source handoff for 功能开发与发布包准备; NO build/deployment approval",
+  "base_commit": "90b2dd9fb84f7ba99556ff71f712d69f1c128045",
+  "data_ref": "the Git commit containing this handoff manifest and the seven files below; resolve and verify after push",
+  "frozen": true,
+  "changes_after_handoff_require_new_manifest": true,
+  "files": [
+    {
+      "path": "cars.json",
+      "role": "国服车辆身份/车池/星级规则；含本轮五车准入数据",
+      "sha256": "69c9da789f5ad8682a12f05adb21ed3767647f5067fe59c5d281510ee32702ec",
+      "bytes": 83612
+    },
+    {
+      "path": "gauntlet_data.json",
+      "role": "国服完整维护及当前本地运行成绩",
+      "sha256": "bda1569073b751e81abdbbaf0cae742c2b653235eb598060ef9ecdfc9761bd93",
+      "bytes": 221064
+    },
+    {
+      "path": "gauntlet_data.xlsx",
+      "role": "国服当前主维护工作簿；不是应用运行文件",
+      "sha256": "73567e42efa4b062a602381176f36050955b94c2cdd1184db863ec72afb09bcc",
+      "bytes": 140997
+    },
+    {
+      "path": "cars.global.json",
+      "role": "国际服运行车库，44辆已采纳理论车",
+      "sha256": "eac0fcbc1f9082558933828605aac13f3017d4af7dcb12d43a4693dac30d848b",
+      "bytes": 27428
+    },
+    {
+      "path": "gauntlet_data.global.json",
+      "role": "国际服仅五区满星理论601条运行投影",
+      "sha256": "276d955a875071bb78b89cef7cb298f851100bf5032ac7459f9df76605d4f737",
+      "bytes": 118900
+    },
+    {
+      "path": "global-data-manifest.json",
+      "role": "国际服三件套版本、字节、SHA及来源绑定",
+      "sha256": "8337199e9ffb03a59fd57a5ea36dfd16256e76bbb4449c1f21ac9227b455b547",
+      "bytes": 1866
+    },
+    {
+      "path": "gauntlet_data.global.xlsx",
+      "role": "国际服完整640键维护工作簿，含独立参考页；不是运行文件",
+      "sha256": "2a5bfd096e3c2f3faa815965780862fed6849ac87b7ed3cf8c864deb9a1e030e",
+      "bytes": 38803
+    }
+  ],
+  "national": {
+    "keys": 4423,
+    "zone_tier_counts": {
+      "五区_理论": 1062,
+      "五区_高手": 654,
+      "五区_普通": 641,
+      "五区_自动": 378,
+      "四区_理论": 500,
+      "四区_高手": 477,
+      "四区_普通": 467,
+      "四区_自动": 244
+    },
+    "cars_catalog_records": 346,
+    "delta_from_base": {
+      "added": 38,
+      "removed": 0,
+      "values_changed": 5
+    },
+    "source_coverage": "existing accepted national data; explicitly authorized five-car cross-server expert migration; user workbook final values; published cloud snapshot4bdaa073 addition; not all independent measured runs"
+  },
+  "international": {
+    "full_maintenance_keys": 640,
+    "full_timed_scores": 622,
+    "availability_mirrors": 18,
+    "runtime": {
+      "physical_cars": 44,
+      "tracks": 44,
+      "covered_tracks": 42,
+      "score_entries": 601,
+      "non_oc_entries": 580,
+      "oc_entries": 21,
+      "special_entries": 39,
+      "normal_entries": 562
+    },
+    "runtime_capabilities": {
+      "zones": [
+        "五区"
+      ],
+      "tiers": [
+        "理论"
+      ],
+      "max_stars_only": true,
+      "oc": true
+    },
+    "dataset_version": "1bb0253ce327210b6c02fb2c2ea49682ee628086fec6c7bc987326121b4a6efc",
+    "delta_from_base_runtime": {
+      "added": 10,
+      "removed": 8,
+      "values_changed": 13
+    },
+    "maintenance_only": {
+      "four_zone_theory": 3,
+      "five_zone_expert": 9,
+      "four_zone_expert": 9,
+      "five_zone_ordinary": 9,
+      "four_zone_ordinary": 9,
+      "independent_raw_config_expert_references": 36
+    },
+    "source_types": "user-direct final values, authorized cross-server migrations, accepted title/video/other estimates remain distinct in local ledgers; OC21=5 user-direct+16 authorized estimates",
+    "wolf_fastest": {
+      "Cairo A Kings Revival": 22.13,
+      "San Francisco The Tunnel": 18.37,
+      "rule": "same server/track/zone/tier/stars/OC/SC route identity only; invalid or withdrawn sources excluded"
+    }
+  },
+  "local_maintenance_not_in_git": [
+    {
+      "path": "E:\\hzz\\work\\MutualExclusionAllocator\\数据源\\international-prep-20261023\\maintenance\\gauntlet_data_international_maintenance.json",
+      "git_included": false,
+      "sha256": "58b4d80d12723cc1d5dd7b851dc3aab7e0d551f9ee02f2ac0b4c821bca652b9e",
+      "bytes": 125907,
+      "mtime_ns": "1792887632027889900"
+    },
+    {
+      "path": "E:\\hzz\\work\\MutualExclusionAllocator\\数据源\\international-prep-20261023\\maintenance\\gauntlet_data_international.json",
+      "git_included": false,
+      "sha256": "2f5c1a0a10eadcb720ddaea79529c7312449e6f70222708af79e8dc0a88fdd5d",
+      "bytes": 118950,
+      "mtime_ns": "1792887632031411500"
+    },
+    {
+      "path": "E:\\hzz\\work\\MutualExclusionAllocator\\数据源\\international-prep-20261023\\maintenance\\maintenance-score-ledger.json",
+      "git_included": false,
+      "sha256": "f11447358257e5dfd6ff9f636e3125cf83bf05f6d47c7a2ba35cf470ea1803e3",
+      "bytes": 626473,
+      "mtime_ns": "1792887632037069500"
+    },
+    {
+      "path": "E:\\hzz\\work\\MutualExclusionAllocator\\数据源\\international-prep-20261023\\maintenance\\score-ledger.json",
+      "git_included": false,
+      "sha256": "69432ebcb684df9a733c68afc488e0ca4b2b147d5ce5f31e1657f1d52239ca1d",
+      "bytes": 524903,
+      "mtime_ns": "1792887632043193100"
+    },
+    {
+      "path": "E:\\hzz\\work\\MutualExclusionAllocator\\数据源\\international-prep-20261023\\maintenance\\current-maintenance.json",
+      "git_included": false,
+      "sha256": "4324f6408d0c6190b8a5dca8ab17a55dac92eb3edb5f2c46020205e80d4945c2",
+      "bytes": 4499,
+      "mtime_ns": "1792887632047334700"
+    },
+    {
+      "path": "E:\\hzz\\work\\MutualExclusionAllocator\\数据源\\international-prep-20261023\\maintenance\\maintenance-car-identities.json",
+      "git_included": false,
+      "sha256": "d8304358a600bdaabb684d4532b131cddc148f17b227f712061db3057cfd240c",
+      "bytes": 15913,
+      "mtime_ns": "1792812793293049400"
+    },
+    {
+      "path": "E:\\hzz\\work\\MutualExclusionAllocator\\数据源\\international-prep-20261023\\maintenance\\oc-score-ledger.json",
+      "git_included": false,
+      "sha256": "f64da7163003bfa41a6cf85359ad91eb55548856a4f8d1f75aceaf07ae96ab4b",
+      "bytes": 17639,
+      "mtime_ns": "1792810052859162800"
+    },
+    {
+      "path": "E:\\hzz\\work\\MutualExclusionAllocator\\数据源\\international-prep-20261023\\maintenance\\expert-reference-scores.json",
+      "git_included": false,
+      "sha256": "59bc5fd103ebd84b8d1d61c702f08970ed2a27221f0148e8e9a20139a832f446",
+      "bytes": 116627,
+      "mtime_ns": "1792811366463992900"
+    }
+  ],
+  "preserved_untracked": [
+    "Asphalt Legend - 擂台成绩表.xlsx",
+    "_star_curve_fit.py",
+    "gauntlet_data_shared.xlsx"
+  ],
+  "validation": {
+    "fresh_keyed_consistency": {
+      "national_keys": 4423,
+      "global_full_keys": 640,
+      "global_timed_scores": 622,
+      "runtime_counts": {
+        "physical_cars": 44,
+        "tracks": 44,
+        "covered_tracks": 42,
+        "score_entries": 601,
+        "non_oc_entries": 580,
+        "oc_entries": 21,
+        "special_entries": 39,
+        "normal_entries": 562
+      },
+      "dataset_version": "1bb0253ce327210b6c02fb2c2ea49682ee628086fec6c7bc987326121b4a6efc",
+      "national_changes": 7,
+      "international_changes": 21,
+      "wolf_historical_fastest_kept": 2,
+      "no_removed_keys": true,
+      "all_three_workbooks_keyed_equal_their_authoritative_json": true,
+      "ledgers_and_runtime_equal": true,
+      "namespace_checks_passed": true,
+      "native_excel_opened_this_round": false,
+      "global_extra_empty_columns_kept": 16,
+      "committed": false,
+      "pushed": false,
+      "built": false,
+      "production_accessed": false,
+      "head": "90b2dd9fb84f7ba99556ff71f712d69f1c128045"
+    },
+    "national_validation_errors": 0,
+    "national_both_workbooks_equal_json": true,
+    "international_full_workbook_ledger_json_equal": true,
+    "runtime_generator_check": true,
+    "original_source_hashes": 434,
+    "last_round_tests": {
+      "python": 66,
+      "race_scores_node": 14,
+      "global_frontend_audit_adapter": 14,
+      "adapter_note": "Existing boot test has two hardcoded49 car expectations. Audit adapts only these in memory to44; repository tests untouched. This is not the unmodified full frontend suite."
+    },
+    "namespace_and_render_checks": true,
+    "last_return_native_excel_opened": false,
+    "prior_excel_acceptance": "User confirmed all workbooks normally displayed before latest10/25 saved edits; not native acceptance of this latest round"
+  },
+  "not_included": [
+    "untracked shared/source XLSX and experiment script",
+    "full source evidence/ledgers outside Git",
+    "reference-only four-zone/expert data in runtime",
+    "36 raw config reference scores in runtime",
+    "account DB/feedback/test DB/backups/credentials",
+    "feature worktree notification/usage changes"
+  ],
+  "operational_boundary": {
+    "commit_push_authorized": true,
+    "application_build_authorized": false,
+    "production_access_authorized": false,
+    "release_or_announcement_authorized": false,
+    "do_not_overwrite_production_score_state": true
+  },
+  "production_last_known": {
+    "application": "66b9d32c1857d2b3c2cc533f",
+    "global_runtime_scores": 599,
+    "global_dataset_version": "f4f36ae874e2ddec845435efd965db87e27f8b10a7a178da67a8293539399a3e",
+    "national_cloud_snapshot_observed": "4bdaa0734cbfa4b178d1cbb1a081a8c7",
+    "live_verified_this_turn": false
+  }
+}

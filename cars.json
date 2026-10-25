@@ -78,7 +78,12 @@
     "大爷": "Bugatti Divo",
     "无敌牛": "Lamborghini Invencible",
     "帝国": "Arash Imperium",
-    "biome": "Mercedes-Benz Biome 2010"
+    "biome": "Mercedes-Benz Biome 2010",
+    "阿波罗n": "Apollo N",
+    "ap0": "Apex AP-0",
+    "叶问": "VLF Force 1 V10",
+    "迈凯伦p1": "McLaren P1™",
+    "avj": "Lamborghini Aventador J"
   },
   "cars": [
     {
@@ -1343,7 +1348,18 @@
       "max_speed": 334.8,
       "acceleration": 80.83,
       "handling": 89.1,
-      "nitro": 74.95
+      "nitro": 74.95,
+      "nickname": "ap0",
+      "zones": [
+        "五区",
+        "四区"
+      ],
+      "star_rule": {
+        "min": 1,
+        "max": 5,
+        "default": 5,
+        "zone4Max": 5
+      }
     },
     {
       "title": "Apollo EVO",
@@ -1370,7 +1386,18 @@
       "max_speed": 369.6,
       "acceleration": 80.32,
       "handling": 58.13,
-      "nitro": 60.57
+      "nitro": 60.57,
+      "nickname": "阿波罗n",
+      "zones": [
+        "五区",
+        "四区"
+      ],
+      "star_rule": {
+        "min": 1,
+        "max": 5,
+        "default": 5,
+        "zone4Max": 5
+      }
     },
     {
       "title": "Arash AF10",
@@ -2481,7 +2508,18 @@
       "max_speed": 362.9,
       "acceleration": 79.83,
       "handling": 73.1,
-      "nitro": 77.86
+      "nitro": 77.86,
+      "nickname": "avj",
+      "zones": [
+        "五区",
+        "四区"
+      ],
+      "star_rule": {
+        "min": 1,
+        "max": 5,
+        "default": 5,
+        "zone4Max": 5
+      }
     },
     {
       "title": "Lamborghini Aventador SV Coupe",
@@ -2851,7 +2889,18 @@
       "max_speed": 364.6,
       "acceleration": 83.64,
       "handling": 47.54,
-      "nitro": 62.89
+      "nitro": 62.89,
+      "nickname": "迈凯伦p1",
+      "zones": [
+        "五区",
+        "四区"
+      ],
+      "star_rule": {
+        "min": 1,
+        "max": 5,
+        "default": 5,
+        "zone4Max": 5
+      }
     },
     {
       "title": "McLaren Sabre",
@@ -3492,7 +3541,18 @@
       "max_speed": 369.4,
       "acceleration": 80.33,
       "handling": 54.68,
-      "nitro": 74.63
+      "nitro": 74.63,
+      "nickname": "叶问",
+      "zones": [
+        "五区",
+        "四区"
+      ],
+      "star_rule": {
+        "min": 1,
+        "max": 5,
+        "default": 5,
+        "zone4Max": 5
+      }
     },
     {
       "title": "Vencer Sarthe",

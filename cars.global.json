@@ -2,9 +2,9 @@
   "_meta": {
     "server_id": "global",
     "schema_version": 1,
-    "catalog_payload_sha256": "9e1fe53ca9f8ddb6b3be3fd650432bc26072727c65e523c7570adc8c01dd4ab8",
-    "scores_payload_sha256": "6d8bb421850fe2763aac47ee11715f0ed57171651f6341e7e4b1bf6297691eb7",
-    "dataset_version": "f4f36ae874e2ddec845435efd965db87e27f8b10a7a178da67a8293539399a3e",
+    "catalog_payload_sha256": "c3e9f35f568d6ba55a41681baa0f25e0af70513defe9a19208326741d7b8f5db",
+    "scores_payload_sha256": "1d6481ba1fa194eeb7aac6c01509af800ea7e11ca43b81bbc27bb236d316f4f7",
+    "dataset_version": "1bb0253ce327210b6c02fb2c2ea49682ee628086fec6c7bc987326121b4a6efc",
     "manifest_file": "global-data-manifest.json"
   },
   "_comment": "International accepted-score vehicles only; EVO configuration metrics remain unknown.",
@@ -23,9 +23,7 @@
     "21c": "Czinger 21C",
     "9x8": "Peugeot 9x8",
     "Ultima RS": "Ultima RS",
-    "ap0": "Apex AP-0",
     "ars": "Koenigsegg Agera RS",
-    "avj": "Lamborghini Aventador J",
     "c2": "Rimac Nevera",
     "cc850": "Koenigsegg CC850",
     "divo": "Bugatti Divo",
@@ -40,7 +38,6 @@
     "ts900": "Tushek TS 900 Racer Pro",
     "万达": "Vanda Electrics Dendrobium",
     "冬王": "Deus Vayanne",
-    "叶问": "VLF Force 1 V10",
     "塞纳": "McLaren Senna",
     "奇美拉": "Koenigsegg Chimera",
     "小牛": "Lamborghini Huracan Evo Spyder",
@@ -63,9 +60,7 @@
     "自私": "Lamborghini Egoista",
     "莫斯勒": "Mosler Super GT",
     "超光孙": "RAESR Tartarus",
-    "迈凯伦p1": "McLaren P1",
     "速尾": "McLaren Speedtail",
-    "阿波罗n": "Apollo N",
     "陀飞轮": "Bugatti Tourbillon",
     "黑龙": "Bugatti La Voiture Noire"
   },
@@ -171,31 +166,6 @@
       "stats_status": "asec_max_star"
     },
     {
-      "title": "Apex AP-0",
-      "nickname": "ap0",
-      "asec_id": 134,
-      "base_title": "Apex AP-0",
-      "base_class": "B",
-      "class": "B",
-      "class_source": "base_vehicle_class",
-      "variant": "regular",
-      "max_stars": 5,
-      "zones": [
-        "五区"
-      ],
-      "star_rule": {
-        "min": 5,
-        "max": 5,
-        "default": 5
-      },
-      "score": 3946,
-      "max_speed": 335.1,
-      "acceleration": 80.96,
-      "handling": 89.37,
-      "nitro": 75.16,
-      "stats_status": "asec_max_star"
-    },
-    {
       "title": "Koenigsegg Agera RS",
       "nickname": "ars",
       "asec_id": 289,
@@ -218,31 +188,6 @@
       "acceleration": 79.67,
       "handling": 60.03,
       "nitro": 58.86,
-      "stats_status": "asec_max_star"
-    },
-    {
-      "title": "Lamborghini Aventador J",
-      "nickname": "avj",
-      "asec_id": 199,
-      "base_title": "Lamborghini Aventador J",
-      "base_class": "A",
-      "class": "A",
-      "class_source": "base_vehicle_class",
-      "variant": "regular",
-      "max_stars": 5,
-      "zones": [
-        "五区"
-      ],
-      "star_rule": {
-        "min": 5,
-        "max": 5,
-        "default": 5
-      },
-      "score": 4133,
-      "max_speed": 363.8,
-      "acceleration": 79.83,
-      "handling": 73.1,
-      "nitro": 77.86,
       "stats_status": "asec_max_star"
     },
     {
@@ -593,31 +538,6 @@
       "acceleration": 86.55,
       "handling": 47.61,
       "nitro": 47.08,
-      "stats_status": "asec_max_star"
-    },
-    {
-      "title": "VLF Force 1 V10",
-      "nickname": "叶问",
-      "asec_id": 188,
-      "base_title": "VLF Force 1 V10",
-      "base_class": "A",
-      "class": "A",
-      "class_source": "base_vehicle_class",
-      "variant": "regular",
-      "max_stars": 5,
-      "zones": [
-        "五区"
-      ],
-      "star_rule": {
-        "min": 5,
-        "max": 5,
-        "default": 5
-      },
-      "score": 3929,
-      "max_speed": 368.8,
-      "acceleration": 80.33,
-      "handling": 54.68,
-      "nitro": 74.63,
       "stats_status": "asec_max_star"
     },
     {
@@ -1171,31 +1091,6 @@
       "stats_status": "asec_max_star"
     },
     {
-      "title": "McLaren P1",
-      "nickname": "迈凯伦p1",
-      "asec_id": 179,
-      "base_title": "McLaren P1",
-      "base_class": "A",
-      "class": "A",
-      "class_source": "base_vehicle_class",
-      "variant": "regular",
-      "max_stars": 5,
-      "zones": [
-        "五区"
-      ],
-      "star_rule": {
-        "min": 5,
-        "max": 5,
-        "default": 5
-      },
-      "score": 3602,
-      "max_speed": 364.6,
-      "acceleration": 83.64,
-      "handling": 47.53,
-      "nitro": 62.89,
-      "stats_status": "asec_max_star"
-    },
-    {
       "title": "McLaren Speedtail",
       "nickname": "速尾",
       "asec_id": 262,
@@ -1218,31 +1113,6 @@
       "acceleration": 81.11,
       "handling": 56.65,
       "nitro": 74.2,
-      "stats_status": "asec_max_star"
-    },
-    {
-      "title": "Apollo N",
-      "nickname": "阿波罗n",
-      "asec_id": 142,
-      "base_title": "Apollo N",
-      "base_class": "B",
-      "class": "B",
-      "class_source": "base_vehicle_class",
-      "variant": "regular",
-      "max_stars": 5,
-      "zones": [
-        "五区"
-      ],
-      "star_rule": {
-        "min": 5,
-        "max": 5,
-        "default": 5
-      },
-      "score": 4047,
-      "max_speed": 374.1,
-      "acceleration": 80.32,
-      "handling": 58.13,
-      "nitro": 60.57,
       "stats_status": "asec_max_star"
     },
     {
