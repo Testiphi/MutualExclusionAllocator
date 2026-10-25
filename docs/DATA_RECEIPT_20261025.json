@@ -89,5 +89,9 @@
   "build": "NOT_RUN",
   "production": "NOT_ACCESSED",
   "announcement": "NOT_PUBLISHED",
-  "local_full_receipt": ".local-accounts/usage-validation/data-reception-20261025.json"
+  "local_full_receipt": ".local-accounts/usage-validation/data-reception-20261025.json",
+  "accepted_feature_source_commit": "a5f09208d6843db1e895320f99205998301947a0",
+  "feature_source_branch": "feature/unread-notifications",
+  "feature_source_remote_verified": true,
+  "local_user_acceptance": "PASSED by explicit user confirmation 2026-10-25"
 }
