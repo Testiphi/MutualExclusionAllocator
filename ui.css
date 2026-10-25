@@ -17,3 +17,14 @@ header>.ui-button{margin-bottom:8px}nav>.ui-button{margin-right:0}
 .feedback-meta{font-size:13px;color:#a6b2c0;overflow-wrap:anywhere}.feedback-badge{padding:3px 9px;border-radius:12px;background:#203b50;color:#b6ddff;display:inline-block;font-size:13px}
 .feedback-empty{padding:20px;color:#a6b2c0}.feedback-layout aside{border-right:0;padding-right:0}
 @media(max-width:700px){.feedback-layout{grid-template-columns:1fr;gap:10px}.feedback-card{padding:15px}button,.ui-button{min-height:42px}}
+
+/* Quiet, accessible unread marker; independent of pending status. */
+.unread-dot{display:inline-block;flex:none;width:7px;height:7px;margin-left:7px;border-radius:50%;background:#ff6b72;vertical-align:middle;align-self:center}
+.unread-dot[hidden]{display:none!important}
+.account-hub-link>.unread-dot{position:absolute;right:12px;top:14px}
+.account-hub-link{position:relative;padding-right:30px!important}
+[data-unread-item]{position:relative;padding-right:28px!important}
+[data-unread-item]>.unread-dot{position:absolute;right:10px;top:12px;margin:0}
+
+.account-navigation>button[data-unread-channels]{position:relative}
+.account-navigation>button>.unread-dot{position:absolute;right:4px;top:4px;margin:0}

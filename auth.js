@@ -203,9 +203,22 @@
                 }
                 hubLink(management,'账号与公告管理','/admin-accounts','管理账号状态和公告内容');
                 hubLink(management,'管理员与邀请码','/admin-access','查看管理员并管理邀请');
+                if(session.usage)hubLink(management,'使用统计','/admin-usage','查看访问、活跃时段与功能使用');
             }
         }else if(owner?.role==='player'&&invitesEnabled){
             const redeem=document.createElement('button');redeem.type='button';redeem.textContent='兑换管理员邀请码';redeem.onclick=()=>showAuth('invite');$('accountActions').append(redeem);
+        }
+        if (owner && session.notifications) {
+            const unread = Unread.create({request, user:owner, scope:box, changed:data=>{
+                const label=box.querySelector('a[href="/admin-feedback"] strong');
+                if(label && data.feedback_pending!==null) label.textContent='用户反馈'+(data.feedback_pending?'（待处理 '+data.feedback_pending+'）':'');
+            }});
+            const paths={'/submissions':'submissions','/submissions#review':'review','/feedback?from=%2F':'feedback','/admin-feedback':'feedback_admin'};
+            for(const [path,channel] of Object.entries(paths)){const link=box.querySelector('a[href="'+path+'"]');if(link) unread.track(link,channel);}
+            for(const [id,channels] of Object.entries({contributionCenter:'submissions',managementCenter:'review feedback_admin',personalCenter:'feedback'})){
+                const trigger=box.querySelector('[aria-controls="'+id+'"]');if(trigger)unread.track(trigger,channels);
+            }
+            await unread.refresh();
         }
         $('accountOpenLogin').onclick=()=>showAuth('login');
         $('accountOpenRegister').onclick=()=>showAuth('register');

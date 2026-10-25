@@ -126,7 +126,7 @@ class Store:
             db.execute('INSERT INTO attempts VALUES (?,1,?) ON CONFLICT(bucket) DO UPDATE SET count=count+1', (key, now+600))
 
 
-def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None, mail_config=None, preview_source=None, writeback_lab=None, production=False, score_version_lab=None, score_state=None, contributions=False, feedback=False):
+def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None, mail_config=None, preview_source=None, writeback_lab=None, production=False, score_version_lab=None, score_state=None, contributions=False, feedback=False, notifications=False, usage=False):
     if feedback and (not contributions or (production and score_state is None) or (not production and score_version_lab is None)):
         raise ValueError("问题反馈需要已绑定成绩及贡献环境")
     if contributions and ((production and score_state is None) or (not production and score_version_lab is None)):
@@ -158,6 +158,19 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
     app.state.store = store
     app.state.contributions = contributions
     app.state.feedback = feedback
+    app.state.notifications = notifications
+    from backend.usage import UsageStore
+    usage_path = store.directory / "usage.sqlite3"
+    if usage_path.exists() and not usage:
+        raise ValueError("此环境已启用使用统计，启动须带 --usage")
+    if usage and not usage_path.exists():
+        if production: raise ValueError("统计库尚未显式初始化，生产启动不创建")
+        UsageStore.initialize(usage_path)
+    app.state.usage = UsageStore(usage_path) if usage else None
+    app.state.record_usage = lambda *args: None
+    def usage_html(html):
+        return html.replace("</head>", '<script>globalThis.RACEPICK_USAGE_ENABLED=true;</script><script defer src="/usage.js"></script></head>') if usage else html
+    app.state.usage_html = usage_html
     with store.connect() as db:
         present=db.execute("SELECT 1 FROM sqlite_master WHERE name='feedback_schema'").fetchone()
         if present and not feedback: raise ValueError("此数据库已启用反馈，启动必须启用反馈功能")
@@ -178,6 +191,16 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
                 if state(db)["contribution_schema"]!=1: raise ValueError("贡献迁移尚未完成，生产启动不自动迁移")
             else:
                 db.execute("BEGIN IMMEDIATE"); migrate(db)
+    with store.connect() as db:
+        from backend.notifications import state as notification_state, migrate as migrate_notifications
+        ready = notification_state(db)["notification_schema"]
+        if ready and not notifications:
+            raise ValueError("此数据库已启用未读提醒，启动须启用 notifications")
+        if notifications:
+            if production:
+                if ready != 1: raise ValueError("未读提醒迁移未完成，生产启动不自动迁移")
+            else:
+                db.execute("BEGIN IMMEDIATE"); migrate_notifications(db)
     if versioned_scores:
         from backend.score_versions import ScoreWriter
         app.state.score_versions=ScoreWriter(score_state or score_version_lab,store,production=production)
@@ -248,17 +271,19 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
         if request.url.path.startswith('/api/') and request.method not in ('GET','HEAD','OPTIONS'):
             if request.headers.get('origin') != origin or request.headers.get('content-type','').split(';')[0] != 'application/json':
                 return JSONResponse({'detail':'请求来源或内容类型不正确'},status_code=403)
-            try:
-                current=session(request)
-                if not secrets.compare_digest(current['csrf'],request.headers.get('x-csrf-token','')):
-                    raise HTTPException(403,'CSRF 校验失败')
-            except HTTPException as error:
-                return JSONResponse({'detail':error.detail},status_code=error.status_code)
+            collector = usage and request.method=='POST' and request.url.path in ('/api/usage/session','/api/usage/events')
+            if not collector:
+                try:
+                    current=session(request)
+                    if not secrets.compare_digest(current['csrf'],request.headers.get('x-csrf-token','')):
+                        raise HTTPException(403,'CSRF 校验失败')
+                except HTTPException as error:
+                    return JSONResponse({'detail':error.detail},status_code=error.status_code)
             # Bound request bodies, including chunked requests.
             total=0
             async for chunk in request.stream():
                 total += len(chunk)
-                limit = 3000000 if request.url.path.endswith('/images') else 65536
+                limit = 8192 if collector else (3000000 if request.url.path.endswith('/images') else 65536)
                 if total>limit:
                     return JSONResponse({'detail':'请求过大'},status_code=413)
                 if total==len(chunk): body=chunk
@@ -275,8 +300,8 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
     def me(request:Request, response:Response):
         current=session(request,False)
         if not current:
-            return {'user':None,'csrf':new_session(response),'mail_mode':'production' if production else mail_service.config.mode,'admin_invites':True,'readonly_previews':preview_source is not None,'writeback_lab':writeback_lab is not None,'score_versions_lab':score_version_lab is not None,'score_versions':versioned_scores,'community_controls':True,'contributions':contributions,'feedback':feedback}
-        return {'user':user(request) if current['user_id'] else None,'csrf':current['csrf'],'mail_mode':'production' if production else mail_service.config.mode,'admin_invites':True,'readonly_previews':preview_source is not None,'writeback_lab':writeback_lab is not None,'score_versions_lab':score_version_lab is not None,'score_versions':versioned_scores,'community_controls':True,'contributions':contributions,'feedback':feedback}
+            return {'user':None,'csrf':new_session(response),'mail_mode':'production' if production else mail_service.config.mode,'admin_invites':True,'readonly_previews':preview_source is not None,'writeback_lab':writeback_lab is not None,'score_versions_lab':score_version_lab is not None,'score_versions':versioned_scores,'community_controls':True,'contributions':contributions,'feedback':feedback,'notifications':notifications,'usage':usage}
+        return {'user':user(request) if current['user_id'] else None,'csrf':current['csrf'],'mail_mode':'production' if production else mail_service.config.mode,'admin_invites':True,'readonly_previews':preview_source is not None,'writeback_lab':writeback_lab is not None,'score_versions_lab':score_version_lab is not None,'score_versions':versioned_scores,'community_controls':True,'contributions':contributions,'feedback':feedback,'notifications':notifications,'usage':usage}
 
     @app.post('/api/auth/register')
     def register(data:Registration, request:Request):
@@ -418,6 +443,12 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
         install_contributions(app,store,ROOT,user)
     from backend.submissions import install
     install(app,store,ROOT,user,reference_dir,production=production)
+    if usage:
+        from backend.usage import install as install_usage
+        install_usage(app, store, ROOT, user, session)
+    if notifications:
+        from backend.notifications import install as install_notifications
+        install_notifications(app, store, user)
     if feedback:
         from backend.feedback import install as install_feedback
         install_feedback(app,store,ROOT,user)
@@ -437,6 +468,10 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
         result['contributions']=contributions
         result['feedback']=feedback
         result['feedback_schema']=1 if feedback else 0
+        result['notification_schema']=1 if notifications else 0
+        result['notifications']=notifications
+        result['usage_schema']=1 if usage else 0
+        result['usage']=usage
         if versioned_scores:
             result['score_version']=app.state.score_versions.current()[0]['id']
             with store.connect() as db:result['score_writes']=app.state.score_versions.enabled(db)
@@ -445,9 +480,9 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
     @app.api_route('/',methods=['GET','HEAD'])
     def index():
         html=(ROOT/'index.html').read_text(encoding='utf-8')
-        html=html.replace('</head>','<script src="/profile_store.js"></script><script src="/announcements.js"></script><script src="/auth.js"></script><link rel="stylesheet" href="/accounts.css"><link rel="stylesheet" href="/ui.css">\n</head>')
+        html=html.replace('</head>','<script src="/notifications.js"></script><script src="/profile_store.js"></script><script src="/announcements.js"></script><script src="/auth.js"></script><link rel="stylesheet" href="/accounts.css"><link rel="stylesheet" href="/ui.css">\n</head>')
         if versioned_scores:html=html.replace('</head>','<script>globalThis.RACEPICK_VERSIONED_SCORES=true;</script></head>')
-        return HTMLResponse(html)
+        return HTMLResponse(usage_html(html))
 
     if versioned_scores:
         from backend.score_versions import install as install_score_versions
@@ -456,8 +491,9 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
         from backend.writeback import install as install_writeback
         install_writeback(app,store,ROOT,user,writeback_lab,preview_source)
     assets={'styles.css','config.js','api.js','app_state.js','allocator.js','race_scores.js','cars.json','gauntlet_data.json','auth.js','profile_store.js','accounts.css','submissions.js','submissions.css','admin_access.js','data_previews.js','data_previews.css','writeback_lab.js','announcements.js','admin_accounts.js'}
-    assets.add('ui.css')
+    assets.update({'ui.css','notifications.js'})
     assets.update({'cars.global.json','gauntlet_data.global.json','global-data-manifest.json'})
+    if usage: assets.update({'usage.js','usage_admin.js','usage.css'})
     if feedback: assets.add('feedback.js')
     if contributions: assets.update({'leaderboard.js','leaderboard.css'})
     if versioned_scores:assets.add('score_versions.js')
@@ -480,6 +516,8 @@ def main():
     parser.add_argument('--data-dir',type=Path,default=ROOT/'.local-accounts')
     parser.add_argument('--preview-source',type=Path,help='正式成绩库只读预览来源；需显式指定，不接收网页路径参数')
     parser.add_argument('--writeback-lab',type=Path,help='仅允许专门创建的隔离写回测试环境')
+    parser.add_argument('--usage',action='store_true',help='独立本地环境启用使用统计')
+    parser.add_argument('--notifications',action='store_true',help='仅独立本地环境启用按账号未读提醒')
     parser.add_argument('--feedback',action='store_true',help='独立本地环境启用文字反馈')
     parser.add_argument('--contributions',action='store_true',help='仅独立本地成绩版本环境启用排行榜')
     parser.add_argument('--score-version-lab',type=Path,help='独立数据版本测试环境，不用于生产')
@@ -498,6 +536,6 @@ def main():
     except (ValueError,KeyboardInterrupt) as error:
         parser.exit(1, ('已取消' if isinstance(error,KeyboardInterrupt) else str(error))+'\n')
     import uvicorn
-    uvicorn.run(create_app(args.data_dir,f'http://127.0.0.1:{args.port}',mail_config=config,preview_source=args.preview_source,writeback_lab=args.writeback_lab,score_version_lab=args.score_version_lab,contributions=args.contributions,feedback=args.feedback),host='127.0.0.1',port=args.port,proxy_headers=False)
+    uvicorn.run(create_app(args.data_dir,f'http://127.0.0.1:{args.port}',mail_config=config,preview_source=args.preview_source,writeback_lab=args.writeback_lab,score_version_lab=args.score_version_lab,contributions=args.contributions,feedback=args.feedback,notifications=args.notifications,usage=args.usage),host='127.0.0.1',port=args.port,proxy_headers=False)
 
 if __name__=='__main__': main()

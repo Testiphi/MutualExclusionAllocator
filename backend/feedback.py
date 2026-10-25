@@ -5,8 +5,8 @@ import secrets
 import time
 from typing import Literal
 
-from fastapi import HTTPException, Request
-from fastapi.responses import FileResponse
+from fastapi import BackgroundTasks, HTTPException, Request
+from fastapi.responses import FileResponse, HTMLResponse
 from pydantic import BaseModel, ConfigDict, Field, StrictInt, field_validator
 
 Status = Literal['pending', 'processing', 'needs_info', 'resolved', 'closed']
@@ -133,7 +133,9 @@ def install(app, store, root, user):
 
     @app.get('/feedback')
     @app.get('/admin-feedback')
-    def page(): return FileResponse(root/'feedback.html')
+    def page():
+        if app.state.usage:return HTMLResponse(app.state.usage_html((root/'feedback.html').read_text(encoding='utf-8')))
+        return FileResponse(root/'feedback.html')
 
     @app.get('/api/feedback/context')
     def context(request: Request):
@@ -141,7 +143,7 @@ def install(app, store, root, user):
         return {'app_version': version, 'privacy': '仅你和站长可查看。附带账号、提交时间、页面路径和应用版本；不收集日志、车库或浏览器信息。'}
 
     @app.post('/api/feedback')
-    def create(body: Create, request: Request):
+    def create(body: Create, request: Request, background_tasks: BackgroundTasks):
         with store.connect() as db:
             db.execute('BEGIN IMMEDIATE'); current = actor(request, db=db)
             fingerprint, previous = idempotency(db, current, body, 'create')
@@ -156,7 +158,13 @@ def install(app, store, root, user):
                         body.expected.strip(), body.actual.strip(), body.source_page, version, 'pending', now, now))
             db.execute('INSERT INTO feedback_events(ticket_id,actor_id,actor_role,message,from_status,to_status,revision,created_at) VALUES(?,?,?,?,NULL,?,1,?)',
                        (tid, current['id'], 'owner', '', 'pending', now))
-            return remember(db, current, body, fingerprint, {'id': tid, 'revision': 1, 'status': 'pending'})
+            if app.state.notifications:
+                from backend.notifications import emit
+                emit(db, 'feedback_admin', tid, current['id'], current['id'], 1)
+            result = remember(db, current, body, fingerprint, {'id': tid, 'revision': 1, 'status': 'pending'})
+        if app.state.usage:
+            background_tasks.add_task(app.state.record_usage,request,current,'feedback_submit',tid)
+        return result
 
     def listing(request, status, offset, q, admin):
         current = actor(request, admin)
@@ -170,6 +178,8 @@ def install(app, store, root, user):
         with store.connect() as db:
             total = db.execute('SELECT count(*) FROM feedback_tickets WHERE '+where, args).fetchone()[0]
             items = [dict(r) for r in db.execute('SELECT id,title,category,status,revision,created_at,updated_at FROM feedback_tickets WHERE '+where+' ORDER BY updated_at DESC,id LIMIT 30 OFFSET ?', args+[offset])]
+            from backend.notifications import decorate
+            decorate(db, app, current, items, 'feedback_admin' if admin else 'feedback')
         return {'items': items, 'total': total}
 
     @app.get('/api/feedback')
@@ -191,6 +201,8 @@ def install(app, store, root, user):
         current = actor(request, admin)
         with store.connect() as db:
             row = get_ticket(db, tid, current, admin); result = dict(row)
+            from backend.notifications import cursors
+            cursors(db, app, current, result)
             result.pop('owner_id')
             result['events'] = [dict(r) for r in db.execute('SELECT actor_role,message,from_status,to_status,created_at,revision FROM feedback_events WHERE ticket_id=? ORDER BY revision', (tid,))]
             if admin:
@@ -222,6 +234,9 @@ def install(app, store, root, user):
             db.execute('UPDATE feedback_tickets SET status=?,revision=?,updated_at=? WHERE id=?', (status, revision, now, tid))
             db.execute('INSERT INTO feedback_events(ticket_id,actor_id,actor_role,message,from_status,to_status,revision,created_at) VALUES(?,?,?,?,?,?,?,?)',
                        (tid, current['id'], 'superadmin' if admin else 'owner', body.message, row['status'], status, revision, now))
+            if app.state.notifications:
+                from backend.notifications import emit
+                emit(db, 'feedback' if admin else 'feedback_admin', tid, row['owner_id'], current['id'], revision)
             return remember(db, current, body, fingerprint, {'revision': revision, 'status': status, 'id': tid})
 
     @app.post('/api/feedback/{tid}/reply')

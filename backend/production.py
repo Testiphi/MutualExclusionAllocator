@@ -56,8 +56,10 @@ def make_app(config,password):
     with closing(sqlite3.connect((path/'accounts.sqlite3').as_uri()+'?mode=ro',uri=True)) as db:
         from backend.feedback import state as feedback_state
         feedback_ready=feedback_state(db)["feedback_schema"]==1
+        from backend.notifications import state as notification_state
+        notifications_ready=notification_state(db)['notification_schema']==1
         contribution_ready=state(db)['contribution_schema']==1
-    return create_app(path,config['origin'],score_state=score_state,contributions=contribution_ready,feedback=feedback_ready,mail_config=MailConfig('smtp','',password,production=True,daily_limit=config['mail_daily_limit']),production=True)
+    return create_app(path,config['origin'],score_state=score_state,contributions=contribution_ready,feedback=feedback_ready,notifications=notifications_ready,usage=(path/'usage.sqlite3').exists(),mail_config=MailConfig('smtp','',password,production=True,daily_limit=config['mail_daily_limit']),production=True)
 
 @contextmanager
 def service_lock(path):

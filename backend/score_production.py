@@ -109,7 +109,7 @@ def toggle(config,enable):
 
 
 def safe_backup_name(name):
-    if name in ('accounts.sqlite3','production.json','score-state/production-scores.json'):return True
+    if name in ('accounts.sqlite3','usage.sqlite3','production.json','score-state/production-scores.json'):return True
     if re.fullmatch(r'score-state/scores/versions/[a-f0-9]{32}/(gauntlet_data|cars|manifest)\.json',name):return True
     return bool(re.fullmatch(r'score-state/backups/[a-f0-9]{32}-(apply|rollback)-[a-f0-9]{12}/(gauntlet_data\.json|cars\.json|manifest\.json|accounts\.sqlite3)',name))
 
@@ -119,6 +119,7 @@ def backup(config):
     path=require_database(config);writer=ScoreWriter(path/'score-state',Store(path),production=True)
     directory=path/'backups';directory.mkdir(exist_ok=True)
     temp_db=directory/('.snapshot-'+secrets.token_hex(8)+'.sqlite3')
+    usage_snapshot=directory/('.usage-snapshot-'+secrets.token_hex(8)+'.sqlite3')
     output=directory/('scores-'+stamp()+'.zip');temporary=output.with_suffix('.partial')
     try:
         with writer.versions.lock():
@@ -126,6 +127,9 @@ def backup(config):
             with closing(sqlite3.connect(temp_db)) as db:version=db.execute('SELECT version FROM score_current').fetchone()[0]
             writer.versions.read(version)
             content={'accounts.sqlite3':temp_db,'production.json':path/'production.json','score-state/production-scores.json':writer.lab/'production-scores.json'}
+            if (path/'usage.sqlite3').exists():
+                from backend.usage_production import snapshot
+                snapshot(path/'usage.sqlite3',usage_snapshot);content['usage.sqlite3']=usage_snapshot
             for folder in writer.versions.root.iterdir():
                 if not re.fullmatch('[a-f0-9]{32}',folder.name):continue
                 writer.versions.read(folder.name)
@@ -133,7 +137,7 @@ def backup(config):
             for p in (writer.lab/'backups').glob('*/*'):
                 name='score-state/backups/'+p.parent.name+'/'+p.name
                 if p.is_file() and safe_backup_name(name):content[name]=p
-            manifest={'format':'racepick-coherent-scores-v1','current':version,'files':{n:file_hash(v) for n,v in content.items()}}
+            manifest={'format':'racepick-coherent-scores-v1','current':version,'usage_schema':1 if 'usage.sqlite3' in content else 0,'files':{n:file_hash(v) for n,v in content.items()}}
             with zipfile.ZipFile(temporary,'x',zipfile.ZIP_DEFLATED) as archive:
                 for n,v in content.items():archive.write(v,n)
                 archive.writestr('backup-manifest.json',encode(manifest))
@@ -141,7 +145,7 @@ def backup(config):
             with temporary.open('rb+') as stream:os.fsync(stream.fileno())
             os.replace(temporary,output);sync_dir(directory)
         return output
-    finally:temp_db.unlink(missing_ok=True);temporary.unlink(missing_ok=True)
+    finally:temp_db.unlink(missing_ok=True);usage_snapshot.unlink(missing_ok=True);temporary.unlink(missing_ok=True)
 
 
 def verify_backup(source):
@@ -151,6 +155,7 @@ def verify_backup(source):
         if sum(i.file_size for i in archive.infolist())>1024**3:raise ValueError('备份超过1GiB，需单独恢复方案')
         manifest=json.loads(archive.read('backup-manifest.json'))
         if manifest.get('format')!='racepick-coherent-scores-v1' or set(manifest['files'])!=set(names)-{'backup-manifest.json'}:raise ValueError('备份清单异常')
+        if manifest.get('usage_schema',0)!=(1 if 'usage.sqlite3' in manifest['files'] else 0):raise ValueError('统计备份组件声明不匹配')
         for n,h in manifest['files'].items():
             with archive.open(n) as stream:
                 if stream_hash(stream)!=h:raise ValueError('备份校验失败：'+n)
@@ -182,11 +187,19 @@ def drill(config,source):
         contribution=contribution_state(db)
         from backend.feedback import state as feedback_state
         feedback=feedback_state(db)
+        from backend.notifications import state as notification_state
+        notifications=notification_state(db)
+    usage_schema=0
+    if (destination/'usage.sqlite3').exists():
+        from backend.usage import schema
+        with closing(sqlite3.connect((destination/'usage.sqlite3').as_uri()+'?mode=ro',uri=True)) as db:
+            if schema(db)!=1 or db.execute('PRAGMA integrity_check').fetchone()[0]!='ok':raise ValueError('统计恢复快照校验失败')
+        usage_schema=1
     versions=Versions(destination/'score-state',lambda p:validate_production_root(p,destination));versions.read(version)
     for row in rows:
         item=json.loads(row[0]);versions.read(item['base']);versions.read(item['target'])
         if item.get('rollback'):versions.read(item['rollback']['version'])
-    return {'drill_directory':str(destination),'version':version,'counts':counts,'pending_batches':pending,'active_database_replaced':False,**contribution,**feedback}
+    return {'drill_directory':str(destination),'version':version,'counts':counts,'pending_batches':pending,'active_database_replaced':False,'usage_schema':usage_schema,**contribution,**feedback,**notifications}
 
 
 def revert_migration(config,source):
