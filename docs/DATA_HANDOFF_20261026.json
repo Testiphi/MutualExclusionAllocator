@@ -1,0 +1,231 @@
+{
+  "schema": "racepick.data-handoff.v1",
+  "date": "2026-10-26",
+  "purpose": "Frozen local national/global data update; Git push only; no application build or production publishing",
+  "base_commit": "21c468a79d5a4339badbca12f6ae1ccfba71df26",
+  "data_ref": "Git commit containing this manifest and six updated tracked data files; resolve actual commit after push",
+  "frozen": true,
+  "files": [
+    {
+      "path": "cars.json",
+      "role": "国服车辆规则依赖，本轮未改，随同校验",
+      "sha256": "69c9da789f5ad8682a12f05adb21ed3767647f5067fe59c5d281510ee32702ec",
+      "bytes": 83612
+    },
+    {
+      "path": "gauntlet_data.json",
+      "role": "国服本地权威成绩4434键",
+      "sha256": "837501efb74e8765bc465439b4527bf0f990050a5535346f979046fce731941b",
+      "bytes": 221598
+    },
+    {
+      "path": "gauntlet_data.xlsx",
+      "role": "国服现有主维护工作簿4434键，不是运行文件",
+      "sha256": "048dacc5bf893d2c4b5296915205868526434f02502424903cff6fd1375b1894",
+      "bytes": 120124
+    },
+    {
+      "path": "cars.global.json",
+      "role": "国际服运行车库44辆，元数据与成绩绑定",
+      "sha256": "d248474042f61d13dea2ccc0899660898fc2479fc5c89dc72ca05e456e48610e",
+      "bytes": 27428
+    },
+    {
+      "path": "gauntlet_data.global.json",
+      "role": "国际服五区满星理论613条运行投影",
+      "sha256": "26eeb2e6e393befc6ba24face2b45316088e4620afcac217d04a6716f0381ae4",
+      "bytes": 121066
+    },
+    {
+      "path": "global-data-manifest.json",
+      "role": "国际三件套字节/哈希/版本/来源绑定",
+      "sha256": "d320d3d438c3b674a5b7da723e4d8c5e135ad5e020215e9ef5a2edd841d7430e",
+      "bytes": 1866
+    },
+    {
+      "path": "gauntlet_data.global.xlsx",
+      "role": "国际完整维护652键及独立参考页，不是运行文件",
+      "sha256": "0ecd4878575d530917ee545392243f65015850314441af49336202ebae0c06f0",
+      "bytes": 39079
+    }
+  ],
+  "changed_data_files": [
+    "gauntlet_data.json",
+    "gauntlet_data.xlsx",
+    "cars.global.json",
+    "gauntlet_data.global.json",
+    "global-data-manifest.json",
+    "gauntlet_data.global.xlsx"
+  ],
+  "national": {
+    "keys": 4434,
+    "counts": {
+      "五区_理论": 1063,
+      "五区_高手": 656,
+      "五区_普通": 642,
+      "五区_自动": 378,
+      "四区_理论": 501,
+      "四区_高手": 480,
+      "四区_普通": 470,
+      "四区_自动": 244
+    },
+    "delta_from_base": {
+      "added": 11,
+      "removed": 0,
+      "values_changed": 5
+    },
+    "cloud_import_version": "e209f3e32d0de1dfa7fe6c811a5d5c46",
+    "local_saved_changes": 9,
+    "cloud_added_keys": 5,
+    "derived_mirrors_added": 2,
+    "cloud_slower_conflicts_kept_local": 10,
+    "previous_local_only37_preserved": true,
+    "cloud_3star_theory_SC": "爱音★3/四区理论/古老斗技场十字路口/跳图24.30; stars preserved, no upgrade to max or change of tier"
+  },
+  "international": {
+    "full_maintenance_keys": 652,
+    "timed_scores": 634,
+    "ordinary_mirrors": 18,
+    "runtime": {
+      "physical_cars": 44,
+      "tracks": 44,
+      "covered_tracks": 42,
+      "score_entries": 613,
+      "non_oc_entries": 592,
+      "oc_entries": 21,
+      "special_entries": 45,
+      "normal_entries": 568
+    },
+    "capabilities": {
+      "zones": [
+        "五区"
+      ],
+      "tiers": [
+        "理论"
+      ],
+      "max_stars_only": true,
+      "oc": true
+    },
+    "dataset_version": "baa62820b9b1ea710a00f56d765ed42626c17210b45be0d2ddaf3a0cc0bfbc57",
+    "delta_from_base_runtime": {
+      "added": 12,
+      "removed": 0,
+      "values_changed": 5
+    },
+    "source_batches": [
+      {
+        "directory": "本地归档/source-accepted4-20261025-01a16d65",
+        "accepted_changes": 4
+      },
+      {
+        "directory": "本地归档/source-accepted6-20261025-01a16d65",
+        "accepted_changes": 6
+      },
+      {
+        "directory": "本地归档/source-accepted7-20261025-01a16d65",
+        "accepted_changes": 7
+      }
+    ],
+    "user_final_overrides": {
+      "杰孙/难波公园普通": 19.45
+    },
+    "kept_previous": {
+      "帝国/难波公园普通": 19.56,
+      "c2/信仰之跃普通": 18.45,
+      "c2/信仰之跃滑雪": 17.89,
+      "f5/塞纳河岸跳图": 19.95
+    },
+    "remaining_not_accepted": [
+      "evosf90未来融合17.20 lacks required post-2026-05 version/date evidence",
+      "21c未来融合17.30 already sourced as17.35 under old precision; unchanged",
+      "Jesko straight sprint24.333 is precision issue; not imported"
+    ]
+  },
+  "local_maintenance_not_in_git": [
+    {
+      "path": "E:\\hzz\\work\\MutualExclusionAllocator\\数据源\\international-prep-20261023\\maintenance\\gauntlet_data_international_maintenance.json",
+      "git_included": false,
+      "sha256": "08178a110cca33eba97fa1af72f920077ae40e84ab4f2c2cce0a007becd6779a",
+      "bytes": 128087,
+      "mtime_ns": "1792925859576150700"
+    },
+    {
+      "path": "E:\\hzz\\work\\MutualExclusionAllocator\\数据源\\international-prep-20261023\\maintenance\\gauntlet_data_international.json",
+      "git_included": false,
+      "sha256": "ee560cc68800bc2088a52d31804eb91bf88cfe0273a00230bc5cf2c5045a8f6b",
+      "bytes": 121246,
+      "mtime_ns": "1792925859584023900"
+    },
+    {
+      "path": "E:\\hzz\\work\\MutualExclusionAllocator\\数据源\\international-prep-20261023\\maintenance\\maintenance-score-ledger.json",
+      "git_included": false,
+      "sha256": "3416eb28fa2582ee599402722ae14363ea9ec64ba128d19df9d60d23a6b2fa2c",
+      "bytes": 651376,
+      "mtime_ns": "1792925859589017100"
+    },
+    {
+      "path": "E:\\hzz\\work\\MutualExclusionAllocator\\数据源\\international-prep-20261023\\maintenance\\score-ledger.json",
+      "git_included": false,
+      "sha256": "bab00114dd2a314548e2d69326185f24a087f572416568447662de70c273d20c",
+      "bytes": 548894,
+      "mtime_ns": "1792925859595815700"
+    },
+    {
+      "path": "E:\\hzz\\work\\MutualExclusionAllocator\\数据源\\international-prep-20261023\\maintenance\\current-maintenance.json",
+      "git_included": false,
+      "sha256": "6c76dfce2157d9537da3aa75d99fcbd833ec192ec01a7c451cae613b43ecf392",
+      "bytes": 4857,
+      "mtime_ns": "1792925859607717600"
+    },
+    {
+      "path": "E:\\hzz\\work\\MutualExclusionAllocator\\数据源\\international-prep-20261023\\maintenance\\maintenance-car-identities.json",
+      "git_included": false,
+      "sha256": "d8304358a600bdaabb684d4532b131cddc148f17b227f712061db3057cfd240c",
+      "bytes": 15913,
+      "mtime_ns": "1792812793293049400"
+    },
+    {
+      "path": "E:\\hzz\\work\\MutualExclusionAllocator\\数据源\\international-prep-20261023\\maintenance\\oc-score-ledger.json",
+      "git_included": false,
+      "sha256": "f64da7163003bfa41a6cf85359ad91eb55548856a4f8d1f75aceaf07ae96ab4b",
+      "bytes": 17639,
+      "mtime_ns": "1792810052859162800"
+    },
+    {
+      "path": "E:\\hzz\\work\\MutualExclusionAllocator\\数据源\\international-prep-20261023\\maintenance\\expert-reference-scores.json",
+      "git_included": false,
+      "sha256": "59bc5fd103ebd84b8d1d61c702f08970ed2a27221f0148e8e9a20139a832f446",
+      "bytes": 116627,
+      "mtime_ns": "1792811366463992900"
+    }
+  ],
+  "untracked_preserved": [
+    "Asphalt Legend - 擂台成绩表.xlsx",
+    "_star_curve_fit.py",
+    "gauntlet_data_shared.xlsx"
+  ],
+  "validation": {
+    "fresh_keyed_consistency": true,
+    "national_and_global_full_validation_errors": 0,
+    "international_generator_byte_equal": true,
+    "latest_national_tests": 50,
+    "latest_global_data_tests": 12,
+    "latest_native_excel_opened": false,
+    "XML_namespace_and_render_checks": "Passed in most recent data-return receipts; no same-byte full-suite rerun for commit-only task"
+  },
+  "boundaries": {
+    "commit_push": true,
+    "build": false,
+    "production_write": false,
+    "announcement": false,
+    "include_reference_tiers_in_global_runtime": false,
+    "full_maintenance_and_source_evidence_uploaded": false
+  },
+  "last_known_online_not_reverified_here": {
+    "app": "171d872a414dea28be25eaa1",
+    "international_runtime": 601,
+    "international_version": "1bb0253ce327210b6c02fb2c2ea49682ee628086fec6c7bc987326121b4a6efc",
+    "national_public_snapshot_last_read": "e209f3e32d0de1dfa7fe6c811a5d5c46"
+  },
+  "changes_after_handoff_require_new_manifest": true
+}
