@@ -138,6 +138,11 @@ def atomic_write(path, text, backup=True):
 
 def replace_with_backup(temporary, path, backup=True):
     path = Path(path)
+    if path.suffix.lower() == '.xlsx':
+        # All maintenance XLSX saves share this final step, including exports and
+        # reviewed in-place cell/column updates. JSON saves are unaffected.
+        from autofit_xlsx import autofit_file
+        autofit_file(temporary)
     if backup and path.exists():
         stamp = datetime.now().strftime('%Y%m%d_%H%M%S_%f')
         shutil.copy2(path, path.with_name(f'{path.name}.{stamp}.bak'))

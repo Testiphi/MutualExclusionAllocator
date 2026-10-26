@@ -34,6 +34,32 @@ JSON 先检查格式化前后数据等价；Excel 先检查生成的 XLSX 压缩
 随后以临时文件原子替换目标。缺少输出目录时明确报错，不自动创建目录。
 格式化保留未知字段和原有字段顺序，并正确转义引号、反斜杠及换行。
 
+### 回代／新增列后自动适配列宽
+
+维护工具的统一保存入口 `data_tools.replace_with_backup()` 现在会在替换 `.xlsx`
+之前自动适配车辆列宽；`atomic_save_workbook()`、`export_xlsx.py` 自动沿用，
+JSON 保存不受影响。维护现有表的定点更新、追加列也应通过这个入口保存，
+不要直接 `os.replace` 绕过最后一步。先生成完整候选、适配列宽并校验，再更新
+工作簿 SHA／来源指针；国际服须最后核对生成器 `--check`。
+
+两服使用相同规则：短车辆列以 `7.453125` 为最小宽度，按表头和现有内容的中英文
+字符宽度估算，星级、`[OC]` 和筛选按钮留出空间。长标题会比短标题宽，
+不是全部列固定成同一宽度。地图／跑法列、字体、行高、成绩精度、排序、合并、
+冻结、引用参考页均不改变；不需要 Excel 宏或新增依赖。
+
+独立命令只处理标准成绩页，默认只报告：
+
+```powershell
+python autofit_xlsx.py --input gauntlet_data.xlsx
+python autofit_xlsx.py --input gauntlet_data.xlsx --output autofit.preview.xlsx
+python autofit_xlsx.py --input gauntlet_data.xlsx --write
+python autofit_xlsx.py --input gauntlet_data.global.xlsx --write
+```
+
+`--write` 会先备份当前目标；无列宽变化时不重写。独立命令只改列宽，不自动改
+成绩 JSON 或来源台账。国际表原位适配后，维护侧仍须刷新工作簿来源哈希。
+此处“自动”指维护工具每次写回时执行，不是 Excel 手动输入时实时响应，也不创建监控。
+
 车辆库先校验真名/昵称身份冲突、重复记录、车池枚举和重复分区、入池昵称、星级字段类型/范围/上下限及默认值。
 仅检查人工定义的结构，不从性能分推导特改规则，默认星级可由前端按四区上限钳位。
 
