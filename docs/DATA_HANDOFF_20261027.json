@@ -1,0 +1,51 @@
+{
+  "keys": 4449,
+  "counts": {
+    "五区_理论": 1064,
+    "五区_高手": 656,
+    "五区_普通": 642,
+    "五区_自动": 378,
+    "四区_理论": 501,
+    "四区_高手": 487,
+    "四区_普通": 477,
+    "四区_自动": 244
+  },
+  "accepted": 12,
+  "faster": 4,
+  "added": 8,
+  "ordinary_mirrors_added": 7,
+  "json_both_workbooks_equal": true,
+  "validation_errors": [],
+  "international_and_rules_unchanged": true,
+  "autofit_idempotent": true,
+  "committed": false,
+  "pushed": false,
+  "production_operations": false,
+  "files": {
+    "gauntlet_data.json": {
+      "sha256": "1b4b4391a10a8df612000d59f30bf89ddff1e1a9e444d83acf7fa0be9574934a",
+      "bytes": 222247,
+      "mtime_ns": "1793098978743063200"
+    },
+    "gauntlet_data.xlsx": {
+      "sha256": "8a5d6da0432db0a2a6607b1a6e1fcd42b0998364898f8f95019ff98ba8211b32",
+      "bytes": 122088,
+      "mtime_ns": "1793098967652002100"
+    },
+    "gauntlet_data_shared.xlsx": {
+      "sha256": "a515eddd2067bc9c244203038c22a011d9846b11c805ba4bf749c3f7b64bf944",
+      "bytes": 140117,
+      "mtime_ns": "1793098968500989000"
+    }
+  },
+  "targeted_tests_passed": 57,
+  "git_diff_check_passed": true,
+  "verification_stage": "Backfill verification snapshot before authorized git delivery",
+  "git_delivery_scope": [
+    "gauntlet_data.json",
+    "gauntlet_data.xlsx",
+    "docs/DATA_HANDOFF_20261027.md",
+    "docs/DATA_HANDOFF_20261027.json"
+  ],
+  "git_delivery_receipt": "本地归档/workbook-return-20261027-current/push-receipt.json"
+}
