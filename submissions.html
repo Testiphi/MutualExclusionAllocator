@@ -10,10 +10,10 @@
 <nav id="navigation" hidden><button id="newTab" type="button">提交成绩</button><button id="mineTab" type="button">我的投稿</button><button id="reviewTab" type="button" hidden>审核工作台</button></nav>
 </header>
 <main>
-<p id="message" role="status" aria-live="polite"></p>
+<p id="message" role="status" aria-live="polite"></p><p id="loginPrompt" hidden><a id="loginLink" class="ui-button ui-primary">登录后继续投稿</a></p>
 <section id="compose" hidden aria-labelledby="composeTitle"><h2 id="composeTitle">录入成绩</h2>
-<p>可连续添加多条，先保存草稿，再逐条补充证据、预览并提交。请确认实际分区与星级；不要直接照抄账号车库设置。</p>
-<div id="draftRows"></div><div class="actions"><button id="addRow" type="button">再添一条</button><button id="saveBatch" type="button">保存全部草稿</button></div>
+<p><a class="ui-button ui-secondary" href="/score-table">从擂台表选目标</a></p>
+<div id="draftRows"></div><div class="actions"><button id="submitBatch" class="ui-primary" type="button">提交审核</button></div><details class="batch-options"><summary>批量 / 暂存</summary><div class="actions"><button id="addRow" type="button">再添一条</button><button id="saveBatch" type="button">仅保存草稿</button></div></details><div id="savedDraftLinks"></div>
 </section>
 <section id="workspace" hidden>
 <div class="filters"><h2 id="listTitle">我的投稿</h2><label>状态 <select id="statusFilter"><option value="">全部</option><option value="draft">草稿</option><option value="pending">待审核</option><option value="needs_info">需要补充</option><option value="accepted">已采纳，待应用</option><option value="ignored">未采纳</option></select></label><label>地图 / 车辆 / 说明 <input id="search" maxlength="100" type="search"></label><button id="searchBtn" type="button">查询</button><button id="refresh" type="button">刷新</button></div>

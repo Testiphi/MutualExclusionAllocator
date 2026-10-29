@@ -54,8 +54,10 @@
         if(type!=='select'&&type!=='textarea')input.type=type;input.dataset.field=name;
         wrapper.append(input);container.append(wrapper);return input;
     }
-    function scoreForm(initial={},title='成绩条目'){
-        const node=el('section',undefined,'score-form');node.append(el('h3',title));const fields=el('div',undefined,'fields');node.append(fields);
+    function scoreForm(initial={},title='成绩条目',compact=false,withImages=false){
+        const node=el('section',undefined,'score-form'+(compact?' compact':''));node.append(el('h3',title));const fields=el('div',undefined,'fields');
+        const targetDetails=compact?el('details'):null,targetSummary=compact?el('summary'):null;
+        if(compact){targetDetails.append(targetSummary,fields);node.append(targetDetails);}else node.append(fields);
         const zone=field(fields,'分区','zone','select');['五区','四区'].forEach(v=>option(zone,v,v));zone.value=initial.zone||'五区';
         const tier=field(fields,'建议档位','tier','select');['高手','理论','普通','自动'].forEach(v=>option(tier,v,v));tier.value=initial.tier||'高手';
         const big=field(fields,'大地图','big','select');option(big,'','请选择');[...new Set(catalog.tracks.map(t=>t.big))].forEach(v=>option(big,v,v));big.value=initial.big||'';
@@ -64,29 +66,69 @@
         const suggestions=el('datalist');suggestions.id='cars-'+(++formSerial);car.setAttribute('list',suggestions.id);fields.append(suggestions);
         const stars=field(fields,'实际星级（高手必选）','stars','select');
         const route=field(fields,'跑法','route','select');option(route,'','普通跑法');catalog.routes.forEach(v=>option(route,v,v));route.value=initial.route||'';
-        const time=field(fields,'成绩（秒或分:秒）','time');time.maxLength=24;time.placeholder='例如 26.52 或 1:02.345';time.value=initial.time||'';
-        const url=field(fields,'视频 / 来源链接（可选）','video_url','url');url.maxLength=1000;url.value=initial.video_url||'';
-        const notes=field(fields,'说明、来源或需要补充的资料','notes','textarea');notes.maxLength=2000;notes.value=initial.notes||'';notes.parentElement.className='wide';
+        const time=field(compact?node:fields,'成绩（秒或分:秒）','time');time.maxLength=24;time.placeholder='例如 26.52 或 1:02.345';time.value=initial.time||'';time.required=true;time.inputMode='decimal';
+        const extras=compact?el('details',undefined,'optional-evidence'):null,optionalFields=compact?el('div',undefined,'fields'):fields;
+        if(compact){extras.append(el('summary','说明 / 视频 / 图片（可选）'),optionalFields);node.append(extras);}
+        const url=field(optionalFields,'视频 / 来源链接（可选）','video_url','url');url.maxLength=1000;url.value=initial.video_url||'';
+        const notes=field(optionalFields,'说明、来源或需要补充的资料','notes','textarea');notes.maxLength=2000;notes.value=initial.notes||'';notes.parentElement.className='wide';
         const unlisted=field(fields,'车辆、地图或跑法尚未收录（填写详细说明）','unlisted','checkbox');unlisted.checked=!!initial.unlisted;unlisted.parentElement.className='check wide';
         function maps(){const previous=small.value;small.replaceChildren();option(small,'','请选择');catalog.tracks.filter(t=>t.big===big.value).forEach(t=>option(small,t.small,t.small));small.value=previous;}
         function cars(){suggestions.replaceChildren();catalog.cars.filter(c=>c.zones.includes(zone.value)).forEach(c=>option(suggestions,c.name,c.title));}
         function starOptions(current){const c=catalog.cars.find(c=>c.name===car.value||c.title===car.value);stars.replaceChildren();option(stars,'','请选择 / 无星级条目');const bounds=c?.limits[zone.value]||[1,6];for(let i=bounds[0];i<=bounds[1];i++)option(stars,String(i),String(i)+'星');if(current&&!Array.from(stars.options).some(o=>o.value===current))option(stars,current,current+'星（不符合当前规则）');stars.value=current||'';}
         maps();small.value=initial.small||'';cars();starOptions(initial.stars===null||initial.stars===undefined?'':String(initial.stars));
         big.onchange=maps;zone.onchange=()=>{cars();starOptions(stars.value);};car.onchange=()=>starOptions(stars.value);
-        node.append(el('p','普通/自动档采纳后仅形成可用性归档建议，投稿成绩仍保留，不自动改写其他档位。','muted'));
+        if(!compact)node.append(el('p','普通/自动档采纳后仅形成可用性归档建议，投稿成绩仍保留，不自动改写其他档位。','muted'));
+        if(compact){
+            const files=withImages?field(optionalFields,'证据图片（可选，最多3张，每张2MB）','images','file'):null;if(files){files.accept='image/png,image/jpeg,image/webp';files.multiple=true;node.readFiles=()=>Array.from(files.files||[]);}
+            function describe(){targetSummary.textContent=(big.value&&small.value&&car.value?`${zone.value} / ${tier.value} · ${big.value} / ${small.value} · ${car.value}${stars.value?' ★'+stars.value:''} · ${route.value||'普通跑法'}`:'选择投稿目标')+'（可修改）';}
+            fields.addEventListener('input',describe);fields.addEventListener('change',describe);describe();targetDetails.open=!initial.big||!initial.small||!initial.car;
+            extras.open=!!initial.notes||!!initial.video_url;
+        }
         const read=()=>({big:big.value,small:small.value,zone:zone.value,tier:tier.value,car:car.value.trim(),stars:stars.value?Number(stars.value):null,route:route.value,time:time.value.trim(),notes:notes.value.trim(),video_url:url.value.trim(),unlisted:unlisted.checked});
-        return {node,read};
+        return {node,read,optional:extras};
     }
     function summary(value){if(!value)return '未采纳';if(value.unlisted)return '未收录资料建议\n'+value.notes;return `${value.zone} / ${value.tier}\n${value.big} · ${value.small}\n${value.car} ${value.stars===null?'无星级':'★'+value.stars} / ${value.route||'普通跑法'}\n成绩：${value.time} 秒\n${value.notes||''}`;}
     function column(title,text){const node=el('div',undefined,'summary');node.append(el('strong',title),el('span',text));return node;}
     function compareText(c){return `${kinds[c?.kind]||'未比较'}${c?.old!==null&&c?.old!==undefined?'\n当前记录：'+c.old+(String(c.kind).startsWith('availability')?'':' 秒'):''}${c?.delta!==null&&c?.delta!==undefined?'\n变化：'+c.delta+' 秒':''}\n${c?.effect||''}`;}
     function button(text,fn){const n=el('button',text);n.type='button';n.onclick=()=>run(fn);return n;}
-    function newRow(){
+    function newRow(initial={}){
         if($('draftRows').children.length>=20){say('一批最多20条');return;}
-        const form=scoreForm({},'成绩 '+($('draftRows').children.length+1));
+        const form=scoreForm(initial,'成绩 '+($('draftRows').children.length+1),true,true);
         form.node.readEntry=form.read;form.node.addEventListener('input',()=>{unsaved=true;});
-        form.node.append(button('移除此行',async()=>{if(await ask('移除此行尚未保存的输入？')){form.node.remove();unsaved=true;}}));
+        (form.node.querySelector?.('.optional-evidence')||form.node).append(button('移除此行',async()=>{if(await ask('移除此行尚未保存的输入？')){form.node.remove();unsaved=true;}}));
         $('draftRows').append(form.node);
+    }
+    function prefillTarget(value){
+        if(!value||value.server!=='cn')throw new Error('此入口只支持国服投稿');
+        const result=Object.fromEntries(['big','small','zone','tier','car','stars','route'].map(k=>[k,value[k]]));
+        const car=catalog.cars.find(c=>c.name===result.car),track=catalog.tracks.some(t=>t.big===result.big&&t.small===result.small);
+        if(!track||!car||!car.zones.includes(result.zone)||!['理论','高手'].includes(result.tier)||typeof result.route!=='string'||result.route&&!catalog.routes.includes(result.route))throw new Error('预填目标已变化，请从擂台表重新选择');
+        if(result.tier==='高手'){const [low,high]=car.limits[result.zone];if(!Number.isInteger(result.stars)||result.stars<low||result.stars>high)throw new Error('预填星级不符合当前规则，请重新选择');}
+        else{if(result.stars!==null)throw new Error('理论目标已变化，请从擂台表重新选择');result.stars=null;}
+        return {...result,time:'',notes:'',video_url:'',unlisted:false};
+    }
+    async function sendBatch(publish){
+        const rows=[...$('draftRows').children],entries=rows.map(n=>n.readEntry());if(!entries.length)throw new Error('请先添加一条成绩');
+        if(entries.some(e=>!e.time.trim()))throw new Error('请填写成绩。');
+        const files=rows.map(n=>n.readFiles?n.readFiles():[]);
+        for(const pictures of files){if(pictures.length>3||pictures.some(f=>f.size>2*1024*1024||!['image/png','image/jpeg','image/webp'].includes(f.type)))throw new Error('图片最多3张，每张2MB以内，支持PNG/JPEG/WebP');}
+        const text=JSON.stringify({entries,files:files.map(group=>group.map(f=>[f.name,f.size,f.lastModified,f.type]))});
+        if(batchRequest?.ids&&batchRequest.text!==text)throw new Error('稿件已保存，请从下方已保存稿件继续修改，避免重复创建');
+        if(!batchRequest||batchRequest.text!==text)batchRequest={text,key:crypto.randomUUID().replaceAll('-','')};
+        if(!batchRequest.ids){const saved=await request('POST','/submissions',{entries,request_key:batchRequest.key});batchRequest.ids=saved.ids;batchRequest.progress=saved.ids.map(()=>({revision:1,uploaded:0,sent:false}));}
+        $('savedDraftLinks').replaceChildren();
+        for(const [i,id] of batchRequest.ids.entries()){const a=el('a','查看稿件 '+(i+1),'ui-button ui-secondary');a.href='/submissions#'+id;$('savedDraftLinks').append(a);}
+        for(const [i,id] of batchRequest.ids.entries()){
+            const progress=batchRequest.progress[i];if(progress.sent)continue;
+            while(progress.uploaded<files[i].length){
+                const file=files[i][progress.uploaded];
+                const data=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(String(reader.result).split(',')[1]);reader.onerror=()=>reject(new Error('图片读取失败，稿件已保留'));reader.onabort=()=>reject(new Error('图片读取已取消，稿件已保留'));reader.readAsDataURL(file);});
+                const uploaded=await request('POST','/submissions/'+id+'/images',{revision:progress.revision,data});progress.revision=uploaded.revision;progress.uploaded++;
+            }
+            if(publish){await request('POST','/submissions/'+id+'/submit',{revision:progress.revision});progress.sent=true;}
+        }
+        const first=batchRequest.ids[0],count=batchRequest.ids.length;unsaved=false;$('draftRows').replaceChildren();batchRequest=null;$('savedDraftLinks').replaceChildren();
+        await switchView('mine');await loadDetail(first);$('message').textContent=publish?`已提交${count}条，等待审核。`:`已保存${count}条草稿。`;
     }
     async function switchView(view){
         if(unsaved){if(!await ask('离开前尚有未保存的输入。确认放弃这些输入？'))return;if(!$('compose').hidden)$('draftRows').replaceChildren();}
@@ -167,9 +209,9 @@
     }
     async function refreshItem(id){unsaved=false;await loadList();await loadDetail(id);}
     function renderEdit(root,item){
-        activeForm=scoreForm(item.payload,'修改草稿 / 补充资料');root.append(activeForm.node);activeForm.node.addEventListener('input',()=>{unsaved=true;});
-        const fileLabel=el('label','证据图片：PNG/JPEG/WebP，每张≤2MB，最多3张'),file=el('input');file.type='file';file.accept='image/png,image/jpeg,image/webp';fileLabel.append(file);root.append(fileLabel);
-        root.append(button('上传证据图片',async()=>{
+        activeForm=scoreForm(item.payload,'修改草稿 / 补充资料',true);root.append(activeForm.node);activeForm.node.addEventListener('input',()=>{unsaved=true;});
+        const fileLabel=el('label','证据图片：PNG/JPEG/WebP，每张≤2MB，最多3张'),file=el('input');file.type='file';file.accept='image/png,image/jpeg,image/webp';fileLabel.append(file);const evidenceRoot=activeForm.optional||root;evidenceRoot.append(fileLabel);
+        evidenceRoot.append(button('上传证据图片',async()=>{
             if(unsaved){say('请先保存条目修改，再上传图片。');return;}
             const picture=file.files[0];if(!picture){say('请选择图片');return;}if(picture.size>2*1024*1024){say('图片不能超过2MB');return;}
             const data=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(String(reader.result).split(',')[1]);reader.onerror=()=>reject(new Error('本地图片读取失败，请重新选择图片后重试。'));reader.onabort=()=>reject(new Error('图片读取已中断，请重新选择图片。'));reader.readAsDataURL(picture);});
@@ -233,20 +275,16 @@
     }
     async function init(){
         const session=await request('GET','/auth/me');user=session.user;csrf=session.csrf;contributions=!!session.contributions;
-        if(!user){const text='请先返回选车助手注册或登录，再进入投稿页。';$('identity').textContent=text;say(text);return;}
+        if(!user){$('identity').textContent='登录后继续投稿';$('loginPrompt').hidden=false;$('loginLink').href='/?login=1&returnTo='+encodeURIComponent(location.pathname+location.search+location.hash);return;}
         $('identity').textContent=`${user.email} · ${user.role==='superadmin'?'超级管理员':user.role==='admin'?'管理员':'玩家'}`;
         catalog=await request('GET','/submissions/catalog');$('reference').textContent=catalog.reference_label+' · '+catalog.basis.data.slice(0,12);
         if(contributions){const a=el('a','贡献排行榜 / 设置我的公开昵称');a.className='ui-button ui-secondary';a.href='/leaderboard#mine';$('navigation').append(a);}
         $('navigation').hidden=false;$('reviewTab').hidden=!['admin','superadmin'].includes(user.role);
         if(session.readonly_previews&&['admin','superadmin'].includes(user.role)){const link=el('a','已采纳投稿预览');link.className='ui-button ui-secondary';link.href='/data-previews';$('navigation').append(link);}
         $('newTab').onclick=()=>run(()=>switchView('new'));$('mineTab').onclick=()=>run(()=>switchView('mine'));$('reviewTab').onclick=()=>run(()=>switchView('review'));
-        $('addRow').onclick=newRow;
-        $('saveBatch').onclick=()=>run(async()=>{
-            const entries=[...$('draftRows').children].map(n=>n.readEntry());if(!entries.length){say('请先添加至少一条');return;}
-            const text=JSON.stringify(entries);if(!batchRequest||batchRequest.text!==text)batchRequest={text,key:crypto.randomUUID().replaceAll('-','')};
-            const saved=await request('POST','/submissions',{entries,request_key:batchRequest.key});unsaved=false;$('draftRows').replaceChildren();batchRequest=null;
-            await switchView('mine');await loadDetail(saved.ids[0]);say(`已保存 ${saved.ids.length} 条草稿。可逐条补图片或视频来源，预览后提交审核。`);
-        });
+        $('addRow').onclick=()=>newRow();
+        $('submitBatch').onclick=()=>run(()=>sendBatch(true));
+        $('saveBatch').onclick=()=>run(()=>sendBatch(false));
         for(const id of ['searchBtn','refresh'])$(id).onclick=()=>run(async()=>{if(unsaved&&!await ask('刷新会丢弃未保存的编辑，继续？'))return;unsaved=false;offset=0;await loadList();if(selected)await loadDetail(selected.id);});
         $('statusFilter').onchange=()=>run(async()=>{offset=0;await loadList();});
         $('previous').onclick=()=>run(async()=>{offset=Math.max(0,offset-50);await loadList();});$('next').onclick=()=>run(async()=>{offset+=50;await loadList();});
@@ -254,7 +292,11 @@
         if(session.notifications){
             unread=Unread.create({request,user});unread.track($('mineTab'),'submissions');unread.track($('reviewTab'),'review');await unread.refresh();
         }
-        await switchView(location.hash==='#new'?'new':location.hash==='#review'&&['admin','superadmin'].includes(user.role)?'review':'mine');
+        const rawPrefill=new URLSearchParams(location.search).get('prefill');
+        if(rawPrefill){
+            try{const initial=prefillTarget(JSON.parse(rawPrefill));await switchView('new');$('draftRows').replaceChildren();newRow(initial);unsaved=false;}
+            catch(error){await switchView('new');$('message').textContent=error.message;}
+        }else await switchView(location.hash==='#new'?'new':location.hash==='#review'&&['admin','superadmin'].includes(user.role)?'review':'mine');
         if(/^#[a-f0-9]{32}$/.test(location.hash))await loadDetail(location.hash.slice(1));
     }
     void init().catch(e=>say(e.message));

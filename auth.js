@@ -239,7 +239,7 @@
             void action(async()=>{
                 if(mode==='login'){
                     if(store?.state().dirty&&!await ask('当前有未保存的车库修改。兑换后需重新登录，草稿保留在本窗口，不会自动保存。继续？'))return;
-                    await request('POST','/auth/login',{email,password});clearPasswords();const back=new URLSearchParams(location.search).get('returnTo');if(back){const target=new URL(back,location.origin);if(target.origin===location.origin&&target.pathname==='/score-table'){location.assign(target.pathname+target.search);return;}}location.reload();
+                    await request('POST','/auth/login',{email,password});clearPasswords();const back=new URLSearchParams(location.search).get('returnTo');if(back){const target=new URL(back,location.origin);if(target.origin===location.origin&&['/score-table','/submissions'].includes(target.pathname)){const hash=target.pathname==='/submissions'&&(target.hash==='#new'||/^#[a-f0-9]{32}$/.test(target.hash))?target.hash:'';location.assign(target.pathname+target.search+hash);return;}}location.reload();
                 }else if(mode==='register'){
                     const result=await request('POST','/auth/register',{email,password,...(invitesEnabled&&invite_code?{invite_code}:{})});showAuth('sent',{message:result.message,sentAction:mode});
                 }else if(mode==='forgot'||mode==='resend'){
@@ -290,6 +290,15 @@
             }
         }
         if(session.community_controls&&globalThis.AnnouncementUI){try{await AnnouncementUI.init({owner,request});}catch(error){report('更新公告暂时无法读取，其他功能可继续使用');}}
+        const jump=new URLSearchParams(location.search);
+        if(jump.get('login')==='1'&&!location.hash){
+            try{const back=new URL(jump.get('returnTo')||'',location.origin);
+                if(back.origin===location.origin&&['/score-table','/submissions'].includes(back.pathname)){
+                    if(owner){const hash=back.pathname==='/submissions'&&(back.hash==='#new'||/^#[a-f0-9]{32}$/.test(back.hash))?back.hash:'';location.assign(back.pathname+back.search+hash);}
+                    else showAuth('login');
+                }
+            }catch{}
+        }
         openMailLink();
         addEventListener('hashchange',openMailLink);
         addEventListener('beforeunload',e=>{
