@@ -1,0 +1,50 @@
+{
+  "release_id": "bbd9268769daca031b1267ed",
+  "code_commit": "3fbc599482855490f1859bd65b3ab53ada30b753",
+  "data_commit": "d06cd7d54838230976342c19c21638b90a5632ac",
+  "archive": "E:\\hzz\\work\\MutualExclusionAllocator\\repo\\.production-build\\RacePick-Coverage661-20261030-bbd92687-delivery.zip",
+  "archive_sha256": "186d4e3cea05516bbb0b4da44e6cf5015cf285467898a5aa2e7a5236cbb42645",
+  "bytes": 11050389,
+  "outer_files": 22,
+  "inner_sha256": "fc0e6ae9fc0efaf3e85d111a9f8038cefe1f86f2d7be79db46a5a21aecadf8c4",
+  "verification": {
+    "release_id": "bbd9268769daca031b1267ed",
+    "code_commit": "3fbc599482855490f1859bd65b3ab53ada30b753",
+    "data_commit": "d06cd7d54838230976342c19c21638b90a5632ac",
+    "manifest_files": 103,
+    "locked_wheels": 19,
+    "inner_zip_sha256": "fc0e6ae9fc0efaf3e85d111a9f8038cefe1f86f2d7be79db46a5a21aecadf8c4",
+    "source_all_files_exact_git_bytes": "PASS",
+    "data_handoff17_sha256": "PASS",
+    "data_scope_actual_counts": "PASS",
+    "allowlist_hash_size_stage_verify": "PASS",
+    "shell_LF_only": "PASS",
+    "staged_directory": "E:\\hzz\\work\\MutualExclusionAllocator\\本地归档\\coverage-release-20261030\\staged\\releases\\bbd9268769daca031b1267ed",
+    "production_accessed": false,
+    "tests": {
+      "javascript_passed": 117,
+      "backend_passed": 173,
+      "python_tools_executed": 89,
+      "python_tools_passed": 88,
+      "linux_only_skipped": 1
+    },
+    "initial_test_environment_note": "First backend run without -X utf8 failed one existing writeback test decoding UTF-8 as GBK; entire suite rerun with -B -X utf8 passed173; no production or workbook operation.",
+    "offline_linux_py312_wheel_resolution": "PASS - no-index/require-hashes,19 exact hashes; native execution pending",
+    "staged_windows_artifact_rehearsal": "PASS - artifact-only temporary DB HTTP, component migration/idempotence, simulated lock, nonempty coverage choice/event backup+restore; new readonly POST and reference columns verified",
+    "user_acceptance": "user requested packaging after local design review; native mobile/WeChat and production acceptance pending",
+    "old_archives_and_data_unchanged": "PASS -25 protected paths hash and mtime match",
+    "supersedes_release": "9f9b2e2bba7ba566a0665332",
+    "pending": [
+      "actual current/PID and production score version/component schema/pending batches",
+      "Ubuntu24.04 CPython3.12 native install,permissions and locks",
+      "coherent production backup and restore drill",
+      "coverage first migration ONLY if schema0; preserve choices/events if schema1",
+      "production desktop/mobile WeChat acceptance",
+      "real post-upgrade timer backup result"
+    ]
+  },
+  "production_accessed": false,
+  "upload_or_deployment_performed": false,
+  "source_remote_verified": "origin/feature/score-coverage=3fbc599482855490f1859bd65b3ab53ada30b753",
+  "main_push": "completion documents committed after artifact; exact remote tip in local PUSH_RECEIPT.json"
+}

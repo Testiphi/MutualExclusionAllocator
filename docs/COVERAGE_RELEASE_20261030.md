@@ -24,3 +24,6 @@
 coverage_schema保持1：若现场为0，只有本组件显式迁移需要执行；若已经为1，只升级应用且保持既有选图/事件，禁止清空或重复首次初始化。两条路径均须实际版本核验、成套备份/恢复、Linux原生临时库自检及兼容门禁，执行顺序见COVERAGE_DEPLOYMENT.md。已有其他组件迁移一概不重跑。包与Windows测试不代表生产验收；现场版本、原生锁/权限、当前正式score版本、未完成批次、真实备份timer结果和用户手机验收仍待云端核验。
 
 最终源码提交、发布ID、完整ZIP路径/SHA及远端状态由后续机器回执固定，不在构包前编造成功。
+
+
+构包完成：源码3fbc599482855490f1859bd65b3ab53ada30b753、数据d06cd7d54838230976342c19c21638b90a5632ac；发布ID bbd9268769daca031b1267ed。完整包repo/.production-build/RacePick-Coverage661-20261030-bbd92687-delivery.zip，11050389字节，SHA256 186d4e3cea05516bbb0b4da44e6cf5015cf285467898a5aa2e7a5236cbb42645，内层SHA256 fc0e6ae9fc0efaf3e85d111a9f8038cefe1f86f2d7be79db46a5a21aecadf8c4。103运行文件/依赖、19锁定wheel、外层22文件，来源/白名单/逐项SHA/CRC/独立暂存/临时库成套恢复均通过。全量前端117、后端173、工具88通过/1项Linux专用跳过；首次未指定UTF-8的后端运行因既有测试默认GBK解码失败，按既有UTF-8命令重跑全量通过，未改业务代码规避。25份保护路径哈希和mtime保持。Linux原生及生产/手机微信验收仍待云端执行；本地未上传或操作生产。详见机器回执与COVERAGE_CLOUD_PROMPT_20261030.md。

@@ -18,6 +18,8 @@
 
 ## 当前交接与部署
 
+- [2026-10-30参考列与精简投稿完整包](COVERAGE_RELEASE_20261030.md)、[云端提示词](COVERAGE_CLOUD_PROMPT_20261030.md)、[机器回执](COVERAGE_RELEASE_RECEIPT_20261030.json)：本地构包完成，生产待核验；替代9f/fe8包。
+
 - [云端交接记录](CLOUD_HANDOFF.md)：从最新记录开始，区分历史验收与本轮现场证据。
 - [可复用交接提示词](CLOUD_HANDOFF_PROMPT.md)
 - [生产部署流程](PRODUCTION_DEPLOYMENT.md)
