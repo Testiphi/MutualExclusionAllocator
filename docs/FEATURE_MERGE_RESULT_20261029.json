@@ -1,0 +1,65 @@
+{
+  "date": "2026-10-29",
+  "local_main_merge_commit": "756ed5f778916b96a08a1e8904dc57b332490a70",
+  "feature_commit": "cc9c54a",
+  "remote_main_verified_before_merge": "406834d203bd3c48a1d57f9cd0dd7b408461510f",
+  "pushed": false,
+  "built": false,
+  "production_operations": false,
+  "merged_features": [
+    "shared homepage styling; RacePick logo only on homepage",
+    "single review opinion and independent rating explanation",
+    "Fuji missing-data note derived from actual loaded scores",
+    "catalogue-driven new global cars and read-only Ultima RS to urs profile/draft compatibility"
+  ],
+  "A_prototype_in_git_tree": false,
+  "data_20261029_committed_by_this_task": false,
+  "data_handoff_files_hash_verified": 17,
+  "protected_files_sha256_and_mtime_unchanged": 26,
+  "tests": {
+    "javascript_on_snapshot": {
+      "passed": 106
+    },
+    "javascript_on_main_working_data": {
+      "passed": 106
+    },
+    "backend": {
+      "executed": 159,
+      "passed": 159
+    },
+    "python_tools": {
+      "executed": 89,
+      "passed": 88,
+      "skipped_linux_only": 1
+    }
+  },
+  "test_data": {
+    "source": "uncommitted DATA_HANDOFF_20261029.json; five runtime JSON byte-copy snapshot, originals untouched",
+    "national_keys": 4458,
+    "global_entries": 661,
+    "global_cars": 46,
+    "global_covered_tracks": 44,
+    "global_oc": 21,
+    "global_special": 48,
+    "global_version": "0ae6a89d46c8e7707ee3387c7879b59bea69c911c54e07866c38953c8cb9f593"
+  },
+  "preserved_main_dirty_files": [
+    "cars.global.json",
+    "gauntlet_data.global.json",
+    "gauntlet_data.global.xlsx",
+    "gauntlet_data.json",
+    "gauntlet_data.xlsx",
+    "global-data-manifest.json"
+  ],
+  "preserved_untracked_data_handoff": [
+    "docs/DATA_HANDOFF_20261029.md",
+    "docs/DATA_HANDOFF_20261029.json"
+  ],
+  "user_acceptance": "styles previously accepted; new Fuji/alias behaviour automated verified, user inspection and production acceptance pending",
+  "pending": [
+    "data-maintenance side separately fixes/finalizes current data commit; no workbook resync here",
+    "user coordinates any push/build/release scope; main now has local unpublished feature commits",
+    "production national score-state and catalogue must be handled independently, no package JSON overwrite",
+    "A prototype remains excluded"
+  ]
+}
