@@ -41,7 +41,7 @@
   },
   "sources": {
     "cars-full.json": "88d3829666e5fd9d4cf8ba56573f5af0de6e67919c77bdb33019084ddb013a71",
-    "current-maintenance.json": "6c76dfce2157d9537da3aa75d99fcbd833ec192ec01a7c451cae613b43ecf392",
+    "current-maintenance.json": "e6b254e59497b5d49cae635d298e0eec41e2c8939f6dd335ed6394b908458929",
     "gauntlet_data_international.json": "ee560cc68800bc2088a52d31804eb91bf88cfe0273a00230bc5cf2c5045a8f6b",
     "maintenance-car-identities.json": "d8304358a600bdaabb684d4532b131cddc148f17b227f712061db3057cfd240c",
     "oc-score-ledger.json": "f64da7163003bfa41a6cf85359ad91eb55548856a4f8d1f75aceaf07ae96ab4b",

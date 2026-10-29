@@ -1,0 +1,119 @@
+{
+  "schema": "racepick.workbook-format-handoff.v1",
+  "date": "2026-10-27",
+  "base_data_commit": "9cf09ed757c2a553bde77f3de4a84b2e52503b25",
+  "ref": "commit containing this manifest and the seven changed/new files below",
+  "scope": "Maintenance formatting and automatic car-column width; Git push only, no release/build authority",
+  "files": [
+    {
+      "path": "data_tools.py",
+      "sha256": "03487caa61725cc80c47d5cf14180072a6ee0614808773bcce2f519603240a02",
+      "bytes": 9281,
+      "working_tree_sha256": "1fbfe6b5ab5faa5f13df68faae0f1a661c252fa30d956afd9c6fe38c97ed6419",
+      "working_tree_bytes": 9521,
+      "text_normalization": "Git LF canonical bytes; CRLF working checkout is equivalent after LF normalization"
+    },
+    {
+      "path": "docs/PYTHON_TOOLS.md",
+      "sha256": "51c5780105effe31e78adcbcd7d7ea36da39ab9470f78830f28a71f65326669f",
+      "bytes": 14883
+    },
+    {
+      "path": "gauntlet_data.xlsx",
+      "sha256": "139424e5ff289eebba787a051b9cd74ec3349a4d47654e73421f433279231639",
+      "bytes": 124100
+    },
+    {
+      "path": "gauntlet_data.global.xlsx",
+      "sha256": "312acfd46529a64b9c86c4775a383a3455826ec85776ecdca287cc36993ee749",
+      "bytes": 39884
+    },
+    {
+      "path": "global-data-manifest.json",
+      "sha256": "e5ee4f7d0c48a42db412b43ae2e2709644ba0db4adadd3b5faca5065aef7c87b",
+      "bytes": 1866
+    },
+    {
+      "path": "autofit_xlsx.py",
+      "sha256": "ede77e65fb5a83512b7fed248cc11a7d730dc2c340b1d3705782267fecdf3557",
+      "bytes": 10450
+    },
+    {
+      "path": "tests/test_autofit_xlsx.py",
+      "sha256": "a08c23250dbc3082bb2169fae2688de2b1503335d6d7cae4e6ef11a152869659",
+      "bytes": 7465
+    }
+  ],
+  "policy": {
+    "font": "宋体",
+    "font_size": 10,
+    "font_charset": 134,
+    "font_family": 3,
+    "column_unit_normal_font": "宋体11，复制国服常规字体定义",
+    "map_column_width": 14,
+    "route_column_width": 12,
+    "car_column_width": 7.453125,
+    "row_height": 14,
+    "header_height": 14,
+    "header_fill": "FF2F5496",
+    "region_fill": "FFD9E2F3",
+    "border_color": "FFBFBFBF",
+    "border_style": "thin",
+    "number_format": "General",
+    "preserve_values_and_header_order": true,
+    "preserve_freeze_and_merges": true,
+    "preserve_reference_sheet": true,
+    "auto_fit_car_columns": true,
+    "car_column_min_width": 7.453125,
+    "autofit_header_padding": 3.0,
+    "autofit_body_padding": 1.5,
+    "autofit_measurement": "Conservative Unicode width estimate; reserve filter button and scale by cell font size",
+    "autofit_save_entry": "data_tools.replace_with_backup / atomic_save_workbook",
+    "no_realtime_macro_or_monitor": true
+  },
+  "counts_unchanged": {
+    "national": 4434,
+    "international_full_maintenance": 652,
+    "international_runtime": 613
+  },
+  "global_dataset_version_unchanged": "baa62820b9b1ea710a00f56d765ed42626c17210b45be0d2ddaf3a0cc0bfbc57",
+  "all_score_json_equal_base_commit": true,
+  "maintenance_metadata_local_only": {
+    "current_maintenance_path": "E:\\hzz\\work\\MutualExclusionAllocator\\数据源\\international-prep-20261023\\maintenance\\current-maintenance.json",
+    "sha256": "e6b254e59497b5d49cae635d298e0eec41e2c8939f6dd335ed6394b908458929",
+    "bytes": 6347,
+    "mtime_ns": "1793032788992303600"
+  },
+  "validation": {
+    "tests_passed": 57,
+    "new_autofit_tests": 7,
+    "existing_data_tool_tests": 50,
+    "both_current_workbooks_fit_idempotently": true,
+    "all_values_styles_order_freeze_merge_and_row_heights_unchanged_by_autofit": true,
+    "reference_and_shared_workbooks_unchanged": true,
+    "generator_byte_binding_verified": true,
+    "previous_uniform_format_native_checks_passed": true,
+    "latest_autofit_native_opened": false,
+    "latest_autofit_long_star_OC_header_render_checks_passed": true
+  },
+  "behavior": "All XLSX saves through data_tools.replace_with_backup auto-fit car columns before replacing target; atomic_save_workbook and exporter inherit; JSON saves unaffected. No realtime Excel typing macro or monitor. Existing-table maintenance must not bypass this save entry with os.replace.",
+  "metadata_update": "Workbook formatting changes SHA; international pointer/style policy, manifest.sources pointer SHA and local maintenance SHA list refreshed. Score payload hashes and dataset version unchanged.",
+  "protected_untracked": [
+    "Asphalt Legend - 擂台成绩表.xlsx",
+    "_star_curve_fit.py",
+    "gauntlet_data_shared.xlsx"
+  ],
+  "production_constraints": {
+    "not_built": true,
+    "not_deployed": true,
+    "no_server_access": true,
+    "no_announcement": true,
+    "do_not_package_full_maintenance_or_workbooks": true,
+    "autofit_is_local_maintenance_tool": true
+  },
+  "local_audit_paths": [
+    "E:\\hzz\\work\\MutualExclusionAllocator\\本地归档\\excel-style-unify-20261026-01a16d65",
+    "E:\\hzz\\work\\MutualExclusionAllocator\\本地归档\\workbook-autofit-20261027-01a16d65"
+  ],
+  "checksum_policy": "XLSX and global manifest are byte-exact. Source/Markdown hashes use Git LF canonical text; normalize CRLF before comparing when necessary."
+}
