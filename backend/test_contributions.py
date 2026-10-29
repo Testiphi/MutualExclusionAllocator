@@ -208,6 +208,36 @@ class ContributionTests(unittest.TestCase):
             'entry': preview['candidate'], 'basis': preview['basis'], 'reason': '变更目标', 'quality': Q})
         self.assertEqual(r.status_code, 409); self.assertEqual(self.detail(sid)['status'], 'pending')
 
+    def test_shared_opinion_and_later_rating_preserve_original_review(self):
+        sid = self.submission()
+        self.assertEqual(self.review(sid, quality={**Q, 'reason': '独立核验'}).status_code, 200)
+        detail = self.detail(sid)
+        self.assertEqual(detail['decision_reason'], '独立核验')
+        self.assertEqual(json.loads(detail['contribution_info']['contribution']['quality'])['reason'], '独立核验')
+        candidate = detail['accepted_payload']
+        changed = self.client.post('/api/admin/contributions/'+sid+'/rating', json={
+            'revision': detail['revision'], 'quality': {**Q, 'evidence': 3, 'reason': '补充复核后调整评分'}})
+        self.assertEqual(changed.status_code, 200, changed.text)
+        after = self.detail(sid)
+        self.assertEqual(after['decision_reason'], '独立核验')
+        self.assertEqual(after['accepted_payload'], candidate)
+        self.assertEqual(json.loads(after['contribution_info']['contribution']['quality'])['reason'], '补充复核后调整评分')
+        self.assertTrue(any(e['action']=='accept' and e['snapshot']['reason']=='独立核验' for e in after['events']))
+
+    def test_more_information_without_quality_and_long_legacy_feedback_are_preserved(self):
+        sid = self.submission()
+        self.assertEqual(self.review(sid, 'needs_info', None).status_code, 200)
+        detail = self.detail(sid)
+        self.assertEqual(detail['status'], 'needs_info')
+        self.assertIsNone(detail['contribution_info']['contribution'])
+        self.assertEqual(self.board(), [])
+        other = self.submission(stars=4)
+        long_reason = '旧审核意见' * 300
+        response = self.client.post('/api/admin/submissions/'+other+'/review', json={
+            'revision': self.detail(other)['revision'], 'action': 'ignore', 'reason': long_reason, 'quality': None})
+        self.assertEqual(response.status_code, 200, response.text)
+        self.assertEqual(self.detail(other)['decision_reason'], long_reason)
+
     def test_zero_quality_and_restart_preserve_ledger(self):
         sid = self.submission()
         zero = {'completeness': 0, 'evidence': 0, 'value': 0, 'reason': '没有独立证据'}

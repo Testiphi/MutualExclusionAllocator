@@ -1,0 +1,61 @@
+/* RacePick: homepage palette is the shared baseline. Keep status colours semantic. */
+:root {
+  color-scheme: dark;
+  --rp-bg: #0d1117;
+  --rp-surface: #161b22;
+  --rp-raised: #21262d;
+  --rp-border: #30363d;
+  --rp-divider: #21262d;
+  --rp-text: #e6edf3;
+  --rp-muted: #8b949e;
+  --rp-blue: #58a6ff;
+  --rp-selected: #1f3a5f;
+  --rp-primary: #238636;
+  --rp-primary-hover: #2ea043;
+  --rp-warning: #e3b341;
+  --rp-danger: #f85149;
+  --rp-brand: #ffbe75;
+  --rp-font: system-ui, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+}
+html { background: var(--rp-bg); }
+body { color: var(--rp-text); font-family: var(--rp-font); }
+.site-brand { display:inline-block; color:var(--rp-text); font-family:var(--rp-font); font-size:24px; line-height:1.3; font-weight:700; letter-spacing:-.8px; margin:0 0 12px; }
+.site-brand span { color:var(--rp-brand); }
+.home-heading { display:flex; flex-wrap:wrap; align-items:baseline; column-gap:16px; }
+.home-heading .site-brand { margin:0 0 4px; }
+.home-heading h1 { margin:0 0 4px; }
+
+/* Utility pages share the homepage card, without altering their functional grids. */
+body.rp-page { display:block; box-sizing:border-box; width:calc(100% - 40px); max-width:1280px; min-height:0; margin:20px auto; padding:0; background:var(--rp-surface); border:1px solid var(--rp-divider); border-radius:16px; font-size:14px; line-height:1.6; }
+.rp-page *, .rp-demo * { box-sizing:border-box; }
+.rp-page > header, .rp-page > main, .rp-page > footer { max-width:none; margin:0; padding:20px 24px; }
+.rp-page > header { border-bottom:1px solid var(--rp-divider); }
+.rp-page > main > header { padding:0 0 20px; margin:0; border-bottom:1px solid var(--rp-divider); }
+.rp-page h1 { font-size:1.5rem; font-weight:600; margin:16px 0 8px; color:var(--rp-text); }
+.rp-page h2 { font-size:1.1rem; font-weight:600; }
+.rp-page h3 { font-size:1rem; font-weight:600; }
+.rp-page a:not(.ui-button) { color:var(--rp-blue); }
+.rp-page p { line-height:1.6; }
+.rp-page .muted, .rp-page #identity, .rp-page #accessIdentity, .rp-page #previewIdentity, .rp-page footer { color:var(--rp-muted); }
+.rp-page input, .rp-page select, .rp-page textarea { background:var(--rp-bg); color:var(--rp-text); border:1px solid var(--rp-border); border-radius:6px; font:inherit; }
+.rp-page input[type=checkbox], .rp-page input[type=radio] { accent-color:var(--rp-blue); }
+.rp-page :focus-visible { outline:2px solid var(--rp-blue); outline-offset:2px; }
+.rp-page section { margin:0 0 20px; }
+.rp-page .panel, .rp-page .score-form, .rp-page .summary, .rp-page .feedback-card, .rp-page main > section:not(.panel) { background:var(--rp-bg); border:1px solid var(--rp-divider); border-radius:10px; padding:16px; }
+.rp-page .metric, .rp-page .activity-facts > div, .rp-page .activity-summary > div { background:var(--rp-surface); border:1px solid var(--rp-divider); border-radius:8px; }
+.rp-page .metric b, .rp-page .account-name { color:var(--rp-blue); }
+.rp-page table { border-collapse:collapse; }
+.rp-page th, .rp-page td { border-bottom-color:var(--rp-border); }
+.rp-page th { color:var(--rp-muted); font-weight:500; }
+.rp-page .heatmap th, .rp-page .heatmap td { border-color:var(--rp-bg); }
+.rp-page dialog { background:var(--rp-surface); color:var(--rp-text); border:1px solid var(--rp-border); border-radius:12px; }
+.rp-page dialog::backdrop { background:#0009; }
+.rp-page .notice { background:var(--rp-bg); border-left:3px solid var(--rp-blue); }
+.rp-page .badge, .rp-page .feedback-badge { background:var(--rp-raised); color:var(--rp-text); border-radius:6px; }
+.rp-page .feedback-list button[aria-current=true], .rp-page .queue-item[aria-current=true], .rp-page button[aria-pressed=true] { background:var(--rp-selected); border-color:var(--rp-blue); }
+.rp-page #busy { margin:0; padding:12px 24px; color:var(--rp-warning); }
+@media(max-width:600px) {
+  body.rp-page { width:calc(100% - 24px); margin:12px auto; border-radius:12px; }
+  .rp-page > header, .rp-page > main, .rp-page > footer { padding:16px; }
+  .rp-page .panel, .rp-page main > section:not(.panel) { padding:14px; }
+}

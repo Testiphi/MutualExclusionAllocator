@@ -39,7 +39,7 @@
             $('heatmaps').append(el('h3',label));const wrap=el('div');wrap.className='table-wrap';const table=el('table');table.className='heatmap';table.setAttribute('aria-label',label+'北京时间累计活跃分钟热力图');
             const header=el('tr');header.append(el('th','星期 / 时'));for(let h=0;h<24;h++)header.append(el('th',String(h)));table.append(header);
             const max=Math.max(1,...data.heatmap[kind].flat());
-            data.heatmap[kind].forEach((hours,day)=>{const tr=el('tr');tr.append(el('th',['一','二','三','四','五','六','日'][day]));hours.forEach((value,h)=>{const td=el('td',value||'');td.style.backgroundColor=value?`rgba(76,150,230,${.15+.75*value/max})`:'#1c2633';td.title=`星期${['一','二','三','四','五','六','日'][day]} ${h}:00–${h}:59：${value} 活跃分钟`;tr.append(td);});table.append(tr);});wrap.append(table);$('heatmaps').append(wrap);
+            data.heatmap[kind].forEach((hours,day)=>{const tr=el('tr');tr.append(el('th',['一','二','三','四','五','六','日'][day]));hours.forEach((value,h)=>{const td=el('td',value||'');td.style.backgroundColor=value?`rgba(88,166,255,${.15+.75*value/max})`:'#21262d';td.title=`星期${['一','二','三','四','五','六','日'][day]} ${h}:00–${h}:59：${value} 活跃分钟`;tr.append(td);});table.append(tr);});wrap.append(table);$('heatmaps').append(wrap);
         }
         $('proportions').replaceChildren();const total=data.server_proportions.reduce((sum,r)=>sum+r.opens,0);
         for(const server of ['cn','global']){const r=data.server_proportions.find(r=>r.server===server)||{opens:0,resumes:0,active_minutes:0};row($('proportions'),[server==='cn'?'国服':'国际服',r.opens,total?(100*r.opens/total).toFixed(1)+'%':'—',r.resumes,r.active_minutes]);}

@@ -9,7 +9,7 @@ const read = name => fs.readFileSync(path.join(__dirname, '..', name), 'utf8');
 const encode = value => Buffer.from(JSON.stringify(value));
 const hash = raw => createHash('sha256').update(raw).digest('hex');
 
-function fixture({mismatch = false, corrupt = false} = {}) {
+function fixture({mismatch = false, corrupt = false, catalogueUpdate = false, emptyFuji = false} = {}) {
     const meta = {server_id:'global', schema_version:1, dataset_version:'fixture-version', catalog_payload_sha256:'a'.repeat(64), scores_payload_sha256:'b'.repeat(64), manifest_file:'global-data-manifest.json'};
     const cars = {_meta:{...meta}, _nickname_map:{}, cars:[
         {title:'Jesko', nickname:'杰哥', score:4800, class:'S', zones:['五区'], star_rule:{min:1,max:6}},
@@ -21,6 +21,13 @@ function fixture({mismatch = false, corrupt = false} = {}) {
         track('有OC', [{cars:[{name:'杰哥'}],time:30},{cars:[{name:'杰哥',oc:true}],time:29},{cars:[{name:'万达'}],time:31},{cars:[{name:'万达',oc:true}],time:28}]),
         track('无OC', [{cars:[{name:'杰哥'}],time:20},{cars:[{name:'evo肥龙'}],time:22}])
     ]};
+    if(catalogueUpdate){
+        cars.cars.push(
+            {title:'Ultima RS',nickname:'urs',score:4500,class:'S',zones:['五区'],star_rule:{min:1,max:6}},
+            {title:'Chevrolet Corvette ZR1',nickname:'evozr1',score:null,class:null,zones:['五区'],star_rule:{min:1,max:5}},
+            {title:'Ferrante Design Elytron',nickname:'dose',score:4800,class:'S',zones:['五区'],star_rule:{min:1,max:6}});
+        data.tracks.push(...['山路','隧道'].map((small,i)=>({...track(small,emptyFuji&&i===1?[]:[{cars:[{name:i?'dose':'evozr1'}],time:35+i}]),大地图:'富士山'})));
+    }
     if (mismatch) cars._meta.dataset_version = 'other-version';
     const rawCars = encode(cars), rawData = encode(data);
     const manifest = {_meta:meta, files:{
@@ -134,12 +141,16 @@ for (const [name, options, message] of [
     assert.equal(app.local.writes.length,0);
 });
 
-test('the actual global runtime bundle boots with the approved 44 shared car identities, 44 tracks and all 21 direct or estimated OC values', async()=>{
+test('the actual global runtime bundle boots with its declared car catalogue and coverage, retaining all 21 OC values', async()=>{
     const names=['global-data-manifest.json','cars.global.json','gauntlet_data.global.json'];
-    const files=new Map(names.map(name=>[name,fs.readFileSync(path.join(__dirname, '..',name))]));
+    const files=new Map(names.map(name=>[name,fs.readFileSync(path.join(process.env.RACEPICK_TEST_DATA_DIR || path.join(__dirname, '..'),name))]));
     const data=JSON.parse(files.get('gauntlet_data.global.json'));
+    const cars=JSON.parse(files.get('cars.global.json')),manifest=JSON.parse(files.get('global-data-manifest.json'));
     const app=await boot({files,local:storage(cnLocal),session:storage(cnSession)});
-    assert.deepEqual(app.errors,[]);assert.equal(app.page.state().owned.length,44);assert.equal(data.tracks.length,44);
+    assert.deepEqual(app.errors,[]);assert.equal(app.page.state().owned.length,cars.cars.length);assert.equal(data.tracks.length,44);
+    assert.equal(cars.cars.length,manifest.counts.physical_cars);
+    assert.equal(data.tracks.filter(track=>track['五区']['理论'].length>0).length,manifest.counts.covered_tracks);
+    assert.equal(data.tracks.reduce((sum,track)=>sum+track['五区']['理论'].length,0),manifest.counts.score_entries);
     assert.equal(app.accountCalls(),0);assert.equal(app.requests.length,3);
     const rows=data.tracks.flatMap(track=>track['五区']['理论'].filter(entry=>entry.cars[0].oc===true).map(entry=>({track,entry})));
     assert.equal(rows.length,21);
@@ -148,9 +159,33 @@ test('the actual global runtime bundle boots with the approved 44 shared car ide
         if(!app.page.state().ocMap[car])app.node('carGrid').events.get('click')({target:{closest:selector=>selector==='.oc-toggle'?{dataset:{ocCar:car}}:null}});
         assert.equal(app.page.score(track['大地图'],track['小地图'],car,'zone5'),entry.time);
     }
-    const physical=new Set(app.page.state().owned);assert.equal(physical.size,44);
+    const physical=new Set(app.page.state().owned);assert.equal(physical.size,cars.cars.length);
     assert.ok(![...physical].some(name=>name.includes('[OC]')));
-    const fuji=data.tracks.slice(-2);assert.ok(fuji.every(track=>track['大地图']==='富士山'&&track['五区']['理论'].length===0));
+    const missingFuji=data.tracks.filter(track=>track['大地图']==='富士山'&&!track['五区']['理论'].length);
+    assert.equal(app.node('serverNote').textContent.includes('暂无成绩：富士山'),missingFuji.length>0);
+});
+
+test('new catalogue vehicles and filled Fuji maps work without hardcoded garage additions or invented EVO metrics',async()=>{
+    const app=await boot({files:fixture({catalogueUpdate:true})});assert.deepEqual(app.errors,[]);
+    for(const car of ['urs','evozr1','dose'])assert.ok(app.page.state().owned.includes(car));
+    assert.equal(app.page.stars('evozr1'),5);assert.equal(app.page.stars('dose'),6);
+    assert.equal(app.page.score('富士山','山路','evozr1','zone5'),35);
+    assert.equal(app.page.score('富士山','隧道','dose','zone5'),36);
+    assert.doesNotMatch(app.node('serverNote').textContent,/暂无成绩|暂缺成绩/);
+    const incomplete=await boot({files:fixture({catalogueUpdate:true,emptyFuji:true})});
+    assert.match(incomplete.node('serverNote').textContent,/暂无成绩：富士山／隧道/);
+});
+
+test('international Ultima RS selections survive the urs rename in saved profiles and drafts without automatic writes',async()=>{
+    const key='racepick.guest-profile.v1.global',raw=JSON.stringify({cars:['Ultima RS'],stars:{'Ultima RS':6},ocMap:{}});
+    const local=storage({...cnLocal,[key]:raw}),session=storage();
+    const app=await boot({files:fixture({catalogueUpdate:true}),local,session});
+    assert.deepEqual([...app.page.state().owned],['urs']);assert.equal(local.values.get(key),raw);assert.equal(local.writes.length,0);
+    assert.ok(!app.page.state().owned.includes('dose'));assert.equal(local.values.get('racepick.guest-profile.v1'),cnLocal['racepick.guest-profile.v1']);
+    const draft=storage({'racepick.guest-draft.v1.global':JSON.stringify({base:raw,profile:{cars:['Ultima RS','urs'],stars:{'Ultima RS':6,urs:5},ocMap:{}}})});
+    const restored=await boot({files:fixture({catalogueUpdate:true}),local:storage({[key]:raw}),session:draft});
+    assert.deepEqual([...restored.page.state().owned],['urs']);assert.equal(restored.page.profile().stars.urs,5);assert.equal(restored.page.state().dirty,true);
+    assert.equal(restored.local.writes.length,0);assert.equal(draft.writes.length,0);
 });
 
 

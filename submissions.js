@@ -131,7 +131,8 @@
             const c=item.contribution_info.contribution;
             root.append(el('p',`贡献：${c?.quality?'质量 '+c.quality_points+' / 10':'质量未评分'} ＋ 采用 ${c?.bonus||0} / 10`));
             if(item.status==='accepted'&&!item.application&&!c?.bonus)root.append(el('p','待发布奖励 +10（尚未到账）'));
-            if(c?.quality)root.append(el('p','评分依据：'+JSON.parse(c.quality).reason));
+            const qualityReason=c?.quality?JSON.parse(c.quality).reason.trim():'';
+            if(qualityReason&&qualityReason!==(item.decision_reason||'').trim())root.append(el('p','评分说明：'+qualityReason));
             const audit=el('details');audit.append(el('summary','贡献调整历史'));for(const e of item.contribution_info.events||[]){const s=JSON.parse(e.snapshot);audit.append(el('p',`${new Date(e.created_at*1000).toLocaleString()} · ${e.action} · 质量 ${s.quality_points} / 采用 ${s.bonus} · ${s.reason||''}`));}root.append(audit);
             if(['admin','superadmin'].includes(user.role)&&item.owner_id!==user.id&&['accepted','ignored'].includes(item.status)){
                 const quality=qualityForm(root,c?.quality?JSON.parse(c.quality):null);
@@ -139,7 +140,7 @@
             }
         }else root.append(el('p',item.review_score===null?'历史评分：暂未评分':`历史评分：${item.review_score} / 5（不计贡献）`));
         root.append(el('p',`投稿 ${item.id.slice(0,8)} · 版本 ${item.revision} · 投稿人 ${item.owner_id.slice(0,8)}`,'muted'));
-        if(item.decision_reason)root.append(el('p','审核反馈：'+item.decision_reason,'warning'));
+        if(item.decision_reason)root.append(el('p','审核意见：'+item.decision_reason,'warning'));
         const grid=el('div',undefined,'comparison-grid');grid.append(column('玩家提交（当前版本）',summary(item.payload)),column('参考库对比',compareText(item.comparison)),column('拟采纳 / 已采纳',summary(item.accepted_payload)));root.append(grid);
         if(item.baseline)root.append(el('p',`记录的参考数据 ${item.baseline.data.slice(0,12)} / 规则 ${item.baseline.cars.slice(0,12)}`,'muted'));
         root.append(el('h3','证据'));
@@ -182,7 +183,7 @@
             await request('POST',`/submissions/${item.id}/submit`,{revision:item.revision});await refreshItem(item.id);say('已提交，等待审核');
         }));root.append(buttons);
     }
-    function qualityForm(root,initial=null){
+    function qualityForm(root,initial=null,sharedReason=null){
         const group=el('fieldset'),title=el('legend','贡献质量评分（0–10，与是否采用独立）');group.append(title);
         const selects={};
         for(const [key,label,labels] of [
@@ -191,23 +192,32 @@
             ['value','参考价值',['0 没有新增价值（总分须为0）','1 有限参考','2 可靠样本或独立验证','3 补齐重要空缺或纠错']]]){
             const l=el('label',label),select=el('select');option(select,'','暂不评分');labels.forEach((t,i)=>option(select,String(i),t));if(initial)select.value=String(initial[key]);l.append(select);group.append(l);selects[key]=select;
         }
-        const l=el('label','评分依据（投稿人可见）'),reason=el('textarea');reason.maxLength=1000;reason.value=initial?.reason||'';l.append(reason);group.append(l);const total=el('p',initial?'质量分合计：'+(initial.completeness+initial.evidence+initial.value)+' / 10':'暂未评分');group.append(total);
+        const reason=sharedReason||el('textarea');
+        if(!sharedReason){const l=el('label','评分调整说明（投稿人可见）');reason.maxLength=1000;reason.value=initial?.reason||'';l.append(reason);group.append(l);}
+        const total=el('p',initial?'质量分合计：'+(initial.completeness+initial.evidence+initial.value)+' / 10':'暂未评分');group.append(total);
         group.addEventListener('input',()=>{unsaved=true;const values=Object.values(selects);total.textContent=values.every(s=>s.value!=='')?'质量分合计：'+values.reduce((n,s)=>n+Number(s.value),0)+' / 10':'请完成三项评分，或全部留空';});root.append(group);
-        return {read(){const values=Object.values(selects);if(values.every(s=>s.value===''))return null;if(values.some(s=>s.value==='')||!reason.value.trim())throw new Error('请完成三项质量评分并填写依据');return {...Object.fromEntries(Object.entries(selects).map(([k,s])=>[k,Number(s.value)])),reason:reason.value.trim()};}};
+        return {read(){const values=Object.values(selects);if(values.every(s=>s.value===''))return null;if(values.some(s=>s.value==='')||!reason.value.trim())throw new Error(sharedReason?'请完成三项质量评分并填写审核意见':'请完成三项质量评分并填写调整说明');if(reason.value.length>1000)throw new Error('评分说明最多1000字，请精简后再保存');return {...Object.fromEntries(Object.entries(selects).map(([k,s])=>[k,Number(s.value)])),reason:reason.value.trim()};}};
     }
     function renderReview(root,item){
         const form=scoreForm(item.payload,'拟采纳内容（不会覆盖玩家原始投稿）');root.append(form.node);
-        const reasonLabel=el('label','审核理由 / 给玩家的反馈'),reason=el('textarea');reason.maxLength=2000;reasonLabel.append(reason);root.append(reasonLabel);
+        const reasonLabel=el('label','审核意见（投稿人可见）'),reason=el('textarea');reason.maxLength=item.contribution_info?.eligible?1000:2000;reasonLabel.append(reason);root.append(reasonLabel);
         const scoreLabel=el('label','质量评分（与是否采纳分开）'),score=el('select');option(score,'','暂不评分');for(let i=0;i<=5;i++)option(score,String(i),i+' / 5');scoreLabel.append(score);root.append(scoreLabel);
-        const quality=item.contribution_info?.eligible?qualityForm(root):null;if(quality)scoreLabel.hidden=true;
-        function rating(){return quality?{quality:quality.read()}:{review_score:score.value===''?null:Number(score.value)};}
+        const quality=item.contribution_info?.eligible?qualityForm(root,null,reason):null;if(quality){scoreLabel.hidden=true;root.append(el('p','审核意见同时用于说明质量评分；要求补充时不结算评分。','muted'));}
+        function rating(action){
+            if(reason.value.length>reason.maxLength)throw new Error(`审核意见最多${reason.maxLength}字，请精简后再保存`);
+            if(action==='needs_info')return quality?{quality:null}:{review_score:null};
+            const result=quality?{quality:quality.read()}:{review_score:score.value===''?null:Number(score.value)};
+            if(!quality&&result.review_score!==null&&!reason.value.trim())throw new Error('填写评分时请同时填写审核意见');
+            return result;
+        }
         const result=el('div',undefined,'summary');result.textContent='先预览拟采纳内容，再确认采纳。';root.append(result);
         const slowerLabel=el('label','我已核对并确认采纳这个更慢的成绩','check'),slower=el('input');slower.type='checkbox';slowerLabel.prepend(slower);slowerLabel.hidden=true;root.append(slowerLabel);
         const accept=button('确认采纳',async()=>{
             if(!preview){say('请先预览拟采纳内容');return;}
             if(preview.comparison.kind==='slower'&&!slower.checked){say('请逐条勾选确认较慢成绩');return;}
+            const ratings=rating('accept');
             if(!await ask('采纳以下内容，仅保存审核决定，尚不写入正式库：\n'+summary(preview.candidate)))return;
-            await request('POST',`/admin/submissions/${item.id}/review`,{revision:item.revision,action:'accept',entry:preview.candidate,basis:preview.basis,reason:reason.value,slower_confirmed:slower.checked,...rating()});
+            await request('POST',`/admin/submissions/${item.id}/review`,{revision:item.revision,action:'accept',entry:preview.candidate,basis:preview.basis,reason:reason.value.trim(),slower_confirmed:slower.checked,...ratings});
             await refreshItem(item.id);say('已采纳，等待后续应用到正式数据。');
         });accept.disabled=true;
         form.node.addEventListener('input',()=>{preview=null;accept.disabled=true;slower.checked=false;unsaved=true;result.textContent='拟采纳内容已变化，请重新预览。';});
@@ -218,8 +228,8 @@
             accept.disabled=preview.comparison.kind==='rule_needed';
             say('预览已更新。修改后采纳或更慢成绩需要审核原因。');
         }),accept,button('要求补充',async()=>decision('needs_info')),button('忽略本条',async()=>decision('ignore')));root.append(buttons);
-        async function decision(action){if(!reason.value.trim()){say('请填写给玩家的反馈原因，再选择要求补充或忽略。',reason);return;}if(!await ask(action==='ignore'?'忽略此投稿，不修改正式成绩；历史会保留。':'要求玩家补充资料后重新提交？'))return;
-            await request('POST',`/admin/submissions/${item.id}/review`,{revision:item.revision,action,reason:reason.value,...rating()});await refreshItem(item.id);say(action==='ignore'?'已忽略并保存原因':'已要求补充');}
+        async function decision(action){if(!reason.value.trim()){say('请填写审核意见，再选择要求补充或忽略。',reason);return;}const ratings=rating(action);if(!await ask(action==='ignore'?'忽略此投稿，不修改正式成绩；历史会保留。':'要求玩家补充资料后重新提交？'))return;
+            await request('POST',`/admin/submissions/${item.id}/review`,{revision:item.revision,action,reason:reason.value.trim(),...ratings});await refreshItem(item.id);say(action==='ignore'?'已忽略并保存原因':'已要求补充');}
     }
     async function init(){
         const session=await request('GET','/auth/me');user=session.user;csrf=session.csrf;contributions=!!session.contributions;

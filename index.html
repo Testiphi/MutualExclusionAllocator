@@ -10,6 +10,7 @@
     <script src="allocator.js"></script>
     <script src="race_scores.js"></script>
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="theme.css">
 </head>
 <body>
 <div class="card">
@@ -20,7 +21,7 @@
         </div>
     </div>
 
-    <h1>擂台选车助手</h1>
+    <div class="home-heading"><div class="site-brand" aria-label="RacePick">Race<span>Pick</span></div><h1>擂台选车助手</h1></div>
     <div class="sub">帕累托最优 · 擂台选车</div>
     <div class="mode-controls">
     <nav class="toggle-group server-switch" aria-label="游戏服务器">
@@ -669,7 +670,7 @@
         try{
             guestBase=api.guestRevision();
             const raw=globalThis.sessionStorage?.getItem(guestDraftKey);if(!raw)return;
-            const draft=JSON.parse(raw),p=draft.profile;
+            const draft=JSON.parse(raw),p=api.normalizeGarageProfile(draft.profile);
             if(draft.base!==guestBase){storageResult(APP_CONFIG.storageKeys.garage,'其他窗口已保存新车库，旧草稿已保留但未自动载入');return;}
             if(!p||!Array.isArray(p.cars)||!p.stars||typeof p.stars!=='object'||Array.isArray(p.stars)||Object.values(p.stars).some(n=>!Number.isInteger(n)||n<1||n>6))throw Error('草稿格式错误');
             const restoredCars = appState.garage(p.cars,new Set([...zone5Cars,...zone4Cars]));
@@ -1418,7 +1419,7 @@
         if (APP_CONFIG.server === 'global') {
             document.title = '国际服 · 擂台选车助手';
             const note = document.getElementById('serverNote'); note.hidden = false;
-            note.textContent = '国际服车库保存于本机。仅五区满星理论；开启OC后仅使用已收录的OC成绩。富士山两图暂缺成绩。';
+            note.textContent = '国际服车库保存于本机。仅五区满星理论；开启OC后仅使用已收录的OC成绩。';
             document.getElementById('tierToggle').hidden = true;
             document.getElementById('zoneToggle').hidden = true;
         }
@@ -1429,6 +1430,10 @@
             // 通过 api 层加载数据
             if (typeof api === 'undefined') throw Error('页面脚本未完整加载，请稍后刷新重试');
             RACE_DATA = await api.getRaceData();
+            if (APP_CONFIG.server === 'global') {
+                const missingFuji=(RACE_DATA.tracks||[]).filter(track=>track['大地图']==='富士山'&&!(track['五区']?.['理论']||[]).some(entry=>typeof entry.time==='number'&&Number.isFinite(entry.time)&&entry.time>0));
+                if(missingFuji.length) document.getElementById('serverNote').textContent += '暂无成绩：富士山／'+missingFuji.map(track=>track['小地图']).join('、')+'。';
+            }
 
             // 加载车辆度量数据 —— cars.json 同时承载车池（zones）与星级规则（star_rule），
             // 因此现在是必需依赖：加载失败不再降级，直接报错。

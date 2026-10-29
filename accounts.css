@@ -7,7 +7,7 @@
 .account-panel button:disabled { opacity: .5; cursor: wait; }
 .account-panel [hidden] { display: none !important; }
 .account-panel button:focus-visible, .account-panel .account-link:focus-visible, .account-panel input:focus-visible { outline: 2px solid #58a6ff; outline-offset: 2px; }
-.account-help, #accountStatus { font-size: .8rem; color: #a6b2c0; }
+.account-help, #accountStatus { font-size: .8rem; color: #8b949e; }
 .account-help { flex-basis: 100%; margin: 4px 0; }
 #accountMessage { color: #ffcf87; overflow-wrap: anywhere; }
 #accountMessage:empty { display: none; }
@@ -35,12 +35,12 @@
 .account-dialog label { display: flex; flex-direction: column; gap: 7px; font-size: .9rem; }
 .account-dialog fieldset { border: 0; padding: 0; margin: 18px 0; display: grid; gap: 16px; min-width: 0; }
 .account-dialog p { line-height: 1.6; overflow-wrap: anywhere; }
-#accountAuthHelp { color: #a6b2c0; font-size: .9rem; }
+#accountAuthHelp { color: #8b949e; font-size: .9rem; }
 #accountAuthMessage { padding: 10px 12px; border-radius: 7px; background: #292319; color: #ffcf87; }
 #accountAuthMessage:empty, #accountAuthHelp:empty { display: none; }
 #accountAuthContinue { width: 100%; margin: 12px 0; }
 .account-dialog-links { display: flex; flex-wrap: wrap; gap: 6px 12px; }
-.account-dialog-links button { border: 0; background: transparent; padding: 5px 0; color: #79b8ff; font-size: .85rem; }
+.account-dialog-links button { border: 0; background: transparent; padding: 5px 0; color: #58a6ff; font-size: .85rem; }
 #accountAuthClose { border: 0; background: transparent; font-size: 1.5rem; padding: 0 5px; line-height: 1; }
 @media(max-width:480px) { .account-dialog { padding: 20px; } .account-guest-actions { margin-left: 0; } }
 
@@ -71,7 +71,7 @@
 .account-hub{width:min(580px,calc(100vw - 32px));box-sizing:border-box}
 .account-hub-items{display:grid;gap:12px;margin-top:18px}
 .account-panel .account-hub-link{display:flex;align-items:flex-start;flex-direction:column;gap:6px;text-align:left;padding:14px 16px}
-.account-hub-link small{font-size:.85rem;color:#a6b2c0;font-weight:400;line-height:1.5}
+.account-hub-link small{font-size:.85rem;color:#8b949e;font-weight:400;line-height:1.5}
 .account-hub #accountActions{display:flex;flex-wrap:wrap;gap:10px}
 .account-hub #personalIdentity{margin:0;overflow-wrap:anywhere}
 #personalMessage:empty{display:none}

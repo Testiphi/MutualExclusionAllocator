@@ -12,12 +12,23 @@ const api = (() => {
   const cfg = APP_CONFIG;
   const international = cfg.server === 'global';
   const guestKey = cfg.storageKeys?.guestProfile || 'racepick.guest-profile.v1';
+  const garageAliases = new Map();
+  function normalizeGarageProfile(profile) {
+    if (!international || !profile || !garageAliases.size) return profile;
+    const name = key => garageAliases.get(key) || key;
+    const normalizeMap = value => {
+      if (!value || typeof value !== 'object' || Array.isArray(value)) return value;
+      return Object.fromEntries(Object.entries(value).filter(([key]) => name(key) === key || !Object.hasOwn(value,name(key))).map(([key,value])=>[name(key),value]));
+    };
+    return {...profile, cars:Array.isArray(profile.cars)?[...new Set(profile.cars.map(name))]:profile.cars,
+      stars:normalizeMap(profile.stars), ...(profile.ocMap!==undefined?{ocMap:normalizeMap(profile.ocMap)}:{})};
+  }
   function guestProfile(){
     const raw=localStorage.getItem(guestKey);if(raw===null)return null;
     const p=JSON.parse(raw);
     if(!p||!Array.isArray(p.cars)||p.cars.some(c=>typeof c!=='string')||!p.stars||typeof p.stars!=='object'||Array.isArray(p.stars))throw Error('已保存的游客车库格式损坏，未覆盖');
     if (international && p.ocMap !== undefined && (!p.ocMap || typeof p.ocMap !== 'object' || Array.isArray(p.ocMap) || Object.values(p.ocMap).some(value => typeof value !== 'boolean'))) throw Error('已保存的国际服OC设置格式损坏，未覆盖');
-    return p;
+    return normalizeGarageProfile(p);
   }
   const snapshots = new Map();
   // Only bootstrap GETs may retry. Never replay a profile write or submission.
@@ -70,6 +81,8 @@ const api = (() => {
         }
       }
       if (!Array.isArray(cars.cars) || !Array.isArray(data.tracks)) throw Error('国际服数据结构无效');
+      // Only normalize a historical name when the loaded catalogue confirms its replacement.
+      if (cars.cars.some(car=>car.title==='Ultima RS'&&car.nickname==='urs') && !cars.cars.some(car=>car.nickname==='Ultima RS')) garageAliases.set('Ultima RS','urs');
       return {version: meta.dataset_version, cars, data};
     })().catch(error => { snapshots.delete(key); throw error; }));
     return snapshots.get(key);
@@ -102,6 +115,7 @@ const api = (() => {
 
   return {
     guestProfile,
+    normalizeGarageProfile,
     guestRevision:()=>localStorage.getItem(guestKey)??(international ? null : JSON.stringify([localStorage.getItem(cfg.storageKeys.garage),localStorage.getItem(cfg.storageKeys.starMap)])),
     saveGuestProfile(value,expected){
       if(expected!==this.guestRevision())throw Error('另一窗口已更新车库，请先恢复已保存的车库再修改');

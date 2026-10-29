@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>使用统计 · RacePick</title>
-<link rel="stylesheet" href="/ui.css"><link rel="stylesheet" href="/usage.css"><script defer src="/usage_admin.js"></script></head>
-<body><header><a class="ui-button ui-secondary" href="/">← 返回选车助手</a><h1>使用统计</h1><p id="identity">正在检查权限…</p><p id="message" role="status" aria-live="polite"></p></header>
+<link rel="stylesheet" href="/ui.css"><link rel="stylesheet" href="/usage.css"><script defer src="/usage_admin.js"></script><link rel="stylesheet" href="/theme.css"></head>
+<body class="rp-page"><header><a class="ui-button ui-secondary" href="/">← 返回选车助手</a><h1>使用统计</h1><p id="identity">正在检查权限…</p><p id="message" role="status" aria-live="polite"></p></header>
 <main id="main" hidden>
 <section class="panel"><form id="filters"><label>开始日期<input id="start" type="date" required></label><label>结束日期<input id="end" type="date" required></label><label>服别<select id="server"><option value="all">全部服别（去重）</option><option value="cn">国服</option><option value="global">国际服</option></select></label><button type="submit">查询 / 刷新</button></form><p class="muted">所有日期和小时均为北京时间。范围最多366天；日活、周活、月活固定为截至今天的最近1、7、30个自然日，随服别筛选。</p></section>
 <section class="panel"><h2>实际交互人数</h2><p id="asof" class="muted"></p><div id="windows" class="cards"></div><p class="muted">账号跨设备去重。游客按浏览器随机标识近似统计；换浏览器、清除存储或登录前后可能形成不同身份，两个分组不直接相加当作真实总人数。</p></section>
