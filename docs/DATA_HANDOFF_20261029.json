@@ -1,0 +1,119 @@
+{
+  "date": "2026-10-29",
+  "national_keys": 4458,
+  "international_full_keys": 700,
+  "international_runtime_entries": 661,
+  "national_saved_changes": 4,
+  "national_direct_scores": 2,
+  "national_mirrors_added": 4,
+  "international_saved_changes": 64,
+  "international_additions": 49,
+  "international_faster": 14,
+  "international_deleted_explicitly_confirmed": 1,
+  "national_slower_explicitly_confirmed": 1,
+  "nickname": "urs",
+  "official_title": "Ultima RS",
+  "evozr1_asec_id": 185,
+  "all_workbooks_and_ledgers_equal": true,
+  "generator_byte_reproducible": true,
+  "validation_errors": [],
+  "native_excel_opened_this_round": false,
+  "new_estimates": 0,
+  "committed": false,
+  "pushed": false,
+  "built": false,
+  "production_operations": false,
+  "files": {
+    "E:\\hzz\\work\\MutualExclusionAllocator\\repo\\gauntlet_data.json": {
+      "sha256": "e889b8bc7e404fb626b15a6a26caa6545980e9ada3ede372f2a3ee0de704c9d7",
+      "bytes": 222636
+    },
+    "E:\\hzz\\work\\MutualExclusionAllocator\\数据源\\international-prep-20261023\\maintenance\\gauntlet_data_international_maintenance.json": {
+      "sha256": "846a6ce75482fc9fde4e38f2b7ecd6be2a88e1048bc063c38384f8441894138e",
+      "bytes": 54832
+    },
+    "E:\\hzz\\work\\MutualExclusionAllocator\\数据源\\international-prep-20261023\\maintenance\\gauntlet_data_international.json": {
+      "sha256": "ff44e6a6cd84131c654a6c8b200efd4e13d4dd82f4e3f2c7ab8767b258269369",
+      "bytes": 52959
+    },
+    "E:\\hzz\\work\\MutualExclusionAllocator\\数据源\\international-prep-20261023\\maintenance\\maintenance-score-ledger.json": {
+      "sha256": "ce541da02ef4e5bf515674c8f9d5e85c22629015f37d31288505ed91b3c6e00f",
+      "bytes": 710922
+    },
+    "E:\\hzz\\work\\MutualExclusionAllocator\\数据源\\international-prep-20261023\\maintenance\\score-ledger.json": {
+      "sha256": "9e4db58ab6cf0c0052eb6695e818306e3cc8d84405eca0c9a1dfd94bb58f85b8",
+      "bytes": 605437
+    },
+    "E:\\hzz\\work\\MutualExclusionAllocator\\数据源\\international-prep-20261023\\maintenance\\maintenance-car-identities.json": {
+      "sha256": "1483f2db165cf0af389ec2e5ae73bd503797e3f75b420847b7e439868b6730ce",
+      "bytes": 15652
+    },
+    "E:\\hzz\\work\\MutualExclusionAllocator\\数据源\\international-prep-20261023\\maintenance\\current-maintenance.json": {
+      "sha256": "7755ca25ced02cf69ba617e56f9e1f3431e592fc4c0c8e3ade001170065f3a50",
+      "bytes": 6289
+    },
+    "E:\\hzz\\work\\MutualExclusionAllocator\\数据源\\international-prep-20261023\\maintenance\\summary.json": {
+      "sha256": "a68f1c75a99784dfe47e078d695b51dbcfead9a4b572804e0fa0c1f2a3f7640b",
+      "bytes": 4035
+    },
+    "E:\\hzz\\work\\MutualExclusionAllocator\\数据源\\international-prep-20261023\\maintenance\\validation.json": {
+      "sha256": "3d7a52316d04ab6b19d72e3f2023d7aa9068a9932e12c30fdb1cd0cc6823a7b1",
+      "bytes": 45742
+    },
+    "E:\\hzz\\work\\MutualExclusionAllocator\\数据源\\international-prep-20261023\\maintenance\\workbook-matrices.json": {
+      "sha256": "ba809c6b689558eee020a90669bc572f79701184aace02b5f26e33b89a247fc7",
+      "bytes": 112184
+    },
+    "E:\\hzz\\work\\MutualExclusionAllocator\\repo\\gauntlet_data.xlsx": {
+      "sha256": "62cd5c19a11614b9ad6ab6cdb350ef1137bd84e6c8d10072fcaf93933e5af5d2",
+      "bytes": 123526
+    },
+    "E:\\hzz\\work\\MutualExclusionAllocator\\repo\\gauntlet_data_shared.xlsx": {
+      "sha256": "a25b862ec25be7aac15c1c6b1def34f6dfcc1ce2a347e068f28489be671535ba",
+      "bytes": 140903
+    },
+    "E:\\hzz\\work\\MutualExclusionAllocator\\repo\\gauntlet_data.global.xlsx": {
+      "sha256": "e166872aa592fa89766cba98fabf9b9ae8a6389dba0cbaf7c20d5d25a509d4b0",
+      "bytes": 40508
+    },
+    "E:\\hzz\\work\\MutualExclusionAllocator\\repo\\cars.global.json": {
+      "sha256": "8cb9908b356bb00b20e10a34e7f898169235766d6fafbd51ed44dd3968711da4",
+      "bytes": 28659
+    },
+    "E:\\hzz\\work\\MutualExclusionAllocator\\repo\\gauntlet_data.global.json": {
+      "sha256": "98739cd39a94e6918df4958b7060ec085386a9fe23d35ef91736df3210ef9537",
+      "bytes": 128602
+    },
+    "E:\\hzz\\work\\MutualExclusionAllocator\\repo\\global-data-manifest.json": {
+      "sha256": "4c1299130d8432ef8856f96b2c02540b8e438b9dc19a728e545f6023507fca72",
+      "bytes": 1866
+    },
+    "E:\\hzz\\work\\MutualExclusionAllocator\\数据源\\international-prep-20261023\\maintenance\\SHA256SUMS.txt": {
+      "sha256": "ba12ed082823a61ac35743a82fd041dc85d803cabba373b4f35fd3bf3ef9c312",
+      "bytes": 14575
+    }
+  },
+  "targeted_tests_passed": 73,
+  "git_diff_check_passed": true,
+  "format_json_idempotent": true,
+  "archive": "E:\\hzz\\work\\MutualExclusionAllocator\\本地归档\\urs-return-20261029-172606",
+  "source_ledger": "E:\\hzz\\work\\MutualExclusionAllocator\\本地归档\\urs-return-20261029-172606\\source-ledger.json",
+  "approved_national_review": "E:\\hzz\\work\\MutualExclusionAllocator\\本地归档\\urs-return-20261029-172606\\national.approved-review.json",
+  "approved_international_review": "E:\\hzz\\work\\MutualExclusionAllocator\\本地归档\\urs-return-20261029-172606\\global.approved-review.json",
+  "new_international_identities": [
+    {
+      "nickname": "evozr1",
+      "title": "Chevrolet Corvette ZR1",
+      "asec_id": 185,
+      "base_max_stars": 5,
+      "evo_performance": "unknown"
+    },
+    {
+      "nickname": "dose",
+      "title": "Ferrante Design Elytron",
+      "asec_id": 329,
+      "max_stars": 6
+    }
+  ],
+  "baseline_commit": "406834d203bd3c48a1d57f9cd0dd7b408461510f"
+}
