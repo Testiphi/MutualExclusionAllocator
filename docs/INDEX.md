@@ -1,5 +1,7 @@
 # 文档索引
 
+当前交付：[覆盖表发布完成回执](COVERAGE_RELEASE_RECEIPT_20261029.json)、[云端可复制提示词](COVERAGE_CLOUD_PROMPT_20261029.md)。包fe8a9aff已构建校验，未部署；历史阶段状态以最新CLOUD_HANDOFF为准。
+
 最新工作：[真实覆盖表与发布准备](COVERAGE_RELEASE_20261029.md)、[已有站点升级](COVERAGE_DEPLOYMENT.md)。用户已更新A方案范围，正式实现后与最新数据分组提交推送/构包；生产由云端运维另行执行。
 
 最新本地整合：[20261029功能合并与数据配套](FEATURE_MERGE_20261029.md)。A原型不合并，数据未代提交，生产未操作。

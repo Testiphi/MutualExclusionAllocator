@@ -1,0 +1,60 @@
+{
+  "archive": "E:\\hzz\\work\\MutualExclusionAllocator\\repo\\.production-build\\RacePick-Coverage661-20261029-fe8a9aff-delivery.zip",
+  "archive_sha256": "ca73947e14bbe8bc3671531c5b4f5398f4531da71878c0db34dd53d9ec347953",
+  "bytes": 11046200,
+  "outer_files": 22,
+  "release_id": "fe8a9aff0cf6871d5d7f0212",
+  "code_commit": "a8ad5c36a113033375c84c2ef683fb1f312907e7",
+  "data_commit": "d06cd7d54838230976342c19c21638b90a5632ac",
+  "inner_sha256": "821485c5f05d778f15ca39719c49bff1238dbff122f6b6884089360a5dd35e60",
+  "verification": {
+    "release_id": "fe8a9aff0cf6871d5d7f0212",
+    "provenance": {
+      "code_commit": "a8ad5c36a113033375c84c2ef683fb1f312907e7",
+      "data_commit": "d06cd7d54838230976342c19c21638b90a5632ac",
+      "created_local": "2026-10-29T21:09:42"
+    },
+    "target": "ubuntu24.04-x86_64-python3.12",
+    "inner_zip_sha256": "821485c5f05d778f15ca39719c49bff1238dbff122f6b6884089360a5dd35e60",
+    "manifest_files": 103,
+    "locked_wheels": 19,
+    "hash_size_whitelist_and_stage_verify": "PASS",
+    "code_provenance": "code matches pinned Git text after checkout line-ending normalization; all5 runtime JSON byte-identical to data commit",
+    "data_source_17_hashes": "PASS",
+    "data_scope_actual_counts": "PASS",
+    "shell_LF_only": "PASS",
+    "offline_linux_py312_wheel_resolution": "PASS - no-index require-hashes; not native runtime execution",
+    "tests": {
+      "javascript_passed": 110,
+      "backend_passed": 170,
+      "python_tools_executed": 89,
+      "python_tools_passed": 88,
+      "linux_only_skipped": 1,
+      "final_targeted_coverage_checks_passed": 11
+    },
+    "staged_windows_http_smoke": "PASS",
+    "staged_disposable_component_rehearsal": "PASS - simulated service lock, migrations/idempotence/restore including nonempty coverage choice and event; fixture connection cleanup corrected in harness only",
+    "browser_real_workflow": "PASS - fictional isolated lab, guest login return, real submission pending, real ledger level1 choice, points unchanged, mobile width no full-page overflow",
+    "user_acceptance": "prototype UI accepted; real implementation user acceptance and production acceptance pending",
+    "old_archives_preserved": {
+      "RacePick-SwitchFix599-20261024-66b9d32c-delivery.zip": "f35d888ef61a5a9591a99e1bccecc433946a166136b36322e9963605ca15171a",
+      "RacePick-UnreadUsage601-20261025-171d872a-delivery.zip": "05288fd2552c83d4337ac43d1dc22fce51c419a6f8586a648ac6f163faf4522b"
+    },
+    "production_accessed": false,
+    "pending": [
+      "native Ubuntu24.04 CPython3.12 installation, locks and permissions",
+      "actual current/PID/score version/component schema and pending batches",
+      "coherent production backup and restore drill",
+      "explicit coverage_schema1 migration using actual national score version",
+      "production desktop and native mobile WeChat user acceptance",
+      "real timer backup result after upgrade"
+    ]
+  },
+  "source_remote_verified": "origin/feature/score-coverage=a8ad5c36a113033375c84c2ef683fb1f312907e7",
+  "main_push": "documentation commit will be pushed without force; actual remote check stored in local PUSH_RECEIPT.json",
+  "schema_change": "explicit coverage_schema1; three new account DB tables; no old-row rewrite or data backfill",
+  "production_accessed": false,
+  "uploaded_to_server": false,
+  "deployed": false,
+  "announcement_published": false
+}
