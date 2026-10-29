@@ -91,7 +91,7 @@ def matrix(data,catalog,access,*,server='cn',zone='五区',tier='理论',big='al
                 cells.append({'key':key(target),'status':'empty' if value is None else 'filled','value':value if visible else None,'public':public_cell,
                               'target':target if server=='cn' else None})
             if gaps and not any(c['status']=='empty' for c in cells):continue
-            rows.append({'big':t['大地图'],'small':t['小地图'],'route':run,'map_id':map_id(t['大地图']),'cells':cells})
+            rows.append({'big':t['大地图'],'small':t['小地图'],'route':run,'map_id':map_id(t['大地图']),'reference':None if public is None else {'car':public[1],'stars':star_limits(next(c for c in cars if c['nickname']==public[1]),zone)[1],'value':public[0],'tier':'理论','route':'普通跑法'},'cells':cells})
     return {'columns':columns,'rows':rows,'column_total':len(candidates),'column_offset':offset,'column_limit':24}
 
 class Choice(BaseModel):

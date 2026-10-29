@@ -44,7 +44,7 @@ function render(){
  const h=node('tr');for(const [label,cls] of [['#','row-num'],['大地图','map-col'],['小地图'+($('route').value==='special'?' / 跑法':''),'track-col']]){const th=node('th',label);th.className=cls;h.append(th);}
  for(const c of view.columns){const th=node('th',c.car);th.className='car-col';th.append(node('small',tier==='高手'?c.stars+'星':'满星 '+c.max_stars+'星'));h.append(th);}$('head').replaceChildren(h);
  let filled=0,empty=0;
- view.rows.forEach((row,i)=>{const tr=node('tr');for(const [value,cls] of [[i+1,'row-num'],[row.big,'map-col'],[row.small+(row.route?' / '+row.route:''),'track-col']]){const th=node('th',value);th.className=cls;tr.append(th);}
+ view.rows.forEach((row,i)=>{const tr=node('tr');for(const [value,cls] of [[i+1,'row-num'],[row.big,'map-col'],[row.small+(row.route?' / '+row.route:''),'track-col']]){const th=node('th',value);th.className=cls;if(cls==='track-col'&&row.reference){const r=row.reference,ref=node('small','普通理论 '+r.car+' ★'+r.stars+' · '+r.value+'秒');ref.className='row-reference';ref.title='公开普通跑法满星理论参考，不是投稿门槛。';th.append(ref);}tr.append(th);}
   row.cells.forEach((c,j)=>{const td=node('td');td.className=c.status+(c.public?' public-ref':'');
    if(c.status==='filled'){filled++;td.append(node('span',c.value===null?'***':String(c.value)));td.title=c.public?'公开普通跑法满星理论参考，不是投稿门槛。':'已有成绩';}
    else{empty++;const button=node('button');button.className='cell';const label=row.small+' '+view.columns[j].car+(view.columns[j].stars?' '+view.columns[j].stars+'星':'')+' 暂无记录，可投稿';button.setAttribute('aria-label',label);button.title=label;

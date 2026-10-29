@@ -14,7 +14,7 @@ function fixture({guest=false,failSubmit=false,global=false,failLoad=false}={}){
  const calls=[],navigations=[];let failures=failSubmit?1:0,requestId=0,user=guest?null:{id:'player',verified:true,role:'player'};
  const target={big:'测试地图',small:'道路',zone:'五区',tier:'理论',car:'恶魔',stars:null,route:''};
  const data=()=>({server:ids.server.value,user_id:user?.id||null,access:{level:0,points:0,valid:0,high:0,chosen:null},maps:[{id:'a'.repeat(24),name:'测试地图'}],column_total:3,column_offset:0,
-  columns:[{car:'a',max_stars:6},{car:'b',max_stars:6},{car:'恶魔',max_stars:6}],rows:[{big:'测试地图',small:'道路',route:'',cells:[{key:'public',status:'filled',value:25,public:true},{key:'hidden',status:'filled',value:null,public:false},{key:'blank',status:'empty',target:ids.server.value==='cn'?target:null}]}]});
+  columns:[{car:'a',max_stars:6},{car:'b',max_stars:6},{car:'恶魔',max_stars:6}],rows:[{big:'测试地图',small:'道路',route:'',reference:{car:'a',stars:6,value:25,tier:'理论',route:'普通跑法'},cells:[{key:'public',status:'filled',value:25,public:true},{key:'hidden',status:'filled',value:null,public:false},{key:'blank',status:'empty',target:ids.server.value==='cn'?target:null}]}]});
  const document={getElementById:id=>{assert.ok(ids[id],id);return ids[id];},createElement:t=>new Node(t),querySelectorAll:()=>[]};
  const context={document,location:{search:global?'?server=global':'',origin:'http://127.0.0.1:8000',assign:url=>navigations.push(url)},URL,URLSearchParams,AbortController,setTimeout,clearTimeout,crypto:{randomUUID:()=>String(++requestId).padStart(32,'0')},
   fetch:async(url,opts)=>{calls.push({url,opts,body:opts.body?JSON.parse(opts.body):null});let value,ok=true;
@@ -28,7 +28,7 @@ function fixture({guest=false,failSubmit=false,global=false,failLoad=false}={}){
  return {ids,calls,navigations,settle,setUser:u=>{user=u;},blank:()=>ids.body.children[0].children[5].children[0]};
 }
 test('grid displays literal values and masks without score buttons, while empty cells prefill the existing workflow',async()=>{
- const f=fixture();await f.settle();assert.equal(f.ids.body.children[0].children[3].textContent,'25');assert.equal(f.ids.body.children[0].children[4].textContent,'***');
+ const f=fixture();await f.settle();assert.match(f.ids.body.children[0].children[2].textContent,/普通理论 a ★6 · 25秒/);assert.equal(f.ids.body.children[0].children[3].textContent,'25');assert.equal(f.ids.body.children[0].children[4].textContent,'***');
  f.blank().onclick();assert.equal(f.ids['submit-dialog'].open,true);assert.match(f.ids.target.textContent,/测试地图 \/ 道路/);
  f.ids.time.value='26.125';f.ids.evidence.value='来源说明';await f.ids['submission-form'].onsubmit({preventDefault(){}});await f.settle();
  const created=f.calls.find(c=>c.url==='/api/submissions');assert.equal(created.body.entries[0].big,'测试地图');assert.equal(created.body.entries[0].time,'26.125');assert.equal(created.opts.headers['X-Account-ID'],'player');
