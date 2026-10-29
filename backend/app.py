@@ -126,7 +126,7 @@ class Store:
             db.execute('INSERT INTO attempts VALUES (?,1,?) ON CONFLICT(bucket) DO UPDATE SET count=count+1', (key, now+600))
 
 
-def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None, mail_config=None, preview_source=None, writeback_lab=None, production=False, score_version_lab=None, score_state=None, contributions=False, feedback=False, notifications=False, usage=False):
+def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None, mail_config=None, preview_source=None, writeback_lab=None, production=False, score_version_lab=None, score_state=None, contributions=False, feedback=False, notifications=False, usage=False, coverage=False):
     if feedback and (not contributions or (production and score_state is None) or (not production and score_version_lab is None)):
         raise ValueError("问题反馈需要已绑定成绩及贡献环境")
     if contributions and ((production and score_state is None) or (not production and score_version_lab is None)):
@@ -153,12 +153,22 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
         if mail_config is not None and mail_config.mode!='file':raise ValueError('数据版本实验室仅使用文件邮件')
     if score_state is not None and (not production or score_version_lab is not None):raise ValueError('score_state仅供独立生产入口使用')
     versioned_scores=score_version_lab is not None or score_state is not None
+    if coverage and not production and data_dir and (Path(data_dir)/"production.json").exists():raise ValueError("正式库禁止通过本地coverage入口迁移")
     store = Store(data_dir or ROOT / '.local-accounts')
     app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None, redirect_slashes=not production)
     app.state.store = store
     app.state.contributions = contributions
     app.state.feedback = feedback
     app.state.notifications = notifications
+    app.state.coverage = coverage
+    if coverage and (not contributions or not versioned_scores):raise ValueError("成绩表需要贡献账本和版本化成绩")
+    from backend.coverage import state as coverage_state, migrate as migrate_coverage
+    with store.connect() as db:
+        ready=coverage_state(db)["coverage_schema"]
+        if ready and not coverage:raise ValueError("成绩表权限已启用，必须带coverage启动")
+        if coverage:
+            if production and ready!=1:raise ValueError("成绩表权限尚未显式迁移")
+            if not production:db.execute("BEGIN IMMEDIATE");migrate_coverage(db)
     from backend.usage import UsageStore
     usage_path = store.directory / "usage.sqlite3"
     if usage_path.exists() and not usage:
@@ -300,8 +310,8 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
     def me(request:Request, response:Response):
         current=session(request,False)
         if not current:
-            return {'user':None,'csrf':new_session(response),'mail_mode':'production' if production else mail_service.config.mode,'admin_invites':True,'readonly_previews':preview_source is not None,'writeback_lab':writeback_lab is not None,'score_versions_lab':score_version_lab is not None,'score_versions':versioned_scores,'community_controls':True,'contributions':contributions,'feedback':feedback,'notifications':notifications,'usage':usage}
-        return {'user':user(request) if current['user_id'] else None,'csrf':current['csrf'],'mail_mode':'production' if production else mail_service.config.mode,'admin_invites':True,'readonly_previews':preview_source is not None,'writeback_lab':writeback_lab is not None,'score_versions_lab':score_version_lab is not None,'score_versions':versioned_scores,'community_controls':True,'contributions':contributions,'feedback':feedback,'notifications':notifications,'usage':usage}
+            return {'user':None,'csrf':new_session(response),'mail_mode':'production' if production else mail_service.config.mode,'admin_invites':True,'readonly_previews':preview_source is not None,'writeback_lab':writeback_lab is not None,'score_versions_lab':score_version_lab is not None,'score_versions':versioned_scores,'community_controls':True,'contributions':contributions,'feedback':feedback,'notifications':notifications,'usage':usage,'coverage':coverage}
+        return {'user':user(request) if current['user_id'] else None,'csrf':current['csrf'],'mail_mode':'production' if production else mail_service.config.mode,'admin_invites':True,'readonly_previews':preview_source is not None,'writeback_lab':writeback_lab is not None,'score_versions_lab':score_version_lab is not None,'score_versions':versioned_scores,'community_controls':True,'contributions':contributions,'feedback':feedback,'notifications':notifications,'usage':usage,'coverage':coverage}
 
     @app.post('/api/auth/register')
     def register(data:Registration, request:Request):
@@ -438,6 +448,9 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
                 (owner['id'],json.dumps(data.cars,ensure_ascii=False),json.dumps(data.stars,ensure_ascii=False),revision,int(time.time())))
         return {'revision':revision}
 
+    if coverage:
+        from backend.coverage import install as install_coverage
+        install_coverage(app,store,ROOT,user)
     if contributions:
         from backend.contributions import install as install_contributions
         install_contributions(app,store,ROOT,user)
@@ -471,6 +484,7 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
         result['notification_schema']=1 if notifications else 0
         result['notifications']=notifications
         result['usage_schema']=1 if usage else 0
+        result['coverage_schema']=1 if coverage else 0
         result['usage']=usage
         if versioned_scores:
             result['score_version']=app.state.score_versions.current()[0]['id']
@@ -478,9 +492,13 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
         return result
 
     @app.api_route('/',methods=['GET','HEAD'])
-    def index():
+    def index(request:Request):
         html=(ROOT/'index.html').read_text(encoding='utf-8')
         html=html.replace('</head>','<script src="/notifications.js"></script><script src="/profile_store.js"></script><script src="/announcements.js"></script><script src="/auth.js"></script><link rel="stylesheet" href="/accounts.css"><link rel="stylesheet" href="/ui.css">\n</head>')
+        if coverage:
+            table_href='/score-table?server=global' if request.query_params.get('server')=='global' else '/score-table'
+            marker='<div class="sub">帕累托最优 · 擂台选车</div>'
+            html=html.replace(marker,marker+'<p><a class="ui-button" href="'+table_href+'">擂台成绩表</a></p>',1)
         if versioned_scores:html=html.replace('</head>','<script>globalThis.RACEPICK_VERSIONED_SCORES=true;</script></head>')
         return HTMLResponse(usage_html(html))
 
@@ -493,6 +511,7 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
     assets={'styles.css','config.js','api.js','app_state.js','allocator.js','race_scores.js','cars.json','gauntlet_data.json','auth.js','profile_store.js','accounts.css','submissions.js','submissions.css','admin_access.js','data_previews.js','data_previews.css','writeback_lab.js','announcements.js','admin_accounts.js'}
     assets.update({'ui.css','theme.css','notifications.js'})
     assets.update({'cars.global.json','gauntlet_data.global.json','global-data-manifest.json'})
+    if coverage: assets.update({'coverage.js','coverage.css'})
     if usage: assets.update({'usage.js','usage_admin.js','usage.css'})
     if feedback: assets.add('feedback.js')
     if contributions: assets.update({'leaderboard.js','leaderboard.css'})
@@ -517,6 +536,7 @@ def main():
     parser.add_argument('--preview-source',type=Path,help='正式成绩库只读预览来源；需显式指定，不接收网页路径参数')
     parser.add_argument('--writeback-lab',type=Path,help='仅允许专门创建的隔离写回测试环境')
     parser.add_argument('--usage',action='store_true',help='独立本地环境启用使用统计')
+    parser.add_argument('--coverage',action='store_true',help='仅新建隔离库启用成绩覆盖表与解锁')
     parser.add_argument('--notifications',action='store_true',help='仅独立本地环境启用按账号未读提醒')
     parser.add_argument('--feedback',action='store_true',help='独立本地环境启用文字反馈')
     parser.add_argument('--contributions',action='store_true',help='仅独立本地成绩版本环境启用排行榜')
@@ -536,6 +556,6 @@ def main():
     except (ValueError,KeyboardInterrupt) as error:
         parser.exit(1, ('已取消' if isinstance(error,KeyboardInterrupt) else str(error))+'\n')
     import uvicorn
-    uvicorn.run(create_app(args.data_dir,f'http://127.0.0.1:{args.port}',mail_config=config,preview_source=args.preview_source,writeback_lab=args.writeback_lab,score_version_lab=args.score_version_lab,contributions=args.contributions,feedback=args.feedback,notifications=args.notifications,usage=args.usage),host='127.0.0.1',port=args.port,proxy_headers=False)
+    uvicorn.run(create_app(args.data_dir,f'http://127.0.0.1:{args.port}',mail_config=config,preview_source=args.preview_source,writeback_lab=args.writeback_lab,score_version_lab=args.score_version_lab,contributions=args.contributions,feedback=args.feedback,notifications=args.notifications,usage=args.usage,coverage=args.coverage),host='127.0.0.1',port=args.port,proxy_headers=False)
 
 if __name__=='__main__': main()

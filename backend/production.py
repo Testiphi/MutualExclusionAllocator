@@ -59,7 +59,9 @@ def make_app(config,password):
         from backend.notifications import state as notification_state
         notifications_ready=notification_state(db)['notification_schema']==1
         contribution_ready=state(db)['contribution_schema']==1
-    return create_app(path,config['origin'],score_state=score_state,contributions=contribution_ready,feedback=feedback_ready,notifications=notifications_ready,usage=(path/'usage.sqlite3').exists(),mail_config=MailConfig('smtp','',password,production=True,daily_limit=config['mail_daily_limit']),production=True)
+        from backend.coverage import state as coverage_state
+        coverage_ready=coverage_state(db)['coverage_schema']==1
+    return create_app(path,config['origin'],score_state=score_state,contributions=contribution_ready,coverage=coverage_ready,feedback=feedback_ready,notifications=notifications_ready,usage=(path/'usage.sqlite3').exists(),mail_config=MailConfig('smtp','',password,production=True,daily_limit=config['mail_daily_limit']),production=True)
 
 @contextmanager
 def service_lock(path):

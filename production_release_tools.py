@@ -24,9 +24,10 @@ FEEDBACK_FILES=('backend/feedback.py','backend/feedback_production.py','feedback
 GLOBAL_FILES=('cars.global.json','gauntlet_data.global.json','global-data-manifest.json','tools/build_global_data.py')
 NOTIFICATION_FILES=('backend/notifications.py','backend/notification_production.py','notifications.js','NOTIFICATIONS_LOCAL.md')
 USAGE_FILES=('backend/usage.py','backend/usage_production.py','usage.js','usage_admin.js','usage.html','usage.css','USAGE_LOCAL.md')
+COVERAGE_FILES=('backend/coverage.py','backend/coverage_production.py','coverage.html','coverage.js','coverage.css','COVERAGE_DEPLOYMENT.md')
 THEME_FILES=('theme.css',)
-COMPONENT_GROUPS=(THEME_FILES,SCORE_FILES,COMMUNITY_FILES,CONTRIBUTION_FILES,FEEDBACK_FILES,GLOBAL_FILES,NOTIFICATION_FILES,USAGE_FILES)
-APP_FILES=BASE_FILES+THEME_FILES+SCORE_FILES+COMMUNITY_FILES+CONTRIBUTION_FILES+FEEDBACK_FILES+GLOBAL_FILES+NOTIFICATION_FILES+USAGE_FILES
+COMPONENT_GROUPS=(COVERAGE_FILES,THEME_FILES,SCORE_FILES,COMMUNITY_FILES,CONTRIBUTION_FILES,FEEDBACK_FILES,GLOBAL_FILES,NOTIFICATION_FILES,USAGE_FILES)
+APP_FILES=BASE_FILES+COVERAGE_FILES+THEME_FILES+SCORE_FILES+COMMUNITY_FILES+CONTRIBUTION_FILES+FEEDBACK_FILES+GLOBAL_FILES+NOTIFICATION_FILES+USAGE_FILES
 
 def verify_global_data(contents):
  if not set(contents)&set(GLOBAL_FILES):return # Historical releases remain readable.
@@ -115,6 +116,10 @@ def check_score_compatibility(target,info,data_dir):
   if not set(USAGE_FILES)<=set(info['files']) or 'production/score-capability.json' not in info['files'] or json.loads(cap.read_text()).get('usage_schema')!=1:raise ValueError('统计库已启用，禁止切回不兼容旧程序')
  if account_db.exists():
   with closing(sqlite3.connect(account_db.as_uri()+'?mode=ro',uri=True)) as db:
+   if db.execute("SELECT 1 FROM sqlite_master WHERE name='coverage_schema'").fetchone():
+    rows=db.execute('SELECT version FROM coverage_schema').fetchall()
+    cap=Path(target)/'production/score-capability.json'
+    if len(rows)!=1 or not set(COVERAGE_FILES)<=set(info['files']) or 'production/score-capability.json' not in info['files'] or json.loads(cap.read_text()).get('coverage_schema')!=rows[0][0]:raise ValueError('成绩表权限已启用，禁止切回不兼容旧程序')
    if db.execute("SELECT 1 FROM sqlite_master WHERE name='notification_schema'").fetchone():
     rows=db.execute('SELECT version FROM notification_schema').fetchall()
     cap=Path(target)/'production/score-capability.json'

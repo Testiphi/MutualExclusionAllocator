@@ -137,7 +137,9 @@ def backup(config):
             for p in (writer.lab/'backups').glob('*/*'):
                 name='score-state/backups/'+p.parent.name+'/'+p.name
                 if p.is_file() and safe_backup_name(name):content[name]=p
-            manifest={'format':'racepick-coherent-scores-v1','current':version,'usage_schema':1 if 'usage.sqlite3' in content else 0,'files':{n:file_hash(v) for n,v in content.items()}}
+            from backend.coverage import state as coverage_state
+            with closing(sqlite3.connect(temp_db)) as snapshot_db:coverage_snapshot=coverage_state(snapshot_db)
+            manifest={'format':'racepick-coherent-scores-v1',**coverage_snapshot,'current':version,'usage_schema':1 if 'usage.sqlite3' in content else 0,'files':{n:file_hash(v) for n,v in content.items()}}
             with zipfile.ZipFile(temporary,'x',zipfile.ZIP_DEFLATED) as archive:
                 for n,v in content.items():archive.write(v,n)
                 archive.writestr('backup-manifest.json',encode(manifest))
@@ -156,6 +158,7 @@ def verify_backup(source):
         manifest=json.loads(archive.read('backup-manifest.json'))
         if manifest.get('format')!='racepick-coherent-scores-v1' or set(manifest['files'])!=set(names)-{'backup-manifest.json'}:raise ValueError('备份清单异常')
         if manifest.get('usage_schema',0)!=(1 if 'usage.sqlite3' in manifest['files'] else 0):raise ValueError('统计备份组件声明不匹配')
+        if manifest.get('coverage_schema',0) not in (0,1):raise ValueError('成绩表备份schema无效')
         for n,h in manifest['files'].items():
             with archive.open(n) as stream:
                 if stream_hash(stream)!=h:raise ValueError('备份校验失败：'+n)
@@ -189,6 +192,9 @@ def drill(config,source):
         feedback=feedback_state(db)
         from backend.notifications import state as notification_state
         notifications=notification_state(db)
+        from backend.coverage import state as coverage_state
+        coverage=coverage_state(db)
+        if coverage['coverage_schema']!=manifest.get('coverage_schema',0):raise ValueError('成绩表备份组件声明不匹配')
     usage_schema=0
     if (destination/'usage.sqlite3').exists():
         from backend.usage import schema
@@ -199,7 +205,7 @@ def drill(config,source):
     for row in rows:
         item=json.loads(row[0]);versions.read(item['base']);versions.read(item['target'])
         if item.get('rollback'):versions.read(item['rollback']['version'])
-    return {'drill_directory':str(destination),'version':version,'counts':counts,'pending_batches':pending,'active_database_replaced':False,'usage_schema':usage_schema,**contribution,**feedback,**notifications}
+    return {'drill_directory':str(destination),'version':version,'counts':counts,'pending_batches':pending,'active_database_replaced':False,'usage_schema':usage_schema,**contribution,**feedback,**notifications,**coverage}
 
 
 def revert_migration(config,source):

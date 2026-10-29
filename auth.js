@@ -182,7 +182,8 @@
         }else{
             const login=document.createElement('button');login.type='button';login.textContent='登录后提交成绩';login.onclick=()=>showAuth('login');contributions.append(login);
         }
-        if(session.contributions){
+        if(session.coverage)hubLink(contributions,'擂台成绩表','/score-table','查看成绩覆盖与补充缺口');
+          if(session.contributions){
             hubLink(contributions,'贡献排行榜','/leaderboard','查看本月榜与总榜');
             if(owner){
                 hubLink(contributions,'我的贡献','/leaderboard#mine','查看得分明细和调整记录');
@@ -238,7 +239,7 @@
             void action(async()=>{
                 if(mode==='login'){
                     if(store?.state().dirty&&!await ask('当前有未保存的车库修改。兑换后需重新登录，草稿保留在本窗口，不会自动保存。继续？'))return;
-                    await request('POST','/auth/login',{email,password});clearPasswords();location.reload();
+                    await request('POST','/auth/login',{email,password});clearPasswords();const back=new URLSearchParams(location.search).get('returnTo');if(back){const target=new URL(back,location.origin);if(target.origin===location.origin&&target.pathname==='/score-table'){location.assign(target.pathname+target.search);return;}}location.reload();
                 }else if(mode==='register'){
                     const result=await request('POST','/auth/register',{email,password,...(invitesEnabled&&invite_code?{invite_code}:{})});showAuth('sent',{message:result.message,sentAction:mode});
                 }else if(mode==='forgot'||mode==='resend'){
