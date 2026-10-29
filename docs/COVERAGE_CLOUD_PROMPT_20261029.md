@@ -1,15 +1,15 @@
 # 云端部署交接提示词
 
 ```text
-请接手RacePick成绩覆盖表新版本的云端部署上线。先给我当前服务器只读核验命令，我执行回传，一步一步来，不要一次性给整套写操作脚本。开发对话只完成实现、构包和Git推送，未操作生产。
+请接手RacePick成绩覆盖表新版本的云端部署上线。先给我当前服务器只读核验命令，我执行回传，一步一步来，不要一次性给整套写操作脚本。开发对话只完成实现、构包和Git推送，未操作生产。只使用本提示词中的最终9f9b2e2b包；旧fe8a9aff为保留候选，已被替代。
 
-交付包：RacePick-Coverage661-20261029-fe8a9aff-delivery.zip
-本地：E:\hzz\work\MutualExclusionAllocator\repo\.production-build\RacePick-Coverage661-20261029-fe8a9aff-delivery.zip
-完整归档SHA256：ca73947e14bbe8bc3671531c5b4f5398f4531da71878c0db34dd53d9ec347953
-发布ID：fe8a9aff0cf6871d5d7f0212
-源码提交：a8ad5c36a113033375c84c2ef683fb1f312907e7
+交付包：RacePick-Coverage661-20261029-9f9b2e2b-delivery.zip
+本地：E:\hzz\work\MutualExclusionAllocator\repo\.production-build\RacePick-Coverage661-20261029-9f9b2e2b-delivery.zip
+完整归档SHA256：373bad1e795f5f0000f4cc7aeb7559eadfbb72c141404609bff6639256b67568
+发布ID：9f9b2e2bba7ba566a0665332
+源码提交：7dcd70248d9aac90faa95c43b4abba02e6737160
 数据提交：d06cd7d54838230976342c19c21638b90a5632ac
-内层包SHA256：821485c5f05d778f15ca39719c49bff1238dbff122f6b6884089360a5dd35e60
+内层包SHA256：2a593ce59d2b586845bdb5767452d6187323ccd8bc96952b54109ef09fb3e47f
 目标：Ubuntu24.04 x86_64 / CPython3.12，19个锁定离线wheel。
 
 先读包内README、RELEASE.json、DATA_SCOPE.json、PACKAGE_VERIFICATION.json，以COVERAGE_DEPLOYMENT.md作为已有站点升级顺序。其他旧文档的首次初始化和旧组件迁移不能照抄。
