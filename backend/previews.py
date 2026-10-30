@@ -17,7 +17,7 @@ from validate_data import validate_data
 from backend.submissions import Score, normalize
 
 ROOT=Path(__file__).resolve().parents[1]
-ENGINE_FILES=('apply_changes.py','format_json.py','data_tools.py','validate_data.py','backend/previews.py','backend/submissions.py')
+ENGINE_FILES=('apply_changes.py','format_json.py','data_tools.py','validate_data.py','backend/previews.py','backend/submissions.py','backend/score_scopes.py')
 
 
 def sha(data):return hashlib.sha256(data).hexdigest()
@@ -111,6 +111,7 @@ def build_preview(rows,data,cars,source):
             item.update(kind='conflict',error='正式库基础校验失败，不能计算此条');result['summary']['conflicts']+=1;continue
         try:
             if payload is None:raise ValueError('缺少拟采纳内容')
+            if payload.get('server','cn')!='cn':raise ValueError('国际服投稿不能进入国服成绩应用批次')
             candidate=normalize(Score(**payload),data,cars)
             if candidate['unlisted']:raise ValueError('未收录资料需要先维护规则，不能形成数据改动')
             if candidate['car']!=payload['car']:raise ValueError('车辆身份已变化，请重新审核，不能自动迁移到新昵称')

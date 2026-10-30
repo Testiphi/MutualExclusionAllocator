@@ -143,7 +143,8 @@
         }
         const personal=hub('personalCenter','个人中心','管理账号与公开身份；车库保存和恢复在主页车库区操作。');
         personal.innerHTML=`<p id="personalIdentity"></p><p id="personalMessage" role="status"></p><div id="accountActions" hidden><button type="button" id="accountImport">导入本机游客车库</button><button type="button" id="accountRetry" hidden>保存车库</button><button type="button" id="accountLogout">退出账号</button></div>`;
-        document.querySelector('.card').insertBefore(box, document.querySelector('.sub').nextSibling);
+        const homeIntro=document.getElementById('coverageEntry') || document.querySelector('.sub');
+        document.querySelector('.card').insertBefore(box, homeIntro.nextSibling);
         authDialog=document.createElement('dialog');authDialog.className='account-dialog';authDialog.id='accountAuthDialog';
         authDialog.setAttribute('aria-labelledby','accountAuthTitle');authDialog.setAttribute('aria-describedby','accountAuthHelp');
         authDialog.innerHTML=`<div class="account-dialog-heading"><h2 id="accountAuthTitle">登录账号</h2><button id="accountAuthClose" type="button" aria-label="关闭账号弹窗">×</button></div>

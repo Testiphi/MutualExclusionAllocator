@@ -26,8 +26,9 @@ NOTIFICATION_FILES=('backend/notifications.py','backend/notification_production.
 USAGE_FILES=('backend/usage.py','backend/usage_production.py','usage.js','usage_admin.js','usage.html','usage.css','USAGE_LOCAL.md')
 COVERAGE_FILES=('backend/coverage.py','backend/coverage_production.py','coverage.html','coverage.js','coverage.css','COVERAGE_DEPLOYMENT.md')
 THEME_FILES=('theme.css',)
-COMPONENT_GROUPS=(COVERAGE_FILES,THEME_FILES,SCORE_FILES,COMMUNITY_FILES,CONTRIBUTION_FILES,FEEDBACK_FILES,GLOBAL_FILES,NOTIFICATION_FILES,USAGE_FILES)
-APP_FILES=BASE_FILES+COVERAGE_FILES+THEME_FILES+SCORE_FILES+COMMUNITY_FILES+CONTRIBUTION_FILES+FEEDBACK_FILES+GLOBAL_FILES+NOTIFICATION_FILES+USAGE_FILES
+SCOPED_FILES=('backend/score_scopes.py','backend/global_scores.py','backend/global_score_production.py','GLOBAL_SUBMISSIONS_DEPLOYMENT.md')
+COMPONENT_GROUPS=(SCOPED_FILES,COVERAGE_FILES,THEME_FILES,SCORE_FILES,COMMUNITY_FILES,CONTRIBUTION_FILES,FEEDBACK_FILES,GLOBAL_FILES,NOTIFICATION_FILES,USAGE_FILES)
+APP_FILES=BASE_FILES+SCOPED_FILES+COVERAGE_FILES+THEME_FILES+SCORE_FILES+COMMUNITY_FILES+CONTRIBUTION_FILES+FEEDBACK_FILES+GLOBAL_FILES+NOTIFICATION_FILES+USAGE_FILES
 
 def verify_global_data(contents):
  if not set(contents)&set(GLOBAL_FILES):return # Historical releases remain readable.
@@ -116,6 +117,9 @@ def check_score_compatibility(target,info,data_dir):
   if not set(USAGE_FILES)<=set(info['files']) or 'production/score-capability.json' not in info['files'] or json.loads(cap.read_text()).get('usage_schema')!=1:raise ValueError('统计库已启用，禁止切回不兼容旧程序')
  if account_db.exists():
   with closing(sqlite3.connect(account_db.as_uri()+'?mode=ro',uri=True)) as db:
+   if db.execute("SELECT 1 FROM sqlite_master WHERE name='global_score_control'").fetchone():
+    cap=Path(target)/'production/score-capability.json'
+    if not set(SCOPED_FILES)<=set(info['files']) or 'production/score-capability.json' not in info['files'] or json.loads(cap.read_text()).get('global_score_schema')!=1:raise ValueError('国际成绩状态已启用，禁止切回不兼容旧程序')
    if db.execute("SELECT 1 FROM sqlite_master WHERE name='coverage_schema'").fetchone():
     rows=db.execute('SELECT version FROM coverage_schema').fetchall()
     cap=Path(target)/'production/score-capability.json'

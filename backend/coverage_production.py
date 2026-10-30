@@ -33,7 +33,7 @@ def migrate(config, expected_version):
             raise ValueError('活动成绩版本变化，请重新核对')
         if before['pending_batches']:
             raise ValueError('存在未完成成绩批次，请先按原流程处理')
-        if before['coverage_schema'] == 1:
+        if before['coverage_schema'] == 2:
             return {**before, 'already_migrated': True, 'existing_rows_preserved': True}
         saved = backup(config)
         verify_backup(saved)
@@ -42,14 +42,15 @@ def migrate(config, expected_version):
             db.execute('PRAGMA foreign_keys=ON'); db.execute('BEGIN IMMEDIATE')
             if db.execute('SELECT version FROM score_current WHERE slot=1').fetchone()[0] != expected_version:
                 raise ValueError('执行前成绩版本变化，停止迁移')
-            if state(db)['coverage_schema'] != 0:
+            if state(db)['coverage_schema'] != before['coverage_schema']:
                 raise ValueError('成绩表权限表状态变化，请重新检查')
             names = [r[0] for r in db.execute("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'")]
-            fingerprints = existing_fingerprints(db, names)
+            preserved_names=[n for n in names if n!='coverage_schema']
+            fingerprints = existing_fingerprints(db, preserved_names)
             migrate_tables(db)
-            if fingerprints != existing_fingerprints(db, names):
+            if fingerprints != existing_fingerprints(db, preserved_names):
                 raise ValueError('已有业务行发生变化，事务已取消')
-            if any(state(db)['coverage_counts'].values()):
+            if before['coverage_schema']==0 and any(state(db)['coverage_counts'].values()):
                 raise ValueError('成绩表权限新表必须为空，不导入本地测试成绩表权限')
         return {**preflight(config), 'already_migrated': False, 'backup': str(saved),
                 'existing_rows_preserved': True, 'test_coverage_imported': 0}

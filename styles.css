@@ -25,6 +25,28 @@ h1 {
     margin: 0 0 4px 0;
     font-weight: 600;
 }
+/* Homepage discovery entry: keep the established palette and primary actions. */
+.coverage-entry {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px 20px; margin: 16px 0 22px; padding: 13px 16px;
+    background: #19232e; border: 1px solid #354657; border-radius: 10px;
+}
+.coverage-entry-copy { min-width: 0; }
+.coverage-entry h2 {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 9px;
+    margin: 0; color: #e6edf3; font-size: 14px; font-weight: 600; line-height: 1.6;
+}
+.coverage-entry p { margin: 3px 0 0; color: #8b949e; font-size: 13px; line-height: 1.6; }
+.coverage-entry-new {
+    display: inline-block; padding: 1px 6px; border-radius: 4px;
+    color: #a9d1ff; background: #243b53; font-size: 11px; font-weight: 400; line-height: 1.6;
+}
+.coverage-entry .coverage-entry-link { flex-shrink: 0; background: #1b2b3c; border-color: #385878; }
+.coverage-entry .coverage-entry-link:hover { background: #30363d; border-color: #58a6ff; }
+@media (max-width: 520px) {
+    .coverage-entry { flex-wrap: wrap; gap: 10px; padding: 12px; }
+    .coverage-entry .coverage-entry-link { width: 100%; }
+}
 /* 切换开关 — radio group 样式（仿 DeepSeek） */
 .toggle-group {
     display: flex;

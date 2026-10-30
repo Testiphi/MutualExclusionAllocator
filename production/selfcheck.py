@@ -105,13 +105,17 @@ def main():
     except ValueError:pass
     else:raise AssertionError('成绩表迁移未拒绝活动服务锁')
    coverage=migrate_coverage(config,result['version'])
-   assert coverage['coverage_schema']==1 and coverage['existing_rows_preserved'] and not any(coverage['coverage_counts'].values())
+   assert coverage['coverage_schema']==2 and coverage['existing_rows_preserved'] and not any(coverage['coverage_counts'].values())
    assert migrate_coverage(config,result['version'])['already_migrated']
+   from backend.global_score_production import migrate as migrate_global
+   dataset=json.loads((root/'global-data-manifest.json').read_text(encoding='utf-8'))['_meta']['dataset_version']
+   international=migrate_global(config,root,dataset,result['version'])
+   assert international['global_score_schema']==1 and not international['global_writes_enabled']
    bundle=score_backup(config);restored=drill(config,bundle)
    assert restored['contribution_schema']==1 and not restored['active_database_replaced']
    assert restored['feedback_schema']==1 and not any(restored['feedback_counts'].values())
    assert restored['notification_schema']==1 and not any(restored['notification_counts'].values())
-   assert restored['usage_schema']==1 and restored['coverage_schema']==1
+   assert restored['usage_schema']==1 and restored['coverage_schema']==2
    from backend.usage import UsageStore
    with UsageStore(Path(restored['drill_directory'])/'usage.sqlite3').connect() as statistics:
     assert statistics.execute('SELECT count(*) FROM usage_events').fetchone()[0]==0
@@ -129,7 +133,7 @@ def main():
      try:
       conn.request('GET',route,headers={'Host':'racepick.cn','X-Forwarded-Proto':'https','X-Real-IP':'192.0.2.1'})
       response=conn.getresponse();body=response.read();assert response.status==200,(route,response.status,body)
-      if route=='/api/health':assert json.loads(body)['contribution_schema']==1 and json.loads(body)['score_version']==result['version'] and json.loads(body)['feedback_schema']==1 and json.loads(body)['feedback'] and json.loads(body)['notification_schema']==1 and json.loads(body)['usage_schema']==1 and json.loads(body)['coverage_schema']==1
+      if route=='/api/health':assert json.loads(body)['contribution_schema']==1 and json.loads(body)['score_version']==result['version'] and json.loads(body)['feedback_schema']==1 and json.loads(body)['feedback'] and json.loads(body)['notification_schema']==1 and json.loads(body)['usage_schema']==1 and json.loads(body)['coverage_schema']==2
       if route=='/leaderboard':assert '独立本地验收环境' not in body.decode()
      finally:conn.close()
    finally:server.should_exit=True;thread.join(10);sock.close()

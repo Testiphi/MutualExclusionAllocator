@@ -15,7 +15,7 @@ function fixture({guest=false,failSubmit=false,global=false,failLoad=false,colum
  const calls=[],navigations=[];let failures=failSubmit?1:0,requestId=0,user=guest?null:{id:'player',verified:true,role:'player'};
  const target={big:'测试地图',small:'道路',zone:'五区',tier:'理论',car:'恶魔',stars:null,route:''};
  const data=(body={})=>({server:ids.server.value,user_id:user?.id||null,access:{level:0,points:0,valid:0,high:0,chosen:null},maps:[{id:'a'.repeat(24),name:'测试地图'}],column_total:columnTotal,column_offset:Number(body.offset||0),column_limit:columnLimit,
-  columns:['a','b','恶魔'].map(car=>({car,max_stars:6,star_options:[4,5,6],stars:expert?(body.star_map?.[car]||6):null,coverage_count:3})),rows:[{big:'测试地图',small:'道路',route:'',reference:{car:'a',stars:6,value:25,tier:'理论',route:'普通跑法'},cells:[{key:'public',status:'filled',value:expert&&body.star_map?.a===5?26:25,public:true},{key:'hidden',status:'filled',value:null,public:false},{key:'blank',status:'empty',target:ids.server.value==='cn'?target:null}]}]});
+  columns:['a','b','恶魔'].map(car=>({car,max_stars:6,star_options:[4,5,6],stars:expert?(body.star_map?.[car]||6):null,coverage_count:3})),rows:[{big:'测试地图',small:'道路',route:'',reference:{car:'a',stars:6,value:25,tier:'理论',route:'普通跑法'},cells:[{key:'public',status:'filled',value:expert&&body.star_map?.a===5?26:25,public:true},{key:'hidden',status:'filled',value:null,public:false},{key:'blank',status:'empty',target:ids.server.value==='cn'?target:{...target,server:'global',oc:false}}]}]});
  const document={getElementById:id=>{assert.ok(ids[id],id);return ids[id];},createElement:t=>new Node(t),querySelectorAll:()=>[]};
  const context={Date:Clock,innerWidth:390,document,location:{search:global?'?server=global':expert?'?tier=高手':'',origin:'http://127.0.0.1:8000',assign:url=>navigations.push(url)},URL,URLSearchParams,AbortController,setTimeout,clearTimeout,crypto:{randomUUID:()=>String(++requestId).padStart(32,'0')},
   fetch:async(url,opts)=>{calls.push({url,opts,body:opts.body?JSON.parse(opts.body):null});let value,ok=true;
@@ -44,7 +44,7 @@ test('touch movement and scroll cannot navigate; two stationary taps in the same
 });
 test('guest return goes straight to the prefilled shared form; global cells never become national drafts',async()=>{
  const f=fixture({guest:true});await f.settle();f.blank().onclick({pointerType:'mouse'});const url=new URL(f.navigations[0],'http://127.0.0.1');assert.equal(url.searchParams.get('login'),'1');const back=new URL(url.searchParams.get('returnTo'),'http://127.0.0.1');assert.equal(back.pathname,'/submissions');assert.ok(back.searchParams.get('prefill'));
- const g=fixture({global:true});await g.settle();g.blank().onclick({pointerType:'touch'});assert.equal(g.navigations.length,0);assert.match(g.ids.message.textContent,/国际服投稿暂未开放/);assert.equal(g.calls.filter(c=>c.url==='/api/submissions').length,0);
+ const g=fixture({global:true});await g.settle();g.blank().onclick({pointerType:'mouse'});const target=new URL(g.navigations[0],'http://127.0.0.1');assert.equal(target.searchParams.get('server'),'global');assert.equal(JSON.parse(target.searchParams.get('prefill')).server,'global');assert.equal(g.calls.filter(c=>c.url==='/api/submissions').length,0);
 });
 test('failed reads clear old grid values',async()=>{
  const f=fixture({failLoad:true});await f.settle();assert.equal(f.ids.body.children.length,0);assert.match(f.ids.message.textContent,/加载失败/);

@@ -6,13 +6,13 @@
 <link rel="stylesheet" href="/submissions.css"><script defer src="/notifications.js"></script><script defer src="/submissions.js"></script>
 <link rel="stylesheet" href="/ui.css"><link rel="stylesheet" href="/theme.css"></head>
 <body class="rp-page">
-<header><a class="ui-button ui-secondary" href="/">← 返回选车助手</a><h1>成绩投稿</h1><p id="identity">正在检查登录状态…</p><p id="reference"></p>
-<nav id="navigation" hidden><button id="newTab" type="button">提交成绩</button><button id="mineTab" type="button">我的投稿</button><button id="reviewTab" type="button" hidden>审核工作台</button></nav>
+<header><a class="ui-button ui-secondary" id="homeLink" href="/">← 返回选车助手</a><h1>成绩投稿</h1><p id="identity">正在检查登录状态…</p><p id="reference"></p>
+<nav id="navigation" hidden><label>服别 <select id="submissionServer"><option value="cn">国服</option><option value="global">国际服</option></select></label><button id="newTab" type="button">提交成绩</button><button id="mineTab" type="button">我的投稿</button><button id="reviewTab" type="button" hidden>审核工作台</button></nav>
 </header>
 <main>
 <p id="message" role="status" aria-live="polite"></p><p id="loginPrompt" hidden><a id="loginLink" class="ui-button ui-primary">登录后继续投稿</a></p>
 <section id="compose" hidden aria-labelledby="composeTitle"><h2 id="composeTitle">录入成绩</h2>
-<p><a class="ui-button ui-secondary" href="/score-table">从擂台表选目标</a></p>
+<p><a class="ui-button ui-secondary" id="tableLink" href="/score-table">从擂台表选目标</a></p>
 <div id="draftRows"></div><div class="actions"><button id="submitBatch" class="ui-primary" type="button">提交审核</button></div><details class="batch-options"><summary>批量 / 暂存</summary><div class="actions"><button id="addRow" type="button">再添一条</button><button id="saveBatch" type="button">仅保存草稿</button></div></details><div id="savedDraftLinks"></div>
 </section>
 <section id="workspace" hidden>

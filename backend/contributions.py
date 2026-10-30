@@ -7,6 +7,7 @@ from fastapi import HTTPException, Request
 from fastapi.responses import FileResponse, HTMLResponse, HTMLResponse
 from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictInt
 from backend.submissions import identity, packed
+from backend.score_scopes import target_identity
 
 CST = timezone(timedelta(hours=8))
 
@@ -78,7 +79,7 @@ def bind(db, row):
     payload = json.loads(row['accepted_payload'] or row['payload'])
     if not all(payload.get(k) for k in ('big', 'small', 'car')):
         raise HTTPException(422, '计贡献前请要求投稿人补全地图和车辆，确保同目标去重')
-    key = identity(payload) or packed([payload[k] for k in ('big','small','zone','tier','car','stars','route')])
+    key = identity(payload) or packed(target_identity(payload))
     if source['contribution_id'] is not None:
         item = db.execute('SELECT * FROM contributions WHERE id=?', (source['contribution_id'],)).fetchone()
         if item['target_key'] != key:

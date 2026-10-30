@@ -27,7 +27,7 @@ def main():
  a.output.mkdir(parents=True,exist_ok=False)
  provenance={'code_commit':git(ROOT,'rev-parse','HEAD'),'data_commit':data_commit,'created_local':datetime.now().isoformat(timespec='seconds')}
  info=pack(ROOT,a.data_source,a.wheels,a.output/'racepick-accounts-release.zip',provenance,data_contents=data_contents);read_bundle(a.output/'racepick-accounts-release.zip')
- for name in ('deploy_production.py','production_release_tools.py','PRODUCTION_DEPLOYMENT.md','SCORE_PRODUCTION_DEPLOYMENT.md','COMMUNITY_DEPLOYMENT.md','CONTRIBUTIONS_PRODUCTION.md','FEEDBACK_PRODUCTION.md','GARAGE_DEPLOYMENT.md','LOCAL_INTERNATIONAL.md','INTERNATIONAL_DEPLOYMENT.md','SERVER_SWITCH_FIX.md','NOTIFICATIONS_LOCAL.md','USAGE_LOCAL.md','UNREAD_USAGE_DEPLOYMENT.md','COVERAGE_DEPLOYMENT.md'):shutil.copyfile(ROOT/('docs/'+name if name.endswith('.md') else name),a.output/name)
+ for name in ('deploy_production.py','production_release_tools.py','PRODUCTION_DEPLOYMENT.md','SCORE_PRODUCTION_DEPLOYMENT.md','COMMUNITY_DEPLOYMENT.md','CONTRIBUTIONS_PRODUCTION.md','FEEDBACK_PRODUCTION.md','GARAGE_DEPLOYMENT.md','LOCAL_INTERNATIONAL.md','INTERNATIONAL_DEPLOYMENT.md','SERVER_SWITCH_FIX.md','NOTIFICATIONS_LOCAL.md','USAGE_LOCAL.md','UNREAD_USAGE_DEPLOYMENT.md','COVERAGE_DEPLOYMENT.md','GLOBAL_SUBMISSIONS_DEPLOYMENT.md'):shutil.copyfile(ROOT/('docs/'+name if name.endswith('.md') else name),a.output/name)
  (a.output/'RELEASE.json').write_text(json.dumps(info,ensure_ascii=False,indent=2),encoding='utf-8')
  checks=[f'{hashlib.sha256(f.read_bytes()).hexdigest()}  {f.name}' for f in sorted(a.output.iterdir()) if f.is_file()]
  (a.output/'SHA256SUMS.txt').write_text('\n'.join(checks)+'\n',encoding='utf-8')

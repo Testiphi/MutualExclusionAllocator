@@ -33,7 +33,8 @@ class CoverageMatrixTests(unittest.TestCase):
         self.assertEqual(len(expert['columns']),2);self.assertEqual(expert['columns'][0]['stars'],5);self.assertEqual(expert['rows'][0]['cells'][0]['value'],26)
         self.assertEqual(expert['rows'][0]['cells'][0]['target']['stars'],5);self.assertEqual(expert['rows'][2]['cells'][0]['value'],26)
         with self.assertRaises(Exception):matrix(data,cars,access,zone='四区',tier='高手',star_map={'a':5})
-        global_view=matrix(data,cars,{'level':2,'chosen':None},server='global');self.assertIsNone(global_view['rows'][2]['cells'][1]['value']);self.assertIsNone(global_view['rows'][0]['cells'][0]['target'])
+        cars['capabilities']={'zones':['五区'],'tiers':['理论'],'max_stars_only':True,'oc':True}
+        global_view=matrix(data,cars,{'level':2,'chosen':None},server='global');self.assertEqual(global_view['rows'][0]['cells'][0]['target']['server'],'global')
     def test_coverage_sort_uses_unique_tracks_and_does_not_move_when_stars_change(self):
         data,cars=sample();data['tracks'][2]['五区']['理论']=[e for e in data['tracks'][2]['五区']['理论'] if e['cars'][0]['name']!='a']
         result=matrix(data,cars,{'level':0,'chosen':None});self.assertEqual(result['columns'][0]['car'],'b')
@@ -122,10 +123,10 @@ class CoverageAPITests(unittest.TestCase):
         with self.app.state.store.connect() as db:db.execute('UPDATE contributions SET quality_points=0,bonus=0')
         reply=self.player.get('/api/coverage',params={'tier':'高手','stars':'6'}).json();self.assertEqual(reply['access']['level'],0);self.assertTrue(reply['access']['chosen']);self.assertTrue(all(c['value'] is None for c in reply['rows'][0]['cells']))
         with self.assertRaises(ValueError):create_app(self.path,score_version_lab=self.lab,contributions=True)
-    def test_full_level_is_dynamic_admins_work_independently_and_global_stays_public(self):
+    def test_full_level_is_dynamic_admins_work_independently_and_unlocks_both_servers(self):
         self.grant_fixture(15,5);self.assertEqual(self.player.get('/api/coverage').json()['access']['level'],2)
         self.assertTrue(self.client.get('/api/coverage').json()['access']['admin'])
-        r=self.player.get('/api/coverage?server=global').json();self.assertEqual(r['server'],'global');self.assertTrue(all(c['value'] is None for row in r['rows'] for c in row['cells'] if not c['public']))
+        r=self.player.get('/api/coverage?server=global').json();self.assertEqual(r['server'],'global');self.assertTrue(all(c['value'] is not None for row in r['rows'] for c in row['cells'] if c['status']=='filled'))
         self.assertEqual(self.player.get('/api/coverage?server=global&zone=四区').status_code,422)
     def test_existing_submission_chain_accepts_prefill_and_pending_is_private_without_filling_cell(self):
         reply=self.player.get('/api/coverage',params={'tier':'高手','stars':'5','q':'恶魔'}).json();cell=reply['rows'][0]['cells'][0];self.assertEqual(cell['status'],'empty')

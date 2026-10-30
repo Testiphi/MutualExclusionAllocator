@@ -27,7 +27,6 @@ async function load(focusCar=null){
  const stamp=++ticket;clear();$('message').textContent='';
  try{
   const currentSession=await call('GET','/auth/me');if(stamp!==ticket)return;session=currentSession;
-  if($('server').value==='global'){zone='五区';tier='理论';}
   const chosen=$('map').value==='all'&&params.has('big')?params.get('big'):$('map').value;
   const q=query();if(chosen)q.set('big',chosen);
   const data=await call('POST','/coverage/view',{...Object.fromEntries(q),star_map:tier==='高手'?Object.fromEntries(choices()):{}});if(stamp!==ticket)return;
@@ -42,9 +41,10 @@ async function load(focusCar=null){
 const headerStars=new Map();
 function render(){
  headerStars.clear();
- const access=view.access,global=view.server==='global';$('choose-map').hidden=global||access.level!==1||!!access.chosen;
- $('rights').textContent=global?'国际服暂仅浏览。':access.admin?'管理账号可查看全部国服成绩。':access.level===2?'国服成绩已全部解锁。':access.chosen&&access.level===1?'已开放所选大地图。':'已开放部分成绩，其余可贡献解锁。';
- $('sheets').replaceChildren();for(const [z,t] of global?[['五区','理论']]:[['五区','理论'],['五区','高手'],['四区','理论'],['四区','高手']]){const b=node('button',z+' · '+t);b.setAttribute('aria-current',String(z===zone&&t===tier));b.onclick=()=>{zone=z;tier=t;offset=0;void load();};$('sheets').append(b);}
+ const access=view.access,global=view.server==='global';
+ $('home-link').href=global?'/?server=global':'/';$('submit-link').href='/submissions'+(global?'?server=global':'');$('choose-map').hidden=access.level!==1||!!access.chosen;
+ $('rights').textContent=access.admin?'管理账号可查看当前服全部成绩。':access.level===2?'两服成绩已全部解锁。':access.chosen&&access.level===1?'已开放所选大地图。':'已开放部分成绩，其余可贡献解锁。';
+ $('sheets').replaceChildren();for(const [z,t] of (view.capabilities?.zones||['五区','四区']).flatMap(z=>(view.capabilities?.tiers||['理论','高手']).filter(t=>['理论','高手'].includes(t)).map(t=>[z,t]))){const b=node('button',z+' · '+t);b.setAttribute('aria-current',String(z===zone&&t===tier));b.onclick=()=>{zone=z;tier=t;offset=0;void load();};$('sheets').append(b);}
  $('sheet').style.setProperty('--coverage-columns',String(view.columns.length));
  const h=node('tr');for(const [label,cls] of [['#','row-num'],['大地图','map-col'],['小地图'+($('route').value==='special'?' / 跑法':''),'track-col']]){const th=node('th',label);th.className=cls;h.append(th);}
  for(const c of view.columns){
@@ -76,11 +76,12 @@ function clearSelection(){
  $('cell-tap-hint').hidden=true;
 }
 function destination(cell){
- if(cell.mine)return '/submissions#'+cell.mine.id;
- const prefill={server:'cn',...cell.target};return '/submissions?prefill='+encodeURIComponent(JSON.stringify(prefill))+'#new';
+ const server=view.server||'cn',scope=server==='global'?'server=global&':'';
+ if(cell.mine)return '/submissions'+(scope?'?server=global':'')+'#'+cell.mine.id;
+ const prefill={server,...cell.target};return '/submissions?'+scope+'prefill='+encodeURIComponent(JSON.stringify(prefill))+'#new';
 }
 function open(cell){
- if(!cell.target){$('message').textContent='国际服投稿暂未开放。';return;}
+ if(!cell.target){$('message').textContent='投稿目标已变化，请刷新后重试。';return;}
  const path=destination(cell);
  if(!session.user){location.assign('/?login=1&returnTo='+encodeURIComponent(path));return;}
  location.assign(path);
@@ -92,7 +93,7 @@ function bindCell(button,cell){
  button.onpointercancel=()=>{if(lastPointer)lastPointer.moved=true;clearSelection();};
  button.onclick=(event={})=>{
   if(epoch!==ticket)return;
-  if(!cell.target){$('message').textContent='国际服投稿暂未开放。';return;}
+  if(!cell.target){$('message').textContent='投稿目标已变化，请刷新后重试。';return;}
   const touch=event.pointerType?event.pointerType==='touch'||event.pointerType==='pen':event.detail===0?false:lastPointer?.kind==='touch'||!!globalThis.matchMedia?.('(pointer:coarse)').matches;
   if(touch){
    if(lastPointer?.moved||Date.now()<scrollBlockedUntil)return;
@@ -108,13 +109,13 @@ $('sheet-wrap').onscroll=()=>{scrollBlockedUntil=Date.now()+200;if(lastPointer?.
 globalThis.addEventListener?.('scroll',clearSelection,{passive:true});
 
 $('filters').onsubmit=e=>{e.preventDefault();offset=0;void load();};
-for(const id of ['server','map','route','gaps'])$(id).onchange=()=>{offset=0;if(id==='server'){$('map').value='all';params.delete('big');}void load();};
+for(const id of ['server','map','route','gaps'])$(id).onchange=()=>{offset=0;if(id==='server'){zone='五区';tier='理论';$('map').value='all';params.delete('big');}void load();};
 $('previous-columns').onclick=()=>{offset=Math.max(0,offset-pageSize);void load();};$('next-columns').onclick=()=>{offset+=pageSize;void load();};
 for(const b of document.querySelectorAll('[data-close]'))b.onclick=()=>{if(!writing)$(b.dataset.close).close();};
 
 $('choose-map').onclick=()=>{$('choice-error').textContent='';$('choice-dialog').showModal();};
 $('choice-dialog').oncancel=e=>{if(writing)e.preventDefault();};
-$('confirm-choice').onclick=async()=>{if(writing)return;writing=true;$('confirm-choice').disabled=$('choice').disabled=true;try{await call('POST','/coverage/choice',{map_id:$('choice').value});$('choice-dialog').close();await load();}catch(e){$('choice-error').textContent=e.message;}finally{writing=false;$('confirm-choice').disabled=$('choice').disabled=false;}};
+$('confirm-choice').onclick=async()=>{if(writing)return;writing=true;$('confirm-choice').disabled=$('choice').disabled=true;try{await call('POST','/coverage/choice',{server:$('server').value,map_id:$('choice').value});$('choice-dialog').close();await load();}catch(e){$('choice-error').textContent=e.message;}finally{writing=false;$('confirm-choice').disabled=$('choice').disabled=false;}};
 $('progress').onclick=()=>{if(!view)return;const a=view.access;$('progress-summary').textContent=`累计积分 ${a.points}；有效贡献 ${a.valid}；高质量 ${a.high}${a.admin?'；管理账号工作权限独立于贡献等级':''}。`;$('one-status').textContent=a.level>=1?'已达成':'未达成';$('two-status').textContent=a.level>=2?'已达成':'未达成';$('progress-dialog').showModal();};
 void load();
 })();

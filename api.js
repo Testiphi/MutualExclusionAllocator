@@ -58,7 +58,13 @@ const api = (() => {
     const key = 'global:static';
     if (!snapshots.has(key)) snapshots.set(key, (async () => {
       const paths = [cfg.staticPaths.manifestJson, cfg.staticPaths.carsJson, cfg.staticPaths.dataJson];
-      const responses = await Promise.all(paths.map(path => readBootstrap(path, {cache: 'no-store'})));
+      let responses;
+      if (globalThis.RACEPICK_VERSIONED_GLOBAL_SCORES) {
+        const response=await readBootstrap('/api/scores/global-snapshot',{cache:'no-store'});
+        if(!response.ok)throw Error(`国际服数据加载失败（HTTP ${response.status}），请稍后重试`);
+        const snapshot=await response.json();
+        responses=paths.map(path=>({ok:true,arrayBuffer:async()=>new TextEncoder().encode(snapshot.files[path]).buffer}));
+      } else responses = await Promise.all(paths.map(path => readBootstrap(path, {cache: 'no-store'})));
       const failed = responses.find(response => !response.ok);
       if (failed) throw Error(`国际服数据加载失败（HTTP ${failed.status}），请稍后重试`);
       const bytes = await Promise.all(responses.map(response => response.arrayBuffer()));

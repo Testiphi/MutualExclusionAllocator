@@ -40,3 +40,5 @@ const appState = (() => {
 
     return { garage, route, createScheduler };
 })();
+
+if (typeof module !== 'undefined' && module.exports) module.exports = appState;

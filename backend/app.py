@@ -167,7 +167,7 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
         ready=coverage_state(db)["coverage_schema"]
         if ready and not coverage:raise ValueError("成绩表权限已启用，必须带coverage启动")
         if coverage:
-            if production and ready!=1:raise ValueError("成绩表权限尚未显式迁移")
+            if production and ready!=2:raise ValueError("成绩表权限尚未显式迁移至双服schema2")
             if not production:db.execute("BEGIN IMMEDIATE");migrate_coverage(db)
     from backend.usage import UsageStore
     usage_path = store.directory / "usage.sqlite3"
@@ -216,6 +216,10 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
         app.state.score_versions=ScoreWriter(score_state or score_version_lab,store,production=production)
         app.state.writeback=app.state.score_versions
         reference_dir=app.state.score_versions.current_dir
+        if coverage:
+            from backend.global_scores import initialize, GlobalScoreWriter
+            global_root=(store.directory if production else Path(score_version_lab))/'global-score-state'
+            app.state.global_score_versions=(GlobalScoreWriter(global_root,store,True) if production else initialize(global_root,store,ROOT))
     from backend.mailing import MailConfig, MailService
     mail_service = MailService(store,origin,mail_config or MailConfig())
     app.state.mail_service = mail_service
@@ -484,7 +488,9 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
         result['notification_schema']=1 if notifications else 0
         result['notifications']=notifications
         result['usage_schema']=1 if usage else 0
-        result['coverage_schema']=1 if coverage else 0
+        result['coverage_schema']=2 if coverage else 0
+        result['global_score_schema']=1 if hasattr(app.state,'global_score_versions') else 0
+        if hasattr(app.state,'global_score_versions'):result['global_score_version']=app.state.global_score_versions.current()[0]['id']
         result['usage']=usage
         if versioned_scores:
             result['score_version']=app.state.score_versions.current()[0]['id']
@@ -496,9 +502,18 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
         html=(ROOT/'index.html').read_text(encoding='utf-8')
         html=html.replace('</head>','<script src="/notifications.js"></script><script src="/profile_store.js"></script><script src="/announcements.js"></script><script src="/auth.js"></script><link rel="stylesheet" href="/accounts.css"><link rel="stylesheet" href="/ui.css">\n</head>')
         if coverage:
-            table_href='/score-table?server=global' if request.query_params.get('server')=='global' else '/score-table'
+            global_server=request.query_params.get('server')=='global'
+            table_href='/score-table?server=global' if global_server else '/score-table'
+            table_description='查看各图参考成绩，补充缺失记录'
             marker='<div class="sub">帕累托最优 · 擂台选车</div>'
-            html=html.replace(marker,marker+'<p><a class="ui-button" href="'+table_href+'">擂台成绩表</a></p>',1)
+            entry=('<section class="coverage-entry" id="coverageEntry" aria-labelledby="coverageEntryTitle">'
+                   '<div class="coverage-entry-copy"><h2 id="coverageEntryTitle">擂台成绩表 '
+                   '<span class="coverage-entry-new" id="coverageEntryNew">新功能</span></h2>'
+                   '<p>'+table_description+'</p></div>'
+                   '<a class="ui-button coverage-entry-link" id="coverageEntryLink" href="'+table_href+'">'
+                   '查看成绩表 <span aria-hidden="true">→</span></a></section>')
+            html=html.replace(marker,marker+entry,1)
+        if hasattr(app.state,'global_score_versions'):html=html.replace('</head>','<script>globalThis.RACEPICK_VERSIONED_GLOBAL_SCORES=true;</script></head>')
         if versioned_scores:html=html.replace('</head>','<script>globalThis.RACEPICK_VERSIONED_SCORES=true;</script></head>')
         return HTMLResponse(usage_html(html))
 
@@ -520,6 +535,9 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
     def asset(name:str):
         if production and name in ('data_previews.js','data_previews.css','writeback_lab.js'):raise HTTPException(404)
         if name not in assets: raise HTTPException(404)
+        if hasattr(app.state,'global_score_versions') and name in ('cars.global.json','gauntlet_data.global.json','global-data-manifest.json'):
+            info,contents=app.state.global_score_versions.current()
+            return Response(contents[name],media_type='application/json',headers={'X-Global-Score-Version':info['id'],'Cache-Control':'no-store'})
         if versioned_scores and name in ('gauntlet_data.json','cars.json'):
             info,contents=app.state.score_versions.current()
             return Response(contents[name],media_type='application/json',headers={'X-Score-Version':info['id']})
