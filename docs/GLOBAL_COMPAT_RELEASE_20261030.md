@@ -19,3 +19,22 @@
 新包需要显式coverage1→2升级和独立国际状态schema1初始化；国际写回默认关闭。无新增Nginx、systemd或环境变量要求，但须成套备份/恢复、暂停备份调度、维护窗口、Linux原生自检和兼容门禁；详见 GLOBAL_SUBMISSIONS_DEPLOYMENT.md。不能只发应用ZIP就认为上线条件已齐备。
 
 最终源码SHA、发布ID、完整路径、归档SHA、包内实际数据范围、测试与推送结果在构包后追加。用户选择方案/授权构包不替代真实手机微信、生产数据和权益验收。
+
+
+## 构包完成回执（尚未生产操作）
+
+源码固定 `1dba7e47eff47fb4423203e0008514aefb6337be`，功能分支feature/coverage-entry-compact；后续本回执文档提交不改变包内源码。数据来源为用户批准冻结的659交付，不代提交维护侧数据。
+
+发布ID：`3d978fd30812fa8f72ba928d`。
+完整包：`E:\hzz\work\MutualExclusionAllocator\repo\.production-build\RacePick-Global659-Compat-20261030-3d978fd3-delivery.zip`。
+完整包字节数：11070099；SHA256：`34d11ecaa1a23dc3e9225f8838b209a611ac178c551152cf23007b302eabbf35`。
+内层SHA256：`484e63317d8b75f152ef65fa136aeaa1e4e347616e2d23def393ed0033f0f429`。
+数据交接SHA256：`93745f665235ad8928e8514f1977b7948bf92bf14940466a1b9fff83246f4dae`；没有虚构新数据提交。
+
+批准659组合全量后端183、前端124、工具88通过/1项Linux专用跳过。制品逐项来源/大小/哈希、内外CRC、独立暂存校验通过；19个锁定Linux CPython3.12 wheel离线解析通过。Windows制品临时库演练包括显式迁移/幂等、模拟服务锁、两服非空选图/事件完整恢复及升级HTTP。首次wheel解析指定了过旧manylinux标签而未匹配，按现有wheel实际2.28/2.17与abi3标签修正后19项全部解析，无下载或安装，不修改锁定依赖。
+
+外层24文件、内层107文件/依赖；账号库、凭据、测试库、工作簿、完整维护698、国际四区/高手、36参考和维护台账均未混入。45份数据/工作簿/既有运维材料/旧包哈希和mtime保持。
+
+Linux原生锁/权限/安装自检、现场current/PIDcwd/主组件和双服数据版本、备份timer/真实备份/独立恢复，以及桌面/手机微信/真实权益仍待云端核验。不能因完成构包就跳过coverage1→2和国际首次状态前置。没有上传、生产迁移、激活、公告、清理或监控。
+
+推送结果以最后远端核对为准。主树既有国际数据、工作簿、运维文档和未跟踪文件保持，不合并/提交他人未完成修改。云端可复制交接见 GLOBAL_COMPAT_CLOUD_PROMPT_20261030.md；包内升级流程见 GLOBAL_SUBMISSIONS_DEPLOYMENT.md。
