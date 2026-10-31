@@ -23,7 +23,7 @@
         const server=root.APP_CONFIG?.server||root.RACEPICK_SERVER||'cn';
         let csrf='',catalog=null,file=null,attempt=null,generation=0,busy=false,objectURL=null;
         const dialog=document.createElement('section');dialog.id='mapRecognitionWorkspace';dialog.className='map-recognition-dialog mr-inline';host.className='map-recognition-host';
-        dialog.innerHTML=`<div class="mr-heading"><div><h2>地图识别</h2><p class="mr-purpose">上传进攻或防守页面，自动识别地图并填充。</p></div></div>
+        dialog.innerHTML=`<div class="mr-heading"><div><h2>地图识别</h2><p class="mr-purpose">上传进攻或防守游戏截图，自动识别地图并填充。不支持拍屏照片。</p></div></div>
           <label class="mr-upload" id="mrDropZone" for="mrFile"><svg class="mr-upload-icon" viewBox="0 0 48 48" fill="none" aria-hidden="true"><path d="M24 31V8m0 0-8 8m8-8 8 8M10 28v10a3 3 0 0 0 3 3h22a3 3 0 0 0 3-3V28" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg><strong id="mrDropTitle">拖入或选择图片</strong><input id="mrFile" type="file" aria-label="浏览并选择游戏截图" accept="image/png,image/jpeg,image/webp"></label>
           <div class="mr-file-name" id="mrFileName"></div><img id="mrPreview" class="mr-preview" alt="本次选择的截图" hidden>
           <div class="mr-controls" id="mrControls" hidden><button type="button" id="mrStart" hidden>重新识别</button><button type="button" id="mrRetry" hidden>重试</button><button type="button" id="mrCancel" hidden>取消识别</button></div>
