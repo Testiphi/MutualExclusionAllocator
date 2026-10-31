@@ -85,7 +85,7 @@
             if(!item?.id)return;
             try{await jsonRequest('/api/map-recognition/jobs/'+item.id+'?server='+item.server,{method:'DELETE'});}catch(e){/* TTL removes inaccessible/expired private media. */}
         }
-        async function resetJob(){generation++;const old=attempt;attempt=null;setBusy(false);$('mrRetry').hidden=true;grid.hidden=true;grid.replaceChildren();validate();await disposeJob(old);}
+        async function resetJob(){generation++;const old=attempt;attempt=null;setBusy(false);$('mrRetry').hidden=true;grid.hidden=true;grid.replaceChildren();validate();void disposeJob(old);}
         async function selectFile(value){
             const ticket=generation+1;await resetJob();if(ticket!==generation||!dialog.isConnected)return false;file=value;
             if(objectURL){URL.revokeObjectURL(objectURL);objectURL=null;}
@@ -157,7 +157,7 @@
             if(error){say(error,true);$('mrFile').value='';return;}
             if(await selectFile(list[0]))await start();
         }
-        $('mrFile').onchange=()=>{if($('mrFile').files.length)void acceptFiles($('mrFile').files);};
+        $('mrFile').onchange=()=>{const files=Array.from($('mrFile').files);$('mrFile').value='';if(files.length)void acceptFiles(files);};
         let dragDepth=0;
         function clearDrag(){dragDepth=0;$('mrDropZone').classList.remove('mr-drag-over');}
         $('mrDropZone').addEventListener('dragenter',event=>{event.preventDefault();event.stopPropagation();dragDepth++;if(!busy)$('mrDropZone').classList.add('mr-drag-over');});
