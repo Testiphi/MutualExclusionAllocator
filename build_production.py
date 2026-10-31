@@ -13,7 +13,7 @@ ROOT=Path(__file__).resolve().parent
 
 def git(path,*args):return subprocess.check_output(['git','-C',str(path),*args],text=True,encoding='utf-8').strip()
 def main():
- p=argparse.ArgumentParser(description=__doc__);p.add_argument('--data-source',type=Path,required=True);p.add_argument('--wheels',type=Path,required=True);p.add_argument('--output',type=Path,required=True);a=p.parse_args()
+ p=argparse.ArgumentParser(description=__doc__);p.add_argument('--data-source',type=Path,required=True);p.add_argument('--wheels',type=Path,required=True);p.add_argument('--ocr-assets',type=Path);p.add_argument('--output',type=Path,required=True);a=p.parse_args()
  if git(ROOT,'status','--porcelain'):raise ValueError('先提交代码，发布包必须绑定干净版本')
  data_names=('gauntlet_data.json','cars.json','cars.global.json','gauntlet_data.global.json','global-data-manifest.json')
  if git(a.data_source,'status','--porcelain','--',*data_names):raise ValueError('双服数据JSON有未提交修改，请先核对，不能默默打包')
@@ -26,9 +26,11 @@ def main():
  if wheel_hashes!=lock_hashes:raise ValueError('离线依赖与锁定清单不一致')
  a.output.mkdir(parents=True,exist_ok=False)
  provenance={'code_commit':git(ROOT,'rev-parse','HEAD'),'data_commit':data_commit,'created_local':datetime.now().isoformat(timespec='seconds')}
- info=pack(ROOT,a.data_source,a.wheels,a.output/'racepick-accounts-release.zip',provenance,data_contents=data_contents);read_bundle(a.output/'racepick-accounts-release.zip')
+ if a.ocr_assets:provenance['ocr_assets_sha256']=hashlib.sha256((ROOT/'production/ocr-assets.json').read_bytes()).hexdigest()
+ info=pack(ROOT,a.data_source,a.wheels,a.output/'racepick-accounts-release.zip',provenance,data_contents=data_contents,ocr_assets=a.ocr_assets);read_bundle(a.output/'racepick-accounts-release.zip')
  for name in ('deploy_production.py','production_release_tools.py','PRODUCTION_DEPLOYMENT.md','SCORE_PRODUCTION_DEPLOYMENT.md','COMMUNITY_DEPLOYMENT.md','CONTRIBUTIONS_PRODUCTION.md','FEEDBACK_PRODUCTION.md','GARAGE_DEPLOYMENT.md','LOCAL_INTERNATIONAL.md','INTERNATIONAL_DEPLOYMENT.md','SERVER_SWITCH_FIX.md','NOTIFICATIONS_LOCAL.md','USAGE_LOCAL.md','UNREAD_USAGE_DEPLOYMENT.md','COVERAGE_DEPLOYMENT.md','GLOBAL_SUBMISSIONS_DEPLOYMENT.md'):shutil.copyfile(ROOT/('docs/'+name if name.endswith('.md') else name),a.output/name)
  (a.output/'RELEASE.json').write_text(json.dumps(info,ensure_ascii=False,indent=2),encoding='utf-8')
+ if a.ocr_assets:shutil.copyfile(ROOT/'docs/MAP_OCR_DEPLOYMENT.md',a.output/'MAP_OCR_DEPLOYMENT.md')
  checks=[f'{hashlib.sha256(f.read_bytes()).hexdigest()}  {f.name}' for f in sorted(a.output.iterdir()) if f.is_file()]
  (a.output/'SHA256SUMS.txt').write_text('\n'.join(checks)+'\n',encoding='utf-8')
  print('release_id='+info['id']);print(a.output.resolve())

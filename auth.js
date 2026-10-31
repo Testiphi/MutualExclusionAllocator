@@ -319,6 +319,7 @@
     }
     root.accountUI = {
         init, active:()=>!!store,
+        identity:()=>owner?.id||null,
         garage:()=>{const p=current(); return p===null?null:appState.garage(p.cars,known);},
         stars:()=>current()?.stars || {},
         saveNow, state:()=>store?.state(),

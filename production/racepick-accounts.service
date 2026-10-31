@@ -10,6 +10,7 @@ Group=racepick
 WorkingDirectory=/opt/racepick/current
 ExecStart=/opt/racepick/current/.venv/bin/python -B -m backend.production serve --config /etc/racepick/production.json
 LoadCredential=smtp-password:/etc/racepick/smtp-password
+EnvironmentFile=-/etc/racepick/map-recognition.env
 Restart=on-failure
 RestartSec=5
 UMask=0077

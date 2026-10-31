@@ -1,0 +1,34 @@
+{
+  "licenses/MaaCommonAssets-MIT.txt": {
+    "bytes": 1060,
+    "sha256": "2f8ab70ffd1bd53863a27835be02757a657de693e2a2aef9111dbbfa2c5737f0"
+  },
+  "licenses/MaaCommonAssets-OCR.md": {
+    "bytes": 1760,
+    "sha256": "82d92eb8d3984d99db2ae3370f647e24450f9dd06e073a0e4a9ecf3d09fbfd19"
+  },
+  "licenses/PaddleOCR-Apache-2.0.txt": {
+    "bytes": 11376,
+    "sha256": "3840c5c0c61c294264d2dd77b8777be6ddd90121ef4e0e64abcd22edea581d6e"
+  },
+  "licenses/THIRD_PARTY_NOTICES.md": {
+    "bytes": 1321,
+    "sha256": "5b5e183c5992bbcef899ac8dae41d9b8e403494bbcf9c98d0052a9318bb6297f"
+  },
+  "ocr/v5_det.onnx": {
+    "bytes": 4748769,
+    "sha256": "8c3b7ee97913a7942b8565669dc9acbe8846fbbaf4b63e1d7fdb339005574a33"
+  },
+  "ocr/v5_keys.txt": {
+    "bytes": 92395,
+    "sha256": "1ea29636956177e400af712d9782e7693f3fb25f98617bed10479d2965a836fd"
+  },
+  "ocr/v5_rec.onnx": {
+    "bytes": 16517247,
+    "sha256": "31fb844ce3a4aaf13e4bea62ae35f43bd9a509966061980c30db9b248c542a6b"
+  },
+  "production/ocr-provenance.json": {
+    "bytes": 2457,
+    "sha256": "7d2a48dd5375e09c31d57cf144dc761bfadbc6ecedc1a4e9d852b1266aafbbc6"
+  }
+}

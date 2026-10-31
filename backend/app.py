@@ -126,7 +126,26 @@ class Store:
             db.execute('INSERT INTO attempts VALUES (?,1,?) ON CONFLICT(bucket) DO UPDATE SET count=count+1', (key, now+600))
 
 
-def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None, mail_config=None, preview_source=None, writeback_lab=None, production=False, score_version_lab=None, score_state=None, contributions=False, feedback=False, notifications=False, usage=False, coverage=False):
+def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None, mail_config=None, preview_source=None, writeback_lab=None, production=False, score_version_lab=None, score_state=None, contributions=False, feedback=False, notifications=False, usage=False, coverage=False, map_recognition=None):
+    recognition_service=None
+    if map_recognition is not None:
+        if production:
+            from backend.map_ocr_production import ProductionRecognitionService,settings as ocr_settings
+            if score_state is None or ocr_settings(map_recognition)!=Path(data_dir).absolute()/'map-recognition':
+                raise ValueError('生产识图必须绑定现有成绩环境下独立的map-recognition目录')
+            recognition_service=ProductionRecognitionService(map_recognition)
+        elif score_state is not None or writeback_lab is not None or preview_source is not None or reference_dir is not None:
+            raise ValueError('截图识图demo只能运行在独立本地环境，不能混用正式库或写回实验室')
+        else:
+            from backend.map_recognition import RecognitionService
+            recognition_service=RecognitionService(map_recognition)
+            if Path(data_dir or '').resolve()!=recognition_service.root/'accounts':
+                raise ValueError('截图识图demo必须使用自身隔离账号目录')
+        if not production and score_version_lab is not None:
+            from backend.score_repository import validate_lab
+            lab,_=validate_lab(score_version_lab,data_dir)
+            if lab!=recognition_service.root:
+                raise ValueError('整合预览必须使用同一隔离目录，不得连接其他成绩实验室')
     if feedback and (not contributions or (production and score_state is None) or (not production and score_version_lab is None)):
         raise ValueError("问题反馈需要已绑定成绩及贡献环境")
     if contributions and ((production and score_state is None) or (not production and score_version_lab is None)):
@@ -219,11 +238,22 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
         if coverage:
             from backend.global_scores import initialize, GlobalScoreWriter
             global_root=(store.directory if production else Path(score_version_lab))/'global-score-state'
-            app.state.global_score_versions=(GlobalScoreWriter(global_root,store,True) if production else initialize(global_root,store,ROOT))
+            app.state.global_score_versions=(GlobalScoreWriter(global_root,store,True) if production else initialize(global_root,store,recognition_service.reference if recognition_service else ROOT))
+    if recognition_service and production:
+        def active_map_catalog(server):
+            from backend.map_recognition import digest
+            writer=app.state.score_versions if server=='cn' else getattr(app.state,'global_score_versions',None)
+            if writer is None:raise HTTPException(503,'当前服别尚未绑定活动成绩')
+            info,contents=writer.current()
+            name='gauntlet_data.global.json' if server=='global' else 'gauntlet_data.json'
+            data=json.loads(contents[name])
+            return {'server':server,'version':digest((info['id']+':').encode()+contents[name]),
+                    'maps':[{'big':row['大地图'],'small':row['小地图']} for row in data['tracks']]}
+        recognition_service.provider=active_map_catalog
     from backend.mailing import MailConfig, MailService
     mail_service = MailService(store,origin,mail_config or MailConfig())
     app.state.mail_service = mail_service
-    catalog_root=reference_dir() if versioned_scores else ROOT
+    catalog_root=recognition_service.reference if recognition_service and not production else (reference_dir() if versioned_scores else ROOT)
     catalog = json.loads((catalog_root/'cars.json').read_text(encoding='utf-8'))
     known = {c['nickname'] for c in catalog['cars'] if c.get('nickname') and c.get('zones')}
 
@@ -283,7 +313,10 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
         if request.headers.get('host') != parsed.netloc:
             return JSONResponse({'detail':'无效 Host'},status_code=400)
         if request.url.path.startswith('/api/') and request.method not in ('GET','HEAD','OPTIONS'):
-            if request.headers.get('origin') != origin or request.headers.get('content-type','').split(';')[0] != 'application/json':
+            recognition_upload=recognition_service is not None and request.method=='POST' and request.url.path=='/api/map-recognition/jobs'
+            content_type=request.headers.get('content-type','').split(';')[0]
+            type_ok=content_type in ('image/png','image/jpeg','image/webp') if recognition_upload else content_type=='application/json'
+            if request.headers.get('origin') != origin or not type_ok:
                 return JSONResponse({'detail':'请求来源或内容类型不正确'},status_code=403)
             collector = usage and request.method=='POST' and request.url.path in ('/api/usage/session','/api/usage/events')
             if not collector:
@@ -297,7 +330,7 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
             total=0
             async for chunk in request.stream():
                 total += len(chunk)
-                limit = 8192 if collector else (3000000 if request.url.path.endswith('/images') else 65536)
+                limit = 8*1024*1024 if recognition_upload else (8192 if collector else (3000000 if request.url.path.endswith('/images') else 65536))
                 if total>limit:
                     return JSONResponse({'detail':'请求过大'},status_code=413)
                 if total==len(chunk): body=chunk
@@ -476,10 +509,16 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
     from backend.previews import install as install_previews
     if not production:install_previews(app,store,ROOT,user,preview_source)
 
+    if recognition_service:
+        from backend.map_recognition import install as install_recognition
+        install_recognition(app,recognition_service,session,user)
+        app.state.map_recognition=recognition_service
+
     @app.get('/api/health')
     def health():
         with store.connect() as db:db.execute('SELECT 1').fetchone()
         result={'status':'ok','mode':'production' if production else 'local','schema':6}
+        if recognition_service:result['map_recognition']={'enabled':True,'worker':recognition_service.health()}
         result['community_schema']=1
         result['contribution_schema']=1 if contributions else 0
         result['contributions']=contributions
@@ -501,6 +540,10 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
     def index(request:Request):
         html=(ROOT/'index.html').read_text(encoding='utf-8')
         html=html.replace('</head>','<script src="/notifications.js"></script><script src="/profile_store.js"></script><script src="/announcements.js"></script><script src="/auth.js"></script><link rel="stylesheet" href="/accounts.css"><link rel="stylesheet" href="/ui.css">\n</head>')
+        if recognition_service:
+            html=html.replace('</head>','<script>globalThis.RACEPICK_MAP_RECOGNITION={enabled:true};</script><script defer src="/map_recognition.js"></script><link rel="stylesheet" href="/map_recognition.css"></head>')
+            marker='<div class="map-rows" id="mapRowsContainer"></div>'
+            html=html.replace(marker,'<section id="mapRecognitionHost" class="map-recognition-host"></section>'+marker,1)
         if coverage:
             global_server=request.query_params.get('server')=='global'
             table_href='/score-table?server=global' if global_server else '/score-table'
@@ -525,6 +568,7 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
         install_writeback(app,store,ROOT,user,writeback_lab,preview_source)
     assets={'styles.css','config.js','api.js','app_state.js','allocator.js','race_scores.js','cars.json','gauntlet_data.json','auth.js','profile_store.js','accounts.css','submissions.js','submissions.css','admin_access.js','data_previews.js','data_previews.css','writeback_lab.js','announcements.js','admin_accounts.js'}
     assets.update({'ui.css','theme.css','notifications.js'})
+    if recognition_service:assets.update({'map_recognition.js','map_recognition.css'})
     assets.update({'cars.global.json','gauntlet_data.global.json','global-data-manifest.json'})
     if coverage: assets.update({'coverage.js','coverage.css'})
     if usage: assets.update({'usage.js','usage_admin.js','usage.css'})
@@ -535,6 +579,8 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
     def asset(name:str):
         if production and name in ('data_previews.js','data_previews.css','writeback_lab.js'):raise HTTPException(404)
         if name not in assets: raise HTTPException(404)
+        if recognition_service and not production and name in ('cars.json','gauntlet_data.json','cars.global.json','gauntlet_data.global.json','global-data-manifest.json'):
+            return FileResponse(recognition_service.reference/name,headers={'Cache-Control':'no-store'})
         if hasattr(app.state,'global_score_versions') and name in ('cars.global.json','gauntlet_data.global.json','global-data-manifest.json'):
             info,contents=app.state.global_score_versions.current()
             return Response(contents[name],media_type='application/json',headers={'X-Global-Score-Version':info['id'],'Cache-Control':'no-store'})

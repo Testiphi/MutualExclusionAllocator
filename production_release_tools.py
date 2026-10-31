@@ -29,6 +29,24 @@ THEME_FILES=('theme.css',)
 SCOPED_FILES=('backend/score_scopes.py','backend/global_scores.py','backend/global_score_production.py','GLOBAL_SUBMISSIONS_DEPLOYMENT.md')
 COMPONENT_GROUPS=(SCOPED_FILES,COVERAGE_FILES,THEME_FILES,SCORE_FILES,COMMUNITY_FILES,CONTRIBUTION_FILES,FEEDBACK_FILES,GLOBAL_FILES,NOTIFICATION_FILES,USAGE_FILES)
 APP_FILES=BASE_FILES+SCOPED_FILES+COVERAGE_FILES+THEME_FILES+SCORE_FILES+COMMUNITY_FILES+CONTRIBUTION_FILES+FEEDBACK_FILES+GLOBAL_FILES+NOTIFICATION_FILES+USAGE_FILES
+OCR_CODE_FILES=('backend/map_layout.py','backend/map_recognition.py','backend/map_ocr_engine.py','backend/map_ocr_worker.py',
+ 'backend/map_ocr_production.py','backend/map_ocr_supervisor.py','map_recognition.js','map_recognition.css',
+ 'production/ocr-models.json','production/ocr-assets.json','production/ocr-selfcheck.py','production/racepick-map-ocr.service',
+ 'MAP_OCR_DEPLOYMENT.md')
+OCR_ASSET_FILES=('ocr/v5_det.onnx','ocr/v5_rec.onnx','ocr/v5_keys.txt','licenses/MaaCommonAssets-MIT.txt',
+ 'licenses/MaaCommonAssets-OCR.md','licenses/PaddleOCR-Apache-2.0.txt','production/ocr-provenance.json','licenses/THIRD_PARTY_NOTICES.md')
+OCR_FILES=OCR_CODE_FILES+OCR_ASSET_FILES
+COMPONENT_GROUPS=COMPONENT_GROUPS+(OCR_FILES,)
+
+def verify_ocr(contents):
+ if not set(contents)&set(OCR_FILES):return
+ if not set(OCR_FILES)<=set(contents):raise ValueError('发布包缺少识图组件')
+ assets=json.loads(contents['production/ocr-assets.json'])
+ if set(assets)!=set(OCR_ASSET_FILES):raise ValueError('识图资产白名单不匹配')
+ for name,record in assets.items():
+  if digest(contents[name])!=record['sha256'] or len(contents[name])!=record['bytes']:raise ValueError('识图资产哈希不匹配')
+ models=json.loads(contents['production/ocr-models.json'])['models']
+ if set(models)!= {'det','rec','keys'} or any(item['path'] not in assets or item['sha256']!=assets[item['path']]['sha256'] for item in models.values()):raise ValueError('识图模型与固定资产不一致')
 
 def verify_global_data(contents):
  if not set(contents)&set(GLOBAL_FILES):return # Historical releases remain readable.
@@ -46,18 +64,22 @@ def verify_global_data(contents):
  if meta.get('dataset_version')!=digest(canonical(binding)):raise ValueError('国际服数据集版本校验失败')
 
 def digest(raw):return hashlib.sha256(raw).hexdigest()
-def allowed(name):return name in APP_FILES or bool(re.fullmatch(r'wheels/[A-Za-z0-9_.+\-]+\.whl',name))
+def allowed(name):return name in APP_FILES or name in OCR_FILES or bool(re.fullmatch(r'wheels/[A-Za-z0-9_.+\-]+\.whl',name))
 def manifest(contents,provenance):
  files={n:{'sha256':digest(v),'size':len(v)} for n,v in sorted(contents.items())}
  info={'version':1,'target':'ubuntu24.04-x86_64-python3.12','files':files,'provenance':provenance}
  info['id']=digest(json.dumps(info,sort_keys=True).encode())[:24];return info
 
-def pack(code,data,wheels,output,provenance,data_contents=None):
+def pack(code,data,wheels,output,provenance,data_contents=None,ocr_assets=None):
  code,data,wheels,output=map(Path,(code,data,wheels,output))
  if output.exists():raise ValueError('输出文件已存在，不覆盖')
  snapshot_sets=({'cars.json','gauntlet_data.json'},{'cars.json','gauntlet_data.json',*GLOBAL_FILES[:3]})
  if data_contents is not None and set(data_contents) not in snapshot_sets:raise ValueError('数据快照必须为两份国服JSON或完整五份双服JSON')
  content={n:(data_contents[n] if data_contents is not None and n in data_contents else ((data if n in ('cars.json','gauntlet_data.json') else code)/('docs/'+n if n.endswith('.md') else n)).read_bytes()) for n in APP_FILES}
+ if ocr_assets is not None:
+  content.update({n:(code/('docs/'+n if n.endswith('.md') else n)).read_bytes() for n in OCR_CODE_FILES})
+  content.update({n:(Path(ocr_assets)/n).read_bytes() for n in OCR_ASSET_FILES})
+ verify_ocr(content)
  content.update({'wheels/'+p.name:p.read_bytes() for p in wheels.glob('*.whl')})
  if not any(n.startswith('wheels/') for n in content):raise ValueError('缺少离线依赖')
  verify_global_data(content)
@@ -71,12 +93,13 @@ def read_bundle(bundle):
  with zipfile.ZipFile(bundle) as z:
   names=z.namelist()
   if len(names)!=len(set(names)) or 'manifest.json' not in names or not set(BASE_FILES)<=set(names) or any(n!='manifest.json' and not allowed(n) for n in names):raise ValueError('发布包文件白名单不匹配')
-  if any(i.file_size>40*1024*1024 for i in z.infolist()) or sum(i.file_size for i in z.infolist())>200*1024*1024:raise ValueError('包体积异常')
+  if any(i.file_size>128*1024*1024 for i in z.infolist()) or sum(i.file_size for i in z.infolist())>512*1024*1024:raise ValueError('包体积异常')
   for group in COMPONENT_GROUPS:
    if set(names)&set(group) and not set(group)<=set(names):raise ValueError('发布包缺少必要组件')
   contents={n:z.read(n) for n in names if n!='manifest.json'};info=json.loads(z.read('manifest.json'))
  if info!=manifest(contents,info['provenance']):raise ValueError('发布包校验失败')
  verify_global_data(contents)
+ verify_ocr(contents)
  return contents,info
 
 def verify(target):
@@ -89,6 +112,7 @@ def verify(target):
  contents={n:(target/n).read_bytes() for n in info['files']}
  if any((target/n).is_symlink() for n in info['files']) or info!=manifest(contents,info['provenance']) or target.name!=info['id']:raise ValueError('版本校验失败')
  verify_global_data(contents)
+ verify_ocr(contents)
  return info
 
 def stage(bundle,base):

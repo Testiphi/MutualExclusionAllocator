@@ -9,4 +9,5 @@ python3 -m venv .venv
 .venv/bin/python -m pip install --no-index --find-links wheels --require-hashes -r production/requirements-linux-py312.lock
 .venv/bin/python -m pip check
 .venv/bin/python -B production/selfcheck.py
+if test -f production/ocr-assets.json; then .venv/bin/python -B production/ocr-selfcheck.py; fi
 printf '运行环境及临时数据库冒烟通过；尚未初始化正式库或修改Nginx。\n'

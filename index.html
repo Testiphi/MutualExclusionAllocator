@@ -120,6 +120,7 @@
     let RACE_DATA = null;
     let bigMapList = [];
     let smallMapsByBig = {};
+    let mapSelectionRevision = 0;
 
     // ===================== 五区 / 四区 车池与星级规则 =====================
     // 唯一来源是 cars.json 里每辆车记录上的 `zones`（车池）与 `star_rule`（星级上下限）。
@@ -1195,8 +1196,8 @@
 
     // 事件绑定
     function bindEvents() {
-        bigSelects.forEach(sel => sel.addEventListener('change', () => { refreshBigMaps(); computeAndDisplay(); }));
-        smallSelects.forEach(sel => sel.addEventListener('change', computeAndDisplay));
+        bigSelects.forEach(sel => sel.addEventListener('change', () => { mapSelectionRevision++; refreshBigMaps(); computeAndDisplay(); }));
+        smallSelects.forEach(sel => sel.addEventListener('change', () => { mapSelectionRevision++; computeAndDisplay(); }));
         recommendBtn.addEventListener('click', computeAndDisplay);
         selectAllBtn.addEventListener('click', () => { selectAll(); computeAndDisplay(); });
         clearAllBtn.addEventListener('click', () => { clearAll(); computeAndDisplay(); });
@@ -1481,6 +1482,22 @@
             globalThis.addEventListener?.('garage-save-state',updateGarageSaveStatus);
             globalThis.addEventListener?.('beforeunload',e=>{if(guestDirty&&!(globalThis.RACEPICK_SERVER !== 'global' && globalThis.accountUI?.active())&&!globalThis.RACEPICK_SERVER_NAVIGATION?.guestDraftPreserved){e.preventDefault();e.returnValue='';}});
             updateGarageSaveStatus();computeAndDisplay();
+            if (globalThis.RACEPICK_MAP_RECOGNITION?.enabled) {
+                const snapshot=()=>JSON.stringify({server:APP_CONFIG.server,zone:currentZone,tier:currentTier,
+                    account:globalThis.accountUI?.identity?.()||null,revision:mapSelectionRevision,
+                    maps:bigSelects.map((sel,i)=>({big:sel.value,small:smallSelects[i].value}))});
+                globalThis.racepickMaps={snapshot,
+                    catalog:()=>RACE_DATA.tracks.map(track=>({big:track['大地图'],small:track['小地图']})),
+                    apply:(maps,expected)=>{
+                        if(snapshot()!==expected)throw Error('当前选图、档位或账号已变化，请重新识别后确认');
+                        if(!Array.isArray(maps)||maps.length!==5||new Set(maps.map(m=>m.big)).size!==5||
+                            maps.some(m=>!smallMapsByBig[m.big]?.some(s=>s.name===m.small)))throw Error('请补全五张地图，且大地图不能重复');
+                        bigSelects.forEach((sel,i)=>{sel.value=maps[i].big;});
+                        refreshBigMaps();
+                        smallSelects.forEach((sel,i)=>{sel.value=maps[i].small;});
+                        mapSelectionRevision++;computeAndDisplay();return snapshot();
+                    }};
+            }
             globalThis.dispatchEvent?.(new Event('racepick-ready'));
         } catch (err) {
             const hint = globalThis.location?.protocol === 'file:' ? '请通过 HTTP 服务打开页面' : '请稍后重试；若持续失败，请反馈当前服别和错误信息';
