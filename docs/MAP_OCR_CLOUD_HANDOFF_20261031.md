@@ -1,5 +1,15 @@
 # 给云端运维对话的交接材料
 
+## 现在交接此包，仍然禁止上线
+
+发布ID `c06cc48b2b55b7bcec58e68b`，功能源码 `f44e3c219bceb185d055b1ae9e5570ed639e2786`（仅本地提交），维护数据 `9e7d21f656b61a39282389fb62c0e71149d43c1e`（已冻结交付）。完整ZIP：`E:/hzz/work/MutualExclusionAllocator/offline-evaluation/map-release-candidate-20261031-01/RacePick-MapOCR664-20261031-c06cc48b-delivery.zip`，SHA256 `4a5a318d7ad7d57a8049910593287571068790201888d56b41d9e440ec9e9373`，159835801字节；内层146项、37wheel，外层31项manifest文件及独立校验清单。详见[构包回执](MAP_OCR_RELEASE_RECEIPT_20261031.json)与[正式发布准备](MAP_OCR_RELEASE_PREPARATION_20261031.md)。
+
+用户页面验收通过，“新功能”保留；开发缺项已补齐并完成最终包Ubuntu24.04非root/断网/受限资源下真实Nginx/API/模型与故障恢复验证。不要把容器验证当成现场systemd、容量、公网TLS、手机微信或生产验收。
+
+请复制完整包内 `CLOUD_HANDOFF_PROMPT.md`，先由用户执行包内 `01-readonly-preflight.sh` 回传，逐步核对后等待单独上线授权。不要直接启动/初始化/迁移、替换正式score-state、开启国际写回或按历史PID操作。包内4487/664是批准基线，不等于已有生产成绩自动导入；若要发布维护成绩，另按当前活动版本形成差异和授权流程。原始工作簿、账号库、反馈、备份、测试数据及用户文件保持。
+
+下方为首次审查历史记录，不再用其中“生产未接入/缺包”等旧结论判断本次制品。
+
 **当前入口已更新：** 用户验收页面通过，要求保留“新功能”；生产缺项已在功能分支补齐并完成本地Linux演练。请先读 [正式发布准备](MAP_OCR_RELEASE_PREPARATION_20261031.md)、[部署说明](MAP_OCR_DEPLOYMENT.md) 和最终 `RELEASE_RECEIPT.json`。仅当最终回执存在且完整包校验通过，才接收为新OCR包；没有上线授权。下方“尚无生产接入/未固定新数据”的内容是首次核查历史，不再作为当前交接结论。
 
 2026-10-31。可直接复制以下内容给云端运维，当前只做上线准备核验，**不授权上线**。

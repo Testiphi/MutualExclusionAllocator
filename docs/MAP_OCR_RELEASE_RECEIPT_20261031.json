@@ -1,0 +1,65 @@
+{
+  "release_id": "c06cc48b2b55b7bcec58e68b",
+  "code_commit": "f44e3c219bceb185d055b1ae9e5570ed639e2786",
+  "data_commit": "9e7d21f656b61a39282389fb62c0e71149d43c1e",
+  "archive_path": "E:\\hzz\\work\\MutualExclusionAllocator\\offline-evaluation\\map-release-candidate-20261031-01\\RacePick-MapOCR664-20261031-c06cc48b-delivery.zip",
+  "archive_bytes": 159835801,
+  "sha256": "4a5a318d7ad7d57a8049910593287571068790201888d56b41d9e440ec9e9373",
+  "inner_sha256": "dd085bed16c28bea763144c4ac4445e343859625198794049bf17ca23610fd01",
+  "inner_files": 146,
+  "outer_manifest_files": 31,
+  "crc_and_file_hashes": "passed",
+  "data_counts": {
+    "cn": 4487,
+    "global": 664,
+    "global_cars": 47,
+    "cn_tracks": 83,
+    "global_tracks": 44
+  },
+  "user_page_acceptance": "passed; keep score-table new-feature badge",
+  "linux_final_package_validation": {
+    "passed": true,
+    "checks": [
+      "9 actual screenshots through Nginx and production-bound CPU worker: correct maps/order",
+      "Exact OCR upload permits valid 4MiB; >8MiB rejected; other path retains3m",
+      "8 real queued jobs complete; ninth rejected; original business API remains responsive",
+      "Actually SIGSTOPed inference is killed/recovered after45s even when cancelled; no late publication",
+      "SIGKILL child crash automatically restarts; API remains available",
+      "Existing score versions, no user/imported data, international write-disable and homepage badge preserved"
+    ],
+    "samples": 9,
+    "seconds": [
+      4.408924522999769,
+      3.1884389970000484,
+      3.192828621999979,
+      3.184521507000227,
+      3.135684527000194,
+      3.173438647999774,
+      3.184606475000237,
+      3.1913023120000616,
+      3.1896866140000384
+    ],
+    "p50_seconds": 3.1884389970000484,
+    "p95_seconds": 4.408924522999769,
+    "max_worker_hwm_kib": 459404,
+    "max_http_ms": 83.1341190000785,
+    "hard_timeout_recovery_seconds": 48.65855458099986,
+    "native_platform": "linux",
+    "limits": "Docker Ubuntu24.04 x86_64; network none; 1CPU;1GiB;no swap;128pids",
+    "systemd_live_tested": false,
+    "service_uid": 997,
+    "production_operations": false
+  },
+  "deployed": false,
+  "pushed": false,
+  "merged_main": false,
+  "production_activation_authorized": false,
+  "pending": [
+    "server read-only preflight",
+    "capacity/path/permissions",
+    "live systemd sandbox and cgroup behavior",
+    "public TLS and real phone WeChat",
+    "explicit production activation authorization",
+    "separate official score-data import workflow if desired"
+  ]
+}
