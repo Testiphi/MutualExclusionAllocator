@@ -160,6 +160,7 @@
     let currentBestSchemes = [];             // 非支配方案列表 { assignment, vector }
     // 特殊跑法状态: mapKey('大地图/小地图') → 'all' / 'off' / sc_type
     let specialRouteEnabled = {};
+    let specialRouteChoice = {};             // 暂时关闭时保留上一次启用的跑法选择
 
     const storageFailures = new Map();
     function storageResult(key, error) {
@@ -1007,24 +1008,19 @@
             var currentState = getRouteState(big, small);
             var scTypes = getScTypes(track);
 
+            var isOn = currentState !== 'off';
+            toggleHtml += '<span class="sc-control' + (isOn ? ' is-on' : '') + '">';
+            toggleHtml += '<button type="button" class="sc-toggle" data-mapkey="' + mapKey + '" aria-pressed="' + isOn + '">' + small + ' <span class="sc-note">' + (note ? '(' + note + ')' : '') + '</span> <span aria-hidden="true">' + (isOn ? '\u25C9' : '\u25CB') + '</span></button>';
             if (scTypes.length > 1) {
-                // 多 sc 类型：显示下拉选择器
+                // 主体控制开关；启用后的下拉框只选择跑法，不混入关闭状态。
                 var opts = '';
-                opts += '<option value="off"' + (currentState === 'off' ? ' selected' : '') + '>关闭</option>';
                 opts += '<option value="all"' + (currentState === 'all' ? ' selected' : '') + '>全部</option>';
                 for (var ti = 0; ti < scTypes.length; ti++) {
                     opts += '<option value="' + scTypes[ti] + '"' + (currentState === scTypes[ti] ? ' selected' : '') + '>' + scTypes[ti] + '</option>';
                 }
-                toggleHtml += '<span style="display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:8px;font-size:0.8rem;border:1px solid #21262d;background:#0d1117;color:#e6edf3;">';
-                toggleHtml += '<span>' + small + '</span>';
-                if (note) toggleHtml += ' <span style="font-size:0.7rem;">(' + note + ')</span>';
-                toggleHtml += ' <select class="sc-select" data-mapkey="' + mapKey + '" style="padding:2px 8px;border-radius:6px;border:1px solid #30363d;background:#0d1117;color:#e6edf3;font-size:0.75rem;cursor:pointer;">' + opts + '</select>';
-                toggleHtml += '</span>';
-            } else {
-                // 单 sc 类型：显示切换开关
-                var isOn = currentState !== 'off';
-                toggleHtml += '<span class="sc-toggle" data-mapkey="' + mapKey + '" style="display:inline-flex;align-items:center;gap:4px;padding:6px 14px;border-radius:8px;font-size:0.8rem;cursor:pointer;border:1px solid ' + (isOn ? '#58a6ff' : '#30363d') + ';background:' + (isOn ? '#1f3a5f' : '#0d1117') + ';color:' + (isOn ? '#58a6ff' : '#6e7681') + ';user-select:none;">' + small + ' <span style="font-size:0.7rem;">' + (note ? '(' + note + ')' : '') + '</span> <span>' + (isOn ? '\u25C9' : '\u25CB') + '</span></span>';
+                toggleHtml += ' <select class="sc-select" data-mapkey="' + mapKey + '" aria-label="' + small + '特殊跑法"' + (isOn ? '' : ' hidden disabled') + '>' + opts + '</select>';
             }
+            toggleHtml += '</span>';
         }
         list.innerHTML = toggleHtml;
         panel.style.display = hasSc ? '' : 'none';
@@ -1226,8 +1222,14 @@
             if (!toggle) return;
             var mapKey = toggle.dataset.mapkey;
             var current = specialRouteEnabled[mapKey];
-            // 单类型 toggle：off <-> all
-            specialRouteEnabled[mapKey] = current === 'off' ? 'all' : 'off';
+            if (current === 'off') {
+                var track = RACE_DATA.tracks.find(t => t['大地图'] + '/' + t['小地图'] === mapKey);
+                var available = track ? getScTypes(track) : [];
+                specialRouteEnabled[mapKey] = available.length > 1 ? appState.route(specialRouteChoice[mapKey], available) : 'all';
+            } else {
+                specialRouteChoice[mapKey] = current || 'all';
+                specialRouteEnabled[mapKey] = 'off';
+            }
             computeAndDisplay();
         });
         document.getElementById('scPanel').addEventListener('change', function(e) {
@@ -1235,6 +1237,7 @@
             if (!sel) return;
             var mapKey = sel.dataset.mapkey;
             specialRouteEnabled[mapKey] = sel.value;
+            specialRouteChoice[mapKey] = sel.value;
             computeAndDisplay();
         });
 
