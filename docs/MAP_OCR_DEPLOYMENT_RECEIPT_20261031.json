@@ -1,0 +1,181 @@
+{
+  "schema": "racepick.map-ocr-deployment-receipt.v1",
+  "date": "2026-10-31",
+  "timezone": "Asia/Shanghai",
+  "status": "deployed_and_user_accepted",
+  "authorization": "User explicitly confirmed production deployment; server commands executed by user and returned step by step",
+  "release_id": "c06cc48b2b55b7bcec58e68b",
+  "code_commit": "f44e3c219bceb185d055b1ae9e5570ed639e2786",
+  "data_commit": "9e7d21f656b61a39282389fb62c0e71149d43c1e",
+  "archive": {
+    "name": "RacePick-MapOCR664-20261031-c06cc48b-delivery.zip",
+    "bytes": 159835801,
+    "sha256": "4a5a318d7ad7d57a8049910593287571068790201888d56b41d9e440ec9e9373"
+  },
+  "running": {
+    "release_directory": "/opt/racepick/releases/c06cc48b2b55b7bcec58e68b",
+    "verified_at": "2026-10-31T19:03:00+08:00",
+    "timestamp_basis": "user-returned observation after activation, not exact process start time",
+    "accounts_pid_at_observation": 194010,
+    "ocr_supervisor_pid_at_observation": 193967,
+    "cwd_matches_current": true,
+    "services": "active/running",
+    "ocr_enabled": true,
+    "worker": "ready"
+  },
+  "business_state": {
+    "cn_version": "e209f3e32d0de1dfa7fe6c811a5d5c46",
+    "global_version": "1252565e65bc887e81e0c677bfeec9ab",
+    "global_runtime_entries": 659,
+    "cn_writes": true,
+    "global_writes": false,
+    "pending_cn": 0,
+    "pending_global": 0,
+    "main_schema": 6,
+    "coverage_schema": 2,
+    "global_score_schema": 1,
+    "other_component_schemas": 1,
+    "users": 48,
+    "profiles": 24,
+    "submissions": 6,
+    "count_basis": "post-deployment backup restore snapshot",
+    "maintenance_data_imported": false,
+    "business_schema_migrations_run": false,
+    "active_database_replaced": false
+  },
+  "ocr_sandbox": {
+    "uid": 999,
+    "user": "racepick",
+    "cpu_quota_percent": 100,
+    "memory_high_bytes": 671088640,
+    "memory_max_bytes": 805306368,
+    "memory_swap_max": 0,
+    "tasks_max": 64,
+    "private_network": true,
+    "protect_system": "strict",
+    "restrict_address_families": [
+      "AF_UNIX"
+    ],
+    "kill_mode": "control-group",
+    "read_write_paths": [
+      "/var/lib/racepick/map-recognition"
+    ],
+    "tmpfs": "/var/lib/racepick:ro",
+    "visible_business_directory_entries": [
+      "map-recognition"
+    ],
+    "effective_live_properties_and_mount_view_verified": true,
+    "worker_peak_rss_kib_real9_http_fixture": 461092,
+    "capacity_limitations": "Small bounded fixture results; not a long-running production capacity guarantee"
+  },
+  "config_review_directory": "/root/racepick-ocr-preflight-c06cc48b/config-review",
+  "config_backup_directory": "/root/racepick-ocr-preflight-c06cc48b/activation-backup",
+  "installed_config_sha256": {
+    "/etc/nginx/conf.d/racepick-rate.conf": "5733a21ba635e1da1398e6c752d65227cb1fb1855dad786f4a5c4df9b9a25bfc",
+    "/etc/nginx/sites-available/racepick": "d86906e947e4c459f4a8c5f36f8a9806b58be7110980a9f3f49022117bd5476a",
+    "/etc/systemd/system/racepick-map-ocr.service": "93af8577e3d652c1a42d89e6202a430875c4c9191622219aa952114edf2f321c",
+    "/etc/systemd/system/racepick-accounts.service.d/30-map-ocr.conf": "7e40db60ca1d721819f78945f866a063a71eca0fd04b763a694e17ab33f628ed"
+  },
+  "nginx": {
+    "candidate_test_passed": true,
+    "production_test_and_reload_passed": true,
+    "ocr_upload_limit_mib": 8,
+    "other_upload_limit_mib": 3,
+    "ocr_rate": "6r/s burst12",
+    "business_rate": "5r/s burst30",
+    "usage_rate": "2r/s burst10",
+    "tls_redirect_and_existing_listeners_preserved": true
+  },
+  "backups": [
+    {
+      "stage": "online_predeployment",
+      "path": "/var/lib/racepick/backups/scores-20261031T105651155884Z.zip",
+      "bytes": 2030875,
+      "sha256": "fc7971f9523091c31eac899ad96cf18f127f9ad4512e5faae97fa0fc60bbb84e",
+      "verified_files": 33,
+      "drill_directory": "/var/lib/racepick/restore-drills/7c8ef5ddbef2573bda3d886b",
+      "active_database_replaced": false
+    },
+    {
+      "stage": "stopped_final",
+      "path": "/var/lib/racepick/backups/scores-20261031T110052179154Z.zip",
+      "bytes": 2030875,
+      "sha256": "dc3e3228c8916d3469ed21b117d7fb272871df334282722f8948afb50b241fdf",
+      "verified_files": 33,
+      "drill_directory": "/var/lib/racepick/restore-drills/91306ad1b4d18c218b1bdee1",
+      "active_database_replaced": false
+    },
+    {
+      "stage": "postdeploy_real_backup_service",
+      "path": "/var/lib/racepick/backups/scores-20261031T110424620809Z.zip",
+      "bytes": 2030875,
+      "sha256": "a67317f0e11c4f332a854e3bbab0916f832aa7a38968c51307d3e49153a2b462",
+      "verified_files": 33,
+      "drill_directory": "/var/lib/racepick/restore-drills/d2b1d19692cb0894245f480d",
+      "active_database_replaced": false
+    }
+  ],
+  "backup_timer": {
+    "enabled": true,
+    "active_state": "active",
+    "sub_state": "waiting",
+    "next_scheduled": "2026-11-01T04:16:52+08:00",
+    "next_execution_verified": false,
+    "last_trigger": "2026-10-31T04:16:03+08:00",
+    "new_backup_service_manual_execution": "2026-10-31T19:04:23+08:00 to 2026-10-31T19:04:25+08:00",
+    "result": "success",
+    "exit_status": 0,
+    "ocr_images_in_business_backup": false
+  },
+  "public_verification": {
+    "https_health_passed": true,
+    "assets_match_fixed_code": true,
+    "cn_83_and_global_44_map_catalogs_bound_to_active_versions_and_bytes": true,
+    "homepage_new_feature_badge_preserved": true,
+    "only_guest_session_created_by_agent": true,
+    "production_image_upload_by_agent": false
+  },
+  "user_acceptance": {
+    "confirmed": true,
+    "evidence": "User replied 验收均正常 after the requested desktop and phone WeChat checks",
+    "scope": [
+      "real screenshot recognition on desktop and phone WeChat",
+      "map order confirmation and fill",
+      "calculation",
+      "manual map selection",
+      "server switching",
+      "login",
+      "existing garage"
+    ],
+    "agent_independently_operated_phone": false
+  },
+  "retained": [
+    "old releases and packages",
+    "backup archives and restore drills",
+    "private test states logs and samples",
+    "workbooks and user files",
+    "existing uncommitted changes"
+  ],
+  "remaining_uncertainties": [
+    "future scheduled backup execution",
+    "long-running production concurrency/capacity",
+    "unknown screenshot layouts/low resolution/English real-image coverage"
+  ],
+  "detailed_log": "docs/TAKEOVER_20261031.md",
+  "not_performed_during_deployment": [
+    "Git merge main",
+    "commit/push",
+    "announcement publication",
+    "maintenance score import",
+    "enable international writes",
+    "cleanup",
+    "monitor creation"
+  ],
+  "documentation_closeout": {
+    "authorized": true,
+    "scope": "Only five current OCR deployment/acceptance/handoff documents; pre-existing pending edits excluded",
+    "git_receipt": "workspace local archive/ocr-deployment-closeout-20261031-01a19177/push-receipt.json",
+    "announcement": "Local draft only; not published",
+    "pause_after_completion": true
+  }
+}

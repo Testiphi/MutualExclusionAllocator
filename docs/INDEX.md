@@ -1,3 +1,5 @@
+当前生产（2026-10-31，部署及用户验收完成）：OCR发布c06cc48b已上线，正式worker隔离及资源配置核验通过，用户桌面/手机微信验收均正常。仍使用原双服活动成绩（国际659，不导入包基线664），国际写回关闭。新版真实备份/独立恢复及timer恢复完成，未来自动执行尚未核验；见[CLOUD_HANDOFF](CLOUD_HANDOFF.md)文首、[部署回执](MAP_OCR_DEPLOYMENT_RECEIPT_20261031.json)、[执行记录](TAKEOVER_20261031.md)及[准备阶段核验](MAP_OCR_PREFLIGHT_20261031.md)。下方旧上线/未部署状态均为历史。
+
 # 文档索引
 
 当前交付：[覆盖表发布完成回执](COVERAGE_RELEASE_RECEIPT_20261029.json)、[云端可复制提示词](COVERAGE_CLOUD_PROMPT_20261029.md)。最终包9f9b2e2b已构建校验，未部署；fe8候选保留但已被替代；历史阶段状态以最新CLOUD_HANDOFF为准。

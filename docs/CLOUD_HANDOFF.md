@@ -1,3 +1,21 @@
+## 2026-10-31 当前上线：c06cc48b，OCR上线与桌面/手机微信验收完成
+
+最终收尾：用户已回传正式常驻OCR单元enabled/active/running，实际CPUQuota1s（100%）、High671088640/Max805306368字节（640/768MiB）、MemorySwapMax0/TasksMax64、racepick用户组、PrivateNetwork/ProtectSystem strict/AF_UNIX及control-group回收均生效。实际supervisor挂载视图的/var/lib/racepick只包含map-recognition，worker为其直接子进程、ready；采样RSS152060KiB为就绪待机值，不替代真实识图峰值或长期容量结论。国际写回仍关闭。用户明确回复“验收均正常”，覆盖此前要求的桌面及手机微信真实截图识别、地图顺序确认/填入/计算、手动选图、双服切换、登录及原车库验收；这是用户实际验收反馈，非代理独立操作手机。运行/备份/timer与公网事实见下文，最终结构化回执见[OCR部署回执](MAP_OCR_DEPLOYMENT_RECEIPT_20261031.json)。本轮部署和验收完成，不继续发布维护成绩、公告、清理或监控；用户后续仅授权本轮部署、验收与交接文档提交推送；Git准确回执保存在工作区本地归档/ocr-deployment-closeout-20261031-01a19177，不夹带历史待提交记录。
+
+用户明确授权上线后逐步执行并回传：发布c06cc48b2b55b7bcec58e68b于19:03前完成切换，源码f44e3c219bceb185d055b1ae9e5570ed639e2786、包数据9e7d21f656b61a39282389fb62c0e71149d43c1e；19:03:00现场current、accounts PID194010与OCR supervisor PID193967实际cwd均为/opt/racepick/releases/c06cc48b2b55b7bcec58e68b，两服务active/running，OCR单元enabled，health ok/production、map_recognition enabled/ready。PID为当时快照，不据此操作未来进程。
+
+完整包159835801字节，SHA256=4a5a318d7ad7d57a8049910593287571068790201888d56b41d9e440ec9e9373，来源/内外制品及37wheel离线安装校验通过。独立系统沙箱9图、真实Nginx/API/上传大小/8任务第9拒绝、worker崩溃及取消后硬超时演练通过；正式路径挂载隔离/只写OCR队列/业务目录隐藏及正常进程退出已通过临时单元验证。正式单元High640M/Max768M/禁swap/1CPU，不照抄包内1GiB原模板。未对生产注入故障或导入测试库/假账号。
+
+正式主schema6、coverage2、global-score1及其他组件schema1保持，没有业务迁移。国服成绩仍e209f3e32d0de1dfa7fe6c811a5d5c46、写回开；国际仍1252565e65bc887e81e0c677bfeec9ab/659条，国际写回现场前置核对为关闭，本轮未开启。4487/664包基线不覆盖已有双服score-state，703维护/工作簿/参考/台账不入运行。没有发布维护成绩。
+
+Nginx候选已成套安装、nginx -t和reload通过，精确OCR上传8m/独立6r/s burst12，原默认3m/业务5r/s burst30/统计2r/s burst10/TLS/HTTP跳转/8080/可信代理保持。配置备份和activation.log位于/root/racepick-ocr-preflight-c06cc48b/activation-backup，旧配置与旧release保留。
+
+本轮在线备份、停服最终备份及独立恢复均通过，正式库均未替换。停服最终恢复点/var/lib/racepick/backups/scores-20261031T110052179154Z.zip，2030875字节，SHA256=dc3e3228c8916d3469ed21b117d7fb272871df334282722f8948afb50b241fdf；恢复演练/var/lib/racepick/restore-drills/91306ad1b4d18c218b1bdee1。19:04:23–19:04:25新版真实备份服务手动触发success/0，/var/lib/racepick/backups/scores-20261031T110424620809Z.zip，2030875字节，SHA256=a67317f0e11c4f332a854e3bbab0916f832aa7a38968c51307d3e49153a2b462；33文件校验及演练/var/lib/racepick/restore-drills/d2b1d19692cb0894245f480d通过，48账号/24车库/6投稿、双服版本与组件保持，OCR图片未入业务备份。timer恢复enabled/active(waiting)，NEXT2026-11-01 04:16:52 CST，未来执行未验证；今日04:16自动备份真实成功已核验，非未来执行证明。
+
+代理本轮公网HTTPS GET确认health/五份主要资源匹配新源码、主页“新功能”保留；普通游客会话分别读取CN83图/Global44图OCR目录，目录版本精确绑定两服活动版本ID及数据字节，worker ready、8MiB上限，国际仍659。未上传测试图到生产、未创建账号或业务投稿。随后用户已回传正式常驻单元有效属性/挂载视图核验结果，并确认桌面/手机微信验收均正常，范围见文首。
+
+逐步证据、授权范围和全部恢复点见[本轮接手执行记录](TAKEOVER_20261031.md)、[准备阶段边界](MAP_OCR_PREFLIGHT_20261031.md)。旧“禁止上线”已被后续明确授权覆盖；下方旧部署状态为历史，不续跑迁移或重复provision。数据/用户文件/测试资料/旧包/备份保留，部署阶段未合并main、提交推送、发公告、清理或创建监控；后续仅授权本轮文档Git收尾及新公告草稿，草稿不发布。
+
 ## 2026-10-30 当前完整交付：参考列与精简投稿bbd92687（未部署）
 
 源码3fbc599482855490f1859bd65b3ab53ada30b753已在远端feature/score-coverage核对，main已快进整合；本收尾文档按授权随main推送，最终远端HEAD另记本地PUSH_RECEIPT。数据仍固定d06cd7d54838230976342c19c21638b90a5632ac，17份交接SHA及25份数据/工作簿/旧包保护路径保持。
