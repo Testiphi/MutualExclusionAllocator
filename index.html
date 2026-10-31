@@ -1004,9 +1004,9 @@
             var hasScEntries = tierData && Array.isArray(tierData) && tierData.some(function(e) { return e.sc; });
             if (!hasScEntries) continue;
             hasSc = true;
-            var note = track.special_route_note || '';
             var currentState = getRouteState(big, small);
             var scTypes = getScTypes(track);
+            var note = scTypes.length === 1 ? scTypes[0] : (track.special_route_note || '');
 
             var isOn = currentState !== 'off';
             toggleHtml += '<span class="sc-control' + (isOn ? ' is-on' : '') + '">';
