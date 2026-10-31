@@ -1,0 +1,83 @@
+{
+  "schema": "racepick.maintenance-data-freeze.v1",
+  "date": "2026-10-31",
+  "runtime": {
+    "gauntlet_data.json": {
+      "sha256": "bd2fcadb117203ba797a98e428ee20e99d09e28c33a4c8cb568b1cafdac824e2",
+      "bytes": 223972,
+      "worktree_sha256": "bd2fcadb117203ba797a98e428ee20e99d09e28c33a4c8cb568b1cafdac824e2",
+      "hash_basis": "Git index blob bytes; exact bytes the pending commit will contain"
+    },
+    "cars.json": {
+      "sha256": "69c9da789f5ad8682a12f05adb21ed3767647f5067fe59c5d281510ee32702ec",
+      "bytes": 83612,
+      "worktree_sha256": "69c9da789f5ad8682a12f05adb21ed3767647f5067fe59c5d281510ee32702ec",
+      "hash_basis": "Git index blob bytes; exact bytes the pending commit will contain"
+    },
+    "cars.global.json": {
+      "sha256": "a8ff59df90efb3059e1ae6b5450ee5c81f368871b0bedfbc15e20efd99e100d5",
+      "bytes": 29264,
+      "worktree_sha256": "a8ff59df90efb3059e1ae6b5450ee5c81f368871b0bedfbc15e20efd99e100d5",
+      "hash_basis": "Git index blob bytes; exact bytes the pending commit will contain"
+    },
+    "gauntlet_data.global.json": {
+      "sha256": "a170e1e62d106ffb8788b5a163bb3919c848af4f1efd52f07cc2880a2c2cd084",
+      "bytes": 129074,
+      "worktree_sha256": "a170e1e62d106ffb8788b5a163bb3919c848af4f1efd52f07cc2880a2c2cd084",
+      "hash_basis": "Git index blob bytes; exact bytes the pending commit will contain"
+    },
+    "global-data-manifest.json": {
+      "sha256": "6ba010b9ee3f7290204fae5c21b5bb0e0a42870f933ceab5ec0708d59c1667e4",
+      "bytes": 1866,
+      "worktree_sha256": "6ba010b9ee3f7290204fae5c21b5bb0e0a42870f933ceab5ec0708d59c1667e4",
+      "hash_basis": "Git index blob bytes; exact bytes the pending commit will contain"
+    }
+  },
+  "national_keys": 4487,
+  "international_full_keys": 703,
+  "international_runtime_entries": 664,
+  "runtime_international_scope": "five-zone max-star theory only;47 physical vehicles,44 tracks,21OC,48SC",
+  "accepted_cross_server_actions": 24,
+  "unaccepted_boundary_actions": 159,
+  "global_oc_to_cn": false,
+  "source_reproducible": true,
+  "source_is_not_runtime_package": true,
+  "data_commit_binding": "The commit containing this file fixes the runtime blob hashes; final commit and remote SHA are recorded in the archive push-receipt.json and chat. Avoid a self-referential commit hash inside this file.",
+  "source_snapshot": {
+    "path": "E:\\hzz\\work\\MutualExclusionAllocator\\本地归档\\data-sync-freeze-20261031-01a17d0f\\RacePick-DataFreeze-20261031.zip",
+    "sha256": "9bb608f40392147d55cf448c38d74bdeac847da9b205047354d697e570d2e83a",
+    "bytes": 555261,
+    "files": 27,
+    "all_zip_members_verified": true,
+    "kind": "data-only maintenance freeze, NOT a deployable application package"
+  },
+  "code_commit": null,
+  "code_scope": "Functional development selects and validates a separate clean code checkout; this conversation changes no application code and does not select an older functional release.",
+  "build_handoff": {
+    "data_source": "clean checkout pinned to the final data commit from this push",
+    "runtime_whitelist": [
+      "gauntlet_data.json",
+      "cars.json",
+      "cars.global.json",
+      "gauntlet_data.global.json",
+      "global-data-manifest.json"
+    ],
+    "excluded_from_application_package": [
+      "workbooks",
+      "source maintenance JSON/ledgers",
+      "expert references",
+      "audit",
+      "unaccepted boundary candidates",
+      "local account/score/feedback databases",
+      "credentials"
+    ],
+    "national_production_score_state": "Never overwrite active production score-state with this packaged national baseline; any official data change requires the production score/version workflow and current authorization.",
+    "new_edits_after_freeze": "Any changed frozen file requires revalidation and a new freeze/handoff before building.",
+    "application_build_executed": false,
+    "deployment_executed": false
+  },
+  "international_dataset_version": "456196d023d41654d06d7ee5a175e41aca8e9128e204099f9d1a15b46ca9314a",
+  "asec_tourbillon_source_still_outdated": true,
+  "tourbillon_post_adjustment_scores": 15,
+  "targeted_tests_passed": 73
+}

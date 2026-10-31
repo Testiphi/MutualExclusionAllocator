@@ -1,0 +1,1467 @@
+{
+  "date": "2026-10-30",
+  "base_commit": "336730fb7ab8266eab995d291a9e4158782e47b5",
+  "national_keys": 4458,
+  "international_full_keys": 698,
+  "international_runtime_entries": 659,
+  "invalidated_old_tourbillon": 17,
+  "accepted_new_tourbillon": 15,
+  "new_formula_estimates": 0,
+  "unretested_old_maps": [
+    "地狱谷",
+    "明治冲击",
+    "奔流不息",
+    "破冰者",
+    "巴黎圣母院",
+    "未来融合",
+    "滑水道旋流"
+  ],
+  "global_map_rename": {
+    "id": "shanghai::double-roundabout",
+    "old": "双环岛",
+    "new": "双重环道",
+    "mainland_unchanged": true
+  },
+  "cars_refetched": 356,
+  "detail_responses_success": 356,
+  "catalog_value_changes": 0,
+  "tourbillon_asec_outdated": true,
+  "official_notice": "https://asphaltlegends.com/news/tourbillon-buff",
+  "official_delta": {
+    "max_speed_kmh": 29,
+    "nitro": 3
+  },
+  "absolute_post_buff_panel_verified": false,
+  "all_workbook_ledgers_equal": true,
+  "generator_byte_reproducible": true,
+  "validation_errors": [],
+  "native_excel_opened": false,
+  "committed": false,
+  "pushed": false,
+  "built": false,
+  "production_operations": false,
+  "archive": "E:\\hzz\\work\\MutualExclusionAllocator\\本地归档\\tourbillon-refresh-20261030-01a17d0f",
+  "files": {
+    "E:\\hzz\\work\\MutualExclusionAllocator\\数据源\\international-prep-20261023\\cars-full.json": {
+      "sha256": "1defa9d642e148e06fe4b57b12c2e30594f55ff00cc0deafc15800c10201a46f",
+      "bytes": 1575978
+    },
+    "E:\\hzz\\work\\MutualExclusionAllocator\\数据源\\international-prep-20261023\\sources.json": {
+      "sha256": "d21a79cb9f216a8a3045afe0029f469bf98d5a574acd4c5d328226d8e2beb76e",
+      "bytes": 196597
+    },
+    "E:\\hzz\\work\\MutualExclusionAllocator\\数据源\\international-prep-20261023\\map-mapping-20261023\\map-mapping.json": {
+      "sha256": "fe1f18a162ee0df4f79c3e1fecbc3e6422e690932b812bf1e147fc440610cd20",
+      "bytes": 50102
+    },
+    "E:\\hzz\\work\\MutualExclusionAllocator\\数据源\\international-prep-20261023\\map-mapping-20261023\\international-zh-names.json": {
+      "sha256": "9d385d051fb3f35949a51fdb993c1480656578826247e3702c10ab38420b2cc4",
+      "bytes": 42715
+    },
+    "E:\\hzz\\work\\MutualExclusionAllocator\\数据源\\international-prep-20261023\\maintenance\\gauntlet_data_international_maintenance.json": {
+      "sha256": "d6b4409c74502f416372741d6e4e2442fd8901c4a591b3812744e805401e2ee5",
+      "bytes": 54828
+    },
+    "E:\\hzz\\work\\MutualExclusionAllocator\\数据源\\international-prep-20261023\\maintenance\\gauntlet_data_international.json": {
+      "sha256": "de5618c52cb61132ee3f3730256f8afc38de209261ab2fb0581ffe63559ab07c",
+      "bytes": 52871
+    },
+    "E:\\hzz\\work\\MutualExclusionAllocator\\数据源\\international-prep-20261023\\maintenance\\maintenance-score-ledger.json": {
+      "sha256": "20a75f6a193f2aa623b1b8f9c7f8ce854c5e9b5aee5b6bd90584c2e328756ac3",
+      "bytes": 718101
+    },
+    "E:\\hzz\\work\\MutualExclusionAllocator\\数据源\\international-prep-20261023\\maintenance\\score-ledger.json": {
+      "sha256": "374bb7c56639e6faa075f9844e639e33ec6373ed7a2bb19010a024010a75137e",
+      "bytes": 612397
+    },
+    "E:\\hzz\\work\\MutualExclusionAllocator\\数据源\\international-prep-20261023\\maintenance\\oc-score-ledger.json": {
+      "sha256": "6dde1f8bbb37d7b91ee49eb3beec4c341bdc3fff5a2dc24f4c5a3f9eb8ecfc1f",
+      "bytes": 17048
+    },
+    "E:\\hzz\\work\\MutualExclusionAllocator\\数据源\\international-prep-20261023\\maintenance\\current-maintenance.json": {
+      "sha256": "290907b52a15b72cbe5bf036a0b83f53f71e6376e7ef21f44038d6adcc3d6fa4",
+      "bytes": 6713
+    },
+    "E:\\hzz\\work\\MutualExclusionAllocator\\数据源\\international-prep-20261023\\maintenance\\summary.json": {
+      "sha256": "15e14d055415391670602a25da9281c62e007989f391548ac285a03676c5ee38",
+      "bytes": 4415
+    },
+    "E:\\hzz\\work\\MutualExclusionAllocator\\数据源\\international-prep-20261023\\maintenance\\validation.json": {
+      "sha256": "14d4a16091ae8dac88b422f52bf4ea36b45e2f1a938a8554b778b689541e36e3",
+      "bytes": 46771
+    },
+    "E:\\hzz\\work\\MutualExclusionAllocator\\数据源\\international-prep-20261023\\maintenance\\workbook-matrices.json": {
+      "sha256": "ad7c025dd5d145120b2c7b6fac1eaf3cab305084b48e37696027c930804dac1d",
+      "bytes": 112206
+    },
+    "E:\\hzz\\work\\MutualExclusionAllocator\\数据源\\international-prep-20261023\\maintenance\\tourbillon-invalidation-20261030.json": {
+      "sha256": "0d38772af325a0c7f1f55bba5fc06e6477c0c5d30080538a672041a2e15570c4",
+      "bytes": 17366
+    },
+    "E:\\hzz\\work\\MutualExclusionAllocator\\repo\\gauntlet_data.global.xlsx": {
+      "sha256": "7718e335eea077d1847bb550b1c77c1b22eee382f90adf5c51733563a1e82ef6",
+      "bytes": 40903
+    },
+    "E:\\hzz\\work\\MutualExclusionAllocator\\repo\\cars.global.json": {
+      "sha256": "faada96dd4e3c6bdb54ce98b8743e30d136fad9e9ae7d29facd4dddab4cd7fdd",
+      "bytes": 28659
+    },
+    "E:\\hzz\\work\\MutualExclusionAllocator\\repo\\gauntlet_data.global.json": {
+      "sha256": "0dfa30691d96f3a819428da304cf397d49887c86ddbbd04c20b2527e8d8650e5",
+      "bytes": 128311
+    },
+    "E:\\hzz\\work\\MutualExclusionAllocator\\repo\\global-data-manifest.json": {
+      "sha256": "4fa74e167869f36ff0d8f06b54c44e31a84a45e9b5ab7dda1d2d2a42d2f27eac",
+      "bytes": 1866
+    },
+    "E:\\hzz\\work\\MutualExclusionAllocator\\数据源\\international-prep-20261023\\maintenance\\SHA256SUMS.txt": {
+      "sha256": "04e899042e2e2c5cb03aefa2c8ac2504e49cebed2876696314309531a0cf6522",
+      "bytes": 14679
+    },
+    "E:\\hzz\\work\\MutualExclusionAllocator\\数据源\\international-prep-20261023\\SHA256SUMS.txt": {
+      "sha256": "10946eabe119e3d8a39af5592a0679d0aded9e807f245038361e3ed139ca85f4",
+      "bytes": 39936
+    }
+  },
+  "targeted_tests_passed": 73,
+  "git_diff_check_passed": true,
+  "official_notice_receipt": {
+    "url": "https://asphaltlegends.com/news/tourbillon-buff",
+    "archive": "E:\\hzz\\work\\MutualExclusionAllocator\\本地归档\\tourbillon-refresh-20261030-01a17d0f\\official-tourbillon-buff.html",
+    "sha256": "55588e42737ef4d91ae313d011bec51881946af38c1c872409592f2dc97e7eca"
+  },
+  "analysis": {
+    "scope": "Only same-map, five-zone, non-OC ordinary theory records. Historical vs new records may differ by driver/route/execution, not controlled measurements. Mainland comparison is test prioritization only; do not transfer any score.",
+    "rows": [
+      {
+        "id": "rome::roman-byroads",
+        "region": "罗马",
+        "track": "罗马小道",
+        "old_invalid": null,
+        "new": null,
+        "saved_seconds": null,
+        "faster_percent": null,
+        "cn_region": "古老斗技场",
+        "cn_track": "偏僻小道",
+        "cn_tour": null,
+        "cn_rank": null,
+        "cn_count": 16,
+        "current_global_top3": [
+          [
+            "帝国",
+            18
+          ],
+          [
+            "evosf90",
+            18.09
+          ],
+          [
+            "evo狼崽",
+            18.36
+          ]
+        ],
+        "new_global_rank": null,
+        "cn_route_correspondence_independently_verified": false
+      },
+      {
+        "id": "rome::roman-tumble",
+        "region": "罗马",
+        "track": "跌宕罗马",
+        "old_invalid": null,
+        "new": 16.96,
+        "saved_seconds": null,
+        "faster_percent": null,
+        "cn_region": "古老斗技场",
+        "cn_track": "跌宕之路",
+        "cn_tour": null,
+        "cn_rank": null,
+        "cn_count": 18,
+        "current_global_top3": [
+          [
+            "evo狼崽",
+            16.76
+          ],
+          [
+            "evo肥龙",
+            16.93
+          ],
+          [
+            "陀飞轮",
+            16.96
+          ]
+        ],
+        "new_global_rank": 3,
+        "cn_route_correspondence_independently_verified": false
+      },
+      {
+        "id": "sanfrancisco::railroad-bustle",
+        "region": "旧金山",
+        "track": "喧闹铁路",
+        "old_invalid": null,
+        "new": null,
+        "saved_seconds": null,
+        "faster_percent": null,
+        "cn_region": "大桥海湾",
+        "cn_track": "喧闹铁路",
+        "cn_tour": null,
+        "cn_rank": null,
+        "cn_count": 13,
+        "current_global_top3": [
+          [
+            "evosf90",
+            17.17
+          ],
+          [
+            "evo狼崽",
+            17.29
+          ],
+          [
+            "evo女武神",
+            17.49
+          ]
+        ],
+        "new_global_rank": null,
+        "cn_route_correspondence_independently_verified": false
+      },
+      {
+        "id": "sanfrancisco::the-tunnel",
+        "region": "旧金山",
+        "track": "隧道",
+        "old_invalid": null,
+        "new": null,
+        "saved_seconds": null,
+        "faster_percent": null,
+        "cn_region": "大桥海湾",
+        "cn_track": "隧道",
+        "cn_tour": null,
+        "cn_rank": null,
+        "cn_count": 13,
+        "current_global_top3": [
+          [
+            "帝国",
+            18.19
+          ],
+          [
+            "evo狼崽",
+            18.37
+          ],
+          [
+            "杰孙",
+            18.5
+          ]
+        ],
+        "new_global_rank": null,
+        "cn_route_correspondence_independently_verified": false
+      },
+      {
+        "id": "scotland::ghost-ships",
+        "region": "苏格兰",
+        "track": "幽灵船",
+        "old_invalid": null,
+        "new": null,
+        "saved_seconds": null,
+        "faster_percent": null,
+        "cn_region": "高地穿梭",
+        "cn_track": "幽灵船",
+        "cn_tour": null,
+        "cn_rank": null,
+        "cn_count": 14,
+        "current_global_top3": [
+          [
+            "evo狼崽",
+            21.56
+          ],
+          [
+            "evo肥龙",
+            22.02
+          ],
+          [
+            "evo女武神",
+            22.09
+          ]
+        ],
+        "new_global_rank": null,
+        "cn_route_correspondence_independently_verified": false
+      },
+      {
+        "id": "scotland::rocky-valley",
+        "region": "苏格兰",
+        "track": "岩石山谷",
+        "old_invalid": null,
+        "new": null,
+        "saved_seconds": null,
+        "faster_percent": null,
+        "cn_region": "高地穿梭",
+        "cn_track": "高原峡谷",
+        "cn_tour": null,
+        "cn_rank": null,
+        "cn_count": 14,
+        "current_global_top3": [
+          [
+            "帝国",
+            19.8
+          ],
+          [
+            "超光孙",
+            20.33
+          ],
+          [
+            "evo狼崽",
+            20.53
+          ]
+        ],
+        "new_global_rank": null,
+        "cn_route_correspondence_independently_verified": false
+      },
+      {
+        "id": "shanghai::paris-of-the-east",
+        "region": "上海",
+        "track": "东方巴黎",
+        "old_invalid": 25.03,
+        "new": 24.39,
+        "saved_seconds": 0.64,
+        "faster_percent": 2.556931681981624,
+        "cn_region": "明珠港口",
+        "cn_track": "东方巴黎",
+        "cn_tour": null,
+        "cn_rank": null,
+        "cn_count": 17,
+        "current_global_top3": [
+          [
+            "帝国",
+            23.83
+          ],
+          [
+            "恶魔",
+            24.19
+          ],
+          [
+            "爱音R",
+            24.35
+          ]
+        ],
+        "new_global_rank": 4,
+        "cn_route_correspondence_independently_verified": false
+      },
+      {
+        "id": "shanghai::double-roundabout",
+        "region": "上海",
+        "track": "双重环道",
+        "old_invalid": 27.76,
+        "new": 27.09,
+        "saved_seconds": 0.67,
+        "faster_percent": 2.4135446685879023,
+        "cn_region": "明珠港口",
+        "cn_track": "双环岛",
+        "cn_tour": 27.19,
+        "cn_rank": 3,
+        "cn_count": 17,
+        "current_global_top3": [
+          [
+            "帝国",
+            26.65
+          ],
+          [
+            "陀飞轮",
+            27.09
+          ],
+          [
+            "恶魔",
+            27.19
+          ]
+        ],
+        "new_global_rank": 2,
+        "cn_route_correspondence_independently_verified": false
+      },
+      {
+        "id": "cairo::a-king-s-revival",
+        "region": "开罗",
+        "track": "王者回归",
+        "old_invalid": 22.83,
+        "new": 22.59,
+        "saved_seconds": 0.24,
+        "faster_percent": 1.0512483574244347,
+        "cn_region": "沙漠迷雾",
+        "cn_track": "国王的复兴",
+        "cn_tour": 22.99,
+        "cn_rank": 4,
+        "cn_count": 13,
+        "current_global_top3": [
+          [
+            "evo狼崽",
+            22.13
+          ],
+          [
+            "evo肥龙",
+            22.2
+          ],
+          [
+            "陀飞轮",
+            22.59
+          ]
+        ],
+        "new_global_rank": 3,
+        "cn_route_correspondence_independently_verified": false
+      },
+      {
+        "id": "cairo::gezira-island",
+        "region": "开罗",
+        "track": "杰基拉岛",
+        "old_invalid": null,
+        "new": null,
+        "saved_seconds": null,
+        "faster_percent": null,
+        "cn_region": "沙漠迷雾",
+        "cn_track": "岛屿幻想",
+        "cn_tour": null,
+        "cn_rank": null,
+        "cn_count": 18,
+        "current_global_top3": [
+          [
+            "evosf90",
+            21.37
+          ],
+          [
+            "帝国",
+            21.45
+          ],
+          [
+            "evo狼崽",
+            21.73
+          ]
+        ],
+        "new_global_rank": null,
+        "cn_route_correspondence_independently_verified": false
+      },
+      {
+        "id": "usmidwest::trainspotter",
+        "region": "美国中西部",
+        "track": "铁道迷",
+        "old_invalid": null,
+        "new": null,
+        "saved_seconds": null,
+        "faster_percent": null,
+        "cn_region": "西部牧场",
+        "cn_track": "铁道迷",
+        "cn_tour": null,
+        "cn_rank": null,
+        "cn_count": 9,
+        "current_global_top3": [
+          [
+            "帝国",
+            21.7
+          ],
+          [
+            "超光孙",
+            21.77
+          ],
+          [
+            "杰孙",
+            21.85
+          ]
+        ],
+        "new_global_rank": null,
+        "cn_route_correspondence_independently_verified": false
+      },
+      {
+        "id": "usmidwest::it-s-a-twister",
+        "region": "美国中西部",
+        "track": "龙卷风山道",
+        "old_invalid": null,
+        "new": 22.69,
+        "saved_seconds": null,
+        "faster_percent": null,
+        "cn_region": "西部牧场",
+        "cn_track": "龙卷风",
+        "cn_tour": 22.95,
+        "cn_rank": 3,
+        "cn_count": 12,
+        "current_global_top3": [
+          [
+            "陀飞轮",
+            22.69
+          ],
+          [
+            "evo肥龙",
+            22.77
+          ],
+          [
+            "帝国",
+            22.95
+          ]
+        ],
+        "new_global_rank": 1,
+        "cn_route_correspondence_independently_verified": false
+      },
+      {
+        "id": "himalayas::leap-of-faith",
+        "region": "喜马拉雅山",
+        "track": "信仰之跃",
+        "old_invalid": null,
+        "new": null,
+        "saved_seconds": null,
+        "faster_percent": null,
+        "cn_region": "神山垭口",
+        "cn_track": "信仰之跃",
+        "cn_tour": null,
+        "cn_rank": null,
+        "cn_count": 11,
+        "current_global_top3": [
+          [
+            "超光孙",
+            17.47
+          ],
+          [
+            "evo狼崽",
+            17.69
+          ],
+          [
+            "evo肥龙",
+            17.79
+          ]
+        ],
+        "new_global_rank": null,
+        "cn_route_correspondence_independently_verified": false
+      },
+      {
+        "id": "himalayas::freefall",
+        "region": "喜马拉雅山",
+        "track": "自由落体",
+        "old_invalid": null,
+        "new": null,
+        "saved_seconds": null,
+        "faster_percent": null,
+        "cn_region": "神山垭口",
+        "cn_track": "自由落体",
+        "cn_tour": null,
+        "cn_rank": null,
+        "cn_count": 8,
+        "current_global_top3": [
+          [
+            "恶魔",
+            16.85
+          ],
+          [
+            "奇美拉",
+            17.35
+          ],
+          [
+            "f5",
+            17.45
+          ]
+        ],
+        "new_global_rank": null,
+        "cn_route_correspondence_independently_verified": false
+      },
+      {
+        "id": "thecaribbean::hell-vale",
+        "region": "加勒比海",
+        "track": "地狱谷",
+        "old_invalid": 22.63,
+        "new": null,
+        "saved_seconds": null,
+        "faster_percent": null,
+        "cn_region": "热带天堂",
+        "cn_track": "地狱谷",
+        "cn_tour": null,
+        "cn_rank": null,
+        "cn_count": 18,
+        "current_global_top3": [
+          [
+            "evo狼崽",
+            21.86
+          ],
+          [
+            "evosf90",
+            21.87
+          ],
+          [
+            "帝国",
+            22.15
+          ]
+        ],
+        "new_global_rank": null,
+        "cn_route_correspondence_independently_verified": false
+      },
+      {
+        "id": "thecaribbean::resort-dash",
+        "region": "加勒比海",
+        "track": "胜地冲刺",
+        "old_invalid": null,
+        "new": null,
+        "saved_seconds": null,
+        "faster_percent": null,
+        "cn_region": "热带天堂",
+        "cn_track": "胜地冲刺",
+        "cn_tour": 18.79,
+        "cn_rank": 5,
+        "cn_count": 14,
+        "current_global_top3": [
+          [
+            "evo狼崽",
+            17.79
+          ],
+          [
+            "evosf90",
+            17.89
+          ],
+          [
+            "白龙",
+            18.49
+          ]
+        ],
+        "new_global_rank": null,
+        "cn_route_correspondence_independently_verified": false
+      },
+      {
+        "id": "osaka::namba-park",
+        "region": "大阪",
+        "track": "难波公园",
+        "old_invalid": null,
+        "new": null,
+        "saved_seconds": null,
+        "faster_percent": null,
+        "cn_region": "樱花港",
+        "cn_track": "城市绿洲",
+        "cn_tour": 19.87,
+        "cn_rank": 7,
+        "cn_count": 16,
+        "current_global_top3": [
+          [
+            "evo肥龙",
+            18.7
+          ],
+          [
+            "evosf90",
+            18.9
+          ],
+          [
+            "evo狼崽",
+            19.17
+          ]
+        ],
+        "new_global_rank": null,
+        "cn_route_correspondence_independently_verified": false
+      },
+      {
+        "id": "osaka::meiji-rush",
+        "region": "大阪",
+        "track": "明治冲击",
+        "old_invalid": 22.59,
+        "new": null,
+        "saved_seconds": null,
+        "faster_percent": null,
+        "cn_region": "樱花港",
+        "cn_track": "明治冲击",
+        "cn_tour": 22.19,
+        "cn_rank": 3,
+        "cn_count": 14,
+        "current_global_top3": [
+          [
+            "evosf90",
+            22.13
+          ],
+          [
+            "杰弟",
+            22.25
+          ],
+          [
+            "evo狼崽",
+            22.35
+          ]
+        ],
+        "new_global_rank": null,
+        "cn_route_correspondence_independently_verified": false
+      },
+      {
+        "id": "newyork::a-run-in-the-park",
+        "region": "纽约",
+        "track": "公园竞速",
+        "old_invalid": null,
+        "new": null,
+        "saved_seconds": null,
+        "faster_percent": null,
+        "cn_region": "摩登城市",
+        "cn_track": "公园竞速",
+        "cn_tour": null,
+        "cn_rank": null,
+        "cn_count": 13,
+        "current_global_top3": [
+          [
+            "帝国",
+            21.15
+          ],
+          [
+            "恶魔",
+            21.73
+          ],
+          [
+            "爱音R",
+            21.88
+          ]
+        ],
+        "new_global_rank": null,
+        "cn_route_correspondence_independently_verified": false
+      },
+      {
+        "id": "newyork::wall-street-ride",
+        "region": "纽约",
+        "track": "闯荡华尔街",
+        "old_invalid": null,
+        "new": 20.02,
+        "saved_seconds": null,
+        "faster_percent": null,
+        "cn_region": "摩登城市",
+        "cn_track": "富豪之旅",
+        "cn_tour": 19.59,
+        "cn_rank": 1,
+        "cn_count": 10,
+        "current_global_top3": [
+          [
+            "evo狼崽",
+            19.5
+          ],
+          [
+            "evo肥龙",
+            19.77
+          ],
+          [
+            "c2",
+            19.95
+          ]
+        ],
+        "new_global_rank": 6,
+        "cn_route_correspondence_independently_verified": false
+      },
+      {
+        "id": "nevada::bridge-to-bridge",
+        "region": "内华达",
+        "track": "桥间争霸",
+        "old_invalid": null,
+        "new": null,
+        "saved_seconds": null,
+        "faster_percent": null,
+        "cn_region": "沙漠高速",
+        "cn_track": "桥间争霸",
+        "cn_tour": null,
+        "cn_rank": null,
+        "cn_count": 14,
+        "current_global_top3": [
+          [
+            "帝国",
+            20.24
+          ],
+          [
+            "超光孙",
+            20.7
+          ],
+          [
+            "evo肥龙",
+            21.06
+          ]
+        ],
+        "new_global_rank": null,
+        "cn_route_correspondence_independently_verified": false
+      },
+      {
+        "id": "nevada::tunnel-sprint",
+        "region": "内华达",
+        "track": "隧道冲刺",
+        "old_invalid": null,
+        "new": null,
+        "saved_seconds": null,
+        "faster_percent": null,
+        "cn_region": "沙漠高速",
+        "cn_track": "隧道冲刺",
+        "cn_tour": null,
+        "cn_rank": null,
+        "cn_count": 14,
+        "current_global_top3": [
+          [
+            "evo狼崽",
+            20.99
+          ],
+          [
+            "帝国",
+            21.05
+          ],
+          [
+            "超光孙",
+            21.35
+          ]
+        ],
+        "new_global_rank": null,
+        "cn_route_correspondence_independently_verified": false
+      },
+      {
+        "id": "auckland::hairpin-finish",
+        "region": "奥克兰",
+        "track": "弯道终点",
+        "old_invalid": 31.66,
+        "new": 30.83,
+        "saved_seconds": 0.83,
+        "faster_percent": 2.621604548325969,
+        "cn_region": "狂野赛车场",
+        "cn_track": "弯道终点",
+        "cn_tour": null,
+        "cn_rank": null,
+        "cn_count": 11,
+        "current_global_top3": [
+          [
+            "帝国",
+            29.83
+          ],
+          [
+            "超光孙",
+            30.57
+          ],
+          [
+            "恶魔",
+            30.59
+          ]
+        ],
+        "new_global_rank": 4,
+        "cn_route_correspondence_independently_verified": false
+      },
+      {
+        "id": "auckland::straight-sprint",
+        "region": "奥克兰",
+        "track": "勇往直前",
+        "old_invalid": 24.19,
+        "new": 23.69,
+        "saved_seconds": 0.5,
+        "faster_percent": 2.066969822240595,
+        "cn_region": "狂野赛车场",
+        "cn_track": "直道冲刺",
+        "cn_tour": null,
+        "cn_rank": null,
+        "cn_count": 15,
+        "current_global_top3": [
+          [
+            "帝国",
+            23.35
+          ],
+          [
+            "evo肥龙",
+            23.56
+          ],
+          [
+            "evo狼崽",
+            23.69
+          ]
+        ],
+        "new_global_rank": 3,
+        "cn_route_correspondence_independently_verified": false
+      },
+      {
+        "id": "buenosaires::la-boca",
+        "region": "布宜诺斯艾利斯",
+        "track": "拉博卡区",
+        "old_invalid": null,
+        "new": null,
+        "saved_seconds": null,
+        "faster_percent": null,
+        "cn_region": "雄鹰之城",
+        "cn_track": "拉博卡",
+        "cn_tour": 25.55,
+        "cn_rank": 4,
+        "cn_count": 22,
+        "current_global_top3": [
+          [
+            "帝国",
+            25.15
+          ],
+          [
+            "evosf90",
+            25.33
+          ],
+          [
+            "爱音R",
+            25.8
+          ]
+        ],
+        "new_global_rank": null,
+        "cn_route_correspondence_independently_verified": false
+      },
+      {
+        "id": "buenosaires::water-run",
+        "region": "布宜诺斯艾利斯",
+        "track": "奔流不息",
+        "old_invalid": 23.06,
+        "new": null,
+        "saved_seconds": null,
+        "faster_percent": null,
+        "cn_region": "雄鹰之城",
+        "cn_track": "水上狂飙",
+        "cn_tour": null,
+        "cn_rank": null,
+        "cn_count": 13,
+        "current_global_top3": [
+          [
+            "帝国",
+            21.75
+          ],
+          [
+            "杰孙",
+            22.45
+          ],
+          [
+            "evo肥龙",
+            22.46
+          ]
+        ],
+        "new_global_rank": null,
+        "cn_route_correspondence_independently_verified": false
+      },
+      {
+        "id": "greenland::out-of-the-center",
+        "region": "格陵兰",
+        "track": "偏离中心",
+        "old_invalid": 32.56,
+        "new": 31.73,
+        "saved_seconds": 0.83,
+        "faster_percent": 2.5491400491400547,
+        "cn_region": "冰火岛",
+        "cn_track": "地心之外",
+        "cn_tour": null,
+        "cn_rank": null,
+        "cn_count": 10,
+        "current_global_top3": [
+          [
+            "杰孙",
+            30.7
+          ],
+          [
+            "帝国",
+            31.05
+          ],
+          [
+            "恶魔",
+            31.45
+          ]
+        ],
+        "new_global_rank": 4,
+        "cn_route_correspondence_independently_verified": false
+      },
+      {
+        "id": "greenland::ice-breakers",
+        "region": "格陵兰",
+        "track": "破冰者",
+        "old_invalid": 32.66,
+        "new": null,
+        "saved_seconds": null,
+        "faster_percent": null,
+        "cn_region": "冰火岛",
+        "cn_track": "破冰船",
+        "cn_tour": 31.3,
+        "cn_rank": 5,
+        "cn_count": 14,
+        "current_global_top3": [
+          [
+            "帝国",
+            30.25
+          ],
+          [
+            "爱音E",
+            31.55
+          ],
+          [
+            "杰孙",
+            31.65
+          ]
+        ],
+        "new_global_rank": null,
+        "cn_route_correspondence_independently_verified": false
+      },
+      {
+        "id": "paris::along-the-seine",
+        "region": "巴黎",
+        "track": "塞纳河岸",
+        "old_invalid": null,
+        "new": null,
+        "saved_seconds": null,
+        "faster_percent": null,
+        "cn_region": "花都疾驰",
+        "cn_track": "河畔漂移",
+        "cn_tour": null,
+        "cn_rank": null,
+        "cn_count": 7,
+        "current_global_top3": [
+          [
+            "杰孙",
+            23.43
+          ],
+          [
+            "恶魔",
+            23.49
+          ],
+          [
+            "f5",
+            23.8
+          ]
+        ],
+        "new_global_rank": null,
+        "cn_route_correspondence_independently_verified": false
+      },
+      {
+        "id": "paris::notre-dame",
+        "region": "巴黎",
+        "track": "巴黎圣母院",
+        "old_invalid": 20.46,
+        "new": null,
+        "saved_seconds": null,
+        "faster_percent": null,
+        "cn_region": "花都疾驰",
+        "cn_track": "艺术之旅",
+        "cn_tour": 20.4,
+        "cn_rank": 3,
+        "cn_count": 12,
+        "current_global_top3": [
+          [
+            "帝国",
+            19.85
+          ],
+          [
+            "杰孙",
+            20.25
+          ],
+          [
+            "evo狼崽",
+            20.26
+          ]
+        ],
+        "new_global_rank": null,
+        "cn_route_correspondence_independently_verified": false
+      },
+      {
+        "id": "tuscany::vineyard-voyage",
+        "region": "托斯卡纳",
+        "track": "畅游葡萄园",
+        "old_invalid": 21.03,
+        "new": 20.66,
+        "saved_seconds": 0.37,
+        "faster_percent": 1.7593913456966286,
+        "cn_region": "旷野飙车",
+        "cn_track": "世外萄园",
+        "cn_tour": null,
+        "cn_rank": null,
+        "cn_count": 19,
+        "current_global_top3": [
+          [
+            "帝国",
+            19.69
+          ],
+          [
+            "evo肥龙",
+            20.27
+          ],
+          [
+            "杰孙",
+            20.43
+          ]
+        ],
+        "new_global_rank": 5,
+        "cn_route_correspondence_independently_verified": false
+      },
+      {
+        "id": "tuscany::riverine-launch",
+        "region": "托斯卡纳",
+        "track": "河滨疾驰",
+        "old_invalid": 23.36,
+        "new": 22.89,
+        "saved_seconds": 0.47,
+        "faster_percent": 2.0119863013698582,
+        "cn_region": "旷野飙车",
+        "cn_track": "河岸狂飙",
+        "cn_tour": 23.09,
+        "cn_rank": 6,
+        "cn_count": 15,
+        "current_global_top3": [
+          [
+            "杰孙",
+            22.43
+          ],
+          [
+            "帝国",
+            22.55
+          ],
+          [
+            "evo肥龙",
+            22.83
+          ]
+        ],
+        "new_global_rank": 4,
+        "cn_route_correspondence_independently_verified": false
+      },
+      {
+        "id": "norway::future-fusion",
+        "region": "挪威",
+        "track": "未来融合",
+        "old_invalid": 18.03,
+        "new": null,
+        "saved_seconds": null,
+        "faster_percent": null,
+        "cn_region": "极昼之地",
+        "cn_track": "未来融合",
+        "cn_tour": null,
+        "cn_rank": null,
+        "cn_count": 13,
+        "current_global_top3": [
+          [
+            "evo狼崽",
+            16.9
+          ],
+          [
+            "evo肥龙",
+            17.17
+          ],
+          [
+            "21c",
+            17.35
+          ]
+        ],
+        "new_global_rank": null,
+        "cn_route_correspondence_independently_verified": false
+      },
+      {
+        "id": "norway::rocketing-to-the-future",
+        "region": "挪威",
+        "track": "飞向未来",
+        "old_invalid": 26.16,
+        "new": 25.59,
+        "saved_seconds": 0.57,
+        "faster_percent": 2.1788990825688086,
+        "cn_region": "极昼之地",
+        "cn_track": "飞向未来",
+        "cn_tour": 25.69,
+        "cn_rank": 3,
+        "cn_count": 13,
+        "current_global_top3": [
+          [
+            "陀飞轮",
+            25.59
+          ],
+          [
+            "奇美拉",
+            25.65
+          ],
+          [
+            "f5",
+            25.85
+          ]
+        ],
+        "new_global_rank": 1,
+        "cn_route_correspondence_independently_verified": false
+      },
+      {
+        "id": "singapore::waterslide-whirl",
+        "region": "新加坡",
+        "track": "滑水道旋流",
+        "old_invalid": 20.79,
+        "new": null,
+        "saved_seconds": null,
+        "faster_percent": null,
+        "cn_region": "狮城",
+        "cn_track": "天旋地转",
+        "cn_tour": 20.66,
+        "cn_rank": 7,
+        "cn_count": 12,
+        "current_global_top3": [
+          [
+            "帝国",
+            19.55
+          ],
+          [
+            "超光孙",
+            19.9
+          ],
+          [
+            "evo狼崽",
+            20.05
+          ]
+        ],
+        "new_global_rank": null,
+        "cn_route_correspondence_independently_verified": false
+      },
+      {
+        "id": "singapore::urban-rush",
+        "region": "新加坡",
+        "track": "城市高峰",
+        "old_invalid": 24.46,
+        "new": 23.99,
+        "saved_seconds": 0.47,
+        "faster_percent": 1.9215044971381947,
+        "cn_region": "狮城",
+        "cn_track": "狮城竞速",
+        "cn_tour": 24.09,
+        "cn_rank": 2,
+        "cn_count": 17,
+        "current_global_top3": [
+          [
+            "帝国",
+            23.75
+          ],
+          [
+            "陀飞轮",
+            23.99
+          ],
+          [
+            "evo狼崽",
+            24.33
+          ]
+        ],
+        "new_global_rank": 2,
+        "cn_route_correspondence_independently_verified": false
+      },
+      {
+        "id": "chicago::echo-drift",
+        "region": "芝加哥",
+        "track": "回声漂移",
+        "old_invalid": null,
+        "new": null,
+        "saved_seconds": null,
+        "faster_percent": null,
+        "cn_region": "凌空之巅",
+        "cn_track": "漂移回响",
+        "cn_tour": null,
+        "cn_rank": null,
+        "cn_count": 9,
+        "current_global_top3": [
+          [
+            "白龙",
+            18.79
+          ],
+          [
+            "c2",
+            18.89
+          ],
+          [
+            "9x8",
+            19.19
+          ]
+        ],
+        "new_global_rank": null,
+        "cn_route_correspondence_independently_verified": false
+      },
+      {
+        "id": "chicago::ironclad-rampage",
+        "region": "芝加哥",
+        "track": "铁甲疾滑",
+        "old_invalid": null,
+        "new": null,
+        "saved_seconds": null,
+        "faster_percent": null,
+        "cn_region": "凌空之巅",
+        "cn_track": "钢铁坠落",
+        "cn_tour": null,
+        "cn_rank": null,
+        "cn_count": 9,
+        "current_global_top3": [
+          [
+            "evosf90",
+            16.1
+          ],
+          [
+            "9x8",
+            16.6
+          ],
+          [
+            "杰弟",
+            16.8
+          ]
+        ],
+        "new_global_rank": null,
+        "cn_route_correspondence_independently_verified": false
+      },
+      {
+        "id": "sandiego::pacific-rampage",
+        "region": "圣地亚哥",
+        "track": "太平洋爆冲",
+        "old_invalid": null,
+        "new": null,
+        "saved_seconds": null,
+        "faster_percent": null,
+        "cn_region": "海港博物馆",
+        "cn_track": "海洋爆冲",
+        "cn_tour": null,
+        "cn_rank": null,
+        "cn_count": 7,
+        "current_global_top3": [
+          [
+            "帝国",
+            27.07
+          ],
+          [
+            "杰孙",
+            27.56
+          ],
+          [
+            "超光孙",
+            27.9
+          ]
+        ],
+        "new_global_rank": null,
+        "cn_route_correspondence_independently_verified": false
+      },
+      {
+        "id": "sandiego::container-chaos",
+        "region": "圣地亚哥",
+        "track": "集装箱风暴",
+        "old_invalid": null,
+        "new": 21.96,
+        "saved_seconds": null,
+        "faster_percent": null,
+        "cn_region": "海港博物馆",
+        "cn_track": "集装箱风暴",
+        "cn_tour": null,
+        "cn_rank": null,
+        "cn_count": 8,
+        "current_global_top3": [
+          [
+            "帝国",
+            21.96
+          ],
+          [
+            "陀飞轮",
+            21.96
+          ],
+          [
+            "恶魔",
+            22.1
+          ]
+        ],
+        "new_global_rank": 1,
+        "cn_route_correspondence_independently_verified": false
+      },
+      {
+        "id": "india::rock-terrain",
+        "region": "印度",
+        "track": "崎岖岩道",
+        "old_invalid": null,
+        "new": 25.09,
+        "saved_seconds": null,
+        "faster_percent": null,
+        "cn_region": "季风秘境",
+        "cn_track": "岩石地带",
+        "cn_tour": null,
+        "cn_rank": null,
+        "cn_count": 6,
+        "current_global_top3": [
+          [
+            "帝国",
+            24.3
+          ],
+          [
+            "陀飞轮",
+            25.09
+          ],
+          [
+            "奇美拉",
+            25.44
+          ]
+        ],
+        "new_global_rank": 2,
+        "cn_route_correspondence_independently_verified": false
+      },
+      {
+        "id": "india::gravel-grooves",
+        "region": "印度",
+        "track": "砾石沟壑",
+        "old_invalid": null,
+        "new": null,
+        "saved_seconds": null,
+        "faster_percent": null,
+        "cn_region": "季风秘境",
+        "cn_track": "碎石山路",
+        "cn_tour": null,
+        "cn_rank": null,
+        "cn_count": 11,
+        "current_global_top3": [
+          [
+            "杰孙",
+            25.18
+          ],
+          [
+            "帝国",
+            25.3
+          ],
+          [
+            "奇美拉",
+            25.47
+          ]
+        ],
+        "new_global_rank": null,
+        "cn_route_correspondence_independently_verified": false
+      },
+      {
+        "id": "mountfuji::bullet-train-sprint",
+        "region": "富士山",
+        "track": "极速列车",
+        "old_invalid": null,
+        "new": null,
+        "saved_seconds": null,
+        "faster_percent": null,
+        "cn_region": null,
+        "cn_track": null,
+        "cn_tour": null,
+        "cn_rank": null,
+        "cn_count": 0,
+        "current_global_top3": [
+          [
+            "帝国",
+            23.13
+          ],
+          [
+            "超光孙",
+            23.49
+          ],
+          [
+            "杰孙",
+            23.7
+          ]
+        ],
+        "new_global_rank": null,
+        "cn_route_correspondence_independently_verified": false
+      },
+      {
+        "id": "mountfuji::countryside-sprint",
+        "region": "富士山",
+        "track": "乡间冲刺",
+        "old_invalid": null,
+        "new": null,
+        "saved_seconds": null,
+        "faster_percent": null,
+        "cn_region": null,
+        "cn_track": null,
+        "cn_tour": null,
+        "cn_rank": null,
+        "cn_count": 0,
+        "current_global_top3": [
+          [
+            "帝国",
+            23.39
+          ],
+          [
+            "杰孙",
+            24.06
+          ],
+          [
+            "超光孙",
+            24.09
+          ]
+        ],
+        "new_global_rank": null,
+        "cn_route_correspondence_independently_verified": false
+      }
+    ],
+    "matched_count": 10,
+    "all_faster": true,
+    "mean_saved": 0.5589999999999999,
+    "median_saved": 0.5349999999999999,
+    "min_saved": 0.24,
+    "max_saved": 0.83,
+    "mean_improvement_percent": 2.113122035447407,
+    "median_improvement_percent": 2.122934452404702
+  },
+  "source_raw_receipt": "E:\\hzz\\work\\MutualExclusionAllocator\\本地归档\\tourbillon-refresh-20261030-01a17d0f\\fetch-receipt.json"
+}

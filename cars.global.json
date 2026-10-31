@@ -2,9 +2,9 @@
   "_meta": {
     "server_id": "global",
     "schema_version": 1,
-    "catalog_payload_sha256": "49643051c125275590415a2ac6a467458673f2f93c5b0a29e00e2bfa4c65b56b",
-    "scores_payload_sha256": "49a1d600c02430f5c4c4f4b9baed258f5382e8be5232826084e5c8b0a884c40f",
-    "dataset_version": "0ae6a89d46c8e7707ee3387c7879b59bea69c911c54e07866c38953c8cb9f593",
+    "catalog_payload_sha256": "1a76196be7b7dd0bd97056ac8bf857caa0cb26b816bbf9753c7924a4b65c6eb2",
+    "scores_payload_sha256": "bf8c5c645e06197a6ff20f84f27bf91a5398977fe4ae37701c55656ffe80fe47",
+    "dataset_version": "456196d023d41654d06d7ee5a175e41aca8e9128e204099f9d1a15b46ca9314a",
     "manifest_file": "global-data-manifest.json"
   },
   "_comment": "International accepted-score vehicles only; EVO configuration metrics remain unknown.",
@@ -58,6 +58,7 @@
     "玻璃": "Bugatti Bolide",
     "白龙": "Bugatti Centodieci",
     "秋王": "Automobili Pininfarina Battista",
+    "统治": "Koenigsegg Regera",
     "绿兔": "Rimac Nevera Time Attack",
     "自私": "Lamborghini Egoista",
     "莫斯勒": "Mosler Super GT",
@@ -1040,6 +1041,31 @@
       "acceleration": 88.49,
       "handling": 80.45,
       "nitro": 78.26,
+      "stats_status": "asec_max_star"
+    },
+    {
+      "title": "Koenigsegg Regera",
+      "nickname": "统治",
+      "asec_id": 264,
+      "base_title": "Koenigsegg Regera",
+      "base_class": "S",
+      "class": "S",
+      "class_source": "base_vehicle_class",
+      "variant": "regular",
+      "max_stars": 6,
+      "zones": [
+        "五区"
+      ],
+      "star_rule": {
+        "min": 6,
+        "max": 6,
+        "default": 6
+      },
+      "score": 4616,
+      "max_speed": 457.1,
+      "acceleration": 80.88,
+      "handling": 48.75,
+      "nitro": 52.48,
       "stats_status": "asec_max_star"
     },
     {

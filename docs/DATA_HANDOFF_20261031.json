@@ -1,0 +1,204 @@
+{
+  "date": "2026-10-31",
+  "base_commit": "336730fb7ab8266eab995d291a9e4158782e47b5",
+  "summary": {
+    "preview_only": false,
+    "national": {
+      "keys": 4487,
+      "timed": 2737,
+      "oc": 0,
+      "special": 191
+    },
+    "global_full": {
+      "keys": 703,
+      "timed": 685,
+      "oc": 21,
+      "special": 48
+    },
+    "global_active": {
+      "keys": 664,
+      "timed": 664,
+      "oc": 21,
+      "special": 48
+    },
+    "cross_server_count": 24,
+    "cross_directions": {
+      "global_to_cn": 18,
+      "cn_to_global": 6
+    },
+    "cross_kind": {
+      "added": 15,
+      "faster": 8,
+      "source_correction": 1
+    },
+    "zone1": {
+      "覆盖慢值": 1,
+      "填占位": 0,
+      "创建": 10,
+      "镜像": 5,
+      "跳过": 0
+    },
+    "zone2": {
+      "覆盖慢值": 0,
+      "填占位": 0,
+      "创建": 0,
+      "镜像": 0,
+      "跳过": 0
+    },
+    "new_global_identities": [
+      {
+        "title": "Koenigsegg Regera",
+        "nickname": "统治",
+        "asec_id": 264,
+        "zones": [
+          "五区"
+        ],
+        "star_rule": {
+          "min": 1,
+          "max": 6,
+          "default": 6
+        }
+      }
+    ]
+  },
+  "boundary_decision": {
+    "approved_by_user": true,
+    "date": "2026-10-31",
+    "accepted_boundary_cars": [],
+    "authorization": "Current user: 仅接受全同的，其他的先通过成绩比对剔除差距较大的。",
+    "accepted_cross_server_scope": "Only five of five exact attributes;24 planned actions including one dependent-source correction",
+    "boundary_actions_not_accepted": 159,
+    "national_slower_corrections_explicitly_accepted": true,
+    "new_faster_saved_during_review": "东方巴黎 r兔24.30->24.27; included under current backfill request; old input separately preserved",
+    "global_oc_to_cn": false,
+    "push_and_freeze_authorized": true,
+    "build_not_executed": true
+  },
+  "all_workbooks_ledgers_equal": true,
+  "zone_sync_idempotent": true,
+  "generator_byte_reproducible": true,
+  "validation_errors": [],
+  "global_oc_to_cn": false,
+  "native_excel_opened": false,
+  "production_operations": false,
+  "built": false,
+  "committed": false,
+  "pushed": false,
+  "archive": "E:\\hzz\\work\\MutualExclusionAllocator\\本地归档\\data-sync-freeze-20261031-01a17d0f",
+  "files": {
+    "E:\\hzz\\work\\MutualExclusionAllocator\\repo\\gauntlet_data.json": {
+      "sha256": "bd2fcadb117203ba797a98e428ee20e99d09e28c33a4c8cb568b1cafdac824e2",
+      "bytes": 223972
+    },
+    "E:\\hzz\\work\\MutualExclusionAllocator\\数据源\\international-prep-20261023\\maintenance\\gauntlet_data_international_maintenance.json": {
+      "sha256": "95e68882e316ce5454bdbc60a259b3a01d3684f8763de6ba6b56a96ec6405f9f",
+      "bytes": 54974
+    },
+    "E:\\hzz\\work\\MutualExclusionAllocator\\数据源\\international-prep-20261023\\maintenance\\gauntlet_data_international.json": {
+      "sha256": "8929e9ea65ea12c26dbc8a1da7d824ab282a358beef13497780959f56e9990e6",
+      "bytes": 53122
+    },
+    "E:\\hzz\\work\\MutualExclusionAllocator\\数据源\\international-prep-20261023\\maintenance\\maintenance-score-ledger.json": {
+      "sha256": "758b5c1de6b6cc149f4c59fc7f4a92761a4c86e0f002f17876850cabb96f6162",
+      "bytes": 729883
+    },
+    "E:\\hzz\\work\\MutualExclusionAllocator\\数据源\\international-prep-20261023\\maintenance\\score-ledger.json": {
+      "sha256": "59d98e579697b6c40d35bec5a9e76fcf7f40dd71a6239e998bd00aba99866f65",
+      "bytes": 623903
+    },
+    "E:\\hzz\\work\\MutualExclusionAllocator\\数据源\\international-prep-20261023\\maintenance\\maintenance-car-identities.json": {
+      "sha256": "3b87ca9d9c140cb2b43b5dceb6e2121394086f187e6e8c4dd20b131b5f5a2a6a",
+      "bytes": 15915
+    },
+    "E:\\hzz\\work\\MutualExclusionAllocator\\数据源\\international-prep-20261023\\maintenance\\current-maintenance.json": {
+      "sha256": "848a920a005d3961528db870868cf9cc0775b473b8c081bcbed70e0a6f4adaab",
+      "bytes": 6743
+    },
+    "E:\\hzz\\work\\MutualExclusionAllocator\\数据源\\international-prep-20261023\\maintenance\\summary.json": {
+      "sha256": "12380ecfd6fc046b870f717954c625460d6508d5fca503628e68dcecd2af0d48",
+      "bytes": 4512
+    },
+    "E:\\hzz\\work\\MutualExclusionAllocator\\数据源\\international-prep-20261023\\maintenance\\validation.json": {
+      "sha256": "e527106eb2b9dd0666c0794f5151471339ccffa5ba78295c76bea3b1c3eead44",
+      "bytes": 49010
+    },
+    "E:\\hzz\\work\\MutualExclusionAllocator\\数据源\\international-prep-20261023\\maintenance\\workbook-matrices.json": {
+      "sha256": "f3090eed97fe2321f31aa4e0c4bf752d31a535b5a3010c7ce0e3a652a2ecf532",
+      "bytes": 112933
+    },
+    "E:\\hzz\\work\\MutualExclusionAllocator\\repo\\gauntlet_data.xlsx": {
+      "sha256": "c46e33d2ad480aea9a358b373ab19d18e8c80bb9997f417df25db7d7d2851fe2",
+      "bytes": 122972
+    },
+    "E:\\hzz\\work\\MutualExclusionAllocator\\repo\\gauntlet_data_shared.xlsx": {
+      "sha256": "a05cc914d146fd367f184b1006ecec171346fc47a9fbd4d6bebf4cb3242e94f9",
+      "bytes": 141154
+    },
+    "E:\\hzz\\work\\MutualExclusionAllocator\\repo\\gauntlet_data.global.xlsx": {
+      "sha256": "8d12693408ad92ce18ef15c448468b5fb9cbb4cb079fb037276c8423a56841e3",
+      "bytes": 41057
+    },
+    "E:\\hzz\\work\\MutualExclusionAllocator\\repo\\cars.global.json": {
+      "sha256": "a8ff59df90efb3059e1ae6b5450ee5c81f368871b0bedfbc15e20efd99e100d5",
+      "bytes": 29264
+    },
+    "E:\\hzz\\work\\MutualExclusionAllocator\\repo\\gauntlet_data.global.json": {
+      "sha256": "a170e1e62d106ffb8788b5a163bb3919c848af4f1efd52f07cc2880a2c2cd084",
+      "bytes": 129074
+    },
+    "E:\\hzz\\work\\MutualExclusionAllocator\\repo\\global-data-manifest.json": {
+      "sha256": "6ba010b9ee3f7290204fae5c21b5bb0e0a42870f933ceab5ec0708d59c1667e4",
+      "bytes": 1866
+    },
+    "E:\\hzz\\work\\MutualExclusionAllocator\\数据源\\international-prep-20261023\\maintenance\\SHA256SUMS.txt": {
+      "sha256": "0d72dbf200e66464d83bc64c7c8982f7ce7f13a3c3e83a9a672e3b587507cba0",
+      "bytes": 14679
+    }
+  },
+  "verification_stage": "Local validation snapshot before authorized commit and push; final Git delivery receipt is in archive/push-receipt.json",
+  "targeted_tests_passed": 73,
+  "git_diff_check_passed": true,
+  "format_json_idempotent": true,
+  "boundary_screen": {
+    "剔除本轮候选": {
+      "vehicles": [
+        "恶魔",
+        "大超"
+      ],
+      "actions": 55
+    },
+    "保留待审核": {
+      "vehicles": [
+        "黑龙",
+        "cc850",
+        "杰弟",
+        "ssc"
+      ],
+      "actions": 64
+    },
+    "样本不足，暂缓": {
+      "vehicles": [
+        "猫头鹰",
+        "杰哥",
+        "自私",
+        "速尾",
+        "9x8",
+        "ts900",
+        "urs",
+        "万达",
+        "秋王"
+      ],
+      "actions": 40
+    }
+  },
+  "boundary_method": "At least3 usable ordinary map pairs; median absolute relative gap >1% removes the vehicle from the current candidate list. This is a triage threshold, not a game physics rule.",
+  "source_freeze": {
+    "path": "E:\\hzz\\work\\MutualExclusionAllocator\\本地归档\\data-sync-freeze-20261031-01a17d0f\\RacePick-DataFreeze-20261031.zip",
+    "sha256": "9bb608f40392147d55cf448c38d74bdeac847da9b205047354d697e570d2e83a",
+    "bytes": 555261,
+    "files": 27,
+    "all_zip_members_verified": true,
+    "kind": "data-only maintenance freeze, NOT a deployable application package"
+  },
+  "freeze_manifest": "docs/DATA_FREEZE_20261031.json"
+}
