@@ -1,0 +1,10 @@
+{
+  "pages": ["pages/home/home"],
+  "window": {
+    "navigationBarTitleText": "RacePick 擂台选车助手",
+    "navigationBarBackgroundColor": "#101b30",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#0b1220"
+  },
+  "style": "v2"
+}

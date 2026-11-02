@@ -1,0 +1,53 @@
+<view class="page">
+  <view class="brand">RacePick <text class="subtitle">擂台选车助手</text></view>
+  <view wx:if="{{mode === 'mock'}}" class="notice">本地联调 · 模拟目录与结果，非真实计算 / OCR</view>
+  <view class="toolbar">
+    <button class="{{server === 'cn' ? 'primary' : ''}}" data-server="cn" bindtap="switchServer">国服</button>
+    <button class="{{server === 'global' ? 'primary' : ''}}" data-server="global" bindtap="switchServer">国际服</button>
+    <picker range="{{zones}}" value="{{zoneIndex}}" bindchange="selectZone"><view class="select">{{zones[zoneIndex]}} ▾</view></picker>
+    <picker range="{{tiers}}" value="{{tierIndex}}" bindchange="selectTier"><view class="select">{{tiers[tierIndex]}} ▾</view></picker>
+  </view>
+  <view wx:if="{{error}}" class="error">{{error}}</view>
+  <view class="card">
+    <view class="section-title">选择地图</view>
+    <view class="map-row" wx:for="{{rows}}" wx:key="index">
+      <text class="number">{{item.index + 1}}</text>
+      <picker class="map-picker" range="{{item.bigs}}" value="{{item.bigIndex}}" data-index="{{item.index}}" data-field="big" bindchange="selectMap"><view class="select">{{item.big || '选择大地图'}} ▾</view></picker>
+      <picker class="map-picker" range="{{item.smalls}}" value="{{item.smallIndex}}" disabled="{{!item.big}}" data-index="{{item.index}}" data-field="small" bindchange="selectMap"><view class="select">{{item.small || '选择小地图'}} ▾</view></picker>
+    </view>
+    <button wx:if="{{server === 'cn'}}" bindtap="chooseImage">地图识别</button>
+    <text class="muted">{{server === 'cn' ? '仅游戏截图，不支持拍屏照片' : '国际服暂未开放识图'}}</text>
+    <view wx:if="{{image}}" class="recognition">
+      <image src="{{image}}" mode="widthFix" class="preview" />
+      <view class="actions"><button loading="{{busy}}" disabled="{{busy}}" bindtap="recognize">开始识别</button><button bindtap="cancelRecognition">取消</button></view>
+    </view>
+    <view wx:if="{{hasPending}}" class="recognition">
+      <view class="section-title">核对地图</view>
+      <view class="map-row" wx:for="{{slotRows}}" wx:key="index">
+        <text class="number">{{item.index + 1}}</text>
+        <picker class="map-picker" range="{{item.bigs}}" value="{{item.bigIndex}}" data-index="{{item.index}}" data-field="big" data-pending="{{true}}" bindchange="selectMap"><view class="select">{{item.big || '选择大地图'}} ▾</view></picker>
+        <picker class="map-picker" range="{{item.smalls}}" value="{{item.smallIndex}}" disabled="{{!item.big}}" data-index="{{item.index}}" data-field="small" data-pending="{{true}}" bindchange="selectMap"><view class="select">{{item.small || '补充地图'}} ▾</view></picker>
+      </view>
+      <button class="primary" bindtap="applyRecognition">应用选图</button>
+    </view>
+  </view>
+  <view class="card">
+    <button bindtap="toggleGarage">本机车库 · 已选{{selectedCount}}辆 {{garageOpen ? '收起' : '展开'}}</button>
+    <view wx:if="{{garageOpen}}">
+      <input class="search" placeholder="搜索车辆" placeholder-class="muted" value="{{query}}" bindinput="search" />
+      <scroll-view scroll-y="{{true}}" class="garage-list">
+        <view wx:for="{{cars}}" wx:key="id" class="car-row">
+          <button class="car-name {{item.selected ? 'selected' : ''}}" data-id="{{item.id}}" bindtap="toggleCar">{{item.selected ? '✓ ' : ''}}{{item.label}}</button>
+          <picker range="{{item.stars}}" value="{{item.starIndex}}" data-id="{{item.id}}" bindchange="selectStars"><view class="select">★{{item.stars[item.starIndex]}} ▾</view></picker>
+          <view wx:if="{{item.ocAllowed}}" class="oc">OC<switch checked="{{item.oc}}" data-id="{{item.id}}" bindchange="toggleOc" color="#3478ed" /></view>
+        </view>
+      </scroll-view>
+    </view>
+    <view class="actions"><button bindtap="save">保存车库</button><button bindtap="restore">恢复已存</button><text class="muted">{{dirty ? '尚未保存' : ''}}</text></view>
+  </view>
+  <button class="primary" loading="{{busy}}" disabled="{{busy}}" bindtap="compute">生成方案</button>
+  <view class="card" wx:for="{{schemes}}" wx:for-item="scheme" wx:key="index">
+    <view class="section-title">方案{{scheme.index + 1}} <text class="muted">{{scheme.totalText}}</text></view>
+    <view wx:for="{{scheme.rows}}" wx:for-item="row" wx:key="index" class="result-row"><text>{{row.map}}</text><text>{{row.car}}</text><text>{{row.timeText}}</text></view>
+  </view>
+</view>

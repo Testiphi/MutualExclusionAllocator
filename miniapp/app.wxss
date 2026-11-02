@@ -1,0 +1,5 @@
+page { background: #0b1220; color: #e6edf8; font-size: 28rpx; }
+button { font-size: 28rpx; color: #e6edf8; background: #23334d; margin: 0; }
+button::after { border: 0; }
+button[disabled] { color: #8a9bb6; background: #1b2940; }
+.primary { background: #3478ed; }
