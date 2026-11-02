@@ -5,6 +5,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
 const crypto = require('node:crypto');
+const cp = require('node:child_process');
 const { createController, blank } = require('../miniapp/lib/controller');
 const { createMock } = require('../miniapp/services/mock');
 const { createStorage } = require('../miniapp/adapters/storage');
@@ -171,7 +172,7 @@ test('transport keeps token in memory, sends raw response bytes, clears 401, doe
 test('generated shared modules remain identical to owning sources', () => {
   const manifest=require('../miniapp/shared/source.json');
   for(const [file,meta] of Object.entries(manifest.files)) {
-    const source=fs.readFileSync(path.resolve(__dirname,'..',file));
+    const source=cp.execFileSync('git',['show',manifest.source+':'+file],{cwd:path.resolve(__dirname,'..')});
     assert.deepEqual(fs.readFileSync(path.resolve(__dirname,'../miniapp/shared',file)),source);
     assert.equal(sha256(source),meta.sha256);
   }
@@ -180,7 +181,7 @@ test('actual native page JS handlers drive five manual maps and garage, then ren
   const file=path.resolve(__dirname,'../miniapp/pages/home/home.js'); let config;
   const values=new Map(); const wx={getStorageSync:k=>values.get(k),setStorageSync:(k,v)=>values.set(k,v)};
   vm.runInNewContext(fs.readFileSync(file,'utf8'),{Page:x=>{config=x;},wx,
-    require:x=>require(path.resolve(path.dirname(file),x))},{filename:file});
+    require:x=>x==='../../generated/local-bundle'?null:require(path.resolve(path.dirname(file),x))},{filename:file});
   const page={...config,data:structuredClone(config.data),setData(x){Object.assign(this.data,x);}}; page.onLoad();
   const event=(index,field,value)=>({currentTarget:{dataset:{index,field}},detail:{value}});
   for(let i=0;i<5;i++){page.selectMap(event(i,'big',i+1));page.selectMap(event(i,'small',1));}

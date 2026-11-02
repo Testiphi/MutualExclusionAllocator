@@ -9,21 +9,21 @@ function createController({ service, storage, media, render }) {
   let error = '', busy = false, result = null, pending = null, image = null, dirty = false;
   let blocked = false;
   function refresh() {
-    model = service.model(clone(draft));
-    if (model.server !== draft.server) throw Error('目录服别不符');
-    if (!model.zones.includes(draft.zone)) draft.zone = model.zones[0];
-    if (!model.tiers.includes(draft.tier)) draft.tier = model.tiers[0];
-    // Rule filtering is supplied by the shared model. Client only checks membership.
-    draft.cars = draft.cars.filter(id => model.cars.some(car => car.id === id));
+    // Ask the shared service for the current catalogue before submitting a saved
+    // draft: removed maps/unsupported old modes must not crash core validation.
+    const catalog = service.model(blank(draft.server));
+    if (catalog.server !== draft.server) throw Error('目录服别不符');
+    if (!catalog.zones.includes(draft.zone)) draft.zone = catalog.zones[0];
+    if (!catalog.tiers.includes(draft.tier)) draft.tier = catalog.tiers[0];
+    if (catalog.knownCarIds) draft.cars = draft.cars.filter(id => catalog.knownCarIds.includes(id));
     const used = new Set();
     draft.maps = draft.maps.map(map => {
-      if (!map || used.has(map.big) || !model.maps.some(x => x.big === map.big && (!map.small || x.small === map.small))) return null;
+      if (!map || used.has(map.big) || !catalog.maps.some(x => x.big === map.big && (!map.small || x.small === map.small))) return null;
       used.add(map.big); return map;
     });
-    for (const car of model.cars) {
-      if (!car.stars.includes(draft.stars[car.id])) draft.stars[car.id] = car.defaultStar;
-      if (!car.ocAllowed || typeof draft.oc[car.id] !== 'boolean') draft.oc[car.id] = false;
-    }
+    model = service.model(clone(draft));
+    // Keep saved stars and garage across zones. Shared core clamps effective stars;
+    // the page displays a valid value without overwriting the user's other-zone input.
   }
   function publish() {
     render({ draft: clone(draft), model: clone(model), error, busy, result,
@@ -101,6 +101,10 @@ function createController({ service, storage, media, render }) {
     }); },
     setStars(id, stars) { if (model.cars.some(x => x.id === id && x.stars.includes(stars))) change(() => { draft.stars[id] = stars; }); },
     setOc(id, value) { if (model.cars.some(x => x.id === id && x.ocAllowed)) change(() => { draft.oc[id] = value === true; }); },
+    setRoute(key, value) {
+      const route = (model.routes || []).find(x=>x.key===key);
+      if (route && (value==='off' || value==='all' || route.types.includes(value))) change(()=>{draft.routes[key]=value;});
+    },
     restore() { invalidate(); error = ''; load(draft.server); publish(); },
     switchServer(server) {
       if (!['cn', 'global'].includes(server) || server === draft.server) return;

@@ -1,13 +1,15 @@
 <view class="page">
   <view class="brand">RacePick <text class="subtitle">擂台选车助手</text></view>
   <view wx:if="{{mode === 'mock'}}" class="notice">本地联调 · 模拟目录与结果，非真实计算 / OCR</view>
+  <view wx:if="{{mode === 'local'}}" class="notice">本地计算 · 数据未冻结，识图尚未接入</view>
+  <view wx:if="{{error}}" class="error">{{error}}</view>
+  <view wx:if="{{ready}}">
   <view class="toolbar">
     <button class="{{server === 'cn' ? 'primary' : ''}}" data-server="cn" bindtap="switchServer">国服</button>
     <button class="{{server === 'global' ? 'primary' : ''}}" data-server="global" bindtap="switchServer">国际服</button>
     <picker range="{{zones}}" value="{{zoneIndex}}" bindchange="selectZone"><view class="select">{{zones[zoneIndex]}} ▾</view></picker>
     <picker range="{{tiers}}" value="{{tierIndex}}" bindchange="selectTier"><view class="select">{{tiers[tierIndex]}} ▾</view></picker>
   </view>
-  <view wx:if="{{error}}" class="error">{{error}}</view>
   <view class="card">
     <view class="section-title">选择地图</view>
     <view class="map-row" wx:for="{{rows}}" wx:key="index">
@@ -45,9 +47,17 @@
     </view>
     <view class="actions"><button bindtap="save">保存车库</button><button bindtap="restore">恢复已存</button><text class="muted">{{dirty ? '尚未保存' : ''}}</text></view>
   </view>
+  <view wx:if="{{routes.length}}" class="card">
+    <view class="section-title">特殊跑法</view>
+    <view wx:for="{{routes}}" wx:key="key" class="route-row">
+      <button class="{{item.enabled ? 'primary' : ''}}" data-key="{{item.key}}" bindtap="toggleRoute">{{item.label}} {{item.enabled ? '◉' : '○'}}</button>
+      <picker wx:if="{{item.showTypes}}" range="{{item.options}}" value="{{item.optionIndex}}" data-key="{{item.key}}" bindchange="selectRoute"><view class="select">{{item.options[item.optionIndex]}} ▾</view></picker>
+    </view>
+  </view>
   <button class="primary" loading="{{busy}}" disabled="{{busy}}" bindtap="compute">生成方案</button>
   <view class="card" wx:for="{{schemes}}" wx:for-item="scheme" wx:key="index">
     <view class="section-title">方案{{scheme.index + 1}} <text class="muted">{{scheme.totalText}}</text></view>
     <view wx:for="{{scheme.rows}}" wx:for-item="row" wx:key="index" class="result-row"><text>{{row.map}}</text><text>{{row.car}}</text><text>{{row.timeText}}</text></view>
+  </view>
   </view>
 </view>

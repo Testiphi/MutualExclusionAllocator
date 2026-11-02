@@ -26,3 +26,5 @@
 .actions button { padding: 0 20rpx; }
 .result-row { display: flex; justify-content: space-between; gap: 18rpx; padding: 18rpx 0; border-top: 1rpx solid #29374e; }
 .result-row text { min-width: 0; overflow-wrap: break-word; }
+.route-row { display: flex; flex-wrap: wrap; align-items: center; gap: 14rpx; margin-top: 14rpx; }
+.route-row button { padding: 0 18rpx; }

@@ -3,12 +3,19 @@ const { createController } = require('../../lib/controller');
 const { createStorage } = require('../../adapters/storage');
 const { createMedia } = require('../../adapters/media');
 const { createMock } = require('../../services/mock');
+const { createLocalService } = require('../../services/local');
+const bundle = require('../../generated/local-bundle');
+const core = require('../../shared/selection_core');
 
 Page({
-  data: { garageOpen: false, query: '', rows: [], cars: [], schemes: [], slotRows: [] },
+  data: { ready:false, garageOpen: false, query: '', rows: [], cars: [], schemes: [], slotRows: [] },
   onLoad() {
-    // Deliberately no native service configuration until the contract is agreed.
-    this.controller = createController({ service: createMock(), storage: createStorage(wx, 'mock'),
+    // Local bundle is byte-verified. This path never logs in or connects a server.
+    let service;
+    try { service = bundle ? createLocalService(core,bundle) : createMock(); }
+    catch (e) { this.setData({error:e.message,ready:false}); return; }
+    this.routeMemory = {};
+    this.controller = createController({ service, storage: createStorage(wx, service.mode),
       media: createMedia(wx), render: state => { this.state = state; this.updateView(); } });
   },
   updateView() {
@@ -23,13 +30,17 @@ Page({
     };
     const q = (this.data.query || '').trim().toLowerCase();
     const cars = m.cars.filter(x => !q || (x.label + ' ' + x.id).toLowerCase().includes(q))
-      .map(x => ({ ...x, selected: d.cars.includes(x.id), starIndex: x.stars.indexOf(d.stars[x.id]),
+      .map(x => ({ ...x, selected: d.cars.includes(x.id), starIndex: x.stars.indexOf(x.stars.includes(d.stars[x.id]) ? d.stars[x.id] : x.defaultStar),
         oc: d.oc[x.id] === true }));
-    this.setData({ server: d.server, mode: s.mode, error: s.error, busy: s.busy,
+    const routes = (m.routes || []).map(x=>{
+      const saved = d.routes[x.key], value = saved === 'off' ? 'off' : x.types.includes(saved) ? saved : 'all';
+      return {...x, enabled:value!=='off', showTypes:value!=='off'&&x.types.length>1, options:['全部'].concat(x.types), optionIndex:value==='all'||value==='off'?0:x.types.indexOf(value)+1};
+    });
+    this.setData({ ready:true, server: d.server, mode: s.mode, error: s.error, busy: s.busy,
       dirty: s.dirty, image: s.image, hasPending: !!s.pending,
       selectedCount: d.cars.length, zones: m.zones.map(x => x === 'zone4' ? '四区' : '五区'),
       zoneIndex: m.zones.indexOf(d.zone), tiers: m.tiers, tierIndex: m.tiers.indexOf(d.tier),
-      rows: d.maps.map(row), cars, slotRows: s.pending ? s.pending.map(row) : [],
+      rows: d.maps.map(row), cars, routes, slotRows: s.pending ? s.pending.map(row) : [],
       schemes: s.result ? s.result.schemes.map((scheme, index) => ({
         index, totalText: scheme.total == null ? '—' : scheme.total.toFixed(3) + '秒',
         rows: scheme.rows.map((r, i) => ({ index: i, map: r.map || '未选地图',
@@ -70,6 +81,20 @@ Page({
     this.controller.setStars(id, car.stars[Number(e.detail.value)]);
   },
   toggleOc(e) { this.controller.setOc(e.currentTarget.dataset.id, e.detail.value); },
+  toggleRoute(e) {
+    const key=e.currentTarget.dataset.key, value=this.state.draft.routes[key];
+    const memoryKey=this.state.draft.server+':'+key;
+    if(value==='off') {
+      const route=this.state.model.routes.find(x=>x.key===key), remembered=this.routeMemory[memoryKey];
+      this.controller.setRoute(key,route.types.includes(remembered)?remembered:'all');
+    } else {
+      this.routeMemory[memoryKey]=value||'all'; this.controller.setRoute(key,'off');
+    }
+  },
+  selectRoute(e) {
+    const key=e.currentTarget.dataset.key, route=this.state.model.routes.find(x=>x.key===key);
+    this.controller.setRoute(key, Number(e.detail.value)===0?'all':route.types[Number(e.detail.value)-1]);
+  },
   save() { this.controller.save(); }, restore() { this.controller.restore(); },
   compute() { this.controller.compute(); }, chooseImage() { this.controller.chooseImage(); },
   recognize() { this.controller.recognize(); }, applyRecognition() { this.controller.applyRecognition(); },

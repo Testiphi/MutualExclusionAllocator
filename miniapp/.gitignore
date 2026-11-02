@@ -1,3 +1,4 @@
 shared/
+generated/
 project.private.config.json
 local.config.js
