@@ -566,7 +566,7 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
     if writeback_lab is not None:
         from backend.writeback import install as install_writeback
         install_writeback(app,store,ROOT,user,writeback_lab,preview_source)
-    assets={'styles.css','config.js','api.js','app_state.js','allocator.js','race_scores.js','cars.json','gauntlet_data.json','auth.js','profile_store.js','accounts.css','submissions.js','submissions.css','admin_access.js','data_previews.js','data_previews.css','writeback_lab.js','announcements.js','admin_accounts.js'}
+    assets={'styles.css','config.js','api.js','app_state.js','allocator.js','race_scores.js','selection_core.js','cars.json','gauntlet_data.json','auth.js','profile_store.js','accounts.css','submissions.js','submissions.css','admin_access.js','data_previews.js','data_previews.css','writeback_lab.js','announcements.js','admin_accounts.js'}
     assets.update({'ui.css','theme.css','notifications.js'})
     if recognition_service:assets.update({'map_recognition.js','map_recognition.css'})
     assets.update({'cars.global.json','gauntlet_data.global.json','global-data-manifest.json'})

@@ -52,7 +52,10 @@ const extract = name => {
     return match[0];
 };
 function page(rows, tier = '高手', savedStars = 3) {
-    return new Function('rows', 'tier', 'savedStars', `${moduleSource}
+    return new Function('rows', 'tier', 'savedStars', `${read('app_state.js')}
+        ${moduleSource}
+        ${read('selection_core.js')}
+        const getStarRule = () => ({min:1,max:6});
         const currentTier = tier; const currentZone = 'zone5';
         const ocMap = {};
         const specialRouteEnabled = {}; const getRouteState = () => 'all';

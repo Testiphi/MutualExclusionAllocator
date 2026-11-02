@@ -6,6 +6,25 @@ from production_release_tools import APP_FILES,pack,stage,verify,read_bundle
 ROOT=Path(__file__).resolve().parents[1]
 
 class ReleaseTests(unittest.TestCase):
+ def test_selection_core_required_by_new_pages_and_old_bundles_still_verify(self):
+  from production_release_tools import manifest
+  import json
+  contents,_=read_bundle(self.bundle)
+  self.assertIn('selection_core.js',contents)
+  contents.pop('selection_core.js')
+  def archive(name,items):
+   bundle=self.path/name
+   with zipfile.ZipFile(bundle,'w') as z:
+    for n,v in items.items():z.writestr(n,v)
+    z.writestr('manifest.json',json.dumps(manifest(items,{'fixture':True})))
+   return bundle
+  with self.assertRaisesRegex(ValueError,'共享选择核心'):
+   read_bundle(archive('missing-core.zip',contents))
+  contents['index.html']=b'<html><script src="race_scores.js"></script></html>'
+  legacy=archive('legacy-page.zip',contents)
+  read_bundle(legacy)
+  target=stage(legacy,self.path/'legacy-releases')
+  verify(target)
  def setUp(self):
   self.temp=tempfile.TemporaryDirectory();self.path=Path(self.temp.name)
   self.wheels=self.path/'wheels';self.wheels.mkdir();(self.wheels/'dummy-1-py3-none-any.whl').write_bytes(b'fixture')

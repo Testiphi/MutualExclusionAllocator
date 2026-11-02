@@ -28,7 +28,8 @@ COVERAGE_FILES=('backend/coverage.py','backend/coverage_production.py','coverage
 THEME_FILES=('theme.css',)
 SCOPED_FILES=('backend/score_scopes.py','backend/global_scores.py','backend/global_score_production.py','GLOBAL_SUBMISSIONS_DEPLOYMENT.md')
 COMPONENT_GROUPS=(SCOPED_FILES,COVERAGE_FILES,THEME_FILES,SCORE_FILES,COMMUNITY_FILES,CONTRIBUTION_FILES,FEEDBACK_FILES,GLOBAL_FILES,NOTIFICATION_FILES,USAGE_FILES)
-APP_FILES=BASE_FILES+SCOPED_FILES+COVERAGE_FILES+THEME_FILES+SCORE_FILES+COMMUNITY_FILES+CONTRIBUTION_FILES+FEEDBACK_FILES+GLOBAL_FILES+NOTIFICATION_FILES+USAGE_FILES
+SELECTION_FILES=('selection_core.js',)
+APP_FILES=BASE_FILES+SCOPED_FILES+COVERAGE_FILES+THEME_FILES+SCORE_FILES+COMMUNITY_FILES+CONTRIBUTION_FILES+FEEDBACK_FILES+GLOBAL_FILES+NOTIFICATION_FILES+USAGE_FILES+SELECTION_FILES
 OCR_CODE_FILES=('backend/map_layout.py','backend/map_recognition.py','backend/map_ocr_engine.py','backend/map_ocr_worker.py',
  'backend/map_ocr_production.py','backend/map_ocr_supervisor.py','map_recognition.js','map_recognition.css',
  'production/ocr-models.json','production/ocr-assets.json','production/ocr-selfcheck.py','production/racepick-map-ocr.service',
@@ -65,6 +66,11 @@ def verify_global_data(contents):
 
 def digest(raw):return hashlib.sha256(raw).hexdigest()
 def allowed(name):return name in APP_FILES or name in OCR_FILES or bool(re.fullmatch(r'wheels/[A-Za-z0-9_.+\-]+\.whl',name))
+
+def verify_selection(contents):
+ # New pages must carry their dependency; historical pages/bundles remain verifiable.
+ if re.search(rb'<script\b[^>]*\bsrc\s*=\s*[\"\'](?:\./)?selection_core\.js[\"\']',contents['index.html']) and 'selection_core.js' not in contents:
+  raise ValueError('网页缺少共享选择核心')
 def manifest(contents,provenance):
  files={n:{'sha256':digest(v),'size':len(v)} for n,v in sorted(contents.items())}
  info={'version':1,'target':'ubuntu24.04-x86_64-python3.12','files':files,'provenance':provenance}
@@ -83,6 +89,7 @@ def pack(code,data,wheels,output,provenance,data_contents=None,ocr_assets=None):
  content.update({'wheels/'+p.name:p.read_bytes() for p in wheels.glob('*.whl')})
  if not any(n.startswith('wheels/') for n in content):raise ValueError('缺少离线依赖')
  verify_global_data(content)
+ verify_selection(content)
  info=manifest(content,provenance)
  with zipfile.ZipFile(output,'x',zipfile.ZIP_DEFLATED) as z:
   for n,v in content.items():z.writestr(n,v)
@@ -100,6 +107,7 @@ def read_bundle(bundle):
  if info!=manifest(contents,info['provenance']):raise ValueError('发布包校验失败')
  verify_global_data(contents)
  verify_ocr(contents)
+ verify_selection(contents)
  return contents,info
 
 def verify(target):
@@ -113,6 +121,7 @@ def verify(target):
  if any((target/n).is_symlink() for n in info['files']) or info!=manifest(contents,info['provenance']) or target.name!=info['id']:raise ValueError('版本校验失败')
  verify_global_data(contents)
  verify_ocr(contents)
+ verify_selection(contents)
  return info
 
 def stage(bundle,base):

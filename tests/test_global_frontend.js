@@ -74,7 +74,7 @@ async function boot({files = fixture(), local = storage(), session = storage(), 
         fetch:async url=>{requests.push(String(url));const raw = files.get(String(url));return {ok:!!raw&&url!==missing,status:raw?200:404,arrayBuffer:async()=>raw.buffer.slice(raw.byteOffset,raw.byteOffset+raw.byteLength),json:async()=>JSON.parse(raw.toString())};}});
     let inline = read('index.html').match(/<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/)[1];
     inline = inline.replace(/initApp\(\);/, `globalThis.__page = {state:()=>({zone:currentZone,tier:currentTier,owned:[...selectedCars],ocMap:{...ocMap},rules:CAR_STAR_RULES,dirty:guestDirty,bigMapList:[...bigMapList]}),profile:profileNow,score:getCarScore,groups:getOriginalGroups,stars:getCarStars,setStars:setCarStars,commit:commitGarage,restore:restoreGarage,clear:clearAll,selectAll,sort:sortCarList};globalThis.__boot = initApp();`);
-    vm.runInContext([read('config.js'),read('app_state.js'),read('api.js'),read('allocator.js'),read('race_scores.js'),inline].join('\n;\n'),context);
+    vm.runInContext([read('config.js'),read('app_state.js'),read('api.js'),read('allocator.js'),read('race_scores.js'),read('selection_core.js'),inline].join('\n;\n'),context);
     await context.__boot;
     return {context,page:context.__page,requests,errors,local,session,globalEvents,...ui,accountCalls:()=>accountCalls};
 }

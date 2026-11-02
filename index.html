@@ -9,6 +9,7 @@
     <script src="api.js"></script>
     <script src="allocator.js"></script>
     <script src="race_scores.js"></script>
+    <script src="selection_core.js"></script>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="theme.css">
 </head>
@@ -216,30 +217,13 @@
      * 必须在 carStats / nickToName 就绪之后、loadGarage() 之前调用。
      */
     function buildCarRules() {
-        zone5Cars = [];
-        zone4Cars = [];
-        CAR_STAR_RULES = {};
-        for (const car of Object.values(carStats)) {
-            if (!car.nickname) continue;          // nickname 即数据里的车名（唯一索引）
-            const zones = car.zones || [];
-            if (zones.includes('五区')) zone5Cars.push(car.nickname);
-            if (zones.includes('四区')) zone4Cars.push(car.nickname);
-            if (car.star_rule) CAR_STAR_RULES[car.nickname] = car.star_rule;
-        }
-        if (zone5Cars.length === 0 || (APP_CONFIG.server !== 'global' && zone4Cars.length === 0) || Object.keys(CAR_STAR_RULES).length === 0) {
-            throw new Error('cars.json 缺少 zones / star_rule 定义，无法构建车池与星级规则');
-        }
+        const derived = selectionCore.carRules(carStats, APP_CONFIG.server);
+        zone5Cars = derived.zone5Cars; zone4Cars = derived.zone4Cars; CAR_STAR_RULES = derived.rules;
     }
 
     /** 获取某辆车的当前有效星级范围 */
     function getStarRange(carName) {
-        var rule = getStarRule(carName);
-        if (!rule) return { min: 1, max: 6 };
-        var max = rule.max || 6;
-        if (currentZone === 'zone4' && rule.zone4Max != null) {
-            max = rule.zone4Max;
-        }
-        return { min: rule.min || 1, max: Math.max(max, rule.min || 1) };
+        return selectionCore.starRange(getStarRule(carName), currentZone);
     }
 
     /** 获取某辆车的默认星级 */
@@ -285,12 +269,7 @@
 
     /** 获取当前分区的有效星级，不改写保存的用户设置（显示与计算共用同一来源） */
     function getCarStars(carName) {
-        if (globalThis.RACEPICK_SERVER === 'global') return getStarRange(carName).max;
-        const saved = starsMap[carName];
-        const stars = Number.isInteger(saved) && saved >= 1 && saved <= 6
-            ? saved : getZoneDefaultStar(carName);
-        const range = getStarRange(carName);
-        return Math.max(range.min, Math.min(range.max, stars));
+        return selectionCore.carStars(getStarRule(carName), currentZone, starsMap[carName], globalThis.RACEPICK_SERVER === 'global' ? 'global' : 'cn');
     }
 
     /** 获取某辆车的初始显示星级（与 getCarStars 一致） */
@@ -855,87 +834,18 @@
      * 无成绩的车按原数据顺序附在末尾。
      */
     function getOriginalGroups(big, small, zone) {
-        const list = smallMapsByBig[big];
-        if (!list) return null;
-        const found = list.find(item => item.name === small);
+        const found = smallMapsByBig[big]?.find(item => item.name === small);
         if (!found) return null;
-
-        var mapKey = big + '/' + small;
-        var scState = getRouteState(big, small, zone);
-        var scOn = scState !== 'off';
-
-        // 选择五区或四区的数据
-        const entries = zone === 'zone4' ? found.zone4Entries : found.zone5Entries;
-
-        // sc 类型过滤后的可用条目（关闭时剔除全部 sc）
-        var usable = [];
-        for (var ei = 0; ei < entries.length; ei++) {
-            var raw = entries[ei]._raw;
-            if (!raw) continue;
-            const entryOc = raw.cars?.[0]?.oc;
-            if ((entryOc === undefined ? false : entryOc) !== (ocMap[raw.cars?.[0]?.name] === true)) continue;
-            if (!scOn && raw.sc) continue;
-            if (scOn && scState !== 'all' && raw.sc && raw.sc_type !== scState) continue;
-            usable.push(entries[ei]);
-        }
-
-        // 收集候选车（保持原数据出现顺序，作为并列时与无成绩时的稳定序）
-        var cars = [];
-        var seen = {};
-        for (var k = 0; k < usable.length; k++) {
-            var name = parseCarGroup(usable[k])[0];
-            if (!name) continue;
-            if (seen[name] === undefined) { seen[name] = cars.length; cars.push(name); }
-        }
-
-        // 每车取「可用的最快成绩」：开关打开时普通与 sc 一起比，谁快用谁
-        var scored = cars.map(function(carName) {
-            var normal = getEffectiveTime(usable, carName, false, zone);
-            var sc = scOn ? getEffectiveTime(usable, carName, true, zone) : null;
-            var best = normal;
-            if (sc != null && (best == null || sc < best)) best = sc;
-            return { car: carName, time: best };
+        return selectionCore.originalGroups(zone === 'zone4' ? found.zone4Entries : found.zone5Entries, {
+            tier: currentTier, starsFor: getCarStars, ocMap, routeState: getRouteState(big, small, zone)
         });
-
-        // 有成绩的按成绩升序；无成绩的按原顺序附在末尾
-        var withTime = scored.filter(function(s) { return s.time != null; });
-        var noTime = scored.filter(function(s) { return s.time == null; });
-        withTime.sort(function(a, b) { return a.time - b.time; });
-
-        return withTime.concat(noTime).map(function(s) { return [s.car]; });
     }
     /** 默认无车优先级标记（100 以内，远大于实际优先级值） */
     const NO_CAR_PRIORITY = 99;
 
     /** 页面层：按选定地图和分区准备候选车组及原始优先级。 */
     function prepareMapCandidates(validMaps, zone) {
-        const n = validMaps.length;
-        // 1. 预计算每张图的数据:候选组、车→优先级映射
-        const mapsData = [];
-        for (let i = 0; i < n; i++) {
-            const { big, small } = validMaps[i];
-            const originalGroups = getOriginalGroups(big, small, zone);
-            if (!originalGroups) {
-                // 无数据的地图，标记为空
-                mapsData.push({ groups: [], carToPriority: new Map() });
-                continue;
-            }
-
-            // 过滤候选:每组只保留拥有的车
-            // 车->优先级 (组索引)
-            const carToPriority = new Map();
-            for (let gIdx = 0; gIdx < originalGroups.length; gIdx++) {
-                const group = originalGroups[gIdx];
-                for (const car of group) {
-                    if (!carToPriority.has(car)) {
-                        carToPriority.set(car, gIdx);
-                    }
-                }
-            }
-            mapsData.push({ groups: originalGroups, carToPriority });
-        }
-
-        return mapsData;
+        return selectionCore.prepareMapCandidates(validMaps, (big, small) => getOriginalGroups(big, small, zone));
     }
 
     /** 页面层：把紧凑方案映射回显示行，未选地图的位置保留为空。 */
