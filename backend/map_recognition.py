@@ -98,6 +98,10 @@ class JobStore:
             db.execute("UPDATE jobs SET state='expired',result=NULL,error='图片与结果已到期，请重新上传' WHERE expires<=?",(now,))
             if self.production:
                 db.execute("DELETE FROM jobs WHERE expires<?",(now-600,))
+            else:
+                # Native V1 retention also applies in explicitly isolated local integration.
+                # Historical website demo rows retain their existing lifecycle.
+                db.execute("DELETE FROM jobs WHERE owner LIKE 'mini-v1:%' AND expires<?",(now-600,))
         for job_id in ids:self.remove_media(job_id)
 
     def create(self,owner,key,server,version,raw,mime,*,catalog=None,client=None):

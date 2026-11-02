@@ -6,6 +6,33 @@ from production_release_tools import APP_FILES,pack,stage,verify,read_bundle
 ROOT=Path(__file__).resolve().parents[1]
 
 class ReleaseTests(unittest.TestCase):
+ def test_default_bundle_without_optional_ocr_still_boots(self):
+  import subprocess,sys
+  target=stage(self.bundle,self.path/'no-ocr-release')
+  self.assertFalse((target/'backend/map_recognition.py').exists())
+  result=subprocess.run([sys.executable,'-B','-c',
+      'from backend.app import create_app; import sys; app=create_app(sys.argv[1],"http://127.0.0.1:8989"); print("BOOT_OK")',
+      str(self.path/'fresh-accounts')],cwd=target,capture_output=True,text=True,encoding='utf-8')
+  self.assertEqual(result.returncode,0,result.stderr)
+  self.assertIn('BOOT_OK',result.stdout)
+ def test_native_components_are_complete_but_historical_packages_still_verify(self):
+  from production_release_tools import MINI_FILES,manifest
+  import json
+  contents,_=read_bundle(self.bundle)
+  self.assertTrue(set(MINI_FILES)<=set(contents))
+  old={n:raw for n,raw in contents.items() if n not in MINI_FILES}
+  def archive(name,items):
+   path=self.path/name
+   with zipfile.ZipFile(path,'w') as z:
+    for n,raw in items.items():z.writestr(n,raw)
+    z.writestr('manifest.json',json.dumps(manifest(items,{'fixture':True})))
+   return path
+  with self.assertRaisesRegex(ValueError,'原生适配组件'):
+   read_bundle(archive('new-app-missing-native.zip',old))
+  old['backend/app.py']=b'# historical fixture app with no native imports\n'
+  read_bundle(archive('historical-without-native.zip',old))
+  partial=dict(contents);partial.pop(MINI_FILES[0])
+  with self.assertRaises(ValueError):read_bundle(archive('partial-native.zip',partial))
  def test_selection_core_required_by_new_pages_and_old_bundles_still_verify(self):
   from production_release_tools import manifest
   import json

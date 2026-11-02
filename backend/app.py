@@ -126,7 +126,13 @@ class Store:
             db.execute('INSERT INTO attempts VALUES (?,1,?) ON CONFLICT(bucket) DO UPDATE SET count=count+1', (key, now+600))
 
 
-def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None, mail_config=None, preview_source=None, writeback_lab=None, production=False, score_version_lab=None, score_state=None, contributions=False, feedback=False, notifications=False, usage=False, coverage=False, map_recognition=None):
+def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None, mail_config=None, preview_source=None, writeback_lab=None, production=False, score_version_lab=None, score_state=None, contributions=False, feedback=False, notifications=False, usage=False, coverage=False, map_recognition=None, mini_config=None):
+    if mini_config is not None:
+        from backend.mini_auth import load_config
+        if isinstance(mini_config, (str, Path)):
+            mini_config=load_config(mini_config)
+        if production and mini_config.get('fixture'):
+            raise ValueError('生产禁止使用fixture微信验证')
     recognition_service=None
     if map_recognition is not None:
         if production:
@@ -590,6 +596,13 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
         if writeback_lab is not None and name in ('gauntlet_data.json','cars.json'):
             return FileResponse(Path(preview_source)/name,headers={'Cache-Control':'no-store'})
         return FileResponse(ROOT/name)
+    from backend.mini_api import MiniGateway
+    if mini_config is not None and recognition_service is not None:
+        mini_root=mini_config['store'].root
+        if mini_root.is_relative_to(recognition_service.root) or recognition_service.root.is_relative_to(mini_root):
+            raise ValueError('原生会话与OCR队列必须使用互不包含的独立目录')
+    app.add_middleware(MiniGateway,config=mini_config,source=app.state,service=recognition_service,origin=origin,production=production)
+
     return app
 
 

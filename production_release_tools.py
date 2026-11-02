@@ -29,7 +29,9 @@ THEME_FILES=('theme.css',)
 SCOPED_FILES=('backend/score_scopes.py','backend/global_scores.py','backend/global_score_production.py','GLOBAL_SUBMISSIONS_DEPLOYMENT.md')
 COMPONENT_GROUPS=(SCOPED_FILES,COVERAGE_FILES,THEME_FILES,SCORE_FILES,COMMUNITY_FILES,CONTRIBUTION_FILES,FEEDBACK_FILES,GLOBAL_FILES,NOTIFICATION_FILES,USAGE_FILES)
 SELECTION_FILES=('selection_core.js',)
-APP_FILES=BASE_FILES+SCOPED_FILES+COVERAGE_FILES+THEME_FILES+SCORE_FILES+COMMUNITY_FILES+CONTRIBUTION_FILES+FEEDBACK_FILES+GLOBAL_FILES+NOTIFICATION_FILES+USAGE_FILES+SELECTION_FILES
+MINI_FILES=('backend/mini_auth.py','backend/mini_api.py','production/mini-config.example.json','production/mini.env.example','MINI_API_CONTRACT_20261102.md','MINI_DEPLOYMENT_20261102.md')
+COMPONENT_GROUPS=COMPONENT_GROUPS+(MINI_FILES,)
+APP_FILES=BASE_FILES+SCOPED_FILES+COVERAGE_FILES+THEME_FILES+SCORE_FILES+COMMUNITY_FILES+CONTRIBUTION_FILES+FEEDBACK_FILES+GLOBAL_FILES+NOTIFICATION_FILES+USAGE_FILES+SELECTION_FILES+MINI_FILES
 OCR_CODE_FILES=('backend/map_layout.py','backend/map_recognition.py','backend/map_ocr_engine.py','backend/map_ocr_worker.py',
  'backend/map_ocr_production.py','backend/map_ocr_supervisor.py','map_recognition.js','map_recognition.css',
  'production/ocr-models.json','production/ocr-assets.json','production/ocr-selfcheck.py','production/racepick-map-ocr.service',
@@ -68,6 +70,8 @@ def digest(raw):return hashlib.sha256(raw).hexdigest()
 def allowed(name):return name in APP_FILES or name in OCR_FILES or bool(re.fullmatch(r'wheels/[A-Za-z0-9_.+\-]+\.whl',name))
 
 def verify_selection(contents):
+ if b'from backend.mini_api import MiniGateway' in contents.get('backend/app.py',b'') and not set(MINI_FILES)<=set(contents):
+  raise ValueError('发布包缺少原生适配组件')
  # New pages must carry their dependency; historical pages/bundles remain verifiable.
  if re.search(rb'<script\b[^>]*\bsrc\s*=\s*[\"\'](?:\./)?selection_core\.js[\"\']',contents['index.html']) and 'selection_core.js' not in contents:
   raise ValueError('网页缺少共享选择核心')
