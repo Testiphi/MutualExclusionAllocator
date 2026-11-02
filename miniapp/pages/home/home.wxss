@@ -3,7 +3,7 @@
 .subtitle { font-size: 25rpx; font-weight: 400; color: #a9bad1; }
 .notice { border: 1rpx solid #b58a42; background: #342c1c; color: #f0d29b; padding: 18rpx; border-radius: 12rpx; margin-bottom: 20rpx; font-size: 24rpx; }
 .toolbar, .actions { display: flex; align-items: center; flex-wrap: wrap; gap: 14rpx; }
-.toolbar button { padding: 0 25rpx; }
+.toolbar button { width: auto; flex: 0 0 auto; padding: 18rpx 25rpx; margin: 0; }
 .card { background: #141f33; border: 1rpx solid #29374e; border-radius: 20rpx; padding: 24rpx; margin: 24rpx 0; }
 .section-title { font-weight: 600; margin-bottom: 22rpx; }
 .map-row { display: flex; align-items: center; gap: 10rpx; margin-bottom: 16rpx; }
@@ -18,13 +18,13 @@
 .search { height: 80rpx; padding: 0 18rpx; background: #0c1628; border-radius: 12rpx; margin: 18rpx 0; }
 .garage-list { height: 480rpx; }
 .car-row { display: flex; align-items: center; gap: 12rpx; margin-bottom: 12rpx; }
-.car-name { flex: 1; min-width: 0; padding: 0 12rpx; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.car-name { flex: 1; width: 0; min-width: 0; padding: 18rpx 12rpx; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .selected { color: #bfdaff; background: #234c87; }
 .oc { display: flex; align-items: center; font-size: 24rpx; }
 .oc switch { transform: scale(.75); transform-origin: right center; width: 90rpx; }
 .actions { margin-top: 20rpx; }
-.actions button { padding: 0 20rpx; }
+.actions button { width: auto; padding: 18rpx 20rpx; margin: 0; }
 .result-row { display: flex; justify-content: space-between; gap: 18rpx; padding: 18rpx 0; border-top: 1rpx solid #29374e; }
 .result-row text { min-width: 0; overflow-wrap: break-word; }
 .route-row { display: flex; flex-wrap: wrap; align-items: center; gap: 14rpx; margin-top: 14rpx; }
-.route-row button { padding: 0 18rpx; }
+.route-row button { width: auto; max-width: 100%; padding: 18rpx; margin: 0; }

@@ -13,7 +13,17 @@ node --test tests/test_allocator.js tests/test_allocator_pruning.js tests/test_r
 
 `prepare_miniapp.cjs` 根据 `shared-source.json` 从固定Git对象生成 `miniapp/shared/` 五个 CommonJS 模块及 SHA 清单，不读取网站dirty源码。加数据参数时，严格校验本地回执五文件SHA/长度，再生成 `generated/local-bundle.js`；客户端启动再次验证原始字节及国际三件套版本。两目录均忽略，不手动维护，不把生成数据代提交为正式冻结。
 
-开发者工具已安装到 `E:\Software\微信web开发者工具` 并运行，导入当前目录 `miniapp`。配置为 `touristappid` 本地占位、合法域名检查开启；工具对游客项目的实际限制需现场核验，不能代替真实 AppID 权限。CLI检测服务端口关闭，需用户手动在设置→安全设置开启服务端口后继续自动化。未固定或猜测基础库版本；当前用到的 chooseMedia 从 2.10.0 支持、安全随机数从 2.15.0 支持，隐私指南说明 2.32.3 以下缺少相应隐私拦截，最终最低版本须真机确认。
+开发者工具已安装到 `E:\Software\微信web开发者工具`，用户已开启服务端口。占位touristappid实际导入返回code10，已改为用户提供的项目AppID（非AppSecret）；合法域名检查保持开启。实际工具为2.02.2610302 Nightly、基础库3.17.5，390px模拟器已完成首轮验证。保持当前直连即可，不需要为本地计算开启系统代理；其他工具版本/基础库和真机仍待验证。
+
+后续复现本地工具自动化（先按官方说明在独立目录安装 `miniprogram-automator@0.13.0`；路径按本机填写）：
+
+```powershell
+& 'E:\Software\微信web开发者工具\cli.bat' open --project 'E:\hzz\work\MutualExclusionAllocator\miniprogram-v1\miniapp'
+& 'E:\Software\微信web开发者工具\cli.bat' auto --project 'E:\hzz\work\MutualExclusionAllocator\miniprogram-v1\miniapp' --auto-port 9420
+node tools/check_miniapp_devtools.cjs ../offline-evaluation/miniprogram-v1-20261102-03/automation/node_modules/miniprogram-automator ../offline-evaluation/miniprogram-v1-20261102-03/new-run
+```
+
+此脚本只连接本机模拟器，操作前保存两服local草稿，结束核对并恢复原值，不清理其他存储、不关闭工具、不执行预览/上传或真实OCR。记录见 `docs/MINIPROGRAM_DEVTOOLS_VERIFICATION_20261102.md`。
 
 本地数据模式下可手选真实地图、选车/改星/OC，修改SC开关或具体类型并生成真实共享计算结果。关闭/重开SC记忆选择，切区不丢其他区车辆/星级。原生OCR未接入时会明确报错，不返回mock识图；只有无数据mock模式返回脚本五槽。
 
