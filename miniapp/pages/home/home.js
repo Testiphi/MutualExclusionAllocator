@@ -8,7 +8,7 @@ const bundle = require('../../generated/local-bundle');
 const core = require('../../shared/selection_core');
 
 Page({
-  data: { ready:false, garageOpen: false, query: '', rows: [], cars: [], schemes: [], slotRows: [], schemeIndex:0, activeScheme:null },
+  data: { ready:false, garageOpen: false, query: '', rows: [], cars: [], schemes: [], slotRows: [], schemeIndex:0, activeScheme:null, dropdown:null },
   onLoad() {
     // Local bundle is byte-verified. This path never logs in or connects a server.
     let service;
@@ -43,6 +43,7 @@ Page({
     })) : [];
     const schemeIndex=this.lastResult===s.result && this.data.schemeIndex<schemes.length?this.data.schemeIndex:0;
     this.lastResult=s.result;
+    this.closeDropdown();
     this.setData({ ready:true, server: d.server, mode: s.mode, error: s.error, busy: s.busy,
       dirty: s.dirty, image: s.image, hasPending: !!s.pending,
       selectedCount: d.cars.length, zones: m.zones.map(x => x === 'zone4' ? '四区' : '五区'),
@@ -51,8 +52,42 @@ Page({
       schemes,schemeIndex,schemeOptions:schemes.map(x=>'方案 '+(x.index+1)),activeScheme:schemes[schemeIndex]||null });
   },
   onShow() { if (this.controller) this.controller.show(); },
-  onHide() { if (this.controller) this.controller.hide(); },
-  onUnload() { if (this.controller) this.controller.destroy(); },
+  onHide() { this.closeDropdown();if (this.controller) this.controller.hide(); },
+  onUnload() { this.closeDropdown();if (this.controller) this.controller.destroy(); },
+  onPageScroll() { this.closeDropdown(); },
+  closeDropdown() { this.dropdownGeneration=(this.dropdownGeneration||0)+1;if(this.data.dropdown)this.setData({dropdown:null}); },
+  blockDropdownScroll() {},
+  openDropdown(e) {
+    const {field,pending}=e.currentTarget.dataset,index=Number(e.currentTarget.dataset.index);
+    if(!Number.isInteger(index)||index<0||index>4||!['big','small'].includes(field))return;
+    const review=pending===true||pending==='true', target=review?this.state.pending:this.state.draft.maps;
+    if(!target || (field==='small'&&!target[index]))return;
+    const current=this.data.dropdown;
+    if(current&&current.index===index&&current.field===field&&current.pending===review){this.closeDropdown();return;}
+    this.closeDropdown();const ticket=this.dropdownGeneration;
+    const row=(review?this.data.slotRows:this.data.rows)[index];
+    const labels=field==='big'?row.bigs:row.smalls,selected=field==='big'?row.bigIndex:row.smallIndex;
+    const options=labels.map((label,value)=>({label,value,selected:value===selected,
+      disabled:field==='big'&&value>0&&target.some((m,i)=>i!==index&&m&&m.big===label)}));
+    const id=(review?'review-':'')+'map-'+index+'-'+field;
+    const info=typeof wx.getWindowInfo==='function'?wx.getWindowInfo():wx.getSystemInfoSync();
+    wx.createSelectorQuery().select('#'+id).boundingClientRect(rect=>{
+      if(!rect||ticket!==this.dropdownGeneration)return;
+      const width=Math.min(Math.max(rect.width,160),info.windowWidth-24);
+      const below=info.windowHeight-rect.bottom-12,above=rect.top-12;
+      const upwards=below<180&&above>below;
+      const maxHeight=Math.min(260,options.length*44,Math.max(44,(upwards?above:below)-10));
+      const left=Math.max(12,Math.min(rect.left,info.windowWidth-width-12));
+      const top=upwards?Math.max(12,rect.top-maxHeight-14):rect.bottom+4;
+      this.setData({dropdown:{index,field,pending:review,options,left,top,width,maxHeight,scrollTo:'dropdown-option-'+selected}});
+    }).exec();
+  },
+  chooseDropdown(e) {
+    const menu=this.data.dropdown,value=Number(e.currentTarget.dataset.value);
+    if(!menu||!Number.isInteger(value)||!menu.options[value]||menu.options[value].disabled)return;
+    this.closeDropdown();
+    this.selectMap({currentTarget:{dataset:{index:menu.index,field:menu.field,pending:menu.pending}},detail:{value}});
+  },
   switchServer(e) { this.controller.switchServer(e.currentTarget.dataset.server); },
   selectZone(e) { const i=e.currentTarget&&e.currentTarget.dataset.index;this.controller.setMode(this.state.model.zones[Number(i==null?e.detail.value:i)],this.state.draft.tier); },
   selectTier(e) { const i=e.currentTarget&&e.currentTarget.dataset.index;this.controller.setMode(this.state.draft.zone,this.state.model.tiers[Number(i==null?e.detail.value:i)]); },

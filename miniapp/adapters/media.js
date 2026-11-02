@@ -1,6 +1,7 @@
 'use strict';
 function createMedia(wx) {
   return {
+    // Direct album-only image selection: no action sheet, camera or video entry.
     choose: () => new Promise((resolve, reject) => wx.chooseMedia({
       count: 1, mediaType: ['image'], sourceType: ['album'], sizeType: ['original'],
       success(result) {
@@ -13,7 +14,7 @@ function createMedia(wx) {
       },
       fail(error) {
         if (/cancel/.test(error.errMsg || '')) resolve(null);
-        else reject(Error('无法选择图片，请检查相册权限'));
+        else reject(Error('无法打开相册，可继续手动选图'));
       }
     }))
   };

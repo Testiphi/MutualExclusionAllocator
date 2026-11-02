@@ -21,10 +21,10 @@
    <view class="card map-section">
     <view class="map-row" wx:for="{{rows}}" wx:key="index">
      <text class="number">{{item.index + 1}}</text>
-     <picker class="map-picker" range="{{item.bigs}}" value="{{item.bigIndex}}" data-index="{{item.index}}" data-field="big" bindchange="selectMap"><view class="select">{{item.big || '选择大地图'}}<text class="chevron">⌄</text></view></picker>
-     <picker class="map-picker" range="{{item.smalls}}" value="{{item.smallIndex}}" disabled="{{!item.big}}" data-index="{{item.index}}" data-field="small" bindchange="selectMap"><view class="select {{!item.big ? 'is-disabled' : ''}}">{{item.small || '选择小地图'}}<text class="chevron">⌄</text></view></picker>
+     <button id="map-{{item.index}}-big" class="map-picker map-trigger" data-index="{{item.index}}" data-field="big" bindtap="openDropdown"><view class="select">{{item.big || '选择大地图'}}<text class="chevron">⌄</text></view></button>
+     <button id="map-{{item.index}}-small" class="map-picker map-trigger" disabled="{{!item.big}}" data-index="{{item.index}}" data-field="small" bindtap="openDropdown"><view class="select {{!item.big ? 'is-disabled' : ''}}">{{item.small || '选择小地图'}}<text class="chevron">⌄</text></view></button>
     </view>
-    <view class="recognition-entry"><button wx:if="{{server === 'cn'}}" bindtap="chooseImage">地图识别</button><text class="muted">{{server === 'cn' ? '仅游戏截图，不支持拍屏照片' : '国际服暂未开放识图'}}</text></view>
+    <view class="recognition-entry"><button wx:if="{{server === 'cn'}}" bindtap="chooseImage">地图识别</button><text class="muted">{{server === 'cn' ? '仅支持能清晰看到五张地图中文名的游戏截图，不支持拍屏照片。' : '国际服暂未开放识图'}}</text></view>
     <view wx:if="{{image}}" class="recognition">
      <image src="{{image}}" mode="widthFix" class="preview" />
      <view class="actions"><button loading="{{busy}}" disabled="{{busy}}" bindtap="recognize">开始识别</button><button bindtap="cancelRecognition">取消</button></view>
@@ -33,8 +33,8 @@
      <view class="section-title">核对地图</view>
      <view class="map-row" wx:for="{{slotRows}}" wx:key="index">
       <text class="number">{{item.index + 1}}</text>
-      <picker class="map-picker" range="{{item.bigs}}" value="{{item.bigIndex}}" data-index="{{item.index}}" data-field="big" data-pending="{{true}}" bindchange="selectMap"><view class="select">{{item.big || '选择大地图'}}<text class="chevron">⌄</text></view></picker>
-      <picker class="map-picker" range="{{item.smalls}}" value="{{item.smallIndex}}" disabled="{{!item.big}}" data-index="{{item.index}}" data-field="small" data-pending="{{true}}" bindchange="selectMap"><view class="select">{{item.small || '补充地图'}}<text class="chevron">⌄</text></view></picker>
+      <button id="review-map-{{item.index}}-big" class="map-picker map-trigger" data-index="{{item.index}}" data-field="big" data-pending="{{true}}" bindtap="openDropdown"><view class="select">{{item.big || '选择大地图'}}<text class="chevron">⌄</text></view></button>
+      <button id="review-map-{{item.index}}-small" class="map-picker map-trigger" disabled="{{!item.big}}" data-index="{{item.index}}" data-field="small" data-pending="{{true}}" bindtap="openDropdown"><view class="select">{{item.small || '补充地图'}}<text class="chevron">⌄</text></view></button>
      </view>
      <button class="primary" bindtap="applyRecognition">应用选图</button>
     </view>
@@ -75,5 +75,11 @@
     </view>
    </view>
   </view>
+ </view>
+ <view wx:if="{{dropdown}}" class="dropdown-backdrop" catchtap="closeDropdown" catchtouchmove="blockDropdownScroll"></view>
+ <view wx:if="{{dropdown}}" class="dropdown-menu" style="left:{{dropdown.left}}px;top:{{dropdown.top}}px;width:{{dropdown.width}}px;">
+  <scroll-view class="dropdown-list" scroll-y="{{true}}" scroll-into-view="{{dropdown.scrollTo}}" style="height:{{dropdown.maxHeight}}px;">
+   <button wx:for="{{dropdown.options}}" wx:key="value" id="dropdown-option-{{item.value}}" class="dropdown-option {{item.selected ? 'is-selected' : ''}} {{item.disabled ? 'is-unavailable' : ''}}" disabled="{{item.disabled}}" data-value="{{item.value}}" bindtap="chooseDropdown"><text>{{item.label}}</text><text wx:if="{{item.selected}}" class="dropdown-check">✓</text></button>
+  </scroll-view>
  </view>
 </view>
