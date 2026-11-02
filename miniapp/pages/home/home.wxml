@@ -4,7 +4,12 @@
   <view class="subtitle">帕累托最优 · 擂台选车</view>
   <view wx:if="{{mode === 'mock'}}" class="notice">本地联调 · 模拟目录与结果，非真实计算 / OCR</view>
   <view wx:if="{{mode === 'local'}}" class="notice">本地计算 · 数据未冻结 · 识图尚未接入</view>
+  <view wx:if="{{mode === 'native-fixture'}}" class="notice">本地接口联调 · fixture身份，非真实微信鉴权</view>
+  <view wx:if="{{initializing}}" class="notice">正在验证会话与数据…</view>
+  <view wx:if="{{serviceStatus.message}}" class="notice">{{serviceStatus.message}}</view>
+  <button wx:if="{{serviceStatus.online === false}}" disabled="{{busy}}" bindtap="reconnect">重新连接</button>
   <view wx:if="{{error}}" class="error">{{error}}</view>
+  <button wx:if="{{connectionFailed}}" bindtap="reconnect">重新连接</button>
   <view wx:if="{{ready}}">
    <view class="toolbar">
     <view class="mode-row">
@@ -27,7 +32,7 @@
     <view class="recognition-entry"><button wx:if="{{server === 'cn'}}" bindtap="chooseImage">地图识别</button><text class="muted">{{server === 'cn' ? '仅支持能清晰看到五张地图中文名的游戏截图，不支持拍屏照片。' : '国际服暂未开放识图'}}</text></view>
     <view wx:if="{{image}}" class="recognition">
      <image src="{{image}}" mode="widthFix" class="preview" />
-     <view class="actions"><button loading="{{busy}}" disabled="{{busy}}" bindtap="recognize">开始识别</button><button bindtap="cancelRecognition">取消</button></view>
+     <view class="actions"><button wx:if="{{!serviceStatus.canRetry}}" loading="{{busy}}" disabled="{{busy}}" bindtap="recognize">开始识别</button><button wx:if="{{serviceStatus.canRetry}}" loading="{{busy}}" disabled="{{busy}}" bindtap="retryRecognition">继续查询</button><button bindtap="cancelRecognition">取消</button></view>
     </view>
     <view wx:if="{{hasPending}}" class="recognition">
      <view class="section-title">核对地图</view>
@@ -43,12 +48,14 @@
     <button class="garage-heading" bindtap="toggleGarage"><view>本机车库<text class="garage-count">已选 {{selectedCount}} 辆</text></view><text class="muted">{{garageOpen ? '收起 ▴' : '展开 ▾'}}</text></button>
     <view class="actions"><button bindtap="save">保存车库</button><button bindtap="restore">恢复已存</button><text wx:if="{{dirty}}" class="save-status">尚未保存</text></view>
     <view wx:if="{{garageOpen}}">
+     <view class="actions garage-tools"><button data-action="select-all" bindtap="selectAll">全部点亮</button><button data-action="clear-all" bindtap="clearAll">全部清空</button><button data-action="sort" bindtap="cycleSort">{{sortLabel}}</button></view>
      <input class="search" placeholder="搜索车辆" placeholder-class="muted" value="{{query}}" bindinput="search" />
+     <view class="class-filter"><button wx:for="{{classes}}" wx:key="*this" class="{{carClass === item ? 'active' : ''}}" data-value="{{item}}" bindtap="filterClass">{{item || '全部'}}</button></view>
      <scroll-view scroll-y="{{true}}" class="garage-list">
       <view class="car-grid">
        <view wx:for="{{cars}}" wx:key="id" class="car-row {{item.selected ? 'selected' : ''}}">
         <button class="car-name" data-id="{{item.id}}" bindtap="toggleCar">{{item.label}}</button>
-        <picker class="star-picker" range="{{item.stars}}" value="{{item.starIndex}}" data-id="{{item.id}}" bindchange="selectStars"><view class="star-select">★{{item.stars[item.starIndex]}}</view></picker>
+        <button id="star-{{index}}" class="star-picker" data-id="{{item.id}}" data-anchor="{{index}}" bindtap="openStars"><view class="star-select">★{{item.stars[item.starIndex]}}</view></button>
         <button wx:if="{{item.ocAllowed}}" class="oc-toggle {{item.oc ? 'oc-on' : ''}}" data-id="{{item.id}}" bindtap="toggleOc">OC</button>
        </view>
       </view>
@@ -60,13 +67,13 @@
     <view class="section-title muted">特殊跑法</view>
     <view wx:for="{{routes}}" wx:key="key" class="route-row {{item.enabled ? 'is-on' : ''}}">
      <button data-key="{{item.key}}" bindtap="toggleRoute">{{item.label}} {{item.enabled ? '◉' : '○'}}</button>
-     <picker wx:if="{{item.showTypes}}" range="{{item.options}}" value="{{item.optionIndex}}" data-key="{{item.key}}" bindchange="selectRoute"><view class="route-select">{{item.options[item.optionIndex]}} ⌄</view></picker>
+     <button wx:if="{{item.showTypes}}" id="route-{{index}}" data-index="{{index}}" class="route-selector" bindtap="openRoute"><view class="route-select">{{item.options[item.optionIndex]}} ⌄</view></button>
     </view>
    </view>
    <view class="action"><button class="primary recommend-btn" loading="{{busy}}" disabled="{{busy}}" bindtap="compute">生成方案</button></view>
    <view wx:if="{{activeScheme}}" class="card results">
     <view class="result-heading"><text>方案</text><text class="badge">{{schemes.length}}</text><text wx:if="{{activeScheme.totalText !== '—'}}" class="muted total">{{activeScheme.totalText}}</text></view>
-    <picker wx:if="{{schemes.length > 1}}" range="{{schemeOptions}}" value="{{schemeIndex}}" bindchange="selectScheme"><view class="select scheme-select">{{schemeOptions[schemeIndex]}}<text class="chevron">⌄</text></view></picker>
+    <button wx:if="{{schemes.length > 1}}" id="scheme-trigger" class="scheme-trigger" bindtap="openScheme"><view class="select scheme-select">{{schemeOptions[schemeIndex]}}<text class="chevron">⌄</text></view></button>
     <view class="result-grid">
      <view wx:for="{{activeScheme.rows}}" wx:for-item="row" wx:key="index" class="result-row">
       <view class="result-map">{{row.map}}</view><view class="result-big">{{row.big || '—'}}</view>

@@ -181,7 +181,7 @@ test('actual native page JS handlers drive five manual maps and garage, then ren
   const file=path.resolve(__dirname,'../miniapp/pages/home/home.js'); let config;
   const values=new Map(); const wx={getStorageSync:k=>values.get(k),setStorageSync:(k,v)=>values.set(k,v)};
   vm.runInNewContext(fs.readFileSync(file,'utf8'),{Page:x=>{config=x;},wx,
-    require:x=>x==='../../generated/local-bundle'?null:require(path.resolve(path.dirname(file),x))},{filename:file});
+    require:x=>x==='../../generated/native-config'?{enabled:false}:x==='../../generated/local-bundle'?null:require(path.resolve(path.dirname(file),x))},{filename:file});
   const page={...config,data:structuredClone(config.data),setData(x){Object.assign(this.data,x);}}; page.onLoad();
   const event=(index,field,value)=>({currentTarget:{dataset:{index,field}},detail:{value}});
   for(let i=0;i<5;i++){page.selectMap(event(i,'big',i+1));page.selectMap(event(i,'small',1));}

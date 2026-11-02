@@ -1,4 +1,11 @@
 'use strict';
+const {decodeUtf8}=require('./hash');
+function responseJSON(response) {
+  const data=response.data;
+  if(typeof data==='string')return JSON.parse(data);
+  if(data instanceof ArrayBuffer||ArrayBuffer.isView(data)){if(data.byteLength>2*1024*1024)throw Error('响应超过客户端大小限制');return JSON.parse(decodeUtf8(data));}
+  throw Error('响应格式无效');
+}
 // Low-level only: no guessed mini routes, no production URL, no automatic retry.
 function createTransport(wx, { baseURL, enabled = false, allowLocal = false } = {}) {
   const valid = typeof baseURL === 'string' &&
@@ -20,12 +27,16 @@ function createTransport(wx, { baseURL, enabled = false, allowLocal = false } = 
           done();
           if (response.statusCode === 401) token = null;
           if (response.statusCode < 200 || response.statusCode >= 300) {
-            const error = Error('请求失败（' + response.statusCode + '）');
-            error.status = response.statusCode; reject(error); return;
+            let body;try{body=responseJSON(response);}catch(_){}
+            const error = Error(body&&typeof body.detail==='string'?body.detail.slice(0,200):'请求失败（' + response.statusCode + '）');
+            error.status = response.statusCode;error.code=body&&body.code;
+            const headers=response.header||{},key=Object.keys(headers).find(k=>k.toLowerCase()==='retry-after'),seconds=key===undefined?NaN:Number(headers[key]);
+            if(Number.isFinite(seconds)&&seconds>0)error.retryAfterMs=seconds*1000;
+            reject(error); return;
           }
           resolve(response);
         },
-        fail() { done(); reject(Error('网络请求未完成，请重试')); }
+        fail(reason) { done();const error=Error('网络请求未完成，请重试');error.nativeReason=reason&&reason.errMsg?String(reason.errMsg).slice(0,240):'';reject(error); }
       };
       if (upload) {
         // wx sets the multipart boundary; callers must not set Content-Type.
@@ -43,4 +54,4 @@ function createTransport(wx, { baseURL, enabled = false, allowLocal = false } = 
     upload: (path, options) => start(path, options, true)
   };
 }
-module.exports = { createTransport };
+module.exports = { createTransport, responseJSON };

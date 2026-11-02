@@ -28,11 +28,12 @@ function createController({ service, storage, media, render }) {
   function publish() {
     render({ draft: clone(draft), model: clone(model), error, busy, result,
       pending: pending && clone(pending), image: image && image.path, dirty,
-      mode: service.mode, storageBlocked: blocked });
+      mode: service.mode, storageBlocked: blocked,serviceStatus:service.status?service.status():null });
   }
-  function invalidate(preserveMedia = false) {
+  function invalidate(preserveMedia = false,preserveTask = false) {
     if (!preserveMedia) mediaEpoch++;
-    epoch++; busy = false; result = null; pending = null; service.cancel();
+    epoch++; busy = false; result = null; pending = null;
+    if(preserveTask&&service.suspend)service.suspend();else service.cancel();
   }
   function change(fn) {
     invalidate(); error = '';
@@ -71,23 +72,26 @@ function createController({ service, storage, media, render }) {
       image = value; publish();
     } catch (e) { if (ticket === mediaEpoch) { error = e.message; publish(); } }
   }
-  async function recognize() {
+  function acceptRecognition(value) {
+    if(value.server!==draft.server||value.version!==model.version||!Array.isArray(value.slots)||value.slots.length!==5)throw Error('识别结果目录已变化，请重试');
+    pending=value.slots.map(x=>x&&model.maps.some(m=>m.big===x.big&&m.small===x.small)?x:null);
+  }
+  async function recognize(retry=false) {
     if (!image || busy || draft.server !== 'cn') return;
-    invalidate(); const ticket = epoch, version = model.version;
+    if(retry){epoch++;pending=null;result=null;}else invalidate();
+    const ticket = epoch, version = model.version;
     busy = true; error = ''; publish();
     try {
-      const value = await service.recognize({ ...image, server: draft.server, version });
+      const value = await (retry?service.retryRecognition():service.recognize({ ...image, server: draft.server, version }));
       if (ticket !== epoch || !visible) return;
-      if (value.server !== draft.server || value.version !== model.version ||
-          !Array.isArray(value.slots) || value.slots.length !== 5) throw Error('识别结果目录已变化，请重试');
-      // Unknown/ambiguous slots stay empty. Applying still needs explicit confirmation.
-      pending = value.slots.map(x => x && model.maps.some(m => m.big === x.big && m.small === x.small) ? x : null);
+      acceptRecognition(value);
     } catch (e) { if (ticket === epoch) error = e.message; }
     finally { if (ticket === epoch) { busy = false; publish(); } }
   }
   load('cn'); publish();
   return {
-    save, compute, chooseImage, recognize,
+    save, compute, chooseImage, recognize,retryRecognition:()=>recognize(true),
+    async reconnect() {if(!service.reconnect)return;invalidate();error='';busy=true;publish();const ticket=epoch;try{await service.reconnect();if(ticket===epoch)refresh();}catch(e){if(ticket===epoch)error=e.message;}finally{if(ticket===epoch){busy=false;publish();}}},
     setMode(zone, tier) { change(() => { draft.zone = zone; draft.tier = tier; }); },
     setMap(index, map) {
       if (!Number.isInteger(index) || index < 0 || index > 4) return;
@@ -99,13 +103,18 @@ function createController({ service, storage, media, render }) {
     setCar(id, selected) { if (model.cars.some(x => x.id === id)) change(() => {
       draft.cars = draft.cars.filter(x => x !== id); if (selected) draft.cars.push(id);
     }); },
+    setCars(ids,selected) {const targets=new Set(ids.filter(id=>model.cars.some(c=>c.id===id)));change(()=>{const next=new Set(draft.cars);for(const id of targets)if(selected)next.add(id);else next.delete(id);draft.cars=[...next];});},
     setStars(id, stars) { if (model.cars.some(x => x.id === id && x.stars.includes(stars))) change(() => { draft.stars[id] = stars; }); },
     setOc(id, value) { if (model.cars.some(x => x.id === id && x.ocAllowed)) change(() => { draft.oc[id] = value === true; }); },
     setRoute(key, value) {
       const route = (model.routes || []).find(x=>x.key===key);
       if (route && (value==='off' || value==='all' || route.types.includes(value))) change(()=>{draft.routes[key]=value;});
     },
-    restore() { invalidate(); error = ''; load(draft.server); publish(); },
+    restore() {
+      const current={maps:clone(draft.maps),zone:draft.zone,tier:draft.tier,routes:clone(draft.routes)};
+      invalidate();error='';load(draft.server);Object.assign(draft,current);refresh();
+      dirty=saved!==null&&JSON.stringify(draft)!==JSON.stringify(saved);publish();
+    },
     switchServer(server) {
       if (!['cn', 'global'].includes(server) || server === draft.server) return;
       if (!save()) return;
@@ -119,14 +128,17 @@ function createController({ service, storage, media, render }) {
       if (!pending || pending.some(x => !x || !model.maps.some(m => m.big === x.big && m.small === x.small)) || new Set(pending.map(x => x.big)).size !== 5) {
         error = '请补齐五张不同大地图'; publish(); return;
       }
-      const maps = clone(pending); change(() => { draft.maps = maps; }); image = null; publish();
+      const maps = clone(pending),ticket=epoch;
+      const apply=()=>{if(ticket!==epoch)return;change(()=>{draft.maps=maps;});image=null;publish();};
+      if(service.verifyRecognition){busy=true;publish();return service.verifyRecognition().then(apply).catch(e=>{if(ticket===epoch){error=e.message;busy=false;publish();}});}
+      apply();
     },
     cancelRecognition() { invalidate(); image = null; publish(); },
-    hide() { visible = false; invalidate(true); if (dirty) save(); },
+    hide() { visible = false; invalidate(true,true); if (dirty) save(); },
     async show() {
       visible = true; const ticket = ++epoch;
-      try { await service.resume(); if (ticket === epoch) { refresh(); publish(); } }
-      catch (e) { if (ticket === epoch) { error = e.message; publish(); } }
+      try { const value=await service.resume(); if (ticket === epoch) { refresh();if(value&&draft.server==='cn')acceptRecognition(value);publish(); } }
+      catch (e) { if (ticket === epoch) { error = e.message;refresh();publish(); } }
     },
     destroy() { visible = false; invalidate(); image = null; }
   };

@@ -26,7 +26,7 @@ function createRecognitionJobs({api,createKey,currentBinding,now=Date.now,wait=m
   }
   function result(a,job) {
     const r=job.result;
-    if(!r||r.schema_version!==1||r.server!==a.binding.server||r.catalog_version!==a.binding.version||!['complete','partial'].includes(r.status)||!Array.isArray(r.slots)||r.slots.length!==5||r.slots.some((s,i)=>!s||s.slot!==i+1||!['matched','ambiguous','unresolved'].includes(s.state)))throw error('识别五槽结果格式无效','protocol');
+    if(!r||r.schema_version!==1||r.server!==a.binding.server||r.catalog_version!==a.binding.version||!['complete','partial','rejected'].includes(r.status)||!Array.isArray(r.slots)||r.slots.length!==5||r.slots.some((s,i)=>!s||s.slot!==i+1||!['matched','ambiguous','unresolved'].includes(s.state)))throw error('识别五槽结果格式无效','protocol');
     const slots=r.slots.map(s=>{
       if(s.state!=='matched')return null;
       if(!a.binding.catalog.some(m=>m.big===s.big&&m.small===s.small))throw error('识别地图不在当前目录中','protocol');
@@ -69,7 +69,8 @@ function createRecognitionJobs({api,createKey,currentBinding,now=Date.now,wait=m
         phase=upload?'uploading':'recovering';
         if(!upload&&!recover)throw error('上传响应未确认，需恢复原请求','uncertain');
         if(recover&&typeof api.recover!=='function')throw error('等待服务端提供原上传请求恢复能力，请勿重复上传','uncertain');
-        const value=await (upload?api.upload({path:a.path,size:a.size,request_key:a.key,...payload(a)}):api.recover({request_key:a.key,...payload(a)}));
+        const input={path:a.path,size:a.size,request_key:a.key,...payload(a),isCurrent:()=>a===attempt&&ticket===generation};
+        const value=await (upload?api.upload(input):api.recover(input));
         envelope(a,value);a.id=value.id;
         if(a!==attempt||ticket!==generation){if(a.cancelled)dispose(a);throw error('本次识别已停止','stopped');}
         check(a,ticket);

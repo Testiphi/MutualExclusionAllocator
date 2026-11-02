@@ -45,13 +45,18 @@
 .save-status { color:#d2a85b; font-size:23rpx; }
 .search { width:100%; height:74rpx; margin:20rpx 0 16rpx; padding:0 20rpx; border:1rpx solid #30363d; border-radius:14rpx; background:#0d1117; font-size:25rpx; }
 .garage-list { height:400rpx; padding:12rpx; border:1rpx solid #21262d; border-radius:18rpx; background:#0d1117; }
-.car-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12rpx; }
-.car-row { display:flex; align-items:center; min-width:0; padding:0 8rpx 0 0; border:1rpx solid #30363d; border-radius:12rpx; background:#21262d; }
+.car-grid { display:flex; flex-wrap:wrap; align-items:flex-start; gap:10rpx; }
+.car-row { display:inline-flex; align-items:center; max-width:100%; min-width:0; padding:0 8rpx 0 0; border:1rpx solid #30363d; border-radius:12rpx; background:#21262d; }
 .car-row.selected { background:#1f3a5f; border-color:#58a6ff; }
-.car-row .car-name { flex:1; width:0; min-width:0; margin:0; padding:16rpx 10rpx 16rpx 14rpx; border:0; border-radius:10rpx; background:transparent; text-align:left; font-size:25rpx; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.car-row .car-name { flex:0 1 auto; width:auto; min-width:0; margin:0; padding:10rpx 4rpx 10rpx 14rpx; border:0; border-radius:10rpx; background:transparent; text-align:left; font-size:25rpx; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .selected .car-name { color:#58a6ff; font-weight:600; }
-.star-picker { flex-shrink:0; }
-.star-select { padding:14rpx 6rpx; color:#e3b341; font-size:21rpx; }
+.car-row .star-picker { flex-shrink:0; width:auto; padding:0; border:0; margin:0; background:transparent; }
+.star-select { padding:10rpx 6rpx; color:#e3b341; font-size:21rpx; }
+.class-filter { display:flex; flex-wrap:wrap; gap:10rpx; margin:0 0 16rpx; }
+.class-filter button { width:auto; margin:0; padding:6rpx 18rpx; color:#8b949e; font-size:23rpx; }
+.class-filter .active { color:#58a6ff; background:#1f3a5f; border-color:#58a6ff; }
+.route-row .route-selector { padding:0; }
+.scheme-trigger { width:100%; padding:0; margin:0; border:0; text-align:left; background:transparent; }
 .car-row .oc-toggle { flex-shrink:0; width:38rpx; margin:0 0 0 4rpx; padding:4rpx 0; border-radius:5rpx; border-color:#4d5869; color:#8290a3; background:#182331; font-size:17rpx; line-height:1.4; }
 .car-row .oc-on { color:#fff0a5; border-color:#e7c15b; background:#8d6b16; }
 .empty-search { padding:36rpx 12rpx; color:#6e7681; text-align:center; font-size:25rpx; }

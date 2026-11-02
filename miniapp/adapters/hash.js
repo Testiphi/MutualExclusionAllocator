@@ -51,4 +51,16 @@ function sha256(raw) {
   }
   return h.map(x => (x >>> 0).toString(16).padStart(8, '0')).join('');
 }
-module.exports = { utf8, sha256 };
+function decodeUtf8(raw) {
+  const b=raw instanceof ArrayBuffer?new Uint8Array(raw):new Uint8Array(raw.buffer,raw.byteOffset,raw.byteLength),out=[];
+  for(let i=0;i<b.length;) {
+    const a=b[i++];let c,n,min;
+    if(a<128){c=a;n=0;min=0;}else if(a>=194&&a<=223){c=a&31;n=1;min=128;}else if(a>=224&&a<=239){c=a&15;n=2;min=2048;}else if(a>=240&&a<=244){c=a&7;n=3;min=65536;}else throw Error('响应UTF-8无效');
+    if(i+n>b.length)throw Error('响应UTF-8不完整');
+    for(let j=0;j<n;j++){const x=b[i++];if((x&192)!==128)throw Error('响应UTF-8无效');c=(c<<6)|(x&63);}
+    if(c<min||c>1114111||(c>=55296&&c<=57343))throw Error('响应UTF-8无效');
+    out.push(c<65536?String.fromCharCode(c):String.fromCharCode(55296+((c-65536)>>10),56320+((c-65536)&1023)));
+  }
+  return out.join('');
+}
+module.exports = { utf8, sha256, decodeUtf8 };

@@ -1,7 +1,7 @@
 'use strict';
 // Separate namespaces for mock/real and each server. No browser or account access.
 function createStorage(wx, namespace) {
-  if (!['mock', 'local', 'native'].includes(namespace)) throw Error('无效的存储空间');
+  if (!['mock', 'local', 'native', 'native-fixture'].includes(namespace)) throw Error('无效的存储空间');
   const key = server => {
     if (!['cn', 'global'].includes(server)) throw Error('无效服别');
     return 'racepick.mini.' + namespace + '.draft.v1.' + server;

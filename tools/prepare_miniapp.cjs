@@ -33,5 +33,14 @@ if (receiptIndex !== -1) {
     bundle.files[name] = new TextDecoder('utf-8', { fatal: true }).decode(bytes);
   }
   fs.writeFileSync(path.join(generated,'local-bundle.js'),'module.exports = ' + JSON.stringify(bundle) + ';\n');
-  console.log('已生成未冻结本地数据，仅用于本机计算；未接入真实OCR');
+  console.log('已生成未冻结本地数据；原生连接模式以generated/native-config.js为准');
 } else fs.writeFileSync(path.join(generated,'local-bundle.js'),'module.exports = null;\n');
+const originIndex=process.argv.indexOf('--native-origin');
+let native={enabled:false};
+if(originIndex!==-1) {
+  const value=flag=>{const i=process.argv.indexOf(flag);return i<0?undefined:process.argv[i+1];};
+  const origin=value('--native-origin'),fixtureCode=value('--fixture-code'),fixtureKey=value('--fixture-key');
+  if(fixtureCode||fixtureKey){if(!/^http:\/\/127\.0\.0\.1:\d+$/.test(origin)||!/^fixture-code-[12]$/.test(fixtureCode)||!/^[\w-]{16,80}$/.test(fixtureKey))throw Error('fixture配置无效');native={enabled:true,kind:'fixture',origin,fixtureCode,fixtureKey};}
+  else {if(!/^https:\/\/[a-z0-9.-]+(?::\d+)?$/i.test(origin))throw Error('平台模式必须使用HTTPS');native={enabled:true,kind:'platform',origin};}
+}
+fs.writeFileSync(path.join(generated,'native-config.js'),'module.exports = '+JSON.stringify(native)+';\n');

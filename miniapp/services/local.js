@@ -1,5 +1,6 @@
 'use strict';
 const { verifyLocalBundle } = require('../adapters/snapshot');
+const {enrichModel}=require('../lib/garage_view');
 function createLocalService(core, bundle) {
   const snapshots = verifyLocalBundle(bundle);
   const contexts = {}, known = {};
@@ -12,7 +13,7 @@ function createLocalService(core, bundle) {
   function context(draft) { if (!contexts[draft.server]) throw Error('无效服别'); return contexts[draft.server]; }
   return {
     mode:'local',
-    model: draft=>({...context(draft).getModel(draft),knownCarIds:known[draft.server]}),
+    model: draft=>({...enrichModel(context(draft).getModel(draft),snapshots[draft.server],draft,core),knownCarIds:known[draft.server]}),
     calculate: draft=>context(draft).calculate(draft),
     async recognize() { throw Error('原生识图接口尚未接入，请先手动选图'); },
     async resume() {}, cancel() {}

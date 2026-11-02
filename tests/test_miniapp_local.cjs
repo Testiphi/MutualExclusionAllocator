@@ -75,7 +75,7 @@ test('outdated saved maps and modes recover before shared core validation withou
 test('actual page handlers use real maps, retain route selection and render shared result',async()=>{
   const file=path.resolve(__dirname,'../miniapp/pages/home/home.js');let config;
   const values=new Map(),wx={getStorageSync:k=>values.get(k),setStorageSync:(k,v)=>values.set(k,v)};
-  vm.runInNewContext(fs.readFileSync(file,'utf8'),{Page:x=>{config=x;},wx,require:x=>require(path.resolve(path.dirname(file),x))});
+  vm.runInNewContext(fs.readFileSync(file,'utf8'),{Page:x=>{config=x;},wx,require:x=>x==='../../generated/native-config'?{enabled:false}:require(path.resolve(path.dirname(file),x))});
   const p={...config,data:structuredClone(config.data),setData(x){Object.assign(this.data,x);}};p.onLoad();
   const river=p.state.model.maps.find(x=>x.small==='河畔漂移');p.controller.setMap(0,river);p.controller.setCar('f5',true);
   const route=p.data.routes[0],key=route.key;p.selectRoute({currentTarget:{dataset:{key}},detail:{value:route.options.indexOf('稳定跳图')}});
@@ -87,7 +87,7 @@ test('actual page handlers use real maps, retain route selection and render shar
 test('website-style scheme selection keeps shared order and resets on input edits; mode and OC buttons work',async()=>{
   const file=path.resolve(__dirname,'../miniapp/pages/home/home.js');let config;
   const values=new Map(),wx={getStorageSync:k=>values.get(k),setStorageSync:(k,v)=>values.set(k,v)};
-  vm.runInNewContext(fs.readFileSync(file,'utf8'),{Page:x=>{config=x;},wx,require:x=>require(path.resolve(path.dirname(file),x))});
+  vm.runInNewContext(fs.readFileSync(file,'utf8'),{Page:x=>{config=x;},wx,require:x=>x==='../../generated/native-config'?{enabled:false}:require(path.resolve(path.dirname(file),x))});
   const p={...config,data:structuredClone(config.data),setData(x){Object.assign(this.data,x);}};p.onLoad();
   const selected=[];
   for(const map of p.state.model.maps)if(selected.length<5&&!selected.some(x=>x.big===map.big))selected.push(map);
@@ -102,4 +102,16 @@ test('website-style scheme selection keeps shared order and resets on input edit
   p.controller.switchServer('global');const oc=p.state.model.cars.find(c=>c.ocAllowed);assert.ok(oc);
   const event={currentTarget:{dataset:{id:oc.id}}};p.toggleOc(event);assert.equal(p.state.draft.oc[oc.id],true);
   p.toggleOc(event);assert.equal(p.state.draft.oc[oc.id],false);p.onUnload();
+});
+test('bulk garage actions use visible select/all-zone clear, restore retains maps and effective stars come from core',async()=>{
+ const file=path.resolve(__dirname,'../miniapp/pages/home/home.js');let config;
+ const values=new Map(),wx={getStorageSync:k=>values.get(k),setStorageSync:(k,v)=>values.set(k,v)};
+ vm.runInNewContext(fs.readFileSync(file,'utf8'),{Page:x=>{config=x;},wx,require:x=>x==='../../generated/native-config'?{enabled:false}:require(path.resolve(path.dirname(file),x))});
+ const p={...config,data:structuredClone(config.data),setData(x){Object.assign(this.data,x);}};p.onLoad();
+ p.search({detail:{value:'f5'}});p.selectAll();assert.deepEqual([...p.state.draft.cars].sort(),['f5','f5r']);p.save();
+ p.search({detail:{value:'f5r'}});p.clearAll();assert.equal(p.state.draft.cars.length,0);
+ const map=p.state.model.maps[3];p.controller.setMap(0,map);p.restore();assert.equal(p.state.draft.maps[0].small,map.small);assert.ok(p.state.draft.cars.includes('f5'));
+ p.controller.setStars('f5',6);p.selectZone({currentTarget:{dataset:{index:1}},detail:{}});p.search({detail:{value:'f5'}});
+ const car=p.data.cars.find(c=>c.id==='f5');assert.equal(car.stars[car.starIndex],3);assert.equal(p.state.draft.stars.f5,6);
+ p.onUnload();
 });
