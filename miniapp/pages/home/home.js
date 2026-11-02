@@ -8,7 +8,7 @@ const bundle = require('../../generated/local-bundle');
 const core = require('../../shared/selection_core');
 
 Page({
-  data: { ready:false, garageOpen: false, query: '', rows: [], cars: [], schemes: [], slotRows: [] },
+  data: { ready:false, garageOpen: false, query: '', rows: [], cars: [], schemes: [], slotRows: [], schemeIndex:0, activeScheme:null },
   onLoad() {
     // Local bundle is byte-verified. This path never logs in or connects a server.
     let service;
@@ -36,23 +36,27 @@ Page({
       const saved = d.routes[x.key], value = saved === 'off' ? 'off' : x.types.includes(saved) ? saved : 'all';
       return {...x, enabled:value!=='off', showTypes:value!=='off'&&x.types.length>1, options:['全部'].concat(x.types), optionIndex:value==='all'||value==='off'?0:x.types.indexOf(value)+1};
     });
+    const schemes = s.result ? s.result.schemes.map((scheme,index)=>({
+      index,totalText:scheme.total==null?'—':scheme.total.toFixed(3)+'秒',
+      rows:scheme.rows.map((r,i)=>({index:i,map:r.map||'未选地图',big:d.maps[i]&&d.maps[i].big||'',
+        car:r.car||'未分配',empty:r.car==null,timeText:r.time==null?'—':r.time.toFixed(3)+'秒'}))
+    })) : [];
+    const schemeIndex=this.lastResult===s.result && this.data.schemeIndex<schemes.length?this.data.schemeIndex:0;
+    this.lastResult=s.result;
     this.setData({ ready:true, server: d.server, mode: s.mode, error: s.error, busy: s.busy,
       dirty: s.dirty, image: s.image, hasPending: !!s.pending,
       selectedCount: d.cars.length, zones: m.zones.map(x => x === 'zone4' ? '四区' : '五区'),
       zoneIndex: m.zones.indexOf(d.zone), tiers: m.tiers, tierIndex: m.tiers.indexOf(d.tier),
       rows: d.maps.map(row), cars, routes, slotRows: s.pending ? s.pending.map(row) : [],
-      schemes: s.result ? s.result.schemes.map((scheme, index) => ({
-        index, totalText: scheme.total == null ? '—' : scheme.total.toFixed(3) + '秒',
-        rows: scheme.rows.map((r, i) => ({ index: i, map: r.map || '未选地图',
-          car: r.car || '未分配', timeText: r.time == null ? '—' : r.time.toFixed(3) + '秒' }))
-      })) : [] });
+      schemes,schemeIndex,schemeOptions:schemes.map(x=>'方案 '+(x.index+1)),activeScheme:schemes[schemeIndex]||null });
   },
   onShow() { if (this.controller) this.controller.show(); },
   onHide() { if (this.controller) this.controller.hide(); },
   onUnload() { if (this.controller) this.controller.destroy(); },
   switchServer(e) { this.controller.switchServer(e.currentTarget.dataset.server); },
-  selectZone(e) { this.controller.setMode(this.state.model.zones[Number(e.detail.value)], this.state.draft.tier); },
-  selectTier(e) { this.controller.setMode(this.state.draft.zone, this.state.model.tiers[Number(e.detail.value)]); },
+  selectZone(e) { const i=e.currentTarget&&e.currentTarget.dataset.index;this.controller.setMode(this.state.model.zones[Number(i==null?e.detail.value:i)],this.state.draft.tier); },
+  selectTier(e) { const i=e.currentTarget&&e.currentTarget.dataset.index;this.controller.setMode(this.state.draft.zone,this.state.model.tiers[Number(i==null?e.detail.value:i)]); },
+  selectScheme(e) { const index=Number(e.detail.value);if(Number.isInteger(index)&&this.data.schemes[index])this.setData({schemeIndex:index,activeScheme:this.data.schemes[index]}); },
   selectMap(e) {
     const { index, field, pending } = e.currentTarget.dataset;
     const target = pending ? this.state.pending : this.state.draft.maps;
@@ -80,7 +84,7 @@ Page({
     const id = e.currentTarget.dataset.id, car = this.state.model.cars.find(x => x.id === id);
     this.controller.setStars(id, car.stars[Number(e.detail.value)]);
   },
-  toggleOc(e) { this.controller.setOc(e.currentTarget.dataset.id, e.detail.value); },
+  toggleOc(e) { const id=e.currentTarget.dataset.id;this.controller.setOc(id,e.detail&&typeof e.detail.value==='boolean'?e.detail.value:!this.state.draft.oc[id]); },
   toggleRoute(e) {
     const key=e.currentTarget.dataset.key, value=this.state.draft.routes[key];
     const memoryKey=this.state.draft.server+':'+key;

@@ -84,3 +84,22 @@ test('actual page handlers use real maps, retain route selection and render shar
   await p.controller.compute();assert.equal(p.data.mode,'local');assert.equal(p.data.schemes[0].rows[0].timeText,'23.200秒');
   p.onUnload();
 });
+test('website-style scheme selection keeps shared order and resets on input edits; mode and OC buttons work',async()=>{
+  const file=path.resolve(__dirname,'../miniapp/pages/home/home.js');let config;
+  const values=new Map(),wx={getStorageSync:k=>values.get(k),setStorageSync:(k,v)=>values.set(k,v)};
+  vm.runInNewContext(fs.readFileSync(file,'utf8'),{Page:x=>{config=x;},wx,require:x=>require(path.resolve(path.dirname(file),x))});
+  const p={...config,data:structuredClone(config.data),setData(x){Object.assign(this.data,x);}};p.onLoad();
+  const selected=[];
+  for(const map of p.state.model.maps)if(selected.length<5&&!selected.some(x=>x.big===map.big))selected.push(map);
+  selected.forEach((map,i)=>p.controller.setMap(i,map));p.controller.setCar('f5',true);await p.controller.compute();
+  assert.ok(p.data.schemes.length>1);const before=JSON.stringify(p.data.schemes);
+  p.selectScheme({detail:{value:1}});assert.equal(p.data.activeScheme.index,1);assert.equal(JSON.stringify(p.data.schemes),before);
+  p.save();assert.equal(p.data.activeScheme.index,1);
+  p.controller.setStars('f5',5);assert.equal(p.data.activeScheme,null);assert.equal(p.data.schemeIndex,0);
+  await p.controller.compute();assert.equal(p.data.activeScheme.index,0);
+  p.selectTier({currentTarget:{dataset:{index:1}},detail:{}});assert.equal(p.state.draft.tier,'高手');
+  p.selectZone({currentTarget:{dataset:{index:1}},detail:{}});assert.equal(p.state.draft.zone,'zone4');
+  p.controller.switchServer('global');const oc=p.state.model.cars.find(c=>c.ocAllowed);assert.ok(oc);
+  const event={currentTarget:{dataset:{id:oc.id}}};p.toggleOc(event);assert.equal(p.state.draft.oc[oc.id],true);
+  p.toggleOc(event);assert.equal(p.state.draft.oc[oc.id],false);p.onUnload();
+});
