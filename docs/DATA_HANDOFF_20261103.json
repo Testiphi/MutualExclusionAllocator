@@ -1,0 +1,130 @@
+{
+  "date": "2026-11-03",
+  "base_commit": "82492772f7407412c63c973bc5c2e02be87dfba3",
+  "national_keys": 4516,
+  "international_full_keys": 733,
+  "international_runtime_entries": 694,
+  "national_saved_changes": 19,
+  "national_added": 12,
+  "national_faster": 6,
+  "national_slower_explicitly_confirmed": 1,
+  "global_saved_changes": 2,
+  "global_added": 1,
+  "global_faster": 1,
+  "cc850_rules": {
+    "zones": [
+      "五区",
+      "四区"
+    ],
+    "common_min": 3,
+    "zone5_max": 6,
+    "zone4_max": 3,
+    "default": 6
+  },
+  "no_extra_sync": true,
+  "ordinary_mirrors_added": 0,
+  "all_workbook_ledgers_equal": true,
+  "generator_byte_reproducible": true,
+  "validation_errors": [],
+  "native_excel_opened": false,
+  "committed": false,
+  "pushed": false,
+  "frozen": true,
+  "built": false,
+  "production_operations": false,
+  "archive": "E:\\hzz\\work\\MutualExclusionAllocator\\本地归档\\workbook-freeze-20261103-restart-01a17d0f",
+  "files": {
+    "E:\\hzz\\work\\MutualExclusionAllocator\\repo\\cars.json": {
+      "sha256": "ea42daedfdb73a4963e2e70c6cdf91deb29ae6bec5143b697e50d8c877961b17",
+      "bytes": 83653
+    },
+    "E:\\hzz\\work\\MutualExclusionAllocator\\repo\\gauntlet_data.json": {
+      "sha256": "2e8bf6ba763a64f24cd1e93be0afbaca8c77e24efcb9a96812952de800b018b6",
+      "bytes": 225341
+    },
+    "E:\\hzz\\work\\MutualExclusionAllocator\\数据源\\international-prep-20261023\\maintenance\\gauntlet_data_international_maintenance.json": {
+      "sha256": "cf49036d9ce89e2a1470c001ab1b28f7149afc5684ed395adeac56888be66420",
+      "bytes": 56443
+    },
+    "E:\\hzz\\work\\MutualExclusionAllocator\\数据源\\international-prep-20261023\\maintenance\\gauntlet_data_international.json": {
+      "sha256": "c7a2ada1d6f14994a6fde0cc6348a453d0ad0b23345aefa95e0d490a9b7d57f5",
+      "bytes": 54501
+    },
+    "E:\\hzz\\work\\MutualExclusionAllocator\\数据源\\international-prep-20261023\\maintenance\\maintenance-score-ledger.json": {
+      "sha256": "16031ca080264428e9882a1b4cc01467e68108aeb8b4846f0f3ec2ba559ff375",
+      "bytes": 785505
+    },
+    "E:\\hzz\\work\\MutualExclusionAllocator\\数据源\\international-prep-20261023\\maintenance\\score-ledger.json": {
+      "sha256": "773513cf2d2c98fc959d150cb182e8b5a7280a12d58acf5b84c6d224d9e7be75",
+      "bytes": 677267
+    },
+    "E:\\hzz\\work\\MutualExclusionAllocator\\数据源\\international-prep-20261023\\maintenance\\current-maintenance.json": {
+      "sha256": "6f8bdedc5b2f7d486732de6ce77fbb1a614abce74c19866b8ff3e9bfd7a9b163",
+      "bytes": 6886
+    },
+    "E:\\hzz\\work\\MutualExclusionAllocator\\数据源\\international-prep-20261023\\maintenance\\summary.json": {
+      "sha256": "b268c2a2d18e7817b9e8081de3b0e626b3f15717f68eb8c00aa7e46680ec617d",
+      "bytes": 4494
+    },
+    "E:\\hzz\\work\\MutualExclusionAllocator\\数据源\\international-prep-20261023\\maintenance\\validation.json": {
+      "sha256": "e829591c3e996c89a9fc20586dd097d83d87360044c0d6a40edfd052d2e97329",
+      "bytes": 50313
+    },
+    "E:\\hzz\\work\\MutualExclusionAllocator\\数据源\\international-prep-20261023\\maintenance\\workbook-matrices.json": {
+      "sha256": "28247ac8649e464abe77e6de88632c890b640244cb12fe77e2a641f89efb2057",
+      "bytes": 113283
+    },
+    "E:\\hzz\\work\\MutualExclusionAllocator\\repo\\gauntlet_data.xlsx": {
+      "sha256": "74e3d1e694ff463f4c0b148024c059435dfd2fb41fa1071f9ab66218862b2d4e",
+      "bytes": 123740
+    },
+    "E:\\hzz\\work\\MutualExclusionAllocator\\repo\\gauntlet_data_shared.xlsx": {
+      "sha256": "f8a1360231154ecfc0f56e8801eedc85b90fe25c7c0741ff42a3d18b6e337976",
+      "bytes": 142004
+    },
+    "E:\\hzz\\work\\MutualExclusionAllocator\\repo\\gauntlet_data.global.xlsx": {
+      "sha256": "6efb52d9dc56f103870ee1894072950cfa0025b543d79c4ccac954db2c9d3a2c",
+      "bytes": 40749
+    },
+    "E:\\hzz\\work\\MutualExclusionAllocator\\repo\\cars.global.json": {
+      "sha256": "6d35da66c9c0d2d7335b3e80d6a7351bbc494911a5b1d8dab0a0c2137cbc9759",
+      "bytes": 29852
+    },
+    "E:\\hzz\\work\\MutualExclusionAllocator\\repo\\gauntlet_data.global.json": {
+      "sha256": "79958b507b814fb0823e03aa8f97843fafe9b61a558c428336a4879587a33bd2",
+      "bytes": 133918
+    },
+    "E:\\hzz\\work\\MutualExclusionAllocator\\repo\\global-data-manifest.json": {
+      "sha256": "7e38469bc6bd6de5498bc1e38c16898c0a34eddb86ead72d610e0e1883e6dbe6",
+      "bytes": 1866
+    },
+    "E:\\hzz\\work\\MutualExclusionAllocator\\数据源\\international-prep-20261023\\maintenance\\SHA256SUMS.txt": {
+      "sha256": "7c1b31fdb9c981db52e83abaaa2dbea2b03c0e4b903437a545ca74655a6bfd94",
+      "bytes": 14780
+    }
+  },
+  "data_commit": null,
+  "freeze_id": "b57d97a8f4e484be69238ab0",
+  "targeted_tests_passed": 73,
+  "boot_smoke_passed": true,
+  "boot_smoke_initial_failure": "old fixed zone4 pool count55; actual56 after authorized cc850 addition",
+  "boot_smoke_test_only_data_assertions_adjusted": true,
+  "git_diff_check_passed": true,
+  "format_json_idempotent": true,
+  "final_keyed_value_differences": 0,
+  "freeze_manifest": "docs/DATA_FREEZE_20261103.json",
+  "freeze_manifest_sha256": "940f8660585c495a780390b709dfd52e80f7610f57e0179c5da937c53c4e4282",
+  "source_archive": {
+    "path": "E:\\hzz\\work\\MutualExclusionAllocator\\本地归档\\workbook-freeze-20261103-restart-01a17d0f\\RacePick-DataFreeze-20261103.zip",
+    "sha256": "feddf28ce165da510a30936a1efe083b6d3725c3b4b43a7fc781b196957cb9d0",
+    "bytes": 576542,
+    "files": 34,
+    "all_members_size_and_hash_verified": true,
+    "kind": "maintenance data freeze, not a deployable application"
+  },
+  "supporting_test_file": {
+    "path": "tests/test_boot_smoke.js",
+    "sha256": "05340008d2c02d329cf1775e93f8b94abf7c0823bc169665e9b2762b2aef38a6",
+    "reason": "necessary approved vehicle-data assertion only"
+  }
+}

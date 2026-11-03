@@ -1,0 +1,44 @@
+{
+  "date": "2026-11-01",
+  "base_commit": "82492772f7407412c63c973bc5c2e02be87dfba3",
+  "national_keys": 4492,
+  "saved_workbook_changes": 9,
+  "saved_faster": 8,
+  "saved_added": 1,
+  "old_route_reclassified": 2,
+  "new_stable_route_scores": 4,
+  "ordinary_mirrors_added": 0,
+  "two_books_equal_json": true,
+  "global_and_rules_unchanged": true,
+  "other_dialogue_files_unchanged": true,
+  "validation_errors": [],
+  "native_excel_opened": false,
+  "committed": false,
+  "pushed": false,
+  "refrozen": false,
+  "built": false,
+  "production_operations": false,
+  "files": {
+    "gauntlet_data.json": {
+      "sha256": "f995c10cb7c49fd7082608582b198372697be03112f601268d854f1e4bf52329",
+      "bytes": 224326
+    },
+    "gauntlet_data.xlsx": {
+      "sha256": "8c4b901d6b593a17e61bd84bba50647678075a02562c6d524c8826f0d50e0171",
+      "bytes": 123575
+    },
+    "gauntlet_data_shared.xlsx": {
+      "sha256": "70b6dfdece00dda8fb3099144f38e59d95834e8d1eeb5aeb51ae8b92df0c5cdc",
+      "bytes": 141657
+    }
+  },
+  "archive": "E:\\hzz\\work\\MutualExclusionAllocator\\本地归档\\river-return-20261101-01a17d0f",
+  "targeted_tests_passed": 57,
+  "git_diff_check_passed": true,
+  "format_json_idempotent": true,
+  "final_keyed_value_and_structure_differences": 0,
+  "four_sc_sheets_shared_row_sets": true,
+  "stable_f5r6_column_verified": true,
+  "worksheet_xml_and_filter_references_verified": true,
+  "previous_freeze_contains_this_round": false
+}

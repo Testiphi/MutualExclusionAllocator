@@ -1,0 +1,123 @@
+{
+  "schema": "racepick.local-working-tree-data-freeze.v1",
+  "date": "2026-11-03",
+  "freeze_id": "b57d97a8f4e484be69238ab0",
+  "data_commit": null,
+  "repository_head_reference_only": "82492772f7407412c63c973bc5c2e02be87dfba3",
+  "runtime": {
+    "gauntlet_data.json": {
+      "sha256": "2e8bf6ba763a64f24cd1e93be0afbaca8c77e24efcb9a96812952de800b018b6",
+      "bytes": 225341,
+      "normalized_lf_sha256": "2e8bf6ba763a64f24cd1e93be0afbaca8c77e24efcb9a96812952de800b018b6",
+      "hash_basis": "current working-tree file bytes, not HEAD or index"
+    },
+    "cars.json": {
+      "sha256": "ea42daedfdb73a4963e2e70c6cdf91deb29ae6bec5143b697e50d8c877961b17",
+      "bytes": 83653,
+      "normalized_lf_sha256": "ea42daedfdb73a4963e2e70c6cdf91deb29ae6bec5143b697e50d8c877961b17",
+      "hash_basis": "current working-tree file bytes, not HEAD or index"
+    },
+    "cars.global.json": {
+      "sha256": "6d35da66c9c0d2d7335b3e80d6a7351bbc494911a5b1d8dab0a0c2137cbc9759",
+      "bytes": 29852,
+      "normalized_lf_sha256": "6d35da66c9c0d2d7335b3e80d6a7351bbc494911a5b1d8dab0a0c2137cbc9759",
+      "hash_basis": "current working-tree file bytes, not HEAD or index"
+    },
+    "gauntlet_data.global.json": {
+      "sha256": "79958b507b814fb0823e03aa8f97843fafe9b61a558c428336a4879587a33bd2",
+      "bytes": 133918,
+      "normalized_lf_sha256": "79958b507b814fb0823e03aa8f97843fafe9b61a558c428336a4879587a33bd2",
+      "hash_basis": "current working-tree file bytes, not HEAD or index"
+    },
+    "global-data-manifest.json": {
+      "sha256": "7e38469bc6bd6de5498bc1e38c16898c0a34eddb86ead72d610e0e1883e6dbe6",
+      "bytes": 1866,
+      "normalized_lf_sha256": "7e38469bc6bd6de5498bc1e38c16898c0a34eddb86ead72d610e0e1883e6dbe6",
+      "hash_basis": "current working-tree file bytes, not HEAD or index"
+    }
+  },
+  "national_keys": 4516,
+  "international_full_keys": 733,
+  "international_runtime_entries": 694,
+  "international_counts": {
+    "physical_cars": 48,
+    "tracks": 44,
+    "covered_tracks": 44,
+    "score_entries": 694,
+    "non_oc_entries": 673,
+    "oc_entries": 21,
+    "special_entries": 52,
+    "normal_entries": 642
+  },
+  "international_dataset_version": "9b83ddd062a4d4b0c15d51dc0eed323aabb8e599e3e9544bc91714b70a7a4259",
+  "cc850_rules": {
+    "zones": [
+      "五区",
+      "四区"
+    ],
+    "common_min": 3,
+    "zone5_max": 6,
+    "zone4_max": 3,
+    "default": 6
+  },
+  "national_changes_this_round": 19,
+  "international_changes_this_round": 2,
+  "ordinary_mirrors_added": 0,
+  "no_extra_zone_or_server_sync": true,
+  "targeted_python_tests_passed": 73,
+  "boot_smoke_passed": true,
+  "boot_smoke_data_assertion_updated": "zone4Cars55->56 and cc850 min3/zone4Max3; no application logic edit",
+  "source_snapshot_reproduces_runtime_bytes": true,
+  "native_excel_opened_this_round": false,
+  "frozen": true,
+  "freeze_scope": "Current validated working tree only; all approved previous local maintenance retained, no old pending candidates included.",
+  "source_archive": {
+    "path": "E:\\hzz\\work\\MutualExclusionAllocator\\本地归档\\workbook-freeze-20261103-restart-01a17d0f\\RacePick-DataFreeze-20261103.zip",
+    "sha256": "feddf28ce165da510a30936a1efe083b6d3725c3b4b43a7fc781b196957cb9d0",
+    "bytes": 576542,
+    "files": 34,
+    "all_members_size_and_hash_verified": true,
+    "kind": "maintenance data freeze, not a deployable application"
+  },
+  "committed": false,
+  "pushed": false,
+  "application_built": false,
+  "production_operations": false,
+  "code_commit": null,
+  "code_scope": "Functional development must separately select/validate a clean code checkout; repository HEAD is not the new data commit and is not selected as release code.",
+  "build_handoff": {
+    "runtime_whitelist": [
+      "gauntlet_data.json",
+      "cars.json",
+      "cars.global.json",
+      "gauntlet_data.global.json",
+      "global-data-manifest.json"
+    ],
+    "runtime_location": "E:\\hzz\\work\\MutualExclusionAllocator\\本地归档\\workbook-freeze-20261103-restart-01a17d0f\\freeze-payload\\runtime",
+    "source_location": "E:\\hzz\\work\\MutualExclusionAllocator\\本地归档\\workbook-freeze-20261103-restart-01a17d0f\\freeze-payload\\source",
+    "data_provenance": "approved local freeze with data_commit=null, freeze_id and exact runtime hashes; never claim current HEAD contains these new data",
+    "exclude_from_application": [
+      "full maintenance/source/audit",
+      "workbooks",
+      "expert references",
+      "pending candidates",
+      "local account/score/feedback databases",
+      "credentials"
+    ],
+    "national_score_state": "No automatic overwrite of live production score-state from packaged CN baseline; use explicit authorized score-version/import workflow.",
+    "after_edit": "A changed frozen input requires new validation and freeze. Preserve this snapshot as historical evidence.",
+    "git_delivery": "No commit/push performed or newly authorized by this freeze. If later committed, bind the real data commit and verify actual Git blob/package bytes against this snapshot; line-ending conversion is not a new score update."
+  },
+  "historical_scope": {
+    "retained_previously_approved_local_work": "2026-11-01 river stable route, black/Gemera,Speedtail/Battista and Owl transfers; their reference/estimate provenance retained",
+    "devel_and_ssc_excluded_from_automatic_sync": true,
+    "global_oc_never_copied_to_cn": true,
+    "tourbillon_global_post_rebalance_scores": 15,
+    "tourbillon_asec_panel_still_outdated": true
+  },
+  "supporting_test_file": {
+    "path": "tests/test_boot_smoke.js",
+    "sha256": "05340008d2c02d329cf1775e93f8b94abf7c0823bc169665e9b2762b2aef38a6",
+    "reason": "necessary approved vehicle-data assertion only"
+  }
+}

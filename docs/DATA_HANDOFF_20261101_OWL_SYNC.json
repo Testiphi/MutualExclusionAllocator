@@ -1,0 +1,102 @@
+{
+  "date": "2026-11-01",
+  "national_keys": 4504,
+  "international_full_keys": 732,
+  "international_runtime_entries": 693,
+  "synchronized_owl": 16,
+  "additions": 13,
+  "faster": 3,
+  "cn_to_global": 13,
+  "global_to_cn": 3,
+  "unmapped_not_transferred": 2,
+  "ssc_and_other_vehicles_unchanged": true,
+  "global_oc_to_cn": false,
+  "ordinary_mirrors_added": 0,
+  "sources_and_estimate_labels_preserved": true,
+  "all_workbook_ledgers_equal": true,
+  "generator_byte_reproducible": true,
+  "validation_errors": [],
+  "native_excel_opened": false,
+  "committed": false,
+  "pushed": false,
+  "refrozen": false,
+  "built": false,
+  "production_operations": false,
+  "archive": "E:\\hzz\\work\\MutualExclusionAllocator\\本地归档\\owl-sync-20261101-01a17d0f",
+  "files": {
+    "E:\\hzz\\work\\MutualExclusionAllocator\\repo\\gauntlet_data.json": {
+      "sha256": "57964666c7d9669eb70d5c5a94d29a1b6362b33962d5e55d66c7a14de3fd22c2",
+      "bytes": 224850
+    },
+    "E:\\hzz\\work\\MutualExclusionAllocator\\数据源\\international-prep-20261023\\maintenance\\gauntlet_data_international_maintenance.json": {
+      "sha256": "9ef4dd5b4e3048e4e9dd6cbf7a3e9285541ccbb3b7db19c21be8413e968a8abc",
+      "bytes": 56383
+    },
+    "E:\\hzz\\work\\MutualExclusionAllocator\\数据源\\international-prep-20261023\\maintenance\\gauntlet_data_international.json": {
+      "sha256": "3babb85418ad417e92ed1bdfd2efe1b7ddd8c1f1fc9e4ca88c84dda51f2ef6e8",
+      "bytes": 54457
+    },
+    "E:\\hzz\\work\\MutualExclusionAllocator\\数据源\\international-prep-20261023\\maintenance\\maintenance-score-ledger.json": {
+      "sha256": "88f00eacb77c630a7bb3efae8594a12442beae1bd0f37775ca5c9931c4864bf9",
+      "bytes": 783496
+    },
+    "E:\\hzz\\work\\MutualExclusionAllocator\\数据源\\international-prep-20261023\\maintenance\\score-ledger.json": {
+      "sha256": "0325b8243fea7bdb25b9794f8d39bba5ffd5443c879f4b6710ebb62927d96cf8",
+      "bytes": 675327
+    },
+    "E:\\hzz\\work\\MutualExclusionAllocator\\数据源\\international-prep-20261023\\maintenance\\current-maintenance.json": {
+      "sha256": "36580a9a99837acf89f31effaea675b0919e2115c930969413931e3f120438a5",
+      "bytes": 6883
+    },
+    "E:\\hzz\\work\\MutualExclusionAllocator\\数据源\\international-prep-20261023\\maintenance\\summary.json": {
+      "sha256": "27bc7b077b762ea28c97a3729e935b97a2ed19b82e4875f56740cb4917f8939f",
+      "bytes": 4487
+    },
+    "E:\\hzz\\work\\MutualExclusionAllocator\\数据源\\international-prep-20261023\\maintenance\\validation.json": {
+      "sha256": "f2431149fcb116fe9e0607b5465dd55bdfdd1d62a3be5aaa6b3634c710955980",
+      "bytes": 50003
+    },
+    "E:\\hzz\\work\\MutualExclusionAllocator\\数据源\\international-prep-20261023\\maintenance\\workbook-matrices.json": {
+      "sha256": "19e2affad264cf218ac7258cd4afc32cb71d6516666460a4211fe3a92d046b40",
+      "bytes": 113282
+    },
+    "E:\\hzz\\work\\MutualExclusionAllocator\\数据源\\international-prep-20261023\\maintenance\\cross-server-policy-decisions.json": {
+      "sha256": "319e38a93cb190feeac3c77ed6ec94632cf0b57869a1629d0280aa20749b36ce",
+      "bytes": 1770
+    },
+    "E:\\hzz\\work\\MutualExclusionAllocator\\repo\\gauntlet_data.xlsx": {
+      "sha256": "705181686b8984cf6b04343994b732434d0699f449be9076fc78a5d01dcbe0bb",
+      "bytes": 123591
+    },
+    "E:\\hzz\\work\\MutualExclusionAllocator\\repo\\gauntlet_data_shared.xlsx": {
+      "sha256": "1b85f981c3a70007db27ac4e92ce69dc79679e84df98b817b2bdf5fb55f0e6a6",
+      "bytes": 141713
+    },
+    "E:\\hzz\\work\\MutualExclusionAllocator\\repo\\gauntlet_data.global.xlsx": {
+      "sha256": "d1e826fb8e96bb3460fb2c2a839257b81d6286b0270896551efd22ac58fc123b",
+      "bytes": 41282
+    },
+    "E:\\hzz\\work\\MutualExclusionAllocator\\repo\\cars.global.json": {
+      "sha256": "bbaf35c754d1162f6bbb5c196ca9bec50aa2a3d40dd00b9ae779dbf6bfdbc567",
+      "bytes": 29264
+    },
+    "E:\\hzz\\work\\MutualExclusionAllocator\\repo\\gauntlet_data.global.json": {
+      "sha256": "5cc7a48e655a3a53dfcc346165f10aa97479707de36d375e7b8a58e8a7e9ca39",
+      "bytes": 133767
+    },
+    "E:\\hzz\\work\\MutualExclusionAllocator\\repo\\global-data-manifest.json": {
+      "sha256": "0322ec22e68a79626c4bcb201aeb52c772b21b14d52be1a2c14b9e94934cc0b5",
+      "bytes": 1866
+    },
+    "E:\\hzz\\work\\MutualExclusionAllocator\\数据源\\international-prep-20261023\\maintenance\\SHA256SUMS.txt": {
+      "sha256": "2f62b930ee4be966f59b847edd0da39d3a30757a278bb01c421dbb12dd2d492e",
+      "bytes": 14780
+    }
+  },
+  "targeted_tests_passed": 73,
+  "git_diff_check_passed": true,
+  "format_json_idempotent": true,
+  "all_16_mapped_identities_equal_to_approved_minimum": true,
+  "unmapped_original_values_preserved": true,
+  "checksum_entries_unique": true
+}
