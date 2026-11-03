@@ -5,7 +5,7 @@ const automator=require(path.resolve(process.argv[2])),out=path.resolve(process.
 const bytes=fs.readFileSync(sample),sampleHash=crypto.createHash('sha256').update(bytes).digest('hex');
 assert.equal(sampleHash,'4eee6ddf88543d96f826b0258f09668d2e09a4f3f8b493787c0ffe5c4efc1cd7','only approved attack06 fixture');
 const report={fixtureAuth:true,realWechatAuth:false,imageSelectionFixture:true,realWxUploadFile:false,realCpuOCR:false,realDevice:false,checks:[],exceptions:[],storageRestored:false,sampleHash};
-const keys=['cn','global'].flatMap(s=>['racepick.mini.native-fixture.draft.v1.'+s,'racepick.mini.view.v1.native-fixture.'+s]),backup={};
+const keys=['cn','global'].flatMap(s=>['racepick.mini.native-fixture.draft.v1.'+s,'racepick.mini.native-fixture.working.v1.'+s,'racepick.mini.view.v1.native-fixture.'+s]),backup={};
 (async()=>{
  const app=await automator.connect({wsEndpoint:'ws://127.0.0.1:9420'});app.on('exception',e=>report.exceptions.push(e));let ownedPath,mediaMocked=false,p;
  const check=name=>{report.checks.push(name);console.log('PASS '+name);};
@@ -34,10 +34,16 @@ const keys=['cn','global'].flatMap(s=>['racepick.mini.native-fixture.draft.v1.'+
   check('filtered select-all, clear-all, score sorting, irregular chips and in-page stars work');
   await app.pageScrollTo(0);const y=(await (await p.$('.garage-heading')).offset()).top;await app.pageScrollTo(y);await app.screenshot({path:path.join(out,'garage.png')});
   await app.evaluate(()=>{const p=getCurrentPages()[0],m=p.state.model.maps[0];for(let i=0;i<5;i++)p.controller.setMap(i,i===0?m:null);});
+  await until(async()=>(await p.data('schemes')).length>0&&!await p.data('busy'));
+  assert.ok((await p.data('rows'))[0].top,'single-map references are available');
+  await app.evaluate(()=>getCurrentPages()[0].toggleTop({currentTarget:{dataset:{index:0}}}));
+  assert.equal((await p.data('rows'))[0].topOpen,true);
+  for(const row of (await p.data('activeScheme')).rows)if(row.hasTime)assert.match(row.timeValue,/^\d+\.\d{2}$/);
+  check('input change auto-calculates, single-map references expand and results use two decimals');
   const baseline=await p.data('rows');
   ownedPath=await app.evaluate((data,name)=>new Promise((resolve,reject)=>{const file=wx.env.USER_DATA_PATH+'/'+name;wx.getFileSystemManager().writeFile({filePath:file,data:wx.base64ToArrayBuffer(data),success:()=>resolve(file),fail:()=>reject(Error('owned fixture write failed'))});}),bytes.toString('base64'),'racepick-owned-ocr-'+Date.now()+'.png');
   await app.mockWxMethod('chooseMedia',{tempFiles:[{tempFilePath:ownedPath,size:bytes.length,fileType:'image'}],type:'image'});mediaMocked=true;
-  await tap('.recognition-entry button');assert.ok(await p.data('image'));await tapText('开始识别');
+  await app.pageScrollTo(0);await tap('.recognition-entry button');assert.ok(await p.data('image'));
   await until(async()=>['polling','finished'].includes((await app.evaluate(()=>getCurrentPages()[0].service.diagnostics())).task.phase));
   report.started=await app.evaluate(()=>getCurrentPages()[0].service.diagnostics());
   report.realWxUploadFile=report.started.network.uploads===1;

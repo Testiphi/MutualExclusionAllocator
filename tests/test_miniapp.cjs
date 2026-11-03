@@ -35,7 +35,8 @@ test('CN/global persist independently; no browser or account state is read', () 
   assert.deepEqual(f.state.model.tiers,['理论']); f.c.setCar('联调车B',true); f.c.setOc('联调车B',true);
   f.c.switchServer('cn'); assert.deepEqual(f.state.draft.cars,['联调车A']);
   f.c.switchServer('global'); assert.equal(f.state.draft.oc['联调车B'],true);
-  assert.equal(f.values.size,2); for (const key of f.values.keys()) assert.match(key,/^racepick\.mini\.mock\.draft\.v1\./);
+  assert.ok(f.values.has('racepick.mini.mock.working.v1.global'));assert.ok(!f.values.has('racepick.mini.mock.draft.v1.global'),'switching server must not commit saved garage');
+  for (const key of f.values.keys()) assert.match(key,/^racepick\.mini\.mock\.(draft|working)\.v1\./);
 });
 test('quota failure refuses server switch and leaves old durable draft intact', () => {
   const f=fixture(); select(f); f.c.save(); const old=JSON.stringify([...f.values]);
@@ -65,10 +66,11 @@ test('repeated generate only invokes one pending computation; errors retain inpu
   const p=f.c.compute(); await f.c.compute(); assert.equal(calls,1); d.reject(Error('offline')); await p;
   assert.match(f.state.error,/offline/); assert.equal(f.state.draft.cars.length,1); assert.equal(f.state.busy,false);
 });
-test('background cancels publication and saves dirty draft; foreground refreshes without uploading', async () => {
+test('background cancels publication and stages dirty draft without committing saved garage', async () => {
   const d=deferred(); let resumed=0; const f=fixture({calculate:()=>d.promise,resume:async()=>{resumed++;}}); select(f);
   const p=f.c.compute(); f.c.hide(); d.resolve({schemes:[]}); await p; await f.c.show();
-  assert.equal(f.state.result,null); assert.equal(f.state.dirty,false); assert.equal(resumed,1);
+  assert.equal(f.state.result,null);assert.equal(f.state.dirty,true);assert.equal(resumed,1);
+  assert.ok(!f.values.has('racepick.mini.mock.draft.v1.cn'));assert.ok(f.values.has('racepick.mini.mock.working.v1.cn'));
 });
 test('OCR keeps manual maps until explicit confirmation; cancellation preserves original choices', async () => {
   const f=fixture(); select(f); const before=structuredClone(f.state.draft.maps);

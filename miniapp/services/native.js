@@ -5,16 +5,18 @@ const {createRecognitionJobs}=require('./recognition_jobs');
 const {requestId}=require('../adapters/id');
 const {enrichModel}=require('../lib/garage_view');
 const {utf8,sha256}=require('../adapters/hash');
+const {createWebHomeAdapter}=require('../shared/web_home');
 async function createNativeService(wx,core,config) {
-  const api=createNativeApi(wx,config);let contexts={},snapshots={},known={},online=false,message='',generation=0,lastBinding=null;
+  const api=createNativeApi(wx,config);let contexts={},snapshots={},known={},home={},online=false,message='',generation=0,lastBinding=null;
   const cacheKey=s=>'racepick.mini.snapshot.v1.'+sha256(utf8(config.origin)).slice(0,16)+'.'+s;
   function commit(checked) {
-    const next={},ids={};
+    const next={},ids={},presenters={};
     for(const server of ['cn','global']){
       const ctx=core.createSelectionContext(checked[server]),base={schema:1,server,zone:'zone5',tier:'理论',maps:[null,null,null,null,null],cars:[],stars:{},oc:{},routes:{}};
       next[server]=ctx;const model=ctx.getModel(base);ids[server]=[...new Set(model.zones.flatMap(zone=>ctx.getModel({...base,zone}).cars.map(c=>c.id)))];
+      presenters[server]=createWebHomeAdapter(checked[server],core);
     }
-    snapshots=checked;contexts=next;known=ids;
+    snapshots=checked;contexts=next;known=ids;home=presenters;
   }
   async function refresh() {
     try {
@@ -41,8 +43,10 @@ async function createNativeService(wx,core,config) {
     commit(cached);online=false;message='离线使用已验证缓存；识图需重新连接';
   }
   return {
-    mode:api.fixture?'native-fixture':'native',diagnostics:()=>({task:jobs.state(),network:api.metrics(),versions:{cn:snapshots.cn.version,global:snapshots.global.version}}),
-    model:d=>({...enrichModel(contexts[d.server].getModel(d),snapshots[d.server],d,core),knownCarIds:known[d.server]}),
+    mode:api.fixture?'native-fixture':'native',autoRecognize:true,diagnostics:()=>({task:jobs.state(),network:api.metrics(),versions:{cn:snapshots.cn.version,global:snapshots.global.version}}),
+    defaults:server=>home[server].defaults(),
+    garageView:(d,query,cls,sort)=>home[d.server].visible(d,query,cls,sort),
+    model:d=>({...enrichModel(contexts[d.server].getModel(d),snapshots[d.server],d,core),knownCarIds:known[d.server],topCars:home[d.server].tops(d),subtitle:home[d.server].subtitle(d)}),
     calculate:d=>contexts[d.server].calculate(d),
     async recognize(image){const ticket=++generation;lastBinding=await catalog(true);if(ticket!==generation)throw Error('本次识别已停止');return wrap(await jobs.start(image));},
     async retryRecognition(){const b=await catalog();if(!lastBinding||b.identity!==lastBinding.identity||b.version!==lastBinding.version)throw Error('原任务目录已变化');return wrap(await jobs.resume());},

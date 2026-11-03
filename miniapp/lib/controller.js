@@ -4,10 +4,15 @@ function blank(server) {
   return { schema: 1, server, zone: 'zone5', tier: '理论',
     maps: [null, null, null, null, null], cars: [], stars: {}, oc: {}, routes: {} };
 }
-function createController({ service, storage, media, render }) {
+function createController({ service, storage, media, render, autoCompute=false,schedule=fn=>setTimeout(fn,0) }) {
   let draft = blank('cn'), saved = null, model, epoch = 0, mediaEpoch = 0, visible = true;
   let error = '', busy = false, result = null, pending = null, image = null, dirty = false;
   let blocked = false;
+  let workingBlocked=false;
+  let profileBase=null;
+  const profile=value=>JSON.stringify({cars:[...(value.cars||[])].sort(),stars:Object.entries(value.stars||{}).sort(),oc:Object.entries(value.oc||{}).sort()});
+  function updateDirty(){dirty=profile(draft)!==profile(profileBase||draft);}
+  function queueCompute(){if(!autoCompute||blocked||workingBlocked)return;const ticket=epoch;schedule(()=>{if(visible&&ticket===epoch)void compute();});}
   function refresh() {
     // Ask the shared service for the current catalogue before submitting a saved
     // draft: removed maps/unsupported old modes must not crash core validation.
@@ -30,32 +35,41 @@ function createController({ service, storage, media, render }) {
       pending: pending && clone(pending), image: image && image.path, dirty,
       mode: service.mode, storageBlocked: blocked,serviceStatus:service.status?service.status():null });
   }
-  function invalidate(preserveMedia = false,preserveTask = false) {
+  function invalidate(preserveMedia = false,preserveTask = false,preserveResult = false) {
     if (!preserveMedia) mediaEpoch++;
-    epoch++; busy = false; result = null; pending = null;
+    epoch++; busy = false;if(!preserveResult)result = null; pending = null;
     if(preserveTask&&service.suspend)service.suspend();else service.cancel();
   }
   function change(fn) {
     invalidate(); error = '';
-    fn(); refresh(); dirty = true; publish();
+    fn(); refresh(); updateDirty();publish();queueCompute();
   }
-  function load(server) {
-    blocked = false; draft = blank(server); saved = null;
+  function load(server,working=true) {
+    blocked = false;workingBlocked=false; draft = blank(server); saved = null;
+    const defaults=service.defaults?service.defaults(server):{};if(defaults.tier)draft.tier=defaults.tier;
     try {
       const value = storage.read(server);
       if (value) { draft = value; saved = clone(value); }
     } catch (e) { blocked = true; error = e.message; }
-    refresh(); dirty = saved !== null && JSON.stringify(draft) !== JSON.stringify(saved);
+    refresh();
+    if(!saved&&!blocked&&defaults.selectAllOnFirstLoad){draft.cars=model.cars.map(c=>c.id);refresh();}
+    profileBase=saved?clone(saved):clone(draft);
+    if(working&&storage.readWorking&&!blocked)try{const value=storage.readWorking(server,saved);if(value){draft=value;refresh();}}catch(e){workingBlocked=true;error=e.message;}
+    updateDirty();
   }
   function save() {
     if (blocked) { error = '本机原记录无法恢复，未覆盖；请先检查存储'; publish(); return false; }
-    try { storage.write(draft.server, draft); saved = clone(draft); dirty = false; error = ''; publish(); return true; }
-    catch (e) { error = '保存失败，当前选择仍保留；请检查存储空间'; dirty = true; publish(); return false; }
+    try { storage.write(draft.server, draft,saved); saved = clone(draft);profileBase=clone(draft);workingBlocked=false; dirty = false; error = '';if(storage.clearWorking)try{storage.clearWorking(draft.server);}catch(_){error='车库已保存，但临时草稿未清理';}publish(); return true; }
+    catch (e) { error = '保存失败，当前选择仍保留：'+e.message; dirty = true; publish(); return false; }
+  }
+  function stageWorking() {
+    if(blocked||workingBlocked)return false;
+    try{if(storage.writeWorking)storage.writeWorking(draft.server,draft,saved);return true;}
+    catch(e){error='临时草稿保存失败，当前选择仍保留';publish();return false;}
   }
   async function compute() {
     if (busy) return;
-    if (!draft.maps.some(x => x && x.small) || !draft.cars.length) { error = '请先选择地图和车辆'; publish(); return; }
-    if (draft.maps.some(x => x && !x.small)) { error = '请补全已选地图'; publish(); return; }
+    if (!draft.maps.some(x => x && x.small)) {result=null;error='';publish();return;}
     invalidate(); const ticket = epoch; busy = true; error = ''; publish();
     try {
       const value = await service.calculate(clone(draft));
@@ -65,11 +79,11 @@ function createController({ service, storage, media, render }) {
   }
   async function chooseImage() {
     if (draft.server !== 'cn') { error = '国际服暂未开放识图'; publish(); return; }
-    invalidate(); const ticket = mediaEpoch; error = ''; publish();
+    invalidate(false,false,true); const ticket = mediaEpoch; error = ''; publish();
     try {
       const value = await media.choose();
       if (ticket !== mediaEpoch || !value) return;
-      image = value; publish();
+      image = value; publish();if(service.autoRecognize&&visible)void recognize();
     } catch (e) { if (ticket === mediaEpoch) { error = e.message; publish(); } }
   }
   function acceptRecognition(value) {
@@ -78,7 +92,7 @@ function createController({ service, storage, media, render }) {
   }
   async function recognize(retry=false) {
     if (!image || busy || draft.server !== 'cn') return;
-    if(retry){epoch++;pending=null;result=null;}else invalidate();
+    if(retry){epoch++;pending=null;}else invalidate(false,false,true);
     const ticket = epoch, version = model.version;
     busy = true; error = ''; publish();
     try {
@@ -88,7 +102,7 @@ function createController({ service, storage, media, render }) {
     } catch (e) { if (ticket === epoch) error = e.message; }
     finally { if (ticket === epoch) { busy = false; publish(); } }
   }
-  load('cn'); publish();
+  load('cn'); publish();queueCompute();
   return {
     save, compute, chooseImage, recognize,retryRecognition:()=>recognize(true),
     async reconnect() {if(!service.reconnect)return;invalidate();error='';busy=true;publish();const ticket=epoch;try{await service.reconnect();if(ticket===epoch)refresh();}catch(e){if(ticket===epoch)error=e.message;}finally{if(ticket===epoch){busy=false;publish();}}},
@@ -112,13 +126,14 @@ function createController({ service, storage, media, render }) {
     },
     restore() {
       const current={maps:clone(draft.maps),zone:draft.zone,tier:draft.tier,routes:clone(draft.routes)};
-      invalidate();error='';load(draft.server);Object.assign(draft,current);refresh();
-      dirty=saved!==null&&JSON.stringify(draft)!==JSON.stringify(saved);publish();
+      try{if(storage.clearWorking)storage.clearWorking(draft.server);}catch(e){error='恢复失败，当前选择仍保留';publish();return;}
+      invalidate();error='';load(draft.server,false);Object.assign(draft,current);refresh();
+      updateDirty();publish();queueCompute();
     },
     switchServer(server) {
       if (!['cn', 'global'].includes(server) || server === draft.server) return;
-      if (!save()) return;
-      invalidate(); image = null; error = ''; load(server); publish();
+      if (!stageWorking()) return;
+      invalidate(); image = null; error = ''; load(server); publish();queueCompute();
     },
     correctSlot(index, value) {
       if (!pending || index < 0 || index > 4) return;
@@ -133,11 +148,12 @@ function createController({ service, storage, media, render }) {
       if(service.verifyRecognition){busy=true;publish();return service.verifyRecognition().then(apply).catch(e=>{if(ticket===epoch){error=e.message;busy=false;publish();}});}
       apply();
     },
-    cancelRecognition() { invalidate(); image = null; publish(); },
-    hide() { visible = false; invalidate(true,true); if (dirty) save(); },
+    cancelRecognition() { invalidate(false,false,true); image = null; publish(); },
+    stopRecognition() {invalidate(false,false,true);publish();},
+    hide() { visible = false; invalidate(true,true,true); stageWorking(); },
     async show() {
       visible = true; const ticket = ++epoch;
-      try { const value=await service.resume(); if (ticket === epoch) { refresh();if(value&&draft.server==='cn')acceptRecognition(value);publish(); } }
+      try { const value=await service.resume(); if (ticket === epoch) { refresh();if(value&&draft.server==='cn')acceptRecognition(value);publish();if(!value)queueCompute(); } }
       catch (e) { if (ticket === epoch) { error = e.message;refresh();publish(); } }
     },
     destroy() { visible = false; invalidate(); image = null; }

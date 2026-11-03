@@ -1,7 +1,7 @@
 <view class="page">
  <view class="shell">
   <view class="home-heading"><view class="brand">Race<text class="brand-pick">Pick</text></view><view class="heading-title">擂台选车助手</view></view>
-  <view class="subtitle">帕累托最优 · 擂台选车</view>
+  <view class="subtitle">{{subtitle}}</view>
   <view wx:if="{{mode === 'mock'}}" class="notice">本地联调 · 模拟目录与结果，非真实计算 / OCR</view>
   <view wx:if="{{mode === 'local'}}" class="notice">本地计算 · 数据未冻结 · 识图尚未接入</view>
   <view wx:if="{{mode === 'native-fixture'}}" class="notice">本地接口联调 · fixture身份，非真实微信鉴权</view>
@@ -23,16 +23,13 @@
      <button wx:for="{{zones}}" wx:key="*this" class="toggle-choice {{zoneIndex === index ? 'active' : ''}}" data-index="{{index}}" bindtap="selectZone"><text class="choice-dot">{{zoneIndex === index ? '●' : '○'}}</text>{{item}}</button>
     </view>
    </view>
-   <view class="card map-section">
-    <view class="map-row" wx:for="{{rows}}" wx:key="index">
-     <text class="number">{{item.index + 1}}</text>
-     <button id="map-{{item.index}}-big" class="map-picker map-trigger" data-index="{{item.index}}" data-field="big" bindtap="openDropdown"><view class="select">{{item.big || '选择大地图'}}<text class="chevron">⌄</text></view></button>
-     <button id="map-{{item.index}}-small" class="map-picker map-trigger" disabled="{{!item.big}}" data-index="{{item.index}}" data-field="small" bindtap="openDropdown"><view class="select {{!item.big ? 'is-disabled' : ''}}">{{item.small || '选择小地图'}}<text class="chevron">⌄</text></view></button>
-    </view>
-    <view class="recognition-entry"><button wx:if="{{server === 'cn'}}" bindtap="chooseImage">地图识别</button><text class="muted">{{server === 'cn' ? '仅支持能清晰看到五张地图中文名的游戏截图，不支持拍屏照片。' : '国际服暂未开放识图'}}</text></view>
+   <view class="card ocr-workspace">
+    <view class="ocr-title">地图识别</view>
+    <view class="ocr-purpose">{{server === 'cn' ? '仅支持能清晰看到五张地图中文名称的游戏截图，自动识别地图并填充。不支持拍屏照片。' : '国际服暂未开放识图'}}</view>
+    <view wx:if="{{server === 'cn'}}" class="recognition-entry"><button class="mr-upload {{image ? 'mr-upload-selected' : ''}}" disabled="{{busy}}" bindtap="chooseImage"><view wx:if="{{!image}}" class="upload-icon"><view class="upload-shaft"></view><view class="upload-head"></view><view class="upload-tray"></view></view><text>{{image ? '更换截图' : '选择已有截图'}}</text></button></view>
     <view wx:if="{{image}}" class="recognition">
      <image src="{{image}}" mode="widthFix" class="preview" />
-     <view class="actions"><button wx:if="{{!serviceStatus.canRetry}}" loading="{{busy}}" disabled="{{busy}}" bindtap="recognize">开始识别</button><button wx:if="{{serviceStatus.canRetry}}" loading="{{busy}}" disabled="{{busy}}" bindtap="retryRecognition">继续查询</button><button bindtap="cancelRecognition">取消</button></view>
+     <view class="actions"><button wx:if="{{!serviceStatus.canRetry}}" hidden="{{busy}}" bindtap="recognize">重新识别</button><button wx:if="{{serviceStatus.canRetry}}" loading="{{busy}}" disabled="{{busy}}" bindtap="retryRecognition">继续查询</button><button wx:if="{{busy}}" bindtap="stopRecognition">取消识别</button><button hidden="{{busy}}" bindtap="cancelRecognition">移除图片</button></view>
     </view>
     <view wx:if="{{hasPending}}" class="recognition">
      <view class="section-title">核对地图</view>
@@ -43,12 +40,32 @@
      </view>
      <button class="primary" bindtap="applyRecognition">应用选图</button>
     </view>
+    <view wx:if="{{ocrBusy}}" class="ocr-status">识别中…</view>
+   </view>
+   <view class="card map-section">
+    <view class="map-row" wx:for="{{rows}}" wx:key="index">
+     <text class="number">{{item.index + 1}}</text>
+     <view class="map-fields">
+     <view class="map-field"><view class="field-label">大地图</view><button id="map-{{item.index}}-big" class="map-picker map-trigger" data-index="{{item.index}}" data-field="big" bindtap="openDropdown"><view class="select">{{item.big || '选择大地图'}}<text class="chevron">⌄</text></view></button></view>
+     <view class="map-field"><view class="field-label">小地图</view><button id="map-{{item.index}}-small" class="map-picker map-trigger" disabled="{{!item.big}}" data-index="{{item.index}}" data-field="small" bindtap="openDropdown"><view class="select {{!item.big ? 'is-disabled' : ''}}">{{item.small || '选择小地图'}}<text class="chevron">⌄</text></view></button></view>
+     </view>
+     <view wx:if="{{item.top}}" class="track-top-cars">
+      <button class="top-toggle" data-index="{{item.index}}" bindtap="toggleTop">{{item.topOpen ? '▾' : '▸'}} {{item.top.label}}</button>
+      <view wx:if="{{item.topOpen}}">
+       <view class="track-top-note">单图参考，未扣除其他图用车。成绩沿用当前档位与星级口径。</view>
+       <view wx:if="{{!item.top.items.length}}" class="track-top-note">当前车库下无可用车</view>
+       <view wx:for="{{item.top.items}}" wx:for-item="topCar" wx:key="car" class="track-top-item">{{index + 1}}. {{topCar.car}}{{topCar.oc ? ' [OC]' : ''}}<text wx:if="{{topCar.stars !== null}}"> ★{{topCar.stars}}</text><text class="track-top-score">{{topCar.scoreText}}</text></view>
+      </view>
+     </view>
+    </view>
    </view>
    <view class="card garage">
-    <button class="garage-heading" bindtap="toggleGarage"><view>本机车库<text class="garage-count">已选 {{selectedCount}} 辆</text></view><text class="muted">{{garageOpen ? '收起 ▴' : '展开 ▾'}}</text></button>
-    <view class="actions"><button bindtap="save">保存车库</button><button bindtap="restore">恢复已存</button><text wx:if="{{dirty}}" class="save-status">尚未保存</text></view>
+    <button class="garage-heading" bindtap="toggleGarage"><view>我的车库 · 已选 {{selectedCount}} 辆</view><text class="muted">{{garageOpen ? '收起 ▴' : '展开 ▾'}}</text></button>
     <view wx:if="{{garageOpen}}">
+    <view class="actions"><button bindtap="save">保存车库</button><button bindtap="restore">恢复已保存</button><text wx:if="{{dirty}}" class="save-status">尚未保存</text></view>
+
      <view class="actions garage-tools"><button data-action="select-all" bindtap="selectAll">全部点亮</button><button data-action="clear-all" bindtap="clearAll">全部清空</button><button data-action="sort" bindtap="cycleSort">{{sortLabel}}</button></view>
+     <view wx:if="{{zoneHint}}" class="zone-hint">星级代表加速所改装的星级，仅作为参考</view>
      <input class="search" placeholder="搜索车辆" placeholder-class="muted" value="{{query}}" bindinput="search" />
      <view class="class-filter"><button wx:for="{{classes}}" wx:key="*this" class="{{carClass === item ? 'active' : ''}}" data-value="{{item}}" bindtap="filterClass">{{item || '全部'}}</button></view>
      <scroll-view scroll-y="{{true}}" class="garage-list">
@@ -56,7 +73,7 @@
        <view wx:for="{{cars}}" wx:key="id" class="car-row {{item.selected ? 'selected' : ''}}">
         <button class="car-name" data-id="{{item.id}}" bindtap="toggleCar">{{item.label}}</button>
         <button id="star-{{index}}" class="star-picker" data-id="{{item.id}}" data-anchor="{{index}}" bindtap="openStars"><view class="star-select">★{{item.stars[item.starIndex]}}</view></button>
-        <button wx:if="{{item.ocAllowed}}" class="oc-toggle {{item.oc ? 'oc-on' : ''}}" data-id="{{item.id}}" bindtap="toggleOc">OC</button>
+        <button wx:if="{{item.ocAllowed}}" disabled="{{!item.selected}}" class="oc-toggle {{item.oc ? 'oc-on' : ''}}" data-id="{{item.id}}" bindtap="toggleOc">OC</button>
        </view>
       </view>
       <view wx:if="{{!cars.length}}" class="empty-search">没有匹配的车辆</view>
@@ -71,13 +88,15 @@
     </view>
    </view>
    <view class="action"><button class="primary recommend-btn" loading="{{busy}}" disabled="{{busy}}" bindtap="compute">生成方案</button></view>
-   <view wx:if="{{activeScheme}}" class="card results">
-    <view class="result-heading"><text>方案</text><text class="badge">{{schemes.length}}</text><text wx:if="{{activeScheme.totalText !== '—'}}" class="muted total">{{activeScheme.totalText}}</text></view>
-    <button wx:if="{{schemes.length > 1}}" id="scheme-trigger" class="scheme-trigger" bindtap="openScheme"><view class="select scheme-select">{{schemeOptions[schemeIndex]}}<text class="chevron">⌄</text></view></button>
-    <view class="result-grid">
+   <view class="card results">
+    <view class="result-heading"><text>方案</text><text class="badge">{{schemes.length}}</text></view>
+    <button wx:if="{{activeScheme}}" id="scheme-trigger" class="scheme-trigger" bindtap="openScheme"><view class="select scheme-select">{{schemeOptions[schemeIndex]}}<text class="chevron">⌄</text></view></button>
+    <view wx:if="{{!activeScheme}}" class="scheme-trigger scheme-empty"><view class="select scheme-select">请至少选择一张地图</view></view>
+    <view wx:if="{{!activeScheme}}" class="empty-result">{{emptyResultText}}</view>
+    <view wx:if="{{activeScheme}}" class="result-grid">
      <view wx:for="{{activeScheme.rows}}" wx:for-item="row" wx:key="index" class="result-row">
       <view class="result-map">{{row.map}}</view><view class="result-big">{{row.big || '—'}}</view>
-      <view class="result-car {{row.empty ? 'empty' : ''}}">{{row.car}}</view><view class="result-time">{{row.timeText}}</view>
+      <view class="result-car {{row.empty ? 'empty' : ''}}">{{row.car}}{{row.oc ? ' [OC]' : ''}}<text wx:if="{{row.stars}}" class="result-stars"> ★{{row.stars}}</text></view><view wx:if="{{row.hasTime}}" class="result-time">{{row.timeValue}}<text class="result-unit"> 秒</text></view>
      </view>
     </view>
    </view>

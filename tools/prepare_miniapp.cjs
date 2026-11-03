@@ -16,6 +16,10 @@ for (const name of files) {
   fs.writeFileSync(path.join(output, name), bytes);
   manifest.files[name] = { bytes: bytes.length, sha256: crypto.createHash('sha256').update(bytes).digest('hex') };
 }
+const pageSource=cp.execFileSync('git',['show',manifest.source+':index.html'],{cwd:root});
+const homeCode=require('./web_home_adapter.cjs').generateWebHomeAdapter(pageSource.toString('utf8'));
+fs.writeFileSync(path.join(output,'web_home.js'),homeCode);
+manifest.derived={'web_home.js':{source_file:'index.html',source_sha256:crypto.createHash('sha256').update(pageSource).digest('hex'),sha256:crypto.createHash('sha256').update(homeCode).digest('hex')}};
 fs.writeFileSync(path.join(output, 'source.json'), JSON.stringify(manifest, null, 2) + '\n');
 console.log(JSON.stringify(manifest, null, 2));
 const receiptIndex = process.argv.indexOf('--data-receipt');

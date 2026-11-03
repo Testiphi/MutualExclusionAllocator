@@ -53,7 +53,7 @@ test('changing zones retains all owned cars and saved higher stars while model c
   f.c.setMode('zone5','高手'); assert.equal(f.state.draft.stars[clamped.id],stars);
 });
 test('real shared calculation changes river F5 result for off/all/specific route without changing garage',async()=>{
-  const f=controller(),river=f.state.model.maps.find(x=>x.small==='河畔漂移');assert.ok(river);
+  const f=controller();f.c.setMode('zone5','理论');f.c.setCars(f.state.model.cars.map(c=>c.id),false);const river=f.state.model.maps.find(x=>x.small==='河畔漂移');assert.ok(river);
   f.c.setMap(0,river); f.c.setCar('f5',true);const key=river.big+'/'+river.small;
   f.c.setRoute(key,'all');await f.c.compute();assert.equal(f.state.result.schemes[0].rows[0].time,19.9);
   f.c.setRoute(key,'稳定跳图');await f.c.compute();assert.equal(f.state.result.schemes[0].rows[0].time,23.2);
@@ -69,19 +69,20 @@ test('outdated saved maps and modes recover before shared core validation withou
   const f=controller(),d=structuredClone(f.state.draft);
   d.zone='old-zone';d.tier='old-tier';d.maps[0]={big:'removed',small:'removed'};
   f.values.set('racepick.mini.local.draft.v1.cn',d);f.c.restore();
-  assert.equal(f.state.draft.zone,'zone5');assert.equal(f.state.draft.tier,'理论');assert.equal(f.state.draft.maps[0],null);
-  assert.equal(f.state.dirty,true);assert.equal(f.values.get('racepick.mini.local.draft.v1.cn').zone,'old-zone');
+  assert.equal(f.state.draft.zone,'zone5');assert.equal(f.state.draft.tier,'高手');assert.equal(f.state.draft.maps[0],null);
+  assert.equal(f.values.get('racepick.mini.local.draft.v1.cn').zone,'old-zone');
 });
 test('actual page handlers use real maps, retain route selection and render shared result',async()=>{
   const file=path.resolve(__dirname,'../miniapp/pages/home/home.js');let config;
   const values=new Map(),wx={getStorageSync:k=>values.get(k),setStorageSync:(k,v)=>values.set(k,v)};
   vm.runInNewContext(fs.readFileSync(file,'utf8'),{Page:x=>{config=x;},wx,require:x=>x==='../../generated/native-config'?{enabled:false}:require(path.resolve(path.dirname(file),x))});
   const p={...config,data:structuredClone(config.data),setData(x){Object.assign(this.data,x);}};p.onLoad();
+  p.controller.setMode('zone5','理论');p.controller.setCars(p.state.model.cars.map(c=>c.id),false);
   const river=p.state.model.maps.find(x=>x.small==='河畔漂移');p.controller.setMap(0,river);p.controller.setCar('f5',true);
   const route=p.data.routes[0],key=route.key;p.selectRoute({currentTarget:{dataset:{key}},detail:{value:route.options.indexOf('稳定跳图')}});
   p.toggleRoute({currentTarget:{dataset:{key}}});assert.equal(p.state.draft.routes[key],'off');
   p.toggleRoute({currentTarget:{dataset:{key}}});assert.equal(p.state.draft.routes[key],'稳定跳图');
-  await p.controller.compute();assert.equal(p.data.mode,'local');assert.equal(p.data.schemes[0].rows[0].timeText,'23.200秒');
+  await p.controller.compute();assert.equal(p.data.mode,'local');assert.equal(p.data.schemes[0].rows[0].timeText,'23.20 秒');
   p.onUnload();
 });
 test('website-style scheme selection keeps shared order and resets on input edits; mode and OC buttons work',async()=>{
@@ -108,6 +109,7 @@ test('bulk garage actions use visible select/all-zone clear, restore retains map
  const values=new Map(),wx={getStorageSync:k=>values.get(k),setStorageSync:(k,v)=>values.set(k,v)};
  vm.runInNewContext(fs.readFileSync(file,'utf8'),{Page:x=>{config=x;},wx,require:x=>x==='../../generated/native-config'?{enabled:false}:require(path.resolve(path.dirname(file),x))});
  const p={...config,data:structuredClone(config.data),setData(x){Object.assign(this.data,x);}};p.onLoad();
+ p.clearAll();
  p.search({detail:{value:'f5'}});p.selectAll();assert.deepEqual([...p.state.draft.cars].sort(),['f5','f5r']);p.save();
  p.search({detail:{value:'f5r'}});p.clearAll();assert.equal(p.state.draft.cars.length,0);
  const map=p.state.model.maps[3];p.controller.setMap(0,map);p.restore();assert.equal(p.state.draft.maps[0].small,map.small);assert.ok(p.state.draft.cars.includes('f5'));

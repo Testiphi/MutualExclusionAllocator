@@ -1,34 +1,35 @@
 # RacePick 微信原生客户端 · 本地开发
 
-本轮基线 `f47ff1982ea0fc266beeaa5bfcf9b73968927ebc`，分支 `feature/miniprogram-v1`。
-当前已接入网站固定提交 `198999a9ff5ca2ad524c50112ac6e03f5f18149f` 的共享选择模块。下列本地数据命令生成的客户端使用真实4504/693数据计算，持续标明数据未冻结、识图未接入。不连接网络、不调用 wx.login、不上传照片，不是可分发体验版。仅运行无数据参数的准备命令会生成独立 mock（联调车/地图），不把mock当真实计算。
+2026-11-03，独立分支 `feature/miniprogram-v1`。用户已确认个人主体，采用原生镜像；网站是唯一外观与功能基准。完整账号、成绩表、投稿及管理功能仍待网站侧契约，见 `docs/HANDOFF_WEB_FULL_MIRROR_20261103.md`，不把主页本地完成当全网站镜像完成。
 
-在仓库根目录执行：
+## 构建与测试
+
+在小程序工作树根目录执行：
 
 ```powershell
 node tools/prepare_miniapp.cjs --data-receipt ../offline-evaluation/miniprogram-v1-20261102-01/runtime-source.json
-node --test tests/test_miniapp.cjs tests/test_miniapp_local.cjs
-node --test tests/test_allocator.js tests/test_allocator_pruning.js tests/test_race_scores.js tests/test_app_state.js
+node --test tests/test_miniapp.cjs tests/test_miniapp_local.cjs tests/test_miniapp_dropdown.cjs tests/test_native_api.cjs tests/test_recognition_jobs.cjs tests/test_web_home_mirror.cjs
 ```
 
-`prepare_miniapp.cjs` 根据 `shared-source.json` 从固定Git对象生成 `miniapp/shared/` 五个 CommonJS 模块及 SHA 清单，不读取网站dirty源码。加数据参数时，严格校验本地回执五文件SHA/长度，再生成 `generated/local-bundle.js`；客户端启动再次验证原始字节及国际三件套版本。两目录均忽略，不手动维护，不把生成数据代提交为正式冻结。
+该命令生成离线local模式，不调用登录或上传。省略数据回执则是明确标记的mock。五个共享模块从固定Git对象198999a原字节生成；另从同一index.html生成网页搜索/排序/单图候选/副标题函数，记录输入输出SHA。`miniapp/shared/`和`generated/`忽略，不将未冻结4504/693数据当发布来源。源网页函数边界变化时生成失败，必须核对后更新适配。
 
-开发者工具已安装到 `E:\Software\微信web开发者工具`，用户已开启服务端口。占位touristappid实际导入返回code10，已改为用户提供的项目AppID（非AppSecret）；合法域名检查保持开启。实际工具为2.02.2610302 Nightly、基础库3.17.5，390px模拟器已完成首轮验证。保持当前直连即可，不需要为本地计算开启系统代理；其他工具版本/基础库和真机仍待验证。
+原生HTTP联调需显式增加 `--native-origin <本地基址>`。隔离fixture还需 `--fixture-code <lab中未用代码> --fixture-key <该代码首次使用的固定key>`，仅开发者工具接受fixture。接口默认关闭；token仅内存，快照严格核验后原子缓存。过期代码不能换key续期，应新建独立lab。当前本机8044联调环境和复现记录见 `docs/HOME_MIRROR_IMPLEMENTATION_20261103.md`。不用生产账号或8033测试库。
 
-后续复现本地工具自动化（先按官方说明在独立目录安装 `miniprogram-automator@0.13.0`；路径按本机填写）：
+## 开发者工具
+
+安装目录 `E:\Software\微信web开发者工具`，使用用户AppID，保持直连即可。用户已开启服务端口及本地跳过域名校验；后者只支持localhost开发，不代表已登记HTTPS域名或具备发布条件。工具曾更新重启，不沿用旧版本号作当前证据。
 
 ```powershell
-& 'E:\Software\微信web开发者工具\cli.bat' open --project 'E:\hzz\work\MutualExclusionAllocator\miniprogram-v1\miniapp'
 & 'E:\Software\微信web开发者工具\cli.bat' auto --project 'E:\hzz\work\MutualExclusionAllocator\miniprogram-v1\miniapp' --auto-port 9420
-node tools/check_miniapp_devtools.cjs ../offline-evaluation/miniprogram-v1-20261102-03/automation/node_modules/miniprogram-automator ../offline-evaluation/miniprogram-v1-20261102-03/new-run
+node tools/check_native_ocr_devtools.cjs ../offline-evaluation/miniprogram-v1-20261102-03/automation/node_modules/miniprogram-automator ../offline-evaluation/miniprogram-home-mirror-20261103-01/new-run ../offline-evaluation/maps-20261031-01/samples/attack06.png
 ```
 
-此脚本只连接本机模拟器，操作前保存两服local草稿，结束核对并恢复原值，不清理其他存储、不关闭工具、不执行预览/上传或真实OCR。记录见 `docs/MINIPROGRAM_DEVTOOLS_VERIFICATION_20261102.md`。
+SDK为独立目录的官方miniprogram-automator@0.13.0。此脚本仅用于已显式配置的本机fixture，实际wx.request/uploadFile和CPU OCR；chooseMedia被受控样图替换，不是真实手机相册或微信鉴权。测试备份并恢复fixture两服saved/working/view键，删除自己创建的临时图片，检查token未持久化；不清理其他存储。旧 `check_miniapp_devtools.cjs` 是历史local页面验收脚本，未适配本轮布局，不作为本轮复现入口。
 
-本地数据模式下可手选真实地图、选车/改星/OC，修改SC开关或具体类型并生成真实共享计算结果。关闭/重开SC记忆选择，切区不丢其他区车辆/星级。原生OCR未接入时会明确报错，不返回mock识图；只有无数据mock模式返回脚本五槽。
+## 页面与存储
 
-草稿使用 `racepick.mini.local.draft.v1.cn/global`，与 `mock/native` 命名空间隔离。前后台会取消旧结果发布，隐藏时尝试保存；存储失败阻止切服并保留内存选择。损坏或未知 schema 草稿保持原记录且禁止覆盖。临时照片路径不写入草稿。
+地图、星级、SC类型与方案均用页内下拉。截图只打开相册，说明必须清晰显示五图中文名称，不支持拍屏；识别后核对并确认再填图。CN首次高手、Global理论、首次全选均沿用网页；已保存的合法空车库保持空。选图/车库/星级/SC变化自动重算，单图前三只作参考，不扣其他图用车。
 
-原生页面代码不包含 AppSecret、session_key、生产地址或用户账号。transport 只有默认关闭的低层接口；会话交换、原子缓存、任务轮询/取消/过期恢复及隐私实接仍待网站契约和真实服务。mock 不构成后端、内容安全、工具模拟器、真机或审核证据。
+存储按mock/local/native/native-fixture及两服隔离：`racepick.mini.<模式>.draft.v1.<服>`是显式保存车库，`working.v1`是临时试算。后台/切服只暂存working；恢复已保存保留当前地图/区档/SC。已有损坏/未知schema及基线冲突记录保持，不静默覆盖。照片路径与token不写草稿；不自动读取浏览器车库或账号。云端账号车库尚未接入。
 
-详见 `docs/MINIPROGRAM_CLIENT_HANDOFF_20261102.md` 与 `docs/MINIPROGRAM_CROSS_BRANCH_REQUESTS_20261102.md`。不运行上传、预览分发、提审或发布命令。
+未执行生产、微信后台、上传体验版、提交审核或发布。真实微信登录、合法域名/图片安全策略、iOS/Android及用户验收仍待完成；审核未假定通过。

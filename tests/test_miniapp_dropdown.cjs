@@ -6,7 +6,7 @@ function page({deferred=false,mock=false,rect={left:250,top:620,bottom:660,width
   createSelectorQuery(){return {select(){return this;},boundingClientRect(cb){if(deferred)callbacks.push(cb);else cb(rect);return this;},exec(){}};},
   chooseMedia(options){mediaOptions=options;options.success({tempFiles:[{tempFilePath:'tmp/album-screenshot',size:1024}]});}};
  vm.runInNewContext(fs.readFileSync(file,'utf8'),{Page:x=>{config=x;},wx,require:x=>x==='../../generated/native-config'?{enabled:false}:mock&&x==='../../generated/local-bundle'?null:require(path.resolve(path.dirname(file),x))});
- const p={...config,data:structuredClone(config.data),setData(x){Object.assign(this.data,x);}};p.onLoad();
+ const p={...config,data:structuredClone(config.data),setData(x){Object.assign(this.data,x);}};p.onLoad();if(!mock){p.controller.setMode('zone5','理论');p.controller.setCars(p.state.model.cars.map(c=>c.id),false);}
  return {p,callbacks,rect,get mediaOptions(){return mediaOptions;}};
 }
 const open=(p,index,field,pending=false)=>p.openDropdown({currentTarget:{dataset:{index,field,pending}}});

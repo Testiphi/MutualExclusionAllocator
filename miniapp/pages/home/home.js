@@ -11,7 +11,7 @@ const {createNativeService}=require('../../services/native');
 const {visibleCars}=require('../../lib/garage_view');
 
 Page({
-  data: { ready:false, garageOpen: false, query: '', rows: [], cars: [], schemes: [], slotRows: [], schemeIndex:0, activeScheme:null, dropdown:null,sortMode:'alpha',carClass:'',classes:['','R','S','A','B','C','D'] },
+  data: { ready:false, garageOpen: true, query: '', rows: [], cars: [], schemes: [], slotRows: [], schemeIndex:0, activeScheme:null, dropdown:null,sortMode:'alpha',carClass:'',classes:['','R','S','A','B','C','D'] },
   onLoad() {
     this.unloaded=false;this.routeMemory={};
     if(nativeConfig.enabled){this.connectNative();return;}
@@ -23,7 +23,7 @@ Page({
   },
   mountService(service) {
     this.service=service;this.setData({connectionFailed:false});
-    this.controller = createController({ service, storage: createStorage(wx, service.mode),
+    this.controller = createController({ service, storage: createStorage(wx, service.mode),autoCompute:true,
       media: createMedia(wx), render: state => { this.state = state; this.updateView(); } });
   },
   async connectNative() {
@@ -35,16 +35,20 @@ Page({
   updateView() {
     const s = this.state, d = s.draft, m = s.model;
     const bigs = [...new Set(m.maps.map(x => x.big))];
-    const row = (map, index) => {
+    this.topKeys=this.topKeys||{};this.topOpen=this.topOpen||{};
+    const row = (map, index,review=false) => {
       const big = map && map.big || '', small = map && map.small || '';
       const options = m.maps.filter(x => x.big === big).map(x => x.small);
-      return { index, big, small, bigs: ['选择大地图'].concat(bigs),
+      const top=!review&&(m.topCars||[]).find(t=>t.index===index);
+      if(!review){const key=d.server+':'+big+'/'+small;if(this.topKeys[index]!==key){this.topKeys[index]=key;this.topOpen[index]=false;}}
+      return { index, big, small,top:top||null,topOpen:!review&&this.topOpen[index],bigs: ['选择大地图'].concat(bigs),
         bigIndex: bigs.indexOf(big) + 1, smalls: ['选择小地图'].concat(options),
         smallIndex: options.indexOf(small) + 1 };
     };
     const viewKey='racepick.mini.view.v1.'+s.mode+'.'+d.server;
     if(this.lastViewKey!==viewKey){this.lastViewKey=viewKey;let saved;try{saved=wx.getStorageSync(viewKey);}catch(_){}this.setData({sortMode:saved&&['alpha','score-desc','score-asc'].includes(saved.sortMode)?saved.sortMode:'alpha',carClass:saved&&this.data.classes.includes(saved.carClass)?saved.carClass:''});}
-    const cars = visibleCars(m.cars,this.data.query,this.data.carClass,this.data.sortMode)
+    const sourceCars=this.service.garageView?this.service.garageView(d,(this.data.query||'').trim(),this.data.carClass,this.data.sortMode).map(id=>m.cars.find(c=>c.id===id)).filter(Boolean):visibleCars(m.cars,this.data.query,this.data.carClass,this.data.sortMode);
+    const cars = sourceCars
       .map((x,index) => ({ ...x, index,selected: d.cars.includes(x.id), starIndex: x.stars.indexOf(x.effectiveStar|| (x.stars.includes(d.stars[x.id]) ? d.stars[x.id] : x.defaultStar)),
         oc: d.oc[x.id] === true }));
     const routes = (m.routes || []).map(x=>{
@@ -53,18 +57,21 @@ Page({
     });
     const schemes = s.result ? s.result.schemes.map((scheme,index)=>({
       index,prioritySum:scheme.prioritySum,totalText:scheme.total==null?'—':scheme.total.toFixed(3)+'秒',
-      rows:scheme.rows.map((r,i)=>({index:i,map:r.map||'未选地图',big:d.maps[i]&&d.maps[i].big||'',
-        car:r.car||'未分配',empty:r.car==null,timeText:r.time==null?'—':r.time.toFixed(3)+'秒'}))
+      rows:scheme.rows.map((r,i)=>({index:i,map:r.map||('第'+(i+1)+'位'),big:r.map?(d.maps[i]&&d.maps[i].big||''):'未选地图',
+        configured:!!r.map,car:r.car||(r.map?'无可用车':'⛔ 未配置'),empty:r.car==null,oc:d.server==='global'&&d.oc[r.car]===true,
+        stars:d.tier==='理论'?null:(m.cars.find(c=>c.id===r.car)||{}).effectiveStar,
+        hasTime:r.time!=null,timeValue:r.time==null?'':r.time.toFixed(2),timeText:r.time==null?'':r.time.toFixed(2)+' 秒'}))
     })) : [];
     const schemeIndex=this.lastResult===s.result && this.data.schemeIndex<schemes.length?this.data.schemeIndex:0;
     this.lastResult=s.result;
     this.closeDropdown();
     this.setData({ ready:true, server: d.server, mode: s.mode, error: s.error, busy: s.busy,
-      dirty: s.dirty, image: s.image, hasPending: !!s.pending,
+      dirty: s.dirty, image: s.image, hasPending: !!s.pending,ocrBusy:!!s.image&&s.busy,subtitle:m.subtitle||'帕累托最优 · 擂台选车',zoneHint:d.zone==='zone4',
       selectedCount: m.cars.filter(c=>d.cars.includes(c.id)).length,serviceStatus:s.serviceStatus,sortLabel:({'alpha':'字母','score-desc':'分↓','score-asc':'分↑'})[this.data.sortMode],zones: m.zones.map(x => x === 'zone4' ? '四区' : '五区'),
       zoneIndex: m.zones.indexOf(d.zone), tiers: m.tiers, tierIndex: m.tiers.indexOf(d.tier),
-      rows: d.maps.map(row), cars, routes, slotRows: s.pending ? s.pending.map(row) : [],
-      schemes,schemeIndex,schemeOptions:schemes.map(x=>'方案'+(x.index+1)+' · '+x.rows.map((r,i)=>r.big?(i+1)+':'+(r.empty?'空':r.car):'').filter(Boolean).join(' ')+' · Σ='+(x.prioritySum==null?'—':x.prioritySum)),activeScheme:schemes[schemeIndex]||null });
+      rows: d.maps.map((m,i)=>row(m,i)), cars, routes, slotRows: s.pending ? s.pending.map((m,i)=>row(m,i,true)) : [],
+      emptyResultText:d.maps.some(m=>m&&m.small)?'没有可用方案':'请先选择地图',
+      schemes,schemeIndex,schemeOptions:schemes.map(x=>'方案'+(x.index+1)+' · '+x.rows.map((r,i)=>r.configured?(i+1)+':'+(r.empty?'空':r.car):'').filter(Boolean).join(' ')+' · Σ='+(x.prioritySum==null?'—':x.prioritySum)),activeScheme:schemes[schemeIndex]||null });
   },
   onShow() { if (this.controller) this.controller.show(); },
   onHide() { this.closeDropdown();if (this.controller) this.controller.hide(); },
@@ -139,6 +146,7 @@ Page({
     else this.controller.setMap(Number(index), map);
   },
   toggleGarage() { this.setData({ garageOpen: !this.data.garageOpen }); },
+  toggleTop(e) {const i=Number(e.currentTarget.dataset.index);this.topOpen[i]=!this.topOpen[i];this.updateView();},
   search(e) { this.setData({ query: e.detail.value }); this.updateView(); },
   toggleCar(e) {
     const id = e.currentTarget.dataset.id;
@@ -148,7 +156,7 @@ Page({
     const id = e.currentTarget.dataset.id, car = this.state.model.cars.find(x => x.id === id);
     this.controller.setStars(id, car.stars[Number(e.detail.value)]);
   },
-  toggleOc(e) { const id=e.currentTarget.dataset.id;this.controller.setOc(id,e.detail&&typeof e.detail.value==='boolean'?e.detail.value:!this.state.draft.oc[id]); },
+  toggleOc(e) { const id=e.currentTarget.dataset.id;if(this.state.draft.cars.includes(id))this.controller.setOc(id,e.detail&&typeof e.detail.value==='boolean'?e.detail.value:!this.state.draft.oc[id]); },
   toggleRoute(e) {
     const key=e.currentTarget.dataset.key, value=this.state.draft.routes[key];
     const memoryKey=this.state.draft.server+':'+key;
@@ -171,5 +179,6 @@ Page({
   reconnect() {return this.controller?this.controller.reconnect():this.connectNative();},
   retryRecognition() {return this.controller.retryRecognition();},
   recognize() { this.controller.recognize(); }, applyRecognition() { this.controller.applyRecognition(); },
-  cancelRecognition() { this.controller.cancelRecognition(); }
+  cancelRecognition() { this.controller.cancelRecognition(); },
+  stopRecognition() {this.controller.stopRecognition();}
 });
