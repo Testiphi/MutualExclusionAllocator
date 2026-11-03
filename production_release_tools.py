@@ -34,8 +34,9 @@ MINI_ACCOUNT_FILES=('backend/mini_accounts.py','production/mini-account-config.e
 GLOBAL_PROFILE_FILES=('backend/global_profiles.py','GLOBAL_PROFILE_CLOUD_20261103.md')
 MIRROR_FILES=('backend/mini_features.py','MINI_FEATURES_COMMON_20261103.md','MINI_BATCH_B_20261103.md','MINI_BATCH_C_20261103.md','MINI_BATCH_D_20261103.md','MINI_BATCH_E_20261103.md','MINI_FEATURES_OPENAPI_20261103.json')
 HOME_FILES=('home_presenter.js','home_theme.json','HOME_PRESENTER_CONTRACT_20261103.md')
-COMPONENT_GROUPS=COMPONENT_GROUPS+(MINI_FILES,MINI_ACCOUNT_FILES,GLOBAL_PROFILE_FILES,MIRROR_FILES,HOME_FILES)
-APP_FILES=BASE_FILES+SCOPED_FILES+COVERAGE_FILES+THEME_FILES+SCORE_FILES+COMMUNITY_FILES+CONTRIBUTION_FILES+FEEDBACK_FILES+GLOBAL_FILES+NOTIFICATION_FILES+USAGE_FILES+SELECTION_FILES+MINI_FILES+MINI_ACCOUNT_FILES+GLOBAL_PROFILE_FILES+MIRROR_FILES+HOME_FILES
+MAINTENANCE_FILES=('backend/maintenance_release.py','production_release_tools.py','MAINTENANCE_RELEASE_20261103.md')
+COMPONENT_GROUPS=COMPONENT_GROUPS+(MINI_FILES,MINI_ACCOUNT_FILES,GLOBAL_PROFILE_FILES,MIRROR_FILES,HOME_FILES,MAINTENANCE_FILES)
+APP_FILES=BASE_FILES+SCOPED_FILES+COVERAGE_FILES+THEME_FILES+SCORE_FILES+COMMUNITY_FILES+CONTRIBUTION_FILES+FEEDBACK_FILES+GLOBAL_FILES+NOTIFICATION_FILES+USAGE_FILES+SELECTION_FILES+MINI_FILES+MINI_ACCOUNT_FILES+GLOBAL_PROFILE_FILES+MIRROR_FILES+HOME_FILES+MAINTENANCE_FILES
 OCR_CODE_FILES=('backend/map_layout.py','backend/map_recognition.py','backend/map_ocr_engine.py','backend/map_ocr_worker.py',
  'backend/map_ocr_production.py','backend/map_ocr_supervisor.py','map_recognition.js','map_recognition.css',
  'production/ocr-models.json','production/ocr-assets.json','production/ocr-selfcheck.py','production/racepick-map-ocr.service',
@@ -169,6 +170,10 @@ def check_score_compatibility(target,info,data_dir):
   if not set(USAGE_FILES)<=set(info['files']) or 'production/score-capability.json' not in info['files'] or json.loads(cap.read_text()).get('usage_schema')!=1:raise ValueError('统计库已启用，禁止切回不兼容旧程序')
  if account_db.exists():
   with closing(sqlite3.connect(account_db.as_uri()+'?mode=ro',uri=True)) as db:
+   if db.execute("SELECT 1 FROM sqlite_master WHERE name='maintenance_releases'").fetchone():
+    active=any(json.loads(row[0]).get('state')=='applied' for row in db.execute('SELECT receipt FROM maintenance_releases'))
+    cap=Path(target)/'production/score-capability.json'
+    if active and (not set(MAINTENANCE_FILES)<=set(info['files']) or not cap.is_file() or json.loads(cap.read_text()).get('maintenance_release')!=1):raise ValueError('维护版本及车辆规则已发布，禁止切回不兼容旧应用；须先定点回退维护版本')
    if db.execute("SELECT 1 FROM sqlite_master WHERE name='global_profile_schema'").fetchone():
     rows=db.execute('SELECT version FROM global_profile_schema').fetchall();cap=Path(target)/'production/score-capability.json'
     if len(rows)!=1 or rows[0][0]!=1 or not set(GLOBAL_PROFILE_FILES)<=set(info['files']) or 'production/score-capability.json' not in info['files'] or json.loads(cap.read_text()).get('global_profile_schema')!=1:raise ValueError('国际账号车库已启用，禁止切回不兼容旧应用')

@@ -14,7 +14,7 @@ import secrets
 import tempfile
 import time
 from fastapi import HTTPException
-from backend.score_repository import Versions, encode, digest, write_new, sync_dir, validate_lab
+from backend.score_repository import Versions, encode, digest, write_new, sync_dir, validate_lab, approved_catalog
 from backend.score_versions import ScoreWriter, reject, LOADED_ENGINE, LOADED_EXTRA
 from backend.submissions import Score, normalize, comparison, identity
 from backend.score_scopes import global_source
@@ -60,7 +60,7 @@ class GlobalVersions(Versions):
         if info.get('server')!='global' or info.get('schema')!=1 or info.get('id')!=vid or digest(encode({k:v for k,v in info.items() if k!='id'}).encode())[:32]!=vid or set(info.get('files',{}))!=set(FILES):raise ValueError('国际成绩版本清单无效')
         if any(digest(contents[n])!=info['files'][n] for n in FILES):raise ValueError('国际成绩版本被修改')
         catalog,_,_=validate_contents(contents)
-        if catalog['_meta']['catalog_payload_sha256']!=marker['catalog_payload_sha256']:raise ValueError('国际车辆规则与冻结基线不一致')
+        if not approved_catalog(marker,'catalog_payload_sha256',catalog['_meta']['catalog_payload_sha256']):raise ValueError('国际车辆规则未经维护发布授权')
         return info,contents
 
 def provision(root,accounts,source,production=False):
@@ -132,7 +132,7 @@ class GlobalScoreWriter(ScoreWriter):
     def current(self):
         with self.store.connect() as db:vid=self.current_id(db)
         info,raw=self.versions.read(vid);catalog=json.loads(raw[FILES[0]])
-        if catalog['_meta']['catalog_payload_sha256']!=self.marker['catalog_payload_sha256']:reject('本阶段禁止修改国际车辆规则')
+        if not approved_catalog(self.marker,'catalog_payload_sha256',catalog['_meta']['catalog_payload_sha256']):reject('国际车辆规则未经维护发布授权')
         return info,raw
     def enabled(self,db):
         return super().enabled(db) and bool(db.execute('SELECT enabled FROM global_score_control WHERE slot=1').fetchone()[0])

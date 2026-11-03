@@ -7,6 +7,7 @@ from pathlib import Path
 import sqlite3
 from backend.global_scores import FILES, GlobalScoreWriter, GlobalVersions, initialize, validate_root, validate_contents
 from backend.app import Store
+from backend.score_repository import approved_catalog
 
 TABLES=('global_score_current','global_score_batches','global_score_control')
 
@@ -28,7 +29,7 @@ def preflight(config):
             binding,enabled=db.execute('SELECT binding,enabled FROM global_score_control WHERE slot=1').fetchone()
             if binding!=marker['binding']:raise ValueError('国际成绩账号绑定不一致')
             versions=GlobalVersions(root,lambda p:validate_root(p,path,True));_,raw=versions.read(result['global_score_version'])
-            if json.loads(raw[FILES[0]])['_meta']['catalog_payload_sha256']!=marker['catalog_payload_sha256']:raise ValueError('国际车辆规则变化')
+            if not approved_catalog(marker,'catalog_payload_sha256',json.loads(raw[FILES[0]])['_meta']['catalog_payload_sha256']):raise ValueError('国际车辆规则未经维护发布授权')
             result['global_writes_enabled']=bool(enabled)
     return result
 

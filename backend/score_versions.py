@@ -9,7 +9,7 @@ from pydantic import BaseModel, ConfigDict, Field, StrictBool
 from argon2 import PasswordHasher
 from argon2.exceptions import VerificationError, InvalidHashError
 from backend.previews import ROOT, Pick, build_preview, load_source, LOADED_ENGINE, engine_hashes
-from backend.score_repository import Versions, validate_lab, validate_production_root, encode, digest, write_new, FILES, sync_dir
+from backend.score_repository import Versions, validate_lab, validate_production_root, encode, digest, write_new, FILES, sync_dir, approved_catalog
 from backend.manage import copy_database
 
 EXTRA=('backend/score_versions.py','backend/score_repository.py','backend/contributions.py','backend/global_scores.py','backend/score_scopes.py','tools/build_global_data.py')
@@ -78,7 +78,7 @@ class ScoreWriter:
     def current(self):
         with self.store.connect() as db:identity=self.current_id(db)
         info,contents=self.versions.read(identity)
-        if info['files']['cars.json']!=self.marker['cars_sha256']:reject('本阶段禁止修改车辆规则')
+        if not approved_catalog(self.marker,'cars_sha256',info['files']['cars.json']):reject('车辆规则未经维护发布授权')
         return info,contents
     def current_dir(self):return self.versions.root/self.current()[0]['id']
     def idle(self,db):
@@ -129,7 +129,7 @@ class ScoreWriter:
         for row,item in zip(rows,m['result']['items']):
             if digest((row['accepted_payload'] or '').encode())!=item['accepted_hash']:reject('拟采纳内容变化')
         _,contents=self.versions.read(m['base']);target,_=self.versions.read(m['target'])
-        if target['parent']!=m['base'] or target['files']['cars.json']!=self.marker['cars_sha256']:reject('目标版本来源异常')
+        if target['parent']!=m['base'] or target['files']['cars.json']!=digest(contents['cars.json']):reject('目标版本来源异常')
         data,cars,source=load_source(self.versions.root/m['base']);source['version']=m['base']
         result,preview=build_preview(rows,data,cars,source)
         if result['state']!='ready' or digest(preview.encode())!=target['files']['gauntlet_data.json']:reject('候选内容已变化')
