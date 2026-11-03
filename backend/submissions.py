@@ -16,6 +16,7 @@ from fastapi.responses import FileResponse, HTMLResponse, Response
 from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictInt
 from PIL import Image, UnidentifiedImageError
 from data_tools import SC_TYPES, car_records, star_limits
+from backend.score_scopes import global_source, capabilities, require_scope, target_identity
 
 
 def packed(value):
@@ -64,6 +65,8 @@ def migrate(db):
 
 class Score(BaseModel):
     model_config = ConfigDict(extra='forbid')
+    server: Literal['cn','global'] = 'cn'
+    oc: StrictBool = False
     big: str = Field(default='', max_length=100)
     small: str = Field(default='', max_length=100)
     zone: Literal['五区','四区'] = '五区'
@@ -114,9 +117,21 @@ def reference(root):
             {'data':hashlib.sha256(data_bytes).hexdigest(),'cars':hashlib.sha256(cars_bytes).hexdigest()})
 
 
+def score_payload(entry):
+    value=entry.model_dump()
+    if value['server']=='cn':
+        if value['oc']:raise HTTPException(422,'国服投稿不支持OC状态')
+        value.pop('server');value.pop('oc')
+    return value
+
+
 def normalize(entry, data, cars, strict=True):
-    value = entry.model_dump()
+    value = score_payload(entry)
     value = {k:v.strip() if isinstance(v,str) else v for k,v in value.items()}
+    if entry.server=='global':
+        cap=require_scope('global',cars,value['zone'],value['tier'])
+        if value['oc'] and (not cap.get('oc') or value['route']):raise HTTPException(422,'当前国际服OC仅支持普通跑法')
+        if cap.get('max_stars_only') and value['tier']!='理论':raise HTTPException(422,'当前国际服仅开放满星理论成绩')
     if value['video_url']:
         try: url = urlsplit(value['video_url'])
         except ValueError: raise HTTPException(422,'证据链接格式不正确')
@@ -134,6 +149,10 @@ def normalize(entry, data, cars, strict=True):
     if not record or not record.get('nickname') or value['zone'] not in record.get('zones',[]):
         raise HTTPException(422,'车辆不存在或不属于所选分区')
     value['car'] = record['nickname']
+    if entry.server=='global' and cap.get('max_stars_only'):
+        maximum=star_limits(record,value['zone'])[1]
+        if value['stars'] not in (None,maximum):raise HTTPException(422,'当前国际服仅支持满星成绩')
+        value['stars']=None
     if value['tier']=='高手' and value['stars'] is None:
         raise HTTPException(422,'高手成绩需要明确星级')
     if value['stars'] is not None:
@@ -162,7 +181,7 @@ def normalize(entry, data, cars, strict=True):
 
 def identity(value):
     if value['unlisted']: return None
-    return packed([value[k] for k in ('big','small','zone','tier','car','stars','route')])
+    return packed(target_identity(value))
 
 
 def comparison(value, data):
@@ -172,6 +191,7 @@ def comparison(value, data):
     entries=track[value['zone']][value['tier']]
     matches=[e for e in entries if len(e['cars'])==1 and e['cars'][0]['name']==value['car']
              and e['cars'][0].get('stars')==value['stars'] and bool(e.get('sc'))==bool(value['route'])
+             and bool(e['cars'][0].get('oc'))==bool(value.get('oc',False))
              and (not value['route'] or e.get('sc_type')==value['route'])]
     if len(matches)>1: raise HTTPException(409,'参考库存在重复目标，需先维护正式数据')
     if value['tier'] in ('普通','自动'):
@@ -189,6 +209,12 @@ def comparison(value, data):
 
 def install(app,store,root,user,reference_root=None,production=False):
     reference_root = reference_root or root
+    def source(server='cn'):
+        global_root=app.state.global_score_versions.current_dir() if hasattr(app.state,'global_score_versions') else root
+        return global_source(global_root) if server=='global' else reference(reference_root)
+    def same_server(row,entry):
+        if json.loads(row['payload']).get('server','cn')!=entry.server:
+            raise HTTPException(422,'不能将已有投稿改到另一服别，请新建投稿')
     def actor(request,admin=False,header=True):
         owner=user(request)
         if header and request.headers.get('x-account-id') != owner['id']:
@@ -227,10 +253,10 @@ def install(app,store,root,user,reference_root=None,production=False):
         return FileResponse(root/'submissions.html')
 
     @app.get('/api/submissions/catalog')
-    def catalog(request:Request):
+    def catalog(request:Request,server:Literal['cn','global']='cn'):
         actor(request)
-        data,cars,basis=reference(reference_root)
-        return {'tracks':[{'big':t['大地图'],'small':t['小地图']} for t in data['tracks']],
+        data,cars,basis=source(server)
+        return {'server':server,'capabilities':capabilities(server,cars),'tracks':[{'big':t['大地图'],'small':t['小地图']} for t in data['tracks']],
                 'cars':[{'name':c['nickname'],'title':c['title'],'zones':c.get('zones',[]),
                          'limits':{z:star_limits(c,z) for z in c.get('zones',[])}} for c in cars['cars'] if c.get('nickname') and c.get('zones')],
                 'routes':list(SC_TYPES),'basis':basis,'reference_label':'当前网站成绩库（采纳不自动写入）' if production else '隔离写回测试库（非真实正式库）' if hasattr(app.state,'writeback') else '本地功能分支参考库快照，尚非线上实时库'}
@@ -238,8 +264,8 @@ def install(app,store,root,user,reference_root=None,production=False):
     @app.post('/api/submissions')
     def create(body:CreateBatch,request:Request):
         owner=actor(request)
-        data,cars,_=reference(reference_root)
-        fingerprint=hashlib.sha256(packed(body.model_dump()).encode()).hexdigest()
+        sources={e.server:source(e.server) for e in body.entries}
+        fingerprint=hashlib.sha256(packed({'request_key':body.request_key,'entries':[score_payload(e) for e in body.entries]}).encode()).hexdigest()
         with store.connect() as db:
             db.execute('BEGIN IMMEDIATE');app.state.require_active_session(request,db)
             prior=db.execute('SELECT * FROM submission_requests WHERE owner_id=? AND request_key=?',(owner['id'],body.request_key)).fetchone()
@@ -250,6 +276,7 @@ def install(app,store,root,user,reference_root=None,production=False):
                 raise HTTPException(429,'每天最多保存100条投稿，请明天再试')
             batch=secrets.token_hex(16); ids=[]
             for entry in body.entries:
+                data,cars,_=sources[entry.server]
                 value=normalize(entry,data,cars,False)
                 sid=secrets.token_hex(16); now=int(time.time())
                 db.execute('INSERT INTO submissions(id,owner_id,batch_id,revision,status,payload,created_at,updated_at) VALUES (?,?,?,1,\'draft\',?,?,?)',
@@ -257,17 +284,19 @@ def install(app,store,root,user,reference_root=None,production=False):
                 if app.state.contributions:
                     from backend.contributions import enroll
                     enroll(db,sid)
-                event(db,sid,owner,'created',entry.model_dump()); ids.append(sid)
+                event(db,sid,owner,'created',score_payload(entry)); ids.append(sid)
             result={'ids':ids,'batch_id':batch}
             db.execute('INSERT INTO submission_requests VALUES (?,?,?,?)',(owner['id'],body.request_key,fingerprint,packed(result)))
         return result
 
     @app.get('/api/submissions')
-    def listing(request:Request,scope:Literal['mine','review']='mine',status:str='',q:str='',offset:int=0):
+    def listing(request:Request,scope:Literal['mine','review']='mine',status:str='',q:str='',offset:int=0,server:Literal['cn','global']|None=None):
         owner=actor(request,scope=='review')
         if len(q)>100 or offset<0: raise HTTPException(422,'查询参数不正确')
         conditions=['owner_id=?'] if scope=='mine' else ["status!='draft'"]
         args=[owner['id']] if scope=='mine' else []
+        if server is not None:
+            conditions.append("COALESCE(json_extract(payload,'$.server'),'cn')=?");args.append(server)
         if status:
             if status not in ('draft','pending','needs_info','accepted','ignored'): raise HTTPException(422,'状态不正确')
             conditions.append('status=?'); args.append(status)
@@ -314,7 +343,7 @@ def install(app,store,root,user,reference_root=None,production=False):
             if owner['role'] in ('admin','superadmin') and row['target_key']:
                 result['same_target']=[dict(r) for r in db.execute("SELECT id,status FROM submissions WHERE target_key=? AND id!=? AND status!='draft' ORDER BY updated_at DESC LIMIT 20",(row['target_key'],sid))]
         try:
-            data,cars,basis=reference(reference_root)
+            data,cars,basis=source(result['payload'].get('server','cn'))
             candidate=normalize(Score(**(result['accepted_payload'] or result['payload'])),data,cars)
             result['comparison']=comparison(candidate,data)
             result['basis']=basis
@@ -324,23 +353,25 @@ def install(app,store,root,user,reference_root=None,production=False):
 
     @app.put('/api/submissions/{sid}')
     def edit(sid:str,body:Edit,request:Request):
-        owner=actor(request); data,cars,_=reference(reference_root)
+        owner=actor(request); data,cars,_=source(body.entry.server)
         value=normalize(body.entry,data,cars,False)
         with store.connect() as db:
             db.execute('BEGIN IMMEDIATE');app.state.require_active_session(request,db); row=get_row(db,sid,owner); expected(row,body.revision)
+            same_server(row,body.entry)
             if row['owner_id']!=owner['id'] or row['status'] not in ('draft','needs_info'):
                 raise HTTPException(409,'仅本人草稿或待补充投稿可以修改')
             db.execute('UPDATE submissions SET payload=?,revision=revision+1,updated_at=? WHERE id=?',(packed(value),int(time.time()),sid))
-            event(db,sid,owner,'edited',body.entry.model_dump())
+            event(db,sid,owner,'edited',score_payload(body.entry))
         return {'revision':body.revision+1}
 
     @app.post('/api/submissions/{sid}/submit')
     def submit(sid:str,body:Revision,request:Request,background_tasks:BackgroundTasks):
-        owner=actor(request); data,cars,basis=reference(reference_root)
+        owner=actor(request)
         with store.connect() as db:
             db.execute('BEGIN IMMEDIATE');app.state.require_active_session(request,db); row=get_row(db,sid,owner); expected(row,body.revision)
             if row['owner_id']!=owner['id'] or row['status'] not in ('draft','needs_info'):
                 raise HTTPException(409,'此状态不能重复提交或修改')
+            data,cars,basis=source(json.loads(row['payload']).get('server','cn'))
             value=normalize(Score(**json.loads(row['payload'])),data,cars)
             if value['tier']=='理论' and not value['unlisted'] and not value['notes'] and not value['video_url'] and not db.execute('SELECT 1 FROM submission_images WHERE submission_id=? AND active=1',(sid,)).fetchone():
                 raise HTTPException(422,'理论成绩请补充来源说明、证据图片或视频链接')
@@ -357,7 +388,8 @@ def install(app,store,root,user,reference_root=None,production=False):
         with store.connect() as db:
             row=get_row(db,sid,owner); expected(row,body.revision)
             if row['status']!='pending': raise HTTPException(409,'只有待审核投稿可预览采纳内容')
-        data,cars,basis=reference(reference_root); candidate=normalize(body.entry,data,cars)
+            same_server(row,body.entry)
+        data,cars,basis=source(body.entry.server); candidate=normalize(body.entry,data,cars)
         compare=comparison(candidate,data)
         return {'candidate':candidate,'comparison':compare,'basis':basis,'revision':body.revision}
 
@@ -392,7 +424,8 @@ def install(app,store,root,user,reference_root=None,production=False):
             status={'accept':'accepted','needs_info':'needs_info','ignore':'ignored'}[body.action]
             if body.action=='accept':
                 if body.entry is None: raise HTTPException(422,'缺少拟采纳内容')
-                data,cars,basis=reference(reference_root)
+                same_server(row,body.entry)
+                data,cars,basis=source(body.entry.server)
                 if body.basis!=basis: raise HTTPException(409,'参考数据或车辆规则已变化，请重新预览并确认')
                 candidate=normalize(body.entry,data,cars)
                 if candidate['unlisted']: raise HTTPException(422,'未收录建议需先维护规则；本轮不可直接采纳入库')

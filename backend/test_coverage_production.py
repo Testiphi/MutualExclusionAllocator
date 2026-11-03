@@ -23,10 +23,13 @@ class CoverageProductionTests(unittest.TestCase):
         self.assertEqual(raw,self.store.path.read_bytes())
         with patch('backend.production.service_lock',side_effect=ValueError('active service')):
             with self.assertRaises(ValueError):migrate(self.config,self.version)
-        result=migrate(self.config,self.version);self.assertTrue(result['existing_rows_preserved']);self.assertEqual(result['coverage_schema'],1);self.assertFalse(any(result['coverage_counts'].values()))
+        result=migrate(self.config,self.version);self.assertTrue(result['existing_rows_preserved']);self.assertEqual(result['coverage_schema'],2);self.assertFalse(any(result['coverage_counts'].values()))
         self.assertEqual(before['counts'],result['counts']);self.assertEqual(before['score_version'],result['score_version'])
         raw=self.store.path.read_bytes();self.assertTrue(migrate(self.config,self.version)['already_migrated']);self.assertEqual(raw,self.store.path.read_bytes())
-        restored=drill(self.config,backup(self.config));self.assertEqual(restored['coverage_schema'],1);self.assertFalse(restored['active_database_replaced']);self.assertTrue(make_app(self.config,'unused').state.coverage)
+        from backend.global_score_production import migrate as migrate_global
+        root=Path(__file__).parents[1];dataset=json.loads((root/'global-data-manifest.json').read_text(encoding='utf-8'))['_meta']['dataset_version']
+        migrate_global(self.config,root,dataset,self.version)
+        restored=drill(self.config,backup(self.config));self.assertEqual(restored['coverage_schema'],2);self.assertFalse(restored['active_database_replaced']);self.assertTrue(make_app(self.config,'unused').state.coverage)
         restored_app=make_app({**self.config,'data_dir':restored['drill_directory']},'unused');self.assertTrue(restored_app.state.coverage)
     def test_rollback_on_failure_and_reject_incompatible_old_application(self):
         def fail(db):migrate_tables(db);raise ValueError('fixture failure')

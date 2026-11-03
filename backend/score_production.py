@@ -109,6 +109,10 @@ def toggle(config,enable):
 
 
 def safe_backup_name(name):
+    if name=='global-score-state/global-scores.json':return True
+    global_file=r'(cars\.global\.json|gauntlet_data\.global\.json|global-data-manifest\.json|manifest\.json)'
+    if re.fullmatch(r'global-score-state/scores/versions/[a-f0-9]{32}/'+global_file,name):return True
+    if re.fullmatch(r'global-score-state/backups/[a-f0-9]{32}-(apply|rollback)-[a-f0-9]{12}/('+global_file+r'|accounts\.sqlite3)',name):return True
     if name in ('accounts.sqlite3','usage.sqlite3','production.json','score-state/production-scores.json'):return True
     if re.fullmatch(r'score-state/scores/versions/[a-f0-9]{32}/(gauntlet_data|cars|manifest)\.json',name):return True
     return bool(re.fullmatch(r'score-state/backups/[a-f0-9]{32}-(apply|rollback)-[a-f0-9]{12}/(gauntlet_data\.json|cars\.json|manifest\.json|accounts\.sqlite3)',name))
@@ -122,11 +126,15 @@ def backup(config):
     usage_snapshot=directory/('.usage-snapshot-'+secrets.token_hex(8)+'.sqlite3')
     output=directory/('scores-'+stamp()+'.zip');temporary=output.with_suffix('.partial')
     try:
-        with writer.versions.lock():
+        from backend.global_scores import backup_lock, backup_files
+        with writer.versions.lock(), backup_lock(path):
             copy_database(path/'accounts.sqlite3',temp_db)
             with closing(sqlite3.connect(temp_db)) as db:version=db.execute('SELECT version FROM score_current').fetchone()[0]
             writer.versions.read(version)
             content={'accounts.sqlite3':temp_db,'production.json':path/'production.json','score-state/production-scores.json':writer.lab/'production-scores.json'}
+            with closing(sqlite3.connect(temp_db)) as snapshot_db:
+                global_content,global_state=backup_files(path,snapshot_db)
+            content.update(global_content)
             if (path/'usage.sqlite3').exists():
                 from backend.usage_production import snapshot
                 snapshot(path/'usage.sqlite3',usage_snapshot);content['usage.sqlite3']=usage_snapshot
@@ -138,8 +146,11 @@ def backup(config):
                 name='score-state/backups/'+p.parent.name+'/'+p.name
                 if p.is_file() and safe_backup_name(name):content[name]=p
             from backend.coverage import state as coverage_state
-            with closing(sqlite3.connect(temp_db)) as snapshot_db:coverage_snapshot=coverage_state(snapshot_db)
-            manifest={'format':'racepick-coherent-scores-v1',**coverage_snapshot,'current':version,'usage_schema':1 if 'usage.sqlite3' in content else 0,'files':{n:file_hash(v) for n,v in content.items()}}
+            with closing(sqlite3.connect(temp_db)) as snapshot_db:
+                coverage_snapshot=coverage_state(snapshot_db)
+                from backend.global_profiles import state as profile_state
+                profile_snapshot=profile_state(snapshot_db)
+            manifest={'format':'racepick-coherent-scores-v1',**coverage_snapshot,**global_state,**profile_snapshot,'current':version,'usage_schema':1 if 'usage.sqlite3' in content else 0,'files':{n:file_hash(v) for n,v in content.items()}}
             with zipfile.ZipFile(temporary,'x',zipfile.ZIP_DEFLATED) as archive:
                 for n,v in content.items():archive.write(v,n)
                 archive.writestr('backup-manifest.json',encode(manifest))
@@ -158,7 +169,10 @@ def verify_backup(source):
         manifest=json.loads(archive.read('backup-manifest.json'))
         if manifest.get('format')!='racepick-coherent-scores-v1' or set(manifest['files'])!=set(names)-{'backup-manifest.json'}:raise ValueError('备份清单异常')
         if manifest.get('usage_schema',0)!=(1 if 'usage.sqlite3' in manifest['files'] else 0):raise ValueError('统计备份组件声明不匹配')
-        if manifest.get('coverage_schema',0) not in (0,1):raise ValueError('成绩表备份schema无效')
+        if manifest.get('global_profile_schema',0) not in (0,1):raise ValueError('国际账号车库备份schema无效')
+        if manifest.get('coverage_schema',0) not in (0,1,2):raise ValueError('成绩表备份schema无效')
+        if manifest.get('global_score_schema',0) not in (0,1):raise ValueError('国际成绩备份schema无效')
+        if bool(manifest.get('global_score_schema',0))!=('global-score-state/global-scores.json' in manifest['files']):raise ValueError('国际成绩备份组件声明不匹配')
         for n,h in manifest['files'].items():
             with archive.open(n) as stream:
                 if stream_hash(stream)!=h:raise ValueError('备份校验失败：'+n)
@@ -178,6 +192,7 @@ def drill(config,source):
                 for block in iter(lambda:reader.read(1024*1024),b''):writer.write(block)
                 writer.flush();os.fsync(writer.fileno())
     (destination/'score-state/backups').mkdir(exist_ok=True)
+    if manifest.get('global_score_schema')==1:(destination/'global-score-state/backups').mkdir(exist_ok=True)
     _,marker=validate_production_root(destination/'score-state',destination)
     with closing(sqlite3.connect((destination/'accounts.sqlite3').as_uri()+'?mode=ro',uri=True)) as db:
         if db.execute('PRAGMA integrity_check').fetchone()[0]!='ok' or db.execute('PRAGMA foreign_key_check').fetchall():raise ValueError('演练数据库校验失败')
@@ -194,6 +209,10 @@ def drill(config,source):
         notifications=notification_state(db)
         from backend.coverage import state as coverage_state
         coverage=coverage_state(db)
+        from backend.global_profiles import state as profile_state
+        profiles=profile_state(db)
+        if profiles['global_profile_schema']!=manifest.get('global_profile_schema',0):raise ValueError('国际账号车库备份组件声明不匹配')
+        if profiles['global_profile_schema']:counts['profiles_global']=db.execute('SELECT count(*) FROM profiles_global').fetchone()[0]
         if coverage['coverage_schema']!=manifest.get('coverage_schema',0):raise ValueError('成绩表备份组件声明不匹配')
     usage_schema=0
     if (destination/'usage.sqlite3').exists():
@@ -205,7 +224,11 @@ def drill(config,source):
     for row in rows:
         item=json.loads(row[0]);versions.read(item['base']);versions.read(item['target'])
         if item.get('rollback'):versions.read(item['rollback']['version'])
-    return {'drill_directory':str(destination),'version':version,'counts':counts,'pending_batches':pending,'active_database_replaced':False,'usage_schema':usage_schema,**contribution,**feedback,**notifications,**coverage}
+    from backend.global_scores import backup_files
+    with closing(sqlite3.connect(destination/'accounts.sqlite3')) as restored_db:
+        _,global_state=backup_files(destination,restored_db)
+    if global_state.get('global_score_schema',0)!=manifest.get('global_score_schema',0) or global_state.get('global_score_version')!=manifest.get('global_score_version'):raise ValueError('国际成绩恢复版本与清单不符')
+    return {'drill_directory':str(destination),'version':version,'counts':counts,'pending_batches':pending,'active_database_replaced':False,'usage_schema':usage_schema,**contribution,**feedback,**notifications,**coverage,**global_state,**profiles}
 
 
 def revert_migration(config,source):

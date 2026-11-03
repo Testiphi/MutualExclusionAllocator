@@ -74,3 +74,5 @@ const raceScores = (() => {
 
     return { starPenalty, getStarAdjustedScore, effectiveTime };
 })();
+
+if (typeof module !== 'undefined' && module.exports) module.exports = raceScores;

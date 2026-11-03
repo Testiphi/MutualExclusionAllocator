@@ -15,6 +15,13 @@ ROOT=Path(__file__).resolve().parents[1]
 LABS=ROOT.parent/'.score-version-sandboxes'
 FILES=('gauntlet_data.json','cars.json')
 def digest(raw):return hashlib.sha256(raw).hexdigest()
+def approved_catalog(marker,seed_key,value):
+    """Only offline hash-bound releases may append catalog authorizations."""
+    if value==marker[seed_key]:return True
+    record=marker.get('maintenance_catalogs',{}).get(value)
+    return isinstance(record,dict) and record.get('schema')==1 and all(
+        isinstance(record.get(key),str) and re.fullmatch(pattern,record[key])
+        for key,pattern in [('plan','[a-f0-9]{64}'),('freeze_id','[a-f0-9]{24}'),('freeze_manifest_sha256','[a-f0-9]{64}')])
 def encode(value):return json.dumps(value,ensure_ascii=False,sort_keys=True,separators=(',',':'),allow_nan=False)
 def sync_dir(path):
     if os.name=='posix':

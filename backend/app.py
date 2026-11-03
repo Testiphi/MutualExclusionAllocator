@@ -126,7 +126,32 @@ class Store:
             db.execute('INSERT INTO attempts VALUES (?,1,?) ON CONFLICT(bucket) DO UPDATE SET count=count+1', (key, now+600))
 
 
-def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None, mail_config=None, preview_source=None, writeback_lab=None, production=False, score_version_lab=None, score_state=None, contributions=False, feedback=False, notifications=False, usage=False, coverage=False):
+def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None, mail_config=None, preview_source=None, writeback_lab=None, production=False, score_version_lab=None, score_state=None, contributions=False, feedback=False, notifications=False, usage=False, coverage=False, map_recognition=None, mini_config=None):
+    if mini_config is not None:
+        from backend.mini_auth import load_config
+        if isinstance(mini_config, (str, Path)):
+            mini_config=load_config(mini_config)
+        if production and mini_config.get('fixture'):
+            raise ValueError('生产禁止使用fixture微信验证')
+    recognition_service=None
+    if map_recognition is not None:
+        if production:
+            from backend.map_ocr_production import ProductionRecognitionService,settings as ocr_settings
+            if score_state is None or ocr_settings(map_recognition)!=Path(data_dir).absolute()/'map-recognition':
+                raise ValueError('生产识图必须绑定现有成绩环境下独立的map-recognition目录')
+            recognition_service=ProductionRecognitionService(map_recognition)
+        elif score_state is not None or writeback_lab is not None or preview_source is not None or reference_dir is not None:
+            raise ValueError('截图识图demo只能运行在独立本地环境，不能混用正式库或写回实验室')
+        else:
+            from backend.map_recognition import RecognitionService
+            recognition_service=RecognitionService(map_recognition)
+            if Path(data_dir or '').resolve()!=recognition_service.root/'accounts':
+                raise ValueError('截图识图demo必须使用自身隔离账号目录')
+        if not production and score_version_lab is not None:
+            from backend.score_repository import validate_lab
+            lab,_=validate_lab(score_version_lab,data_dir)
+            if lab!=recognition_service.root:
+                raise ValueError('整合预览必须使用同一隔离目录，不得连接其他成绩实验室')
     if feedback and (not contributions or (production and score_state is None) or (not production and score_version_lab is None)):
         raise ValueError("问题反馈需要已绑定成绩及贡献环境")
     if contributions and ((production and score_state is None) or (not production and score_version_lab is None)):
@@ -154,9 +179,15 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
     if score_state is not None and (not production or score_version_lab is not None):raise ValueError('score_state仅供独立生产入口使用')
     versioned_scores=score_version_lab is not None or score_state is not None
     if coverage and not production and data_dir and (Path(data_dir)/"production.json").exists():raise ValueError("正式库禁止通过本地coverage入口迁移")
+    fresh_accounts=not (Path(data_dir or ROOT / '.local-accounts')/'accounts.sqlite3').exists()
     store = Store(data_dir or ROOT / '.local-accounts')
+    from backend.global_profiles import state as global_profile_state,migrate as migrate_global_profiles,GlobalProfileInput
+    if fresh_accounts and not production:migrate_global_profiles(store)
+    with store.connect() as db:global_profiles_ready=global_profile_state(db)['global_profile_schema']==1
     app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None, redirect_slashes=not production)
+    app.state.production = production
     app.state.store = store
+    app.state.global_profiles=global_profiles_ready
     app.state.contributions = contributions
     app.state.feedback = feedback
     app.state.notifications = notifications
@@ -167,7 +198,7 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
         ready=coverage_state(db)["coverage_schema"]
         if ready and not coverage:raise ValueError("成绩表权限已启用，必须带coverage启动")
         if coverage:
-            if production and ready!=1:raise ValueError("成绩表权限尚未显式迁移")
+            if production and ready!=2:raise ValueError("成绩表权限尚未显式迁移至双服schema2")
             if not production:db.execute("BEGIN IMMEDIATE");migrate_coverage(db)
     from backend.usage import UsageStore
     usage_path = store.directory / "usage.sqlite3"
@@ -216,17 +247,37 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
         app.state.score_versions=ScoreWriter(score_state or score_version_lab,store,production=production)
         app.state.writeback=app.state.score_versions
         reference_dir=app.state.score_versions.current_dir
+        if coverage:
+            from backend.global_scores import initialize, GlobalScoreWriter
+            global_root=(store.directory if production else Path(score_version_lab))/'global-score-state'
+            app.state.global_score_versions=(GlobalScoreWriter(global_root,store,True) if production else initialize(global_root,store,recognition_service.reference if recognition_service else ROOT))
+    if recognition_service and production:
+        def active_map_catalog(server):
+            from backend.map_recognition import digest
+            writer=app.state.score_versions if server=='cn' else getattr(app.state,'global_score_versions',None)
+            if writer is None:raise HTTPException(503,'当前服别尚未绑定活动成绩')
+            info,contents=writer.current()
+            name='gauntlet_data.global.json' if server=='global' else 'gauntlet_data.json'
+            data=json.loads(contents[name])
+            return {'server':server,'version':digest((info['id']+':').encode()+contents[name]),
+                    'maps':[{'big':row['大地图'],'small':row['小地图']} for row in data['tracks']]}
+        recognition_service.provider=active_map_catalog
     from backend.mailing import MailConfig, MailService
     mail_service = MailService(store,origin,mail_config or MailConfig())
     app.state.mail_service = mail_service
-    catalog_root=reference_dir() if versioned_scores else ROOT
+    catalog_root=recognition_service.reference if recognition_service and not production else (reference_dir() if versioned_scores else ROOT)
     catalog = json.loads((catalog_root/'cars.json').read_text(encoding='utf-8'))
     known = {c['nickname'] for c in catalog['cars'] if c.get('nickname') and c.get('zones')}
 
+    native_account_marker=object()
+    def session_hash(request):
+        if request.scope.get('racepick.native.account_marker') is native_account_marker:
+            return request.scope['racepick.native.anchor_hash']
+        return digest(request.cookies.get(cookie_name,''))
+
     def session(request, required=True):
-        token = request.cookies.get(cookie_name, '')
         with store.connect() as db:
-            row = db.execute('SELECT * FROM sessions WHERE token_hash=? AND expires_at>?', (digest(token), int(time.time()))).fetchone()
+            row = db.execute('SELECT * FROM sessions WHERE token_hash=? AND expires_at>?', (session_hash(request), int(time.time()))).fetchone()
         if not row and required:
             raise HTTPException(401, '会话已过期，请刷新并重新登录')
         return row
@@ -247,7 +298,7 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
 
     def require_active_session(request,db):
         from backend.community import disabled
-        current=db.execute('SELECT user_id FROM sessions WHERE token_hash=? AND expires_at>?',(digest(request.cookies.get(cookie_name,'')),int(time.time()))).fetchone()
+        current=db.execute('SELECT user_id FROM sessions WHERE token_hash=? AND expires_at>?',(session_hash(request),int(time.time()))).fetchone()
         if not current or not current['user_id']:raise HTTPException(401,'登录已失效，请重新登录')
         if disabled(db,current['user_id']):raise HTTPException(403,'账号已停用')
     app.state.require_active_session=require_active_session
@@ -279,7 +330,10 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
         if request.headers.get('host') != parsed.netloc:
             return JSONResponse({'detail':'无效 Host'},status_code=400)
         if request.url.path.startswith('/api/') and request.method not in ('GET','HEAD','OPTIONS'):
-            if request.headers.get('origin') != origin or request.headers.get('content-type','').split(';')[0] != 'application/json':
+            recognition_upload=recognition_service is not None and request.method=='POST' and request.url.path=='/api/map-recognition/jobs'
+            content_type=request.headers.get('content-type','').split(';')[0]
+            type_ok=content_type in ('image/png','image/jpeg','image/webp') if recognition_upload else content_type=='application/json'
+            if request.headers.get('origin') != origin or not type_ok:
                 return JSONResponse({'detail':'请求来源或内容类型不正确'},status_code=403)
             collector = usage and request.method=='POST' and request.url.path in ('/api/usage/session','/api/usage/events')
             if not collector:
@@ -293,7 +347,7 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
             total=0
             async for chunk in request.stream():
                 total += len(chunk)
-                limit = 8192 if collector else (3000000 if request.url.path.endswith('/images') else 65536)
+                limit = 8*1024*1024 if recognition_upload else (8192 if collector else (3000000 if request.url.path.endswith('/images') else 65536))
                 if total>limit:
                     return JSONResponse({'detail':'请求过大'},status_code=413)
                 if total==len(chunk): body=chunk
@@ -352,7 +406,7 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
             db.execute('INSERT INTO account_login_stats VALUES(?,?) ON CONFLICT(user_id) DO UPDATE SET last_login=excluded.last_login',(row['id'],int(time.time())))
             if HASHER.check_needs_rehash(row['password_hash']):
                 db.execute('UPDATE users SET password_hash=? WHERE id=?',(HASHER.hash(data.password),row['id']))
-            db.execute('DELETE FROM sessions WHERE token_hash=?',(digest(request.cookies.get(cookie_name,'')),))
+            db.execute('DELETE FROM sessions WHERE token_hash=?',(session_hash(request),))
             csrf=new_session(response,row['id'],db)
             from backend.roles import effective_role
             login_role=effective_role(db,row['id'],row['role'])
@@ -361,7 +415,7 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
     @app.post('/api/auth/logout')
     def logout(request:Request,response:Response):
         with store.connect() as db:
-            db.execute('DELETE FROM sessions WHERE token_hash=?',(digest(request.cookies.get(cookie_name,'')),))
+            db.execute('DELETE FROM sessions WHERE token_hash=?',(session_hash(request),))
         response.delete_cookie(cookie_name,path='/',secure=production,httponly=True,samesite='strict')
         return {'message':'已退出'}
 
@@ -420,21 +474,36 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
         return consume(data.token,'reset',data.password)
 
     @app.get('/api/me/profile')
-    def get_profile(request:Request):
+    def get_profile(request:Request,server:str='cn'):
         owner=user(request)
         if request.headers.get('x-account-id') != owner['id']:
             raise HTTPException(401,'账号已在其他窗口切换，请刷新后重新确认身份')
+        if server not in ('cn','global'):raise HTTPException(422,'服别无效')
+        if server=='global':
+            from backend.global_profiles import get
+            return get(store,owner['id'])
         with store.connect() as db:
             row=db.execute('SELECT * FROM profiles WHERE user_id=?',(owner['id'],)).fetchone()
         if not row: return {'revision':0,'profile':None}
         return {'revision':row['revision'],'profile':{'cars':json.loads(row['cars']),'stars':json.loads(row['stars'])}}
 
     @app.put('/api/me/profile')
-    def put_profile(data:ProfileInput,request:Request):
+    def put_profile(data:ProfileInput|GlobalProfileInput,request:Request,server:str='cn'):
         owner=user(request)
         if request.headers.get('x-profile-save')!='explicit':raise HTTPException(409,'车库已改为手动保存，请刷新页面后点击保存车库')
         if request.headers.get('x-account-id') != owner['id']:
             raise HTTPException(401,'账号已在其他窗口切换，请刷新后重新确认身份')
+        if server not in ('cn','global'):raise HTTPException(422,'服别无效')
+        if server=='global':
+            from backend.global_profiles import put
+            if hasattr(app.state,'global_score_versions'):
+                _,raw=app.state.global_score_versions.current();catalog=json.loads(raw['cars.global.json']);scores=json.loads(raw['gauntlet_data.global.json'])
+            else:
+                catalog=json.loads((ROOT/'cars.global.json').read_bytes());scores=json.loads((ROOT/'gauntlet_data.global.json').read_bytes())
+            names={c['nickname'] for c in catalog['cars'] if c.get('nickname') and c.get('zones')}
+            oc_names={e['cars'][0]['name'] for t in scores['tracks'] for e in t.get('五区',{}).get('理论',[]) if e.get('cars') and e['cars'][0].get('oc') is True}
+            return put(store,owner['id'],GlobalProfileInput.model_validate(data.model_dump()),lambda db:require_active_session(request,db),names,oc_names)
+        if isinstance(data,GlobalProfileInput):raise HTTPException(422,'国服车库不接收国际OC字段或缺失星级字段')
         if len(set(data.cars))!=len(data.cars) or any(c not in known for c in data.cars) or any(c not in known or s<1 or s>6 for c,s in data.stars.items()):
             raise HTTPException(422,'车辆或星级无效；星级保存原始1–6值，分区显示仍沿用现有规则')
         with store.connect() as db:
@@ -472,10 +541,16 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
     from backend.previews import install as install_previews
     if not production:install_previews(app,store,ROOT,user,preview_source)
 
+    if recognition_service:
+        from backend.map_recognition import install as install_recognition
+        install_recognition(app,recognition_service,session,user)
+        app.state.map_recognition=recognition_service
+
     @app.get('/api/health')
     def health():
         with store.connect() as db:db.execute('SELECT 1').fetchone()
         result={'status':'ok','mode':'production' if production else 'local','schema':6}
+        if recognition_service:result['map_recognition']={'enabled':True,'worker':recognition_service.health()}
         result['community_schema']=1
         result['contribution_schema']=1 if contributions else 0
         result['contributions']=contributions
@@ -484,7 +559,10 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
         result['notification_schema']=1 if notifications else 0
         result['notifications']=notifications
         result['usage_schema']=1 if usage else 0
-        result['coverage_schema']=1 if coverage else 0
+        result['coverage_schema']=2 if coverage else 0
+        result['global_profile_schema']=1 if global_profiles_ready else 0
+        result['global_score_schema']=1 if hasattr(app.state,'global_score_versions') else 0
+        if hasattr(app.state,'global_score_versions'):result['global_score_version']=app.state.global_score_versions.current()[0]['id']
         result['usage']=usage
         if versioned_scores:
             result['score_version']=app.state.score_versions.current()[0]['id']
@@ -495,10 +573,24 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
     def index(request:Request):
         html=(ROOT/'index.html').read_text(encoding='utf-8')
         html=html.replace('</head>','<script src="/notifications.js"></script><script src="/profile_store.js"></script><script src="/announcements.js"></script><script src="/auth.js"></script><link rel="stylesheet" href="/accounts.css"><link rel="stylesheet" href="/ui.css">\n</head>')
+        if recognition_service:
+            html=html.replace('</head>','<script>globalThis.RACEPICK_MAP_RECOGNITION={enabled:true};</script><script defer src="/map_recognition.js"></script><link rel="stylesheet" href="/map_recognition.css"></head>')
+            marker='<div class="map-rows" id="mapRowsContainer"></div>'
+            html=html.replace(marker,'<section id="mapRecognitionHost" class="map-recognition-host"></section>'+marker,1)
         if coverage:
-            table_href='/score-table?server=global' if request.query_params.get('server')=='global' else '/score-table'
+            global_server=request.query_params.get('server')=='global'
+            table_href='/score-table?server=global' if global_server else '/score-table'
+            table_description='查看各图参考成绩，补充缺失记录'
             marker='<div class="sub">帕累托最优 · 擂台选车</div>'
-            html=html.replace(marker,marker+'<p><a class="ui-button" href="'+table_href+'">擂台成绩表</a></p>',1)
+            entry=('<section class="coverage-entry" id="coverageEntry" aria-labelledby="coverageEntryTitle">'
+                   '<div class="coverage-entry-copy"><h2 id="coverageEntryTitle">擂台成绩表 '
+                   '<span class="coverage-entry-new" id="coverageEntryNew">新功能</span></h2>'
+                   '<p>'+table_description+'</p></div>'
+                   '<a class="ui-button coverage-entry-link" id="coverageEntryLink" href="'+table_href+'">'
+                   '查看成绩表 <span aria-hidden="true">→</span></a></section>')
+            html=html.replace(marker,marker+entry,1)
+        if hasattr(app.state,'global_score_versions'):html=html.replace('</head>','<script>globalThis.RACEPICK_VERSIONED_GLOBAL_SCORES=true;</script></head>')
+        if global_profiles_ready:html=html.replace('</head>','<script>globalThis.RACEPICK_GLOBAL_PROFILE_CLOUD=true;</script></head>')
         if versioned_scores:html=html.replace('</head>','<script>globalThis.RACEPICK_VERSIONED_SCORES=true;</script></head>')
         return HTMLResponse(usage_html(html))
 
@@ -508,8 +600,9 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
     if writeback_lab is not None:
         from backend.writeback import install as install_writeback
         install_writeback(app,store,ROOT,user,writeback_lab,preview_source)
-    assets={'styles.css','config.js','api.js','app_state.js','allocator.js','race_scores.js','cars.json','gauntlet_data.json','auth.js','profile_store.js','accounts.css','submissions.js','submissions.css','admin_access.js','data_previews.js','data_previews.css','writeback_lab.js','announcements.js','admin_accounts.js'}
+    assets={'styles.css','config.js','api.js','app_state.js','allocator.js','race_scores.js','selection_core.js','home_presenter.js','home_theme.json','cars.json','gauntlet_data.json','auth.js','profile_store.js','accounts.css','submissions.js','submissions.css','admin_access.js','data_previews.js','data_previews.css','writeback_lab.js','announcements.js','admin_accounts.js'}
     assets.update({'ui.css','theme.css','notifications.js'})
+    if recognition_service:assets.update({'map_recognition.js','map_recognition.css'})
     assets.update({'cars.global.json','gauntlet_data.global.json','global-data-manifest.json'})
     if coverage: assets.update({'coverage.js','coverage.css'})
     if usage: assets.update({'usage.js','usage_admin.js','usage.css'})
@@ -520,12 +613,53 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
     def asset(name:str):
         if production and name in ('data_previews.js','data_previews.css','writeback_lab.js'):raise HTTPException(404)
         if name not in assets: raise HTTPException(404)
+        if recognition_service and not production and name in ('cars.json','gauntlet_data.json','cars.global.json','gauntlet_data.global.json','global-data-manifest.json'):
+            return FileResponse(recognition_service.reference/name,headers={'Cache-Control':'no-store'})
+        if hasattr(app.state,'global_score_versions') and name in ('cars.global.json','gauntlet_data.global.json','global-data-manifest.json'):
+            info,contents=app.state.global_score_versions.current()
+            return Response(contents[name],media_type='application/json',headers={'X-Global-Score-Version':info['id'],'Cache-Control':'no-store'})
         if versioned_scores and name in ('gauntlet_data.json','cars.json'):
             info,contents=app.state.score_versions.current()
             return Response(contents[name],media_type='application/json',headers={'X-Score-Version':info['id']})
         if writeback_lab is not None and name in ('gauntlet_data.json','cars.json'):
             return FileResponse(Path(preview_source)/name,headers={'Cache-Control':'no-store'})
         return FileResponse(ROOT/name)
+    def native_request(request, anchor_hash=None, actor_id=None, explicit_save=False):
+        # Only server-owned code can install this per-app object identity. HTTP headers cannot.
+        scope=dict(request.scope)
+        scope['headers']=([(b'x-account-id',actor_id.encode())] if actor_id else [])+([(b'x-profile-save',b'explicit')] if explicit_save else [])
+        scope['state']={'client_ip':request.scope['mini_ip']}
+        scope['racepick.native.account_marker']=native_account_marker
+        scope['racepick.native.anchor_hash']=anchor_hash or digest('')
+        return Request(scope)
+    def native_anchor(response):
+        from http.cookies import SimpleCookie
+        cookie=SimpleCookie();cookie.load(response.headers.get('set-cookie',''))
+        if cookie_name not in cookie:raise RuntimeError('Native login did not create a revocation anchor')
+        hashed=digest(cookie[cookie_name].value)
+        with store.connect() as db:
+            row=db.execute('SELECT user_id,expires_at FROM sessions WHERE token_hash=?',(hashed,)).fetchone()
+        if row is None:raise RuntimeError('Native login anchor missing')
+        return hashed,row['user_id'],row['expires_at']
+    def native_revoke(anchor_hash):
+        with store.connect() as db:db.execute('DELETE FROM sessions WHERE token_hash=?',(anchor_hash,))
+    from types import SimpleNamespace
+    from backend.roles import Redeem
+    redeem=next(route.endpoint for route in app.routes if getattr(route,'path',None)=='/api/auth/redeem-invitation')
+    app.state.native_accounts=SimpleNamespace(request=native_request,anchor=native_anchor,revoke=native_revoke,user=user,
+        handlers={'register':register,'login':login,'logout':logout,'resend-verification':resend,'forgot-password':forgot,
+                  'verify-email':verify,'reset-password':reset,'redeem-invitation':redeem,'get-profile':get_profile,'put-profile':put_profile,
+                  'get-global-profile':lambda request:get_profile(request,'global'),'put-global-profile':lambda data,request:put_profile(data,request,'global')},
+        models={'register':Registration,'login':Credentials,'resend-verification':EmailInput,'forgot-password':EmailInput,
+                'verify-email':TokenInput,'reset-password':ResetInput,'redeem-invitation':Redeem,'put-profile':ProfileInput,'put-global-profile':GlobalProfileInput})
+    app.state.native_feature_routes={(method,route.path):route for route in app.routes if hasattr(route,"endpoint") for method in (getattr(route,"methods",None) or [])}
+    from backend.mini_api import MiniGateway
+    if mini_config is not None and recognition_service is not None:
+        mini_root=mini_config['store'].root
+        if mini_root.is_relative_to(recognition_service.root) or recognition_service.root.is_relative_to(mini_root):
+            raise ValueError('原生会话与OCR队列必须使用互不包含的独立目录')
+    app.add_middleware(MiniGateway,config=mini_config,source=app.state,service=recognition_service,origin=origin,production=production)
+
     return app
 
 

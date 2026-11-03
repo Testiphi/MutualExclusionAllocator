@@ -26,8 +26,35 @@ NOTIFICATION_FILES=('backend/notifications.py','backend/notification_production.
 USAGE_FILES=('backend/usage.py','backend/usage_production.py','usage.js','usage_admin.js','usage.html','usage.css','USAGE_LOCAL.md')
 COVERAGE_FILES=('backend/coverage.py','backend/coverage_production.py','coverage.html','coverage.js','coverage.css','COVERAGE_DEPLOYMENT.md')
 THEME_FILES=('theme.css',)
-COMPONENT_GROUPS=(COVERAGE_FILES,THEME_FILES,SCORE_FILES,COMMUNITY_FILES,CONTRIBUTION_FILES,FEEDBACK_FILES,GLOBAL_FILES,NOTIFICATION_FILES,USAGE_FILES)
-APP_FILES=BASE_FILES+COVERAGE_FILES+THEME_FILES+SCORE_FILES+COMMUNITY_FILES+CONTRIBUTION_FILES+FEEDBACK_FILES+GLOBAL_FILES+NOTIFICATION_FILES+USAGE_FILES
+SCOPED_FILES=('backend/score_scopes.py','backend/global_scores.py','backend/global_score_production.py','GLOBAL_SUBMISSIONS_DEPLOYMENT.md')
+COMPONENT_GROUPS=(SCOPED_FILES,COVERAGE_FILES,THEME_FILES,SCORE_FILES,COMMUNITY_FILES,CONTRIBUTION_FILES,FEEDBACK_FILES,GLOBAL_FILES,NOTIFICATION_FILES,USAGE_FILES)
+SELECTION_FILES=('selection_core.js',)
+MINI_FILES=('backend/mini_auth.py','backend/mini_api.py','production/mini-config.example.json','production/mini.env.example','MINI_API_CONTRACT_20261102.md','MINI_DEPLOYMENT_20261102.md')
+MINI_ACCOUNT_FILES=('backend/mini_accounts.py','production/mini-account-config.example.json','MINI_ACCOUNT_CONTRACT_A_20261103.md')
+GLOBAL_PROFILE_FILES=('backend/global_profiles.py','GLOBAL_PROFILE_CLOUD_20261103.md')
+MIRROR_FILES=('backend/mini_features.py','MINI_FEATURES_COMMON_20261103.md','MINI_BATCH_B_20261103.md','MINI_BATCH_C_20261103.md','MINI_BATCH_D_20261103.md','MINI_BATCH_E_20261103.md','MINI_FEATURES_OPENAPI_20261103.json')
+HOME_FILES=('home_presenter.js','home_theme.json','HOME_PRESENTER_CONTRACT_20261103.md')
+MAINTENANCE_FILES=('backend/maintenance_release.py','production_release_tools.py','MAINTENANCE_RELEASE_20261103.md')
+COMPONENT_GROUPS=COMPONENT_GROUPS+(MINI_FILES,MINI_ACCOUNT_FILES,GLOBAL_PROFILE_FILES,MIRROR_FILES,HOME_FILES,MAINTENANCE_FILES)
+APP_FILES=BASE_FILES+SCOPED_FILES+COVERAGE_FILES+THEME_FILES+SCORE_FILES+COMMUNITY_FILES+CONTRIBUTION_FILES+FEEDBACK_FILES+GLOBAL_FILES+NOTIFICATION_FILES+USAGE_FILES+SELECTION_FILES+MINI_FILES+MINI_ACCOUNT_FILES+GLOBAL_PROFILE_FILES+MIRROR_FILES+HOME_FILES+MAINTENANCE_FILES
+OCR_CODE_FILES=('backend/map_layout.py','backend/map_recognition.py','backend/map_ocr_engine.py','backend/map_ocr_worker.py',
+ 'backend/map_ocr_production.py','backend/map_ocr_supervisor.py','map_recognition.js','map_recognition.css',
+ 'production/ocr-models.json','production/ocr-assets.json','production/ocr-selfcheck.py','production/racepick-map-ocr.service',
+ 'MAP_OCR_DEPLOYMENT.md')
+OCR_ASSET_FILES=('ocr/v5_det.onnx','ocr/v5_rec.onnx','ocr/v5_keys.txt','licenses/MaaCommonAssets-MIT.txt',
+ 'licenses/MaaCommonAssets-OCR.md','licenses/PaddleOCR-Apache-2.0.txt','production/ocr-provenance.json','licenses/THIRD_PARTY_NOTICES.md')
+OCR_FILES=OCR_CODE_FILES+OCR_ASSET_FILES
+COMPONENT_GROUPS=COMPONENT_GROUPS+(OCR_FILES,)
+
+def verify_ocr(contents):
+ if not set(contents)&set(OCR_FILES):return
+ if not set(OCR_FILES)<=set(contents):raise ValueError('发布包缺少识图组件')
+ assets=json.loads(contents['production/ocr-assets.json'])
+ if set(assets)!=set(OCR_ASSET_FILES):raise ValueError('识图资产白名单不匹配')
+ for name,record in assets.items():
+  if digest(contents[name])!=record['sha256'] or len(contents[name])!=record['bytes']:raise ValueError('识图资产哈希不匹配')
+ models=json.loads(contents['production/ocr-models.json'])['models']
+ if set(models)!= {'det','rec','keys'} or any(item['path'] not in assets or item['sha256']!=assets[item['path']]['sha256'] for item in models.values()):raise ValueError('识图模型与固定资产不一致')
 
 def verify_global_data(contents):
  if not set(contents)&set(GLOBAL_FILES):return # Historical releases remain readable.
@@ -45,21 +72,44 @@ def verify_global_data(contents):
  if meta.get('dataset_version')!=digest(canonical(binding)):raise ValueError('国际服数据集版本校验失败')
 
 def digest(raw):return hashlib.sha256(raw).hexdigest()
-def allowed(name):return name in APP_FILES or bool(re.fullmatch(r'wheels/[A-Za-z0-9_.+\-]+\.whl',name))
+def allowed(name):return name in APP_FILES or name in OCR_FILES or bool(re.fullmatch(r'wheels/[A-Za-z0-9_.+\-]+\.whl',name))
+
+def verify_selection(contents):
+ if b'from backend import mini_features' in contents.get('backend/mini_accounts.py',b'') and not set(MIRROR_FILES)<=set(contents):raise ValueError('发布包缺少原生B-E组件')
+ if b'home_presenter.js' in contents['index.html'] and not set(HOME_FILES)<=set(contents):raise ValueError('发布包缺少主页presenter组件')
+ if 'home_theme.json' in contents:
+  theme=json.loads(contents['home_theme.json'])
+  for name,item in theme['sources'].items():
+   if digest(item['text'].encode('utf-8'))!=item['sha256_utf8_lf']:raise ValueError('主题导出内容校验失败')
+   if name in contents and digest(contents[name].replace(b'\r\n',b'\n'))!=item['sha256_utf8_lf']:raise ValueError('主题导出与当前CSS不一致')
+ if b'from backend.global_profiles import state as global_profile_state' in contents.get('backend/app.py',b'') and not set(GLOBAL_PROFILE_FILES)<=set(contents):
+  raise ValueError('发布包缺少国际账号车库组件')
+ if b'from backend.mini_accounts import make_native_account' in contents.get('backend/mini_api.py',b'') and not set(MINI_ACCOUNT_FILES)<=set(contents):
+  raise ValueError('发布包缺少原生账号适配组件')
+ if b'from backend.mini_api import MiniGateway' in contents.get('backend/app.py',b'') and not set(MINI_FILES)<=set(contents):
+  raise ValueError('发布包缺少原生适配组件')
+ # New pages must carry their dependency; historical pages/bundles remain verifiable.
+ if re.search(rb'<script\b[^>]*\bsrc\s*=\s*[\"\'](?:\./)?selection_core\.js[\"\']',contents['index.html']) and 'selection_core.js' not in contents:
+  raise ValueError('网页缺少共享选择核心')
 def manifest(contents,provenance):
  files={n:{'sha256':digest(v),'size':len(v)} for n,v in sorted(contents.items())}
  info={'version':1,'target':'ubuntu24.04-x86_64-python3.12','files':files,'provenance':provenance}
  info['id']=digest(json.dumps(info,sort_keys=True).encode())[:24];return info
 
-def pack(code,data,wheels,output,provenance,data_contents=None):
+def pack(code,data,wheels,output,provenance,data_contents=None,ocr_assets=None):
  code,data,wheels,output=map(Path,(code,data,wheels,output))
  if output.exists():raise ValueError('输出文件已存在，不覆盖')
  snapshot_sets=({'cars.json','gauntlet_data.json'},{'cars.json','gauntlet_data.json',*GLOBAL_FILES[:3]})
  if data_contents is not None and set(data_contents) not in snapshot_sets:raise ValueError('数据快照必须为两份国服JSON或完整五份双服JSON')
- content={n:(data_contents[n] if data_contents is not None and n in data_contents else ((data if n in ('cars.json','gauntlet_data.json') else code)/('docs/'+n if n.endswith('.md') else n)).read_bytes()) for n in APP_FILES}
+ content={n:(data_contents[n] if data_contents is not None and n in data_contents else ((data if n in ('cars.json','gauntlet_data.json') else code)/('docs/'+n if n.endswith('.md') or n=='MINI_FEATURES_OPENAPI_20261103.json' else n)).read_bytes()) for n in APP_FILES}
+ if ocr_assets is not None:
+  content.update({n:(code/('docs/'+n if n.endswith('.md') or n=='MINI_FEATURES_OPENAPI_20261103.json' else n)).read_bytes() for n in OCR_CODE_FILES})
+  content.update({n:(Path(ocr_assets)/n).read_bytes() for n in OCR_ASSET_FILES})
+ verify_ocr(content)
  content.update({'wheels/'+p.name:p.read_bytes() for p in wheels.glob('*.whl')})
  if not any(n.startswith('wheels/') for n in content):raise ValueError('缺少离线依赖')
  verify_global_data(content)
+ verify_selection(content)
  info=manifest(content,provenance)
  with zipfile.ZipFile(output,'x',zipfile.ZIP_DEFLATED) as z:
   for n,v in content.items():z.writestr(n,v)
@@ -70,12 +120,14 @@ def read_bundle(bundle):
  with zipfile.ZipFile(bundle) as z:
   names=z.namelist()
   if len(names)!=len(set(names)) or 'manifest.json' not in names or not set(BASE_FILES)<=set(names) or any(n!='manifest.json' and not allowed(n) for n in names):raise ValueError('发布包文件白名单不匹配')
-  if any(i.file_size>40*1024*1024 for i in z.infolist()) or sum(i.file_size for i in z.infolist())>200*1024*1024:raise ValueError('包体积异常')
+  if any(i.file_size>128*1024*1024 for i in z.infolist()) or sum(i.file_size for i in z.infolist())>512*1024*1024:raise ValueError('包体积异常')
   for group in COMPONENT_GROUPS:
    if set(names)&set(group) and not set(group)<=set(names):raise ValueError('发布包缺少必要组件')
   contents={n:z.read(n) for n in names if n!='manifest.json'};info=json.loads(z.read('manifest.json'))
  if info!=manifest(contents,info['provenance']):raise ValueError('发布包校验失败')
  verify_global_data(contents)
+ verify_ocr(contents)
+ verify_selection(contents)
  return contents,info
 
 def verify(target):
@@ -88,6 +140,8 @@ def verify(target):
  contents={n:(target/n).read_bytes() for n in info['files']}
  if any((target/n).is_symlink() for n in info['files']) or info!=manifest(contents,info['provenance']) or target.name!=info['id']:raise ValueError('版本校验失败')
  verify_global_data(contents)
+ verify_ocr(contents)
+ verify_selection(contents)
  return info
 
 def stage(bundle,base):
@@ -116,6 +170,16 @@ def check_score_compatibility(target,info,data_dir):
   if not set(USAGE_FILES)<=set(info['files']) or 'production/score-capability.json' not in info['files'] or json.loads(cap.read_text()).get('usage_schema')!=1:raise ValueError('统计库已启用，禁止切回不兼容旧程序')
  if account_db.exists():
   with closing(sqlite3.connect(account_db.as_uri()+'?mode=ro',uri=True)) as db:
+   if db.execute("SELECT 1 FROM sqlite_master WHERE name='maintenance_releases'").fetchone():
+    active=any(json.loads(row[0]).get('state')=='applied' for row in db.execute('SELECT receipt FROM maintenance_releases'))
+    cap=Path(target)/'production/score-capability.json'
+    if active and (not set(MAINTENANCE_FILES)<=set(info['files']) or not cap.is_file() or json.loads(cap.read_text()).get('maintenance_release')!=1):raise ValueError('维护版本及车辆规则已发布，禁止切回不兼容旧应用；须先定点回退维护版本')
+   if db.execute("SELECT 1 FROM sqlite_master WHERE name='global_profile_schema'").fetchone():
+    rows=db.execute('SELECT version FROM global_profile_schema').fetchall();cap=Path(target)/'production/score-capability.json'
+    if len(rows)!=1 or rows[0][0]!=1 or not set(GLOBAL_PROFILE_FILES)<=set(info['files']) or 'production/score-capability.json' not in info['files'] or json.loads(cap.read_text()).get('global_profile_schema')!=1:raise ValueError('国际账号车库已启用，禁止切回不兼容旧应用')
+   if db.execute("SELECT 1 FROM sqlite_master WHERE name='global_score_control'").fetchone():
+    cap=Path(target)/'production/score-capability.json'
+    if not set(SCOPED_FILES)<=set(info['files']) or 'production/score-capability.json' not in info['files'] or json.loads(cap.read_text()).get('global_score_schema')!=1:raise ValueError('国际成绩状态已启用，禁止切回不兼容旧程序')
    if db.execute("SELECT 1 FROM sqlite_master WHERE name='coverage_schema'").fetchone():
     rows=db.execute('SELECT version FROM coverage_schema').fetchall()
     cap=Path(target)/'production/score-capability.json'

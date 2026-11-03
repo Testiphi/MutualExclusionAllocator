@@ -22,7 +22,7 @@
         `;
         const out = {};
         new Function('document', 'carData', 'raceData', 'out', 'APP_CONFIG',
-            sources['app_state.js'] + '\n' + sources['race_scores.js'] + '\n' + inline.replace('initApp();', capture))(
+            sources['app_state.js'] + '\n' + sources['race_scores.js'] + '\n' + sources['selection_core.js'] + '\n' + sources['home_presenter.js'] + '\n' + inline.replace('initApp();', capture))(
             { getElementById: () => ({}) }, carData, raceData, out,
             {server:'cn',storageKeys:{guestDraft:'racepick.guest-draft.v1'}});
         const cases = [];

@@ -1,0 +1,51 @@
+{
+  "release_id": "3d978fd30812fa8f72ba928d",
+  "code_commit": "1dba7e47eff47fb4423203e0008514aefb6337be",
+  "data_commit": null,
+  "data_handoff_sha256": "93745f665235ad8928e8514f1977b7948bf92bf14940466a1b9fff83246f4dae",
+  "archive": "E:\\hzz\\work\\MutualExclusionAllocator\\repo\\.production-build\\RacePick-Global659-Compat-20261030-3d978fd3-delivery.zip",
+  "archive_sha256": "34d11ecaa1a23dc3e9225f8838b209a611ac178c551152cf23007b302eabbf35",
+  "bytes": 11070099,
+  "outer_files": 24,
+  "inner_sha256": "484e63317d8b75f152ef65fa136aeaa1e4e347616e2d23def393ed0033f0f429",
+  "verification": {
+    "release_id": "3d978fd30812fa8f72ba928d",
+    "code_commit": "1dba7e47eff47fb4423203e0008514aefb6337be",
+    "data_commit": null,
+    "data_handoff_sha256": "93745f665235ad8928e8514f1977b7948bf92bf14940466a1b9fff83246f4dae",
+    "manifest_files": 107,
+    "locked_wheels": 19,
+    "source_files_exact_git_bytes": true,
+    "data_snapshot_sha256_verified": true,
+    "data_scope_actual_counts": {
+      "physical_cars": 46,
+      "tracks": 44,
+      "covered_tracks": 44,
+      "score_entries": 659,
+      "non_oc_entries": 638,
+      "oc_entries": 21,
+      "special_entries": 48,
+      "normal_entries": 611
+    },
+    "national_keys": 4458,
+    "allowlist_hash_size_stage_verified": true,
+    "inner_sha256": "484e63317d8b75f152ef65fa136aeaa1e4e347616e2d23def393ed0033f0f429",
+    "stage": "E:\\hzz\\work\\MutualExclusionAllocator\\本地归档\\release-global659-compat-20261030-01\\staged\\releases\\3d978fd30812fa8f72ba928d",
+    "out": "E:\\hzz\\work\\MutualExclusionAllocator\\repo\\.production-build\\delivery-20261030-global659-compat",
+    "production_accessed": false,
+    "native_linux_verified": false,
+    "real_phone_wechat_verified": false,
+    "inner_crc_verified": true,
+    "tests": {
+      "backend_passed": 183,
+      "frontend_passed": 124,
+      "tools_passed": 88,
+      "tools_linux_only_skipped": 1
+    },
+    "windows_artifact_rehearsal": "PASS - simulated service lock and temporary databases only",
+    "linux_py312_offline_wheel_resolution": "PASS -19 exact hashes, no installation or native execution",
+    "protected_paths_unchanged": 45
+  },
+  "production_accessed": false,
+  "upload_or_deployment_performed": false
+}

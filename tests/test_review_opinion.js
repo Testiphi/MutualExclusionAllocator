@@ -18,7 +18,7 @@ class Node {
 const payload={big:'测试地图',small:'测试赛道',zone:'五区',tier:'高手',car:'恶魔',stars:5,time:'26',route:'',notes:''};
 function fixture(){
     const ids={},calls=[];const document={createElement:tag=>new Node(tag),getElementById:id=>ids[id]||(ids[id]=new Node()),body:new Node()};
-    const context=vm.createContext({document,console});
+    const context=vm.createContext({document,console,URLSearchParams,location:{search:""}});
     const injection=`globalThis.reviewFixture={
       render(item){preview=null;renderReview($('detail'),item);},
       detail(item){selected=item;user={id:'player',role:'player'};renderDetail();},

@@ -1,17 +1,18 @@
 'use strict';
 (()=>{
  const $=id=>document.getElementById(id),picks=new Map();let actor,csrf,busy=false,current=null,retry=null,production=false,enabled=true;
+ const requestedServer=new URLSearchParams(location.search).get('server');$('server').value=requestedServer==='global'?'global':'cn';
  const states={prepared:'待确认',applying:'执行中，需恢复核对',applied:'已发布到测试数据',rolling_back:'回滚中，需恢复',rolled_back:'已回滚（新数据版本）',aborted:'未提交的批次已终止',recovery_required:'需恢复，禁止继续维护'};
  const el=(tag,text)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;return n;};
  function notice(text){$('message').textContent=text;$('notice').showModal();}
  $('close').onclick=()=>$('notice').close();
  function ask(text){return new Promise(resolve=>{const d=$('confirm');$('question').textContent=text;const done=v=>{d.close();resolve(v);};$('yes').onclick=()=>done(true);$('cancel').onclick=()=>done(false);d.oncancel=e=>{e.preventDefault();done(false);};d.showModal();$('cancel').focus();});}
- async function api(method,path,body){const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),30000);try{const r=await fetch('/api'+path,{method,signal:controller.signal,credentials:'same-origin',headers:{'Content-Type':'application/json','X-CSRF-Token':csrf||'','X-Account-ID':actor?.id||''},...(body?{body:JSON.stringify(body)}:{})});const d=await r.json();if(!r.ok)throw Error(typeof d.detail==='string'?d.detail:'字段无效，请检查输入');return d;}catch(e){if(e.name==='AbortError')throw Error('请求超时，请先查看批次历史确认结果，勿重复新建批次');throw e;}finally{clearTimeout(timer);}}
+ async function api(method,path,body){const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),30000);try{const r=await fetch('/api'+path+(path.startsWith('/admin/score-versions')?'?server='+$('server').value:''),{method,signal:controller.signal,credentials:'same-origin',headers:{'Content-Type':'application/json','X-CSRF-Token':csrf||'','X-Account-ID':actor?.id||''},...(body?{body:JSON.stringify(body)}:{})});const d=await r.json();if(!r.ok)throw Error(typeof d.detail==='string'?d.detail:'字段无效，请检查输入');return d;}catch(e){if(e.name==='AbortError')throw Error('请求超时，请先查看批次历史确认结果，勿重复新建批次');throw e;}finally{clearTimeout(timer);}}
 
  async function run(fn){if(busy)return;busy=true;$('main').inert=true;$('busy').hidden=false;try{await fn();}catch(e){notice(e.message);}finally{busy=false;$('main').inert=false;$('busy').hidden=true;}}
  function button(text,fn){const b=el('button',text);b.onclick=()=>run(fn);return b;}
  function check(text){const wrap=el('label'),input=el('input');input.type='checkbox';wrap.append(input,document.createTextNode(text));return {wrap,input};}
- function target(p){return `${p.zone}/${p.tier} · ${p.big}/${p.small} · ${p.car}★${p.stars??'满星'} · ${p.sc?p.sc_type:p.route||'普通跑法'}`;}
+ function target(p){return `${p.server==='global'?'国际服':'国服'} · ${p.oc?'OC · ':''}${p.zone}/${p.tier} · ${p.big}/${p.small} · ${p.car}★${p.stars??'满星'} · ${p.sc?p.sc_type:p.route||'普通跑法'}`;}
  function change(i){return `${target(i.target)}：${i.old??'不存在'} → ${i.new??'不存在'}`;}
  async function refresh(){const data=await api('GET','/admin/score-versions');production=!!data.production;enabled=data.write_enabled!==false;states.applied=production?'已发布到正式成绩':'已发布到测试数据';$('prepare').disabled=!enabled;$('source').textContent=`当前数据版本：${data.current.id} · ${production?(enabled?'生产写回已开启':'生产只读验证，写回关闭'):'独立测试目录：'+data.lab}`;
   $('picks').replaceChildren();picks.clear();retry=null;
@@ -44,6 +45,7 @@
   }
  }
  $('refresh').onclick=()=>run(refresh);
+ $('server').onchange=()=>run(async()=>{current=null;retry=null;picks.clear();$('result').replaceChildren();history.replaceState(null,'','/score-versions?server='+$('server').value);await refresh();});
  $('show').onclick=()=>run(async()=>{if(!$('batches').value)throw Error('暂无批次');await show($('batches').value);});
  $('prepare').onclick=()=>run(async()=>{if(!picks.size||picks.size>50)throw Error('请选择1–50条投稿');retry??=crypto.randomUUID().replaceAll('-','');current=await api('POST','/admin/score-versions',{request_key:retry,items:[...picks.values()]});await show(current.id);await refresh();notice('确认预览已生成，当前成绩尚未改变。请核对下方完整影响。');});
  $('reauth').onclick=()=>run(async()=>{try{const r=await api('POST','/admin/score-versions/reauth',{password:$('password').value});$('reauthStatus').textContent='身份确认有效至 '+new Date(r.expires_at*1000).toLocaleTimeString();notice('身份验证通过，有效期5分钟。');}finally{$('password').value='';}});

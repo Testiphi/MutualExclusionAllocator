@@ -6,6 +6,14 @@
     const kinds={new:'新增成绩',placeholder:'填入已有占位',same:'与参考库一致',faster:'比当前更快',slower:'比当前更慢',rule_needed:'需要维护规则',invalid:'暂不能比较',availability_existing:'该档已收录可用性',availability_new:'新增可用性归档建议'};
     const actions={created:'保存草稿',edited:'补充或编辑',submitted:'提交审核',image_added:'补充图片',image_removed:'移除当前证据（历史保留）',accept:'采纳',needs_info:'要求补充',ignore:'忽略',reopened:'重新审核'};
     let contributions=false,unread=null;
+    let activeServer=new URLSearchParams(location.search).get('server')==='global'?'global':'cn';
+    try{const p=JSON.parse(new URLSearchParams(location.search).get('prefill'));if(p?.server==='global')activeServer='global';}catch{}
+    async function loadCatalog(server){
+        activeServer=server;catalog=await request('GET','/submissions/catalog'+(server==='global'?'?server=global':''));
+        $('submissionServer').value=server;
+        $('reference').textContent=(server==='global'?'国际服 · ':'国服 · ')+catalog.reference_label+' · '+catalog.basis.data.slice(0,12);
+        $('homeLink').href=server==='global'?'/?server=global':'/';$('tableLink').href=server==='global'?'/score-table?server=global':'/score-table';
+    }
     let user,csrf,catalog,scope='mine',offset=0,selected=null,busy=false,preview=null,formSerial=0;
     let listTicket=0,detailTicket=0,activeForm=null,batchRequest=null,unsaved=false;
     function el(tag,text,cls){const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(cls)n.className=cls;return n;}
@@ -58,14 +66,15 @@
         const node=el('section',undefined,'score-form'+(compact?' compact':''));node.append(el('h3',title));const fields=el('div',undefined,'fields');
         const targetDetails=compact?el('details'):null,targetSummary=compact?el('summary'):null;
         if(compact){targetDetails.append(targetSummary,fields);node.append(targetDetails);}else node.append(fields);
-        const zone=field(fields,'分区','zone','select');['五区','四区'].forEach(v=>option(zone,v,v));zone.value=initial.zone||'五区';
-        const tier=field(fields,'建议档位','tier','select');['高手','理论','普通','自动'].forEach(v=>option(tier,v,v));tier.value=initial.tier||'高手';
+        const zone=field(fields,'分区','zone','select');(catalog.capabilities?.zones||['五区','四区']).forEach(v=>option(zone,v,v));zone.value=initial.zone||'五区';
+        const tier=field(fields,'建议档位','tier','select');(catalog.capabilities?.tiers||['高手','理论','普通','自动']).forEach(v=>option(tier,v,v));tier.value=initial.tier||(activeServer==='global'?'理论':'高手');
         const big=field(fields,'大地图','big','select');option(big,'','请选择');[...new Set(catalog.tracks.map(t=>t.big))].forEach(v=>option(big,v,v));big.value=initial.big||'';
         const small=field(fields,'小地图','small','select');
         const car=field(fields,'车辆（昵称或真名）','car');car.maxLength=150;car.value=initial.car||'';
         const suggestions=el('datalist');suggestions.id='cars-'+(++formSerial);car.setAttribute('list',suggestions.id);fields.append(suggestions);
         const stars=field(fields,'实际星级（高手必选）','stars','select');
         const route=field(fields,'跑法','route','select');option(route,'','普通跑法');catalog.routes.forEach(v=>option(route,v,v));route.value=initial.route||'';
+        const oc=activeServer==='global'&&catalog.capabilities?.oc?field(fields,'OC成绩','oc','checkbox'):null;if(oc){oc.checked=!!initial.oc;oc.parentElement.className='check';}
         const time=field(compact?node:fields,'成绩（秒或分:秒）','time');time.maxLength=24;time.placeholder='例如 26.52 或 1:02.345';time.value=initial.time||'';time.required=true;time.inputMode='decimal';
         const extras=compact?el('details',undefined,'optional-evidence'):null,optionalFields=compact?el('div',undefined,'fields'):fields;
         if(compact){extras.append(el('summary','说明 / 视频 / 图片（可选）'),optionalFields);node.append(extras);}
@@ -74,9 +83,10 @@
         const unlisted=field(fields,'车辆、地图或跑法尚未收录（填写详细说明）','unlisted','checkbox');unlisted.checked=!!initial.unlisted;unlisted.parentElement.className='check wide';
         function maps(){const previous=small.value;small.replaceChildren();option(small,'','请选择');catalog.tracks.filter(t=>t.big===big.value).forEach(t=>option(small,t.small,t.small));small.value=previous;}
         function cars(){suggestions.replaceChildren();catalog.cars.filter(c=>c.zones.includes(zone.value)).forEach(c=>option(suggestions,c.name,c.title));}
-        function starOptions(current){const c=catalog.cars.find(c=>c.name===car.value||c.title===car.value);stars.replaceChildren();option(stars,'','请选择 / 无星级条目');const bounds=c?.limits[zone.value]||[1,6];for(let i=bounds[0];i<=bounds[1];i++)option(stars,String(i),String(i)+'星');if(current&&!Array.from(stars.options).some(o=>o.value===current))option(stars,current,current+'星（不符合当前规则）');stars.value=current||'';}
+        function starOptions(current){const c=catalog.cars.find(c=>c.name===car.value||c.title===car.value);stars.replaceChildren();option(stars,'','请选择 / 无星级条目');const bounds=c?.limits[zone.value]||[1,6];for(let i=bounds[0];i<=bounds[1];i++)option(stars,String(i),String(i)+'星');if(current&&!Array.from(stars.options).some(o=>o.value===current))option(stars,current,current+'星（不符合当前规则）');stars.value=current||'';if(activeServer==='global'&&catalog.capabilities?.max_stars_only){stars.value='';stars.disabled=true;}}
         maps();small.value=initial.small||'';cars();starOptions(initial.stars===null||initial.stars===undefined?'':String(initial.stars));
         big.onchange=maps;zone.onchange=()=>{cars();starOptions(stars.value);};car.onchange=()=>starOptions(stars.value);
+        if(activeServer==='global')node.append(el('p','当前仅开放五区满星理论；理论成绩需提供来源说明、图片或链接中的至少一项。','muted'));
         if(!compact)node.append(el('p','普通/自动档采纳后仅形成可用性归档建议，投稿成绩仍保留，不自动改写其他档位。','muted'));
         if(compact){
             const files=withImages?field(optionalFields,'证据图片（可选，最多3张，每张2MB）','images','file'):null;if(files){files.accept='image/png,image/jpeg,image/webp';files.multiple=true;node.readFiles=()=>Array.from(files.files||[]);}
@@ -84,10 +94,10 @@
             fields.addEventListener('input',describe);fields.addEventListener('change',describe);describe();targetDetails.open=!initial.big||!initial.small||!initial.car;
             extras.open=!!initial.notes||!!initial.video_url;
         }
-        const read=()=>({big:big.value,small:small.value,zone:zone.value,tier:tier.value,car:car.value.trim(),stars:stars.value?Number(stars.value):null,route:route.value,time:time.value.trim(),notes:notes.value.trim(),video_url:url.value.trim(),unlisted:unlisted.checked});
+        const read=()=>({...((activeServer==='global')?{server:'global',oc:!!oc?.checked}:{}),big:big.value,small:small.value,zone:zone.value,tier:tier.value,car:car.value.trim(),stars:activeServer==='global'&&catalog.capabilities?.max_stars_only?null:stars.value?Number(stars.value):null,route:route.value,time:time.value.trim(),notes:notes.value.trim(),video_url:url.value.trim(),unlisted:unlisted.checked});
         return {node,read,optional:extras};
     }
-    function summary(value){if(!value)return '未采纳';if(value.unlisted)return '未收录资料建议\n'+value.notes;return `${value.zone} / ${value.tier}\n${value.big} · ${value.small}\n${value.car} ${value.stars===null?'无星级':'★'+value.stars} / ${value.route||'普通跑法'}\n成绩：${value.time} 秒\n${value.notes||''}`;}
+    function summary(value){if(!value)return '未采纳';if(value.unlisted)return '未收录资料建议\n'+value.notes;return `${value.server==='global'?'国际服':'国服'}${value.oc?' · OC':''} · ${value.zone} / ${value.tier}\n${value.big} · ${value.small}\n${value.car} ${value.stars===null?'无星级':'★'+value.stars} / ${value.route||'普通跑法'}\n成绩：${value.time} 秒\n${value.notes||''}`;}
     function column(title,text){const node=el('div',undefined,'summary');node.append(el('strong',title),el('span',text));return node;}
     function compareText(c){return `${kinds[c?.kind]||'未比较'}${c?.old!==null&&c?.old!==undefined?'\n当前记录：'+c.old+(String(c.kind).startsWith('availability')?'':' 秒'):''}${c?.delta!==null&&c?.delta!==undefined?'\n变化：'+c.delta+' 秒':''}\n${c?.effect||''}`;}
     function button(text,fn){const n=el('button',text);n.type='button';n.onclick=()=>run(fn);return n;}
@@ -99,13 +109,13 @@
         $('draftRows').append(form.node);
     }
     function prefillTarget(value){
-        if(!value||value.server!=='cn')throw new Error('此入口只支持国服投稿');
+        if(!value||value.server!==activeServer)throw new Error('预填服别与当前'+(activeServer==='cn'?'国服':'国际服')+'目录不一致');
         const result=Object.fromEntries(['big','small','zone','tier','car','stars','route'].map(k=>[k,value[k]]));
         const car=catalog.cars.find(c=>c.name===result.car),track=catalog.tracks.some(t=>t.big===result.big&&t.small===result.small);
-        if(!track||!car||!car.zones.includes(result.zone)||!['理论','高手'].includes(result.tier)||typeof result.route!=='string'||result.route&&!catalog.routes.includes(result.route))throw new Error('预填目标已变化，请从擂台表重新选择');
+        if(!track||!car||!car.zones.includes(result.zone)||!(catalog.capabilities?.tiers||['理论','高手']).includes(result.tier)||typeof result.route!=='string'||result.route&&!catalog.routes.includes(result.route))throw new Error('预填目标已变化，请从擂台表重新选择');
         if(result.tier==='高手'){const [low,high]=car.limits[result.zone];if(!Number.isInteger(result.stars)||result.stars<low||result.stars>high)throw new Error('预填星级不符合当前规则，请重新选择');}
         else{if(result.stars!==null)throw new Error('理论目标已变化，请从擂台表重新选择');result.stars=null;}
-        return {...result,time:'',notes:'',video_url:'',unlisted:false};
+        return {...result,...(activeServer==='global'?{server:'global',oc:value.oc===true}:{}),time:'',notes:'',video_url:'',unlisted:false};
     }
     async function sendBatch(publish){
         const rows=[...$('draftRows').children],entries=rows.map(n=>n.readEntry());if(!entries.length)throw new Error('请先添加一条成绩');
@@ -117,7 +127,7 @@
         if(!batchRequest||batchRequest.text!==text)batchRequest={text,key:crypto.randomUUID().replaceAll('-','')};
         if(!batchRequest.ids){const saved=await request('POST','/submissions',{entries,request_key:batchRequest.key});batchRequest.ids=saved.ids;batchRequest.progress=saved.ids.map(()=>({revision:1,uploaded:0,sent:false}));}
         $('savedDraftLinks').replaceChildren();
-        for(const [i,id] of batchRequest.ids.entries()){const a=el('a','查看稿件 '+(i+1),'ui-button ui-secondary');a.href='/submissions#'+id;$('savedDraftLinks').append(a);}
+        for(const [i,id] of batchRequest.ids.entries()){const a=el('a','查看稿件 '+(i+1),'ui-button ui-secondary');a.href='/submissions'+(activeServer==='global'?'?server=global':'')+'#'+id;$('savedDraftLinks').append(a);}
         for(const [i,id] of batchRequest.ids.entries()){
             const progress=batchRequest.progress[i];if(progress.sent)continue;
             while(progress.uploaded<files[i].length){
@@ -141,7 +151,7 @@
     }
     async function loadList(){
         const ticket=++listTicket;
-        const query=new URLSearchParams({scope,status:$('statusFilter').value,q:$('search').value,offset:String(offset)});
+        const query=new URLSearchParams({scope,status:$('statusFilter').value,q:$('search').value,offset:String(offset),server:activeServer});
         const data=await request('GET','/submissions?'+query);
         if(ticket!==listTicket)return;
         $('count').textContent=`共 ${data.total} 条 · 当前 ${data.items.length} 条`;
@@ -162,6 +172,7 @@
         const ticket=++detailTicket;
         const item=await request('GET','/submissions/'+id);
         if(ticket!==detailTicket)return;
+        if((item.payload.server||'cn')!==activeServer){await loadCatalog(item.payload.server||'cn');await loadList();}
         selected=item;preview=null;activeForm=null;renderDetail();
         if(unread) await unread.read(item,scope==='review'?'review':'submissions');
         document.querySelectorAll('.queue-item').forEach(n=>n.removeAttribute('aria-current'));
@@ -277,7 +288,8 @@
         const session=await request('GET','/auth/me');user=session.user;csrf=session.csrf;contributions=!!session.contributions;
         if(!user){$('identity').textContent='登录后继续投稿';$('loginPrompt').hidden=false;$('loginLink').href='/?login=1&returnTo='+encodeURIComponent(location.pathname+location.search+location.hash);return;}
         $('identity').textContent=`${user.email} · ${user.role==='superadmin'?'超级管理员':user.role==='admin'?'管理员':'玩家'}`;
-        catalog=await request('GET','/submissions/catalog');$('reference').textContent=catalog.reference_label+' · '+catalog.basis.data.slice(0,12);
+        await loadCatalog(activeServer);
+        $('submissionServer').onchange=()=>run(async()=>{const next=$('submissionServer').value;if(unsaved&&!await ask('切换服别会丢弃未保存输入，继续？')){$('submissionServer').value=activeServer;return;}unsaved=false;selected=null;preview=null;batchRequest=null;$('draftRows').replaceChildren();$('detail').replaceChildren();await loadCatalog(next);history.replaceState(null,'','/submissions'+(next==='global'?'?server=global':'')+'#new');await switchView('new');});
         if(contributions){const a=el('a','贡献排行榜 / 设置我的公开昵称');a.className='ui-button ui-secondary';a.href='/leaderboard#mine';$('navigation').append(a);}
         $('navigation').hidden=false;$('reviewTab').hidden=!['admin','superadmin'].includes(user.role);
         if(session.readonly_previews&&['admin','superadmin'].includes(user.role)){const link=el('a','已采纳投稿预览');link.className='ui-button ui-secondary';link.href='/data-previews';$('navigation').append(link);}

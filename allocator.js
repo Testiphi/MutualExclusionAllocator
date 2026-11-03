@@ -140,3 +140,6 @@ const allocator = (() => {
 
     return { generateParetoSchemes };
 })();
+
+// The browser keeps its existing binding; mini-program logic can import the core.
+if (typeof module !== 'undefined' && module.exports) module.exports = allocator;

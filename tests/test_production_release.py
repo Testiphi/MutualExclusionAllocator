@@ -6,6 +6,86 @@ from production_release_tools import APP_FILES,pack,stage,verify,read_bundle
 ROOT=Path(__file__).resolve().parents[1]
 
 class ReleaseTests(unittest.TestCase):
+ def test_native_account_component_required_by_new_gateway(self):
+  from production_release_tools import MINI_ACCOUNT_FILES,manifest
+  import json
+  contents,_=read_bundle(self.bundle)
+  self.assertTrue(set(MINI_ACCOUNT_FILES)<=set(contents))
+  contents={n:raw for n,raw in contents.items() if n not in MINI_ACCOUNT_FILES}
+  target=self.path/'missing-account.zip'
+  with zipfile.ZipFile(target,'w') as z:
+   for n,raw in contents.items():z.writestr(n,raw)
+   z.writestr('manifest.json',json.dumps(manifest(contents,{'fixture':True})))
+  with self.assertRaisesRegex(ValueError,'原生账号适配组件'):read_bundle(target)
+
+ def test_account_only_native_fixture_boots_without_optional_ocr(self):
+  import subprocess,sys
+  target=stage(self.bundle,self.path/'account-only-release')
+  code='''from pathlib import Path
+import sys
+from backend.app import create_app
+from backend.mini_auth import GuestStore,provision as provision_guest
+from backend.mini_accounts import AccountStore,provision as provision_account
+from fastapi.testclient import TestClient
+base=Path(sys.argv[1])
+mini={'store':GuestStore(provision_guest(base/'guest')),'account_store':AccountStore(provision_account(base/'account')),
+      'fixture':True,'verifier':lambda code:'fixture','image_policy':'disabled'}
+app=create_app(base/'web','http://127.0.0.1:8989',mini_config=mini)
+with TestClient(app,base_url='http://127.0.0.1:8989') as client:
+ r=client.post('/api/mini/v1/session',json={'code':'fixture','client_schema':1,'request_key':'fixture-session-key'})
+ assert r.status_code==200,r.text
+ r=client.get('/api/mini/account/v1/session',headers={'Authorization':'Bearer '+r.json()['token']})
+ assert r.status_code==200 and r.json()['actor'] is None,r.text
+print('ACCOUNT_BOOT_OK')'''
+  root=self.path/'account-only-state';root.mkdir()
+  result=subprocess.run([sys.executable,'-B','-c',code,str(root)],cwd=target,capture_output=True,text=True,encoding='utf-8')
+  self.assertEqual(result.returncode,0,result.stderr);self.assertIn('ACCOUNT_BOOT_OK',result.stdout)
+ def test_default_bundle_without_optional_ocr_still_boots(self):
+  import subprocess,sys
+  target=stage(self.bundle,self.path/'no-ocr-release')
+  self.assertFalse((target/'backend/map_recognition.py').exists())
+  result=subprocess.run([sys.executable,'-B','-c',
+      'from backend.app import create_app; import sys; app=create_app(sys.argv[1],"http://127.0.0.1:8989"); print("BOOT_OK")',
+      str(self.path/'fresh-accounts')],cwd=target,capture_output=True,text=True,encoding='utf-8')
+  self.assertEqual(result.returncode,0,result.stderr)
+  self.assertIn('BOOT_OK',result.stdout)
+ def test_native_components_are_complete_but_historical_packages_still_verify(self):
+  from production_release_tools import MINI_FILES,manifest
+  import json
+  contents,_=read_bundle(self.bundle)
+  self.assertTrue(set(MINI_FILES)<=set(contents))
+  old={n:raw for n,raw in contents.items() if n not in MINI_FILES}
+  def archive(name,items):
+   path=self.path/name
+   with zipfile.ZipFile(path,'w') as z:
+    for n,raw in items.items():z.writestr(n,raw)
+    z.writestr('manifest.json',json.dumps(manifest(items,{'fixture':True})))
+   return path
+  with self.assertRaisesRegex(ValueError,'原生适配组件'):
+   read_bundle(archive('new-app-missing-native.zip',old))
+  old['backend/app.py']=b'# historical fixture app with no native imports\n'
+  read_bundle(archive('historical-without-native.zip',old))
+  partial=dict(contents);partial.pop(MINI_FILES[0])
+  with self.assertRaises(ValueError):read_bundle(archive('partial-native.zip',partial))
+ def test_selection_core_required_by_new_pages_and_old_bundles_still_verify(self):
+  from production_release_tools import manifest
+  import json
+  contents,_=read_bundle(self.bundle)
+  self.assertIn('selection_core.js',contents)
+  contents.pop('selection_core.js')
+  def archive(name,items):
+   bundle=self.path/name
+   with zipfile.ZipFile(bundle,'w') as z:
+    for n,v in items.items():z.writestr(n,v)
+    z.writestr('manifest.json',json.dumps(manifest(items,{'fixture':True})))
+   return bundle
+  with self.assertRaisesRegex(ValueError,'共享选择核心'):
+   read_bundle(archive('missing-core.zip',contents))
+  contents['index.html']=b'<html><script src="race_scores.js"></script></html>'
+  legacy=archive('legacy-page.zip',contents)
+  read_bundle(legacy)
+  target=stage(legacy,self.path/'legacy-releases')
+  verify(target)
  def setUp(self):
   self.temp=tempfile.TemporaryDirectory();self.path=Path(self.temp.name)
   self.wheels=self.path/'wheels';self.wheels.mkdir();(self.wheels/'dummy-1-py3-none-any.whl').write_bytes(b'fixture')
@@ -36,7 +116,7 @@ class ReleaseTests(unittest.TestCase):
   snapshot={n:(ROOT/n).read_bytes() for n in names}
   code=self.path/'code'
   for name in APP_FILES:
-   relative=Path('docs')/name if name.endswith('.md') else Path(name)
+   relative=Path('docs')/name if name.endswith('.md') or name=='MINI_FEATURES_OPENAPI_20261103.json' else Path(name)
    target=code/relative;target.parent.mkdir(parents=True,exist_ok=True);shutil.copyfile(ROOT/relative,target)
   (code/'cars.global.json').write_bytes(b'checkout data must not be used')
   bundle=self.path/'frozen.zip'

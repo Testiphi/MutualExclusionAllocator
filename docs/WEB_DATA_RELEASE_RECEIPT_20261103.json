@@ -1,0 +1,78 @@
+{
+  "release_id": "a933c9b746c2e276a9b68d14",
+  "source_commit": "765a4a62567c97a9a2d4f48cf3a8955e3e8cd715",
+  "data_commit": null,
+  "freeze_id": "b57d97a8f4e484be69238ab0",
+  "formal_maintenance_update_required": true,
+  "target_keys": {
+    "cn": 4516,
+    "global": 694
+  },
+  "archive": "E:\\hzz\\work\\MutualExclusionAllocator\\offline-evaluation\\web-release-20261103-02\\RacePick-WebData-20261103-a933c9b7-delivery.zip",
+  "folder": "E:\\hzz\\work\\MutualExclusionAllocator\\offline-evaluation\\web-release-20261103-02\\RacePick-WebData-20261103-a933c9b7-delivery",
+  "sha256": "064f1fe563e237dd4ba4edcc94a83501f36aa0449ff956ab165b473181055c1b",
+  "bytes": 317469943,
+  "outer_files": 62,
+  "runtime_files": 171,
+  "inner_sha256": "1159c9c0abd72caa7ccdb0b127ee4738a822d4121626eeb62cb5f10637b1f07d",
+  "frontend_passed": 134,
+  "windows_targeted_passed": 10,
+  "windows_targeted_skipped": 1,
+  "linux_full_passed": 399,
+  "actual_maintenance_update_rollback_and_ocr_verified": true,
+  "all_crc_sha_and_freeze_bytes_verified": true,
+  "protected_files_unchanged": 35,
+  "clean_code_checkout": true,
+  "production_operations": false,
+  "supersedes": "730a61cd78a0dd5417ad4e8b seed-only deployment scope",
+  "source_branch": "feature/map-layout-parser",
+  "main_unchanged": "82492772f7407412c63c973bc5c2e02be87dfba3",
+  "maintenance_source_commit": null,
+  "formal_maintenance_publish_entrypoint": "backend.maintenance_release: preview/apply/status/rollback",
+  "maintenance_validation": {
+    "passed": true,
+    "old_source": "Git 9e7d21f fixture, not actual production state",
+    "before_keys": {
+      "cn": 4487,
+      "global": 664
+    },
+    "after_keys": {
+      "cn": 4516,
+      "global": 694
+    },
+    "diff_counts": {
+      "cn": {
+        "added": 31,
+        "removed": 2,
+        "faster": 27,
+        "slower": 1,
+        "changed": 0
+      },
+      "global": {
+        "added": 30,
+        "removed": 0,
+        "faster": 11,
+        "slower": 0,
+        "changed": 0
+      }
+    },
+    "plan_digest": "e58aa339ce162861cd1acb8805b138a6f13e6b3c24333ee0cc3d0366920d31ec",
+    "targets": {
+      "cn": "7adfdc0d877c873be87f1492aec1b224",
+      "global": "9a60f89975fd4bcbbdf9dc810a770344"
+    },
+    "all_five_original_bytes_match_freeze": true,
+    "both_catalog_authorizations": true,
+    "account_and_both_garages_preserved": true,
+    "idempotent_recovery": true,
+    "backup_and_independent_restore": true,
+    "rollback_in_drill_only": true,
+    "legacy_activation_refused_until_data_rollback": true,
+    "original_fixture_stays_on_new_versions": true,
+    "service_owner_uid": 997,
+    "production_operations": false
+  },
+  "deployment_handoff": "E:\\hzz\\work\\MutualExclusionAllocator\\offline-evaluation\\web-release-20261103-02\\RacePick-WebData-20261103-a933c9b7-delivery\\CLOUD_CHAT_START.txt",
+  "scope_correction": "User explicitly requires website and maintenance updates in this same release. Supersedes earlier seed-only rollout instructions. Requires live diff preview, exact five frozen bytes, new activity pointers, preserved original business records and flags.",
+  "runtime_commit_independent_of_later_document_closeout": true
+}

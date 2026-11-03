@@ -1,0 +1,92 @@
+/** DOM-free homepage presentation. Scores/candidates/solver remain in the five shared modules. */
+const homePresenter = (() => {
+    const core = typeof module !== 'undefined' && module.exports ? require('./selection_core.js') : selectionCore;
+    const state = typeof module !== 'undefined' && module.exports ? require('./app_state.js') : appState;
+    const NICKNAME_ALIASES = {
+        '第六元素': '六子',
+        '兔子': 'c2',
+    };
+    function filterBySearch(carList, query, {nickToName, aliases = NICKNAME_ALIASES}) {
+        if (!query) return [...carList];
+        const q = query.toLowerCase();
+        return carList.filter(car => {
+            if (car.includes(query)) return true;
+            if (nickToName[car] && nickToName[car].toLowerCase().includes(q)) return true;
+            // 别名匹配：查所有指向此车的别名键
+            for (var aliasKey in aliases) {
+                if (aliases[aliasKey] === car && aliasKey.includes(query)) return true;
+            }
+            return false;
+        });
+    }
+    function filterByClass(carList, cls, {carStats, nickToName}) {
+        if (!cls) return [...carList];
+        return carList.filter(car => {
+            const stats = carStats[nickToName[car]];
+            return stats && stats.class === cls;
+        });
+    }
+    function sortCarList(carList, mode, {carStats, nickToName}) {
+        const sorted = [...carList];
+        if (mode === 'score-desc' || mode === 'score-asc') {
+            sorted.sort((a, b) => {
+                const left = carStats[nickToName[a]]?.score, right = carStats[nickToName[b]]?.score;
+                const leftKnown = Number.isFinite(left), rightKnown = Number.isFinite(right);
+                if (leftKnown !== rightKnown) return leftKnown ? -1 : 1;
+                if (!leftKnown) return a.localeCompare(b, 'zh');
+                return mode === 'score-desc' ? right - left : left - right;
+            });
+        } else {
+            sorted.sort((a, b) => a.localeCompare(b, 'zh'));
+        }
+        return sorted;
+    }
+    function getTopCars(candidate, ownedInZone, {tier, starsFor, scoreFor}) {
+        const cars = [...new Set(candidate.groups.flat())].filter(car => ownedInZone.has(car)).slice(0, 3);
+        return cars.map(car => ({
+            car,
+            stars: tier === '理论' ? null : starsFor(car),
+            score: scoreFor(car),
+        }));
+    }
+    function subtitle(server, data, zone, tier) {
+        if (server === 'global') return '国际服 · 五区满星理论参考 · 含特殊跑法';
+        const info=data?.tier_info?.[tier];
+        if (!info) return null;
+        return tier === '理论' && zone === 'zone4' ? '顶级特改理论成绩，默认最优解，含特殊跑法' : info.desc;
+    }
+    function schemeSummary(scheme,maps,index) {
+        const parts=[];
+        maps.forEach((map,i)=>{if(map?.big && map?.small)parts.push(`${i+1}:${scheme.assignment[i] || '空'}`);});
+        const total=scheme.vector.reduce((sum,value)=>sum+(value!==null?value:0),0);
+        return `方案${index+1} · ${parts.join(' ')} · Σ=${total}`;
+    }
+    function createHomePresenter(snapshot) {
+        const {cars,data,server}=snapshot;
+        const selection=core.createSelectionCore(snapshot),context=core.createSelectionContext(snapshot);
+        const carStats=Object.fromEntries(cars.cars.map(car=>[car.title,car]));
+        const nickToName={...cars._nickname_map};
+        cars.cars.forEach(car=>{if(car.nickname&&!nickToName[car.nickname])nickToName[car.nickname]=car.title;});
+        const lookup={carStats,nickToName};
+        function present(draft,filters={}) {
+            const model=context.getModel(draft);
+            const valid=draft.maps.flatMap((m,i)=>m?.big&&m?.small?[{...m,originalIndex:i}]:[]);
+            const input={maps:valid,zone:draft.zone,tier:draft.tier,starsMap:draft.stars||{},ocMap:draft.oc||{},scStates:draft.routes||{}};
+            const candidates=selection.prepareMapCandidates(input);
+            const pool=selection.carRules()[draft.zone==='zone4'?'zone4Cars':'zone5Cars'];
+            const owned=state.garage(draft.cars,new Set(pool));
+            const visibleCars=sortCarList(filterByClass(filterBySearch(pool,filters.query||'',lookup),filters.class||null,lookup),filters.sort||'alpha',lookup);
+            const references=Array.from({length:5},()=>[]);
+            valid.forEach((map,i)=>{references[map.originalIndex]=getTopCars(candidates[i],owned,{tier:draft.tier,
+                starsFor:car=>core.carStars(selection.carRules().rules[car],draft.zone,draft.stars?.[car],server),
+                scoreFor:car=>selection.effectiveTime({...input,...map,car})});});
+            const result=context.calculate(draft);
+            return {subtitle:subtitle(server,data,draft.zone,draft.tier) ?? '帕累托最优 · 擂台选车',visibleCars,references,
+                model,schemes:result.schemes.map((scheme,i)=>({...scheme,summary:schemeSummary(scheme,draft.maps,i)})),
+                emptyState:!valid.length?'请先选择地图':!result.schemes.length?'无可分配方案':null};
+        }
+        return {present};
+    }
+    return {aliases:NICKNAME_ALIASES,initialTier:server=>server==='global'?'理论':'高手',filterBySearch,filterByClass,sortCarList,getTopCars,subtitle,schemeSummary,createHomePresenter};
+})();
+if(typeof module!=='undefined'&&module.exports)module.exports=homePresenter;

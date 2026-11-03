@@ -58,7 +58,13 @@ const api = (() => {
     const key = 'global:static';
     if (!snapshots.has(key)) snapshots.set(key, (async () => {
       const paths = [cfg.staticPaths.manifestJson, cfg.staticPaths.carsJson, cfg.staticPaths.dataJson];
-      const responses = await Promise.all(paths.map(path => readBootstrap(path, {cache: 'no-store'})));
+      let responses;
+      if (globalThis.RACEPICK_VERSIONED_GLOBAL_SCORES) {
+        const response=await readBootstrap('/api/scores/global-snapshot',{cache:'no-store'});
+        if(!response.ok)throw Error(`国际服数据加载失败（HTTP ${response.status}），请稍后重试`);
+        const snapshot=await response.json();
+        responses=paths.map(path=>({ok:true,arrayBuffer:async()=>new TextEncoder().encode(snapshot.files[path]).buffer}));
+      } else responses = await Promise.all(paths.map(path => readBootstrap(path, {cache: 'no-store'})));
       const failed = responses.find(response => !response.ok);
       if (failed) throw Error(`国际服数据加载失败（HTTP ${failed.status}），请稍后重试`);
       const bytes = await Promise.all(responses.map(response => response.arrayBuffer()));
@@ -158,6 +164,7 @@ const api = (() => {
 
     /** 加载已选车辆集合 */
     async loadGarage(knownCars) {
+      if(international && globalThis.RACEPICK_GLOBAL_PROFILE_CLOUD===true && globalThis.accountUI?.active())return accountUI.garage();
       if (international) { const profile = guestProfile(); return profile ? appState.garage(profile.cars, knownCars) : null; }
       if (globalThis.accountUI?.active()) return accountUI.garage();
       if (cfg.dataSource === 'api') {
@@ -170,6 +177,7 @@ const api = (() => {
 
     /** 保存已选车辆集合 */
     async saveGarage(carSet) {
+      if(international && globalThis.RACEPICK_GLOBAL_PROFILE_CLOUD===true && globalThis.accountUI?.active())return accountUI.saveGarage(carSet);
       if (international) { const profile = guestProfile(); return this.saveGuestProfile({cars: [...carSet], stars: profile?.stars || {}, ocMap: profile?.ocMap || {}}, this.guestRevision()); }
       if (globalThis.accountUI?.active()) return accountUI.saveGarage(carSet);
       if (cfg.dataSource === 'api') {

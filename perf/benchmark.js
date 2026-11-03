@@ -5,7 +5,7 @@ const os = require('node:os');
 const crypto = require('node:crypto');
 const assert = require('node:assert/strict');
 const read = f => fs.readFileSync(path.join(__dirname, '..', f), 'utf8');
-const files = ['index.html', 'app_state.js', 'race_scores.js'];
+const files = ['index.html', 'app_state.js', 'race_scores.js', 'selection_core.js', 'home_presenter.js'];
 const sources = Object.fromEntries(files.map(f => [f, read(f)]));
 const cases = require('./page_inputs').prepare(sources, JSON.parse(read('cars.json')), JSON.parse(read('gauntlet_data.json')));
 const load = f => new Function(read(f) + ';return allocator.generateParetoSchemes;')();

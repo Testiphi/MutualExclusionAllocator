@@ -2,7 +2,7 @@
 const fs=require('node:fs');
 const path=require('node:path');
 const read=f=>fs.readFileSync(path.join(__dirname,'..',f),'utf8');
-const sources=Object.fromEntries(['index.html','app_state.js','race_scores.js'].map(f=>[f,read(f)]));
+const sources=Object.fromEntries(['index.html','app_state.js','race_scores.js','selection_core.js','home_presenter.js'].map(f=>[f,read(f)]));
 const cases=require('./page_inputs').prepare(sources,JSON.parse(read('cars.json')),JSON.parse(read('gauntlet_data.json')));
 const results=[];
 for(const c of cases){

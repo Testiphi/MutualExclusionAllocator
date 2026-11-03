@@ -60,8 +60,9 @@ def make_app(config,password):
         notifications_ready=notification_state(db)['notification_schema']==1
         contribution_ready=state(db)['contribution_schema']==1
         from backend.coverage import state as coverage_state
-        coverage_ready=coverage_state(db)['coverage_schema']==1
-    return create_app(path,config['origin'],score_state=score_state,contributions=contribution_ready,coverage=coverage_ready,feedback=feedback_ready,notifications=notifications_ready,usage=(path/'usage.sqlite3').exists(),mail_config=MailConfig('smtp','',password,production=True,daily_limit=config['mail_daily_limit']),production=True)
+        coverage_ready=coverage_state(db)['coverage_schema'] in (1,2)
+    ocr_config=os.environ.get('RACEPICK_MAP_RECOGNITION_CONFIG') or None
+    return create_app(path,config['origin'],score_state=score_state,contributions=contribution_ready,coverage=coverage_ready,feedback=feedback_ready,notifications=notifications_ready,usage=(path/'usage.sqlite3').exists(),mail_config=MailConfig('smtp','',password,production=True,daily_limit=config['mail_daily_limit']),production=True,map_recognition=ocr_config,mini_config=os.environ.get('RACEPICK_MINI_CONFIG') or None)
 
 @contextmanager
 def service_lock(path):

@@ -1,0 +1,7 @@
+{
+  "models": {
+    "det": {"path": "ocr/v5_det.onnx", "sha256": "8c3b7ee97913a7942b8565669dc9acbe8846fbbaf4b63e1d7fdb339005574a33"},
+    "rec": {"path": "ocr/v5_rec.onnx", "sha256": "31fb844ce3a4aaf13e4bea62ae35f43bd9a509966061980c30db9b248c542a6b"},
+    "keys": {"path": "ocr/v5_keys.txt", "sha256": "1ea29636956177e400af712d9782e7693f3fb25f98617bed10479d2965a836fd"}
+  }
+}

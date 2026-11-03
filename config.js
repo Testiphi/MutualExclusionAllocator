@@ -12,7 +12,7 @@ const APP_CONFIG = (() => {
   return {
   server,
   serverError,
-  localOnly: international,
+  get localOnly() { return international && globalThis.RACEPICK_GLOBAL_PROFILE_CLOUD !== true; },
   capabilities: international ? {zones: ['zone5'], tiers: ['理论'], maxStarsOnly: true} : {zones: ['zone5', 'zone4'], tiers: ['理论', '高手', '普通', '自动'], maxStarsOnly: false},
   // ---- 版本 ----
   version: '1.1',

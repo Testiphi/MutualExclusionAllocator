@@ -9,6 +9,8 @@
     <script src="api.js"></script>
     <script src="allocator.js"></script>
     <script src="race_scores.js"></script>
+    <script src="selection_core.js"></script>
+    <script src="home_presenter.js"></script>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="theme.css">
 </head>
@@ -120,6 +122,7 @@
     let RACE_DATA = null;
     let bigMapList = [];
     let smallMapsByBig = {};
+    let mapSelectionRevision = 0;
 
     // ===================== 五区 / 四区 车池与星级规则 =====================
     // 唯一来源是 cars.json 里每辆车记录上的 `zones`（车池）与 `star_rule`（星级上下限）。
@@ -159,6 +162,7 @@
     let currentBestSchemes = [];             // 非支配方案列表 { assignment, vector }
     // 特殊跑法状态: mapKey('大地图/小地图') → 'all' / 'off' / sc_type
     let specialRouteEnabled = {};
+    let specialRouteChoice = {};             // 暂时关闭时保留上一次启用的跑法选择
 
     const storageFailures = new Map();
     function storageResult(key, error) {
@@ -214,30 +218,13 @@
      * 必须在 carStats / nickToName 就绪之后、loadGarage() 之前调用。
      */
     function buildCarRules() {
-        zone5Cars = [];
-        zone4Cars = [];
-        CAR_STAR_RULES = {};
-        for (const car of Object.values(carStats)) {
-            if (!car.nickname) continue;          // nickname 即数据里的车名（唯一索引）
-            const zones = car.zones || [];
-            if (zones.includes('五区')) zone5Cars.push(car.nickname);
-            if (zones.includes('四区')) zone4Cars.push(car.nickname);
-            if (car.star_rule) CAR_STAR_RULES[car.nickname] = car.star_rule;
-        }
-        if (zone5Cars.length === 0 || (APP_CONFIG.server !== 'global' && zone4Cars.length === 0) || Object.keys(CAR_STAR_RULES).length === 0) {
-            throw new Error('cars.json 缺少 zones / star_rule 定义，无法构建车池与星级规则');
-        }
+        const derived = selectionCore.carRules(carStats, APP_CONFIG.server);
+        zone5Cars = derived.zone5Cars; zone4Cars = derived.zone4Cars; CAR_STAR_RULES = derived.rules;
     }
 
     /** 获取某辆车的当前有效星级范围 */
     function getStarRange(carName) {
-        var rule = getStarRule(carName);
-        if (!rule) return { min: 1, max: 6 };
-        var max = rule.max || 6;
-        if (currentZone === 'zone4' && rule.zone4Max != null) {
-            max = rule.zone4Max;
-        }
-        return { min: rule.min || 1, max: Math.max(max, rule.min || 1) };
+        return selectionCore.starRange(getStarRule(carName), currentZone);
     }
 
     /** 获取某辆车的默认星级 */
@@ -255,7 +242,7 @@
     /** 加载已保存的星级映射 */
     function loadStarsMap() {
         try {
-            const saved = (globalThis.RACEPICK_SERVER !== 'global' && globalThis.accountUI?.active()) ? accountUI.stars() : api.loadPref(APP_CONFIG.storageKeys.starMap);
+            const saved = ((globalThis.RACEPICK_SERVER !== 'global'||globalThis.RACEPICK_GLOBAL_PROFILE_CLOUD===true) && globalThis.accountUI?.active()) ? accountUI.stars() : api.loadPref(APP_CONFIG.storageKeys.starMap);
             if (saved && typeof saved === 'object' && !Array.isArray(saved)) {
                 starsMap = saved;
             }
@@ -264,7 +251,7 @@
 
     /** 保存星级映射 */
     function saveStarsMap() {
-        if ((globalThis.RACEPICK_SERVER !== 'global' && globalThis.accountUI?.active())) {
+        if (((globalThis.RACEPICK_SERVER !== 'global'||globalThis.RACEPICK_GLOBAL_PROFILE_CLOUD===true) && globalThis.accountUI?.active())) {
             try {
                 accountUI.saveStars(starsMap);
                 storageResult(APP_CONFIG.storageKeys.starMap, null);
@@ -283,12 +270,7 @@
 
     /** 获取当前分区的有效星级，不改写保存的用户设置（显示与计算共用同一来源） */
     function getCarStars(carName) {
-        if (globalThis.RACEPICK_SERVER === 'global') return getStarRange(carName).max;
-        const saved = starsMap[carName];
-        const stars = Number.isInteger(saved) && saved >= 1 && saved <= 6
-            ? saved : getZoneDefaultStar(carName);
-        const range = getStarRange(carName);
-        return Math.max(range.min, Math.min(range.max, stars));
+        return selectionCore.carStars(getStarRule(carName), currentZone, starsMap[carName], globalThis.RACEPICK_SERVER === 'global' ? 'global' : 'cn');
     }
 
     /** 获取某辆车的初始显示星级（与 getCarStars 一致） */
@@ -363,23 +345,10 @@
      * @returns {string[]} 过滤结果
      */
     /** 昵称别名映射：不同叫法指向同一辆车 */
-    const NICKNAME_ALIASES = {
-        '第六元素': '六子',
-        '兔子': 'c2',
-    };
+    const NICKNAME_ALIASES = homePresenter.aliases;
 
     function filterBySearch(carList, query) {
-        if (!query) return [...carList];
-        const q = query.toLowerCase();
-        return carList.filter(car => {
-            if (car.includes(query)) return true;
-            if (nickToName[car] && nickToName[car].toLowerCase().includes(q)) return true;
-            // 别名匹配：查所有指向此车的别名键
-            for (var aliasKey in NICKNAME_ALIASES) {
-                if (NICKNAME_ALIASES[aliasKey] === car && aliasKey.includes(query)) return true;
-            }
-            return false;
-        });
+        return homePresenter.filterBySearch(carList,query,{nickToName,aliases:NICKNAME_ALIASES});
     }
 
     /**
@@ -389,11 +358,7 @@
      * @returns {string[]}
      */
     function filterByClass(carList, cls) {
-        if (!cls) return [...carList];
-        return carList.filter(car => {
-            const stats = carStats[nickToName[car]];
-            return stats && stats.class === cls;
-        });
+        return homePresenter.filterByClass(carList,cls,{carStats,nickToName});
     }
 
     /**
@@ -403,19 +368,7 @@
      * @returns {string[]} 排序后的新数组
      */
     function sortCarList(carList, mode) {
-        const sorted = [...carList];
-        if (mode === 'score-desc' || mode === 'score-asc') {
-            sorted.sort((a, b) => {
-                const left = carStats[nickToName[a]]?.score, right = carStats[nickToName[b]]?.score;
-                const leftKnown = Number.isFinite(left), rightKnown = Number.isFinite(right);
-                if (leftKnown !== rightKnown) return leftKnown ? -1 : 1;
-                if (!leftKnown) return a.localeCompare(b, 'zh');
-                return mode === 'score-desc' ? right - left : left - right;
-            });
-        } else {
-            sorted.sort((a, b) => a.localeCompare(b, 'zh'));
-        }
-        return sorted;
+        return homePresenter.sortCarList(carList,mode,{carStats,nickToName});
     }
 
     // ========================== 数据加载与索引 ==========================
@@ -507,12 +460,7 @@
 
     /** 候选已按页面口径排序；单图参考不扣除其他图分配的车。 */
     function getTopCars(candidate, ownedInZone, big, small, zone) {
-        const cars = [...new Set(candidate.groups.flat())].filter(car => ownedInZone.has(car)).slice(0, 3);
-        return cars.map(car => ({
-            car,
-            stars: currentTier === '理论' ? null : getCarStars(car),
-            score: getCarScore(big, small, car, zone),
-        }));
+        return homePresenter.getTopCars(candidate,ownedInZone,{tier:currentTier,starsFor:getCarStars,scoreFor:car=>getCarScore(big,small,car,zone)});
     }
 
     /** 保留同图的展开状态；换图、清空后重新默认折叠。只更新内容，不触发求解。 */
@@ -622,9 +570,9 @@
     const guestDraftKey=APP_CONFIG.storageKeys.guestDraft;
     function profileNow(){return {cars:[...selectedCars],stars:{...starsMap},...(APP_CONFIG.server === 'global' ? {ocMap:{...ocMap}} : {})};}
     function updateGarageSaveStatus(){
-        const state=(globalThis.RACEPICK_SERVER !== 'global' && globalThis.accountUI?.active())?accountUI.state():{dirty:guestDirty};
+        const state=((globalThis.RACEPICK_SERVER !== 'global'||globalThis.RACEPICK_GLOBAL_PROFILE_CLOUD===true) && globalThis.accountUI?.active())?accountUI.state():{dirty:guestDirty};
         const node=document.getElementById('garageSaveStatus');
-        if(node)node.textContent=APP_CONFIG.server === 'global' ? (state?.dirty?'国际服本机车库 · 有未保存修改':'国际服车库保存于本机 · 点击保存才会更新') : (state?.dirty?'临时试算中 · 车库/星级有未保存修改':'手动保存 · 点击保存才会更新车库');
+        if(node)node.textContent=APP_CONFIG.server === 'global' && !((globalThis.RACEPICK_GLOBAL_PROFILE_CLOUD===true)&&globalThis.accountUI?.active()) ? (state?.dirty?'国际服本机车库 · 有未保存修改':'国际服车库保存于本机 · 点击保存才会更新') : (state?.dirty?'临时试算中 · 车库/星级有未保存修改':'手动保存 · 点击保存才会更新车库');
         const button=document.getElementById('garageSaveBtn');if(button)button.disabled=state?.status==='saving';
     }
     function stageGuestGarage(){
@@ -636,7 +584,7 @@
     }
     async function saveGarage() {
         try {
-            if((globalThis.RACEPICK_SERVER !== 'global' && globalThis.accountUI?.active())) accountUI.saveGarage(selectedCars);
+            if(((globalThis.RACEPICK_SERVER !== 'global'||globalThis.RACEPICK_GLOBAL_PROFILE_CLOUD===true) && globalThis.accountUI?.active())) accountUI.saveGarage(selectedCars);
             else stageGuestGarage();
         } catch(error){storageResult(APP_CONFIG.storageKeys.garage,error.message);}
         updateGarageSaveStatus();saveZoneMode();
@@ -650,23 +598,23 @@
     });}
     async function commitGarage(){
         try{
-            if((globalThis.RACEPICK_SERVER !== 'global' && globalThis.accountUI?.active()))await accountUI.saveNow();
+            if(((globalThis.RACEPICK_SERVER !== 'global'||globalThis.RACEPICK_GLOBAL_PROFILE_CLOUD===true) && globalThis.accountUI?.active()))await accountUI.saveNow();
             else {api.saveGuestProfile(profileNow(),guestBase);guestBase=api.guestRevision();guestDirty=false;try{globalThis.sessionStorage?.removeItem(guestDraftKey);}catch(e){}}
             storageResult(APP_CONFIG.storageKeys.garage,null);updateGarageSaveStatus();
-            if(!(globalThis.RACEPICK_SERVER !== 'global' && globalThis.accountUI?.active())||!accountUI.state().dirty)document.getElementById('garageSaveStatus').textContent=APP_CONFIG.server === 'global' ? '国际服车库已保存于本机' : '车库已保存';
-            globalThis.Usage?.feature((globalThis.RACEPICK_SERVER!=='global' && globalThis.accountUI?.active())?'garage_save_account':'garage_save_local','success');
+            if(!((globalThis.RACEPICK_SERVER !== 'global'||globalThis.RACEPICK_GLOBAL_PROFILE_CLOUD===true) && globalThis.accountUI?.active())||!accountUI.state().dirty)document.getElementById('garageSaveStatus').textContent=APP_CONFIG.server === 'global' ? (globalThis.RACEPICK_GLOBAL_PROFILE_CLOUD===true&&globalThis.accountUI?.active()?'国际服账号车库已保存':'国际服车库已保存于本机') : '车库已保存';
+            globalThis.Usage?.feature(((globalThis.RACEPICK_SERVER!=='global'||globalThis.RACEPICK_GLOBAL_PROFILE_CLOUD===true) && globalThis.accountUI?.active())?'garage_save_account':'garage_save_local','success');
         }catch(error){await garagePrompt(error.message);}
     }
     async function restoreGarage(){
         if(!await garagePrompt('放弃当前临时选择和星级，恢复已保存的车库？当前地图不会改变。',true))return;
         try{
-            if((globalThis.RACEPICK_SERVER !== 'global' && globalThis.accountUI?.active()))await accountUI.restore();
+            if(((globalThis.RACEPICK_SERVER !== 'global'||globalThis.RACEPICK_GLOBAL_PROFILE_CLOUD===true) && globalThis.accountUI?.active()))await accountUI.restore();
             else{globalThis.sessionStorage?.removeItem(guestDraftKey);guestDirty=false;selectedCars=new Set();starsMap={};ocMap={};const zone=currentZone;await loadGarage();currentZone=zone;loadStarsMap();loadOcMap();guestBase=api.guestRevision();buildMapIndex();renderGarage();computeAndDisplay();}
             updateGarageSaveStatus();
         }catch(error){await garagePrompt(error.message);}
     }
     function restoreGuestDraft(){
-        if((globalThis.RACEPICK_SERVER !== 'global' && globalThis.accountUI?.active()))return;
+        if(((globalThis.RACEPICK_SERVER !== 'global'||globalThis.RACEPICK_GLOBAL_PROFILE_CLOUD===true) && globalThis.accountUI?.active()))return;
         try{
             guestBase=api.guestRevision();
             const raw=globalThis.sessionStorage?.getItem(guestDraftKey);if(!raw)return;
@@ -686,7 +634,7 @@
     }
     function loadOcMap() {
         if (APP_CONFIG.server !== 'global') return;
-        try { ocMap = validatedOcMap(api.guestProfile()?.ocMap); }
+        try { ocMap = validatedOcMap(globalThis.RACEPICK_GLOBAL_PROFILE_CLOUD===true && globalThis.accountUI?.active() ? accountUI.ocMap() : api.guestProfile()?.ocMap); }
         catch(error) { storageResult(APP_CONFIG.storageKeys.garage, error.message); }
     }
     function saveZoneMode() {
@@ -853,87 +801,18 @@
      * 无成绩的车按原数据顺序附在末尾。
      */
     function getOriginalGroups(big, small, zone) {
-        const list = smallMapsByBig[big];
-        if (!list) return null;
-        const found = list.find(item => item.name === small);
+        const found = smallMapsByBig[big]?.find(item => item.name === small);
         if (!found) return null;
-
-        var mapKey = big + '/' + small;
-        var scState = getRouteState(big, small, zone);
-        var scOn = scState !== 'off';
-
-        // 选择五区或四区的数据
-        const entries = zone === 'zone4' ? found.zone4Entries : found.zone5Entries;
-
-        // sc 类型过滤后的可用条目（关闭时剔除全部 sc）
-        var usable = [];
-        for (var ei = 0; ei < entries.length; ei++) {
-            var raw = entries[ei]._raw;
-            if (!raw) continue;
-            const entryOc = raw.cars?.[0]?.oc;
-            if ((entryOc === undefined ? false : entryOc) !== (ocMap[raw.cars?.[0]?.name] === true)) continue;
-            if (!scOn && raw.sc) continue;
-            if (scOn && scState !== 'all' && raw.sc && raw.sc_type !== scState) continue;
-            usable.push(entries[ei]);
-        }
-
-        // 收集候选车（保持原数据出现顺序，作为并列时与无成绩时的稳定序）
-        var cars = [];
-        var seen = {};
-        for (var k = 0; k < usable.length; k++) {
-            var name = parseCarGroup(usable[k])[0];
-            if (!name) continue;
-            if (seen[name] === undefined) { seen[name] = cars.length; cars.push(name); }
-        }
-
-        // 每车取「可用的最快成绩」：开关打开时普通与 sc 一起比，谁快用谁
-        var scored = cars.map(function(carName) {
-            var normal = getEffectiveTime(usable, carName, false, zone);
-            var sc = scOn ? getEffectiveTime(usable, carName, true, zone) : null;
-            var best = normal;
-            if (sc != null && (best == null || sc < best)) best = sc;
-            return { car: carName, time: best };
+        return selectionCore.originalGroups(zone === 'zone4' ? found.zone4Entries : found.zone5Entries, {
+            tier: currentTier, starsFor: getCarStars, ocMap, routeState: getRouteState(big, small, zone)
         });
-
-        // 有成绩的按成绩升序；无成绩的按原顺序附在末尾
-        var withTime = scored.filter(function(s) { return s.time != null; });
-        var noTime = scored.filter(function(s) { return s.time == null; });
-        withTime.sort(function(a, b) { return a.time - b.time; });
-
-        return withTime.concat(noTime).map(function(s) { return [s.car]; });
     }
     /** 默认无车优先级标记（100 以内，远大于实际优先级值） */
     const NO_CAR_PRIORITY = 99;
 
     /** 页面层：按选定地图和分区准备候选车组及原始优先级。 */
     function prepareMapCandidates(validMaps, zone) {
-        const n = validMaps.length;
-        // 1. 预计算每张图的数据:候选组、车→优先级映射
-        const mapsData = [];
-        for (let i = 0; i < n; i++) {
-            const { big, small } = validMaps[i];
-            const originalGroups = getOriginalGroups(big, small, zone);
-            if (!originalGroups) {
-                // 无数据的地图，标记为空
-                mapsData.push({ groups: [], carToPriority: new Map() });
-                continue;
-            }
-
-            // 过滤候选:每组只保留拥有的车
-            // 车->优先级 (组索引)
-            const carToPriority = new Map();
-            for (let gIdx = 0; gIdx < originalGroups.length; gIdx++) {
-                const group = originalGroups[gIdx];
-                for (const car of group) {
-                    if (!carToPriority.has(car)) {
-                        carToPriority.set(car, gIdx);
-                    }
-                }
-            }
-            mapsData.push({ groups: originalGroups, carToPriority });
-        }
-
-        return mapsData;
+        return selectionCore.prepareMapCandidates(validMaps, (big, small) => getOriginalGroups(big, small, zone));
     }
 
     /** 页面层：把紧凑方案映射回显示行，未选地图的位置保留为空。 */
@@ -1002,28 +881,23 @@
             var hasScEntries = tierData && Array.isArray(tierData) && tierData.some(function(e) { return e.sc; });
             if (!hasScEntries) continue;
             hasSc = true;
-            var note = track.special_route_note || '';
             var currentState = getRouteState(big, small);
             var scTypes = getScTypes(track);
+            var note = scTypes.length === 1 ? scTypes[0] : (track.special_route_note || '');
 
+            var isOn = currentState !== 'off';
+            toggleHtml += '<span class="sc-control' + (isOn ? ' is-on' : '') + '">';
+            toggleHtml += '<button type="button" class="sc-toggle" data-mapkey="' + mapKey + '" aria-pressed="' + isOn + '">' + small + ' <span class="sc-note">' + (note ? '(' + note + ')' : '') + '</span> <span aria-hidden="true">' + (isOn ? '\u25C9' : '\u25CB') + '</span></button>';
             if (scTypes.length > 1) {
-                // 多 sc 类型：显示下拉选择器
+                // 主体控制开关；启用后的下拉框只选择跑法，不混入关闭状态。
                 var opts = '';
-                opts += '<option value="off"' + (currentState === 'off' ? ' selected' : '') + '>关闭</option>';
                 opts += '<option value="all"' + (currentState === 'all' ? ' selected' : '') + '>全部</option>';
                 for (var ti = 0; ti < scTypes.length; ti++) {
                     opts += '<option value="' + scTypes[ti] + '"' + (currentState === scTypes[ti] ? ' selected' : '') + '>' + scTypes[ti] + '</option>';
                 }
-                toggleHtml += '<span style="display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:8px;font-size:0.8rem;border:1px solid #21262d;background:#0d1117;color:#e6edf3;">';
-                toggleHtml += '<span>' + small + '</span>';
-                if (note) toggleHtml += ' <span style="font-size:0.7rem;">(' + note + ')</span>';
-                toggleHtml += ' <select class="sc-select" data-mapkey="' + mapKey + '" style="padding:2px 8px;border-radius:6px;border:1px solid #30363d;background:#0d1117;color:#e6edf3;font-size:0.75rem;cursor:pointer;">' + opts + '</select>';
-                toggleHtml += '</span>';
-            } else {
-                // 单 sc 类型：显示切换开关
-                var isOn = currentState !== 'off';
-                toggleHtml += '<span class="sc-toggle" data-mapkey="' + mapKey + '" style="display:inline-flex;align-items:center;gap:4px;padding:6px 14px;border-radius:8px;font-size:0.8rem;cursor:pointer;border:1px solid ' + (isOn ? '#58a6ff' : '#30363d') + ';background:' + (isOn ? '#1f3a5f' : '#0d1117') + ';color:' + (isOn ? '#58a6ff' : '#6e7681') + ';user-select:none;">' + small + ' <span style="font-size:0.7rem;">' + (note ? '(' + note + ')' : '') + '</span> <span>' + (isOn ? '\u25C9' : '\u25CB') + '</span></span>';
+                toggleHtml += ' <select class="sc-select" data-mapkey="' + mapKey + '" aria-label="' + small + '特殊跑法"' + (isOn ? '' : ' hidden disabled') + '>' + opts + '</select>';
             }
+            toggleHtml += '</span>';
         }
         list.innerHTML = toggleHtml;
         panel.style.display = hasSc ? '' : 'none';
@@ -1114,17 +988,9 @@
         schemeSelect.disabled = false;
         schemeCountBadge.textContent = currentBestSchemes.length;
         currentBestSchemes.forEach((scheme, idx) => {
-            const totalScore = getTotalScore(scheme);
             const option = document.createElement('option');
             option.value = idx;
-            // 方案摘要: 按行号列出各图选车 + 总优先级分（越小越优）
-            const parts = [];
-            for (let i = 0; i < ROWS; i++) {
-                const big = bigSelects[i].value;
-                const small = smallSelects[i].value;
-                if (big && small) parts.push(`${i+1}:${scheme.assignment[i] || '空'}`);
-            }
-            option.textContent = `方案${idx+1} · ${parts.join(' ')} · Σ=${totalScore}`;
+            option.textContent = homePresenter.schemeSummary(scheme,bigSelects.map((sel,i)=>({big:sel.value,small:smallSelects[i].value})),idx);
             schemeSelect.appendChild(option);
         });
         schemeSelect.value = 0;
@@ -1195,8 +1061,8 @@
 
     // 事件绑定
     function bindEvents() {
-        bigSelects.forEach(sel => sel.addEventListener('change', () => { refreshBigMaps(); computeAndDisplay(); }));
-        smallSelects.forEach(sel => sel.addEventListener('change', computeAndDisplay));
+        bigSelects.forEach(sel => sel.addEventListener('change', () => { mapSelectionRevision++; refreshBigMaps(); computeAndDisplay(); }));
+        smallSelects.forEach(sel => sel.addEventListener('change', () => { mapSelectionRevision++; computeAndDisplay(); }));
         recommendBtn.addEventListener('click', computeAndDisplay);
         selectAllBtn.addEventListener('click', () => { selectAll(); computeAndDisplay(); });
         clearAllBtn.addEventListener('click', () => { clearAll(); computeAndDisplay(); });
@@ -1225,8 +1091,14 @@
             if (!toggle) return;
             var mapKey = toggle.dataset.mapkey;
             var current = specialRouteEnabled[mapKey];
-            // 单类型 toggle：off <-> all
-            specialRouteEnabled[mapKey] = current === 'off' ? 'all' : 'off';
+            if (current === 'off') {
+                var track = RACE_DATA.tracks.find(t => t['大地图'] + '/' + t['小地图'] === mapKey);
+                var available = track ? getScTypes(track) : [];
+                specialRouteEnabled[mapKey] = available.length > 1 ? appState.route(specialRouteChoice[mapKey], available) : 'all';
+            } else {
+                specialRouteChoice[mapKey] = current || 'all';
+                specialRouteEnabled[mapKey] = 'off';
+            }
             computeAndDisplay();
         });
         document.getElementById('scPanel').addEventListener('change', function(e) {
@@ -1234,6 +1106,7 @@
             if (!sel) return;
             var mapKey = sel.dataset.mapkey;
             specialRouteEnabled[mapKey] = sel.value;
+            specialRouteChoice[mapKey] = sel.value;
             computeAndDisplay();
         });
 
@@ -1243,7 +1116,7 @@
             if (ocButton) {
                 const car = ocButton.dataset.ocCar;
                 if (APP_CONFIG.server === 'global' && selectedCars.has(car) && ocAvailable.has(car)) {
-                    ocMap[car] = !ocMap[car]; stageGuestGarage(); renderCarTags(); computeAndDisplay();
+                    ocMap[car] = !ocMap[car]; if(globalThis.RACEPICK_GLOBAL_PROFILE_CLOUD===true && globalThis.accountUI?.active())accountUI.saveOcMap(ocMap);else stageGuestGarage(); renderCarTags(); computeAndDisplay();
                 }
                 return;
             }
@@ -1331,17 +1204,8 @@
     }
 
     function updateSubtitle() {
-        if (APP_CONFIG.server === 'global') { const sub = document.querySelector('.sub'); if (sub) sub.textContent = '国际服 · 五区满星理论参考 · 含特殊跑法'; return; }
-        const tierInfo = RACE_DATA?.tier_info?.[currentTier];
-        const sub = document.querySelector('.sub');
-        if (sub && tierInfo) {
-            let desc = tierInfo.desc;
-            // 理论档在四区模式下显示不同描述
-            if (currentTier === '理论' && currentZone === 'zone4') {
-                desc = '顶级特改理论成绩，默认最优解，含特殊跑法';
-            }
-            sub.textContent = desc;
-        }
+        const sub=document.querySelector('.sub'),text=homePresenter.subtitle(APP_CONFIG.server,RACE_DATA,currentZone,currentTier);
+        if(sub&&text!==null)sub.textContent=text;
     }
 
     // 四区/五区切换
@@ -1388,7 +1252,7 @@
     function prepareServerNavigation(event, link, server) {
         if (event.defaultPrevented || event.button > 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
         if (server === APP_CONFIG.server && !APP_CONFIG.serverError) { event.preventDefault(); return; }
-        const account = APP_CONFIG.server !== 'global' && globalThis.accountUI?.active();
+        const account = (APP_CONFIG.server !== 'global'||globalThis.RACEPICK_GLOBAL_PROFILE_CLOUD===true) && globalThis.accountUI?.active();
         if (!account && guestDirty) {
             try {
                 const draft = JSON.stringify({base:guestBase, profile:profileNow()});
@@ -1419,7 +1283,7 @@
         if (APP_CONFIG.server === 'global') {
             document.title = '国际服 · 擂台选车助手';
             const note = document.getElementById('serverNote'); note.hidden = false;
-            note.textContent = '国际服车库保存于本机。仅五区满星理论；开启OC后仅使用已收录的OC成绩。';
+            note.textContent = (globalThis.RACEPICK_GLOBAL_PROFILE_CLOUD===true?'国际服账号车库与国服分开保存。':'国际服车库保存于本机。')+'仅五区满星理论；开启OC后仅使用已收录的OC成绩。';
             document.getElementById('tierToggle').hidden = true;
             document.getElementById('zoneToggle').hidden = true;
         }
@@ -1451,12 +1315,13 @@
             ocAvailable = new Set((RACE_DATA.tracks || []).flatMap(track => (track['五区']?.['理论'] || []).filter(entry => entry.cars?.[0]?.oc === true).map(entry => entry.cars[0].name)));
             buildCarRules();            // 由 zones / star_rule 派生车池与星级规则
 
-            if (APP_CONFIG.server !== 'global' && globalThis.accountUI) await accountUI.init({
+            if ((APP_CONFIG.server !== 'global'||globalThis.RACEPICK_GLOBAL_PROFILE_CLOUD===true) && globalThis.accountUI) await accountUI.init({
                 known: new Set([...zone5Cars, ...zone4Cars]),
                 read: profileNow,
                 apply: profile => {
                     selectedCars = appState.garage(profile.cars, new Set([...zone5Cars, ...zone4Cars]));
                     starsMap = profile.stars;
+                    if(APP_CONFIG.server==='global')ocMap=validatedOcMap(profile.ocMap);
                     buildMapIndex(); renderGarage(); computeAndDisplay();
                 }
             });
@@ -1479,8 +1344,24 @@
             document.getElementById('garageSaveBtn').onclick=commitGarage;
             document.getElementById('garageRestoreBtn').onclick=restoreGarage;
             globalThis.addEventListener?.('garage-save-state',updateGarageSaveStatus);
-            globalThis.addEventListener?.('beforeunload',e=>{if(guestDirty&&!(globalThis.RACEPICK_SERVER !== 'global' && globalThis.accountUI?.active())&&!globalThis.RACEPICK_SERVER_NAVIGATION?.guestDraftPreserved){e.preventDefault();e.returnValue='';}});
+            globalThis.addEventListener?.('beforeunload',e=>{if(guestDirty&&!((globalThis.RACEPICK_SERVER !== 'global'||globalThis.RACEPICK_GLOBAL_PROFILE_CLOUD===true) && globalThis.accountUI?.active())&&!globalThis.RACEPICK_SERVER_NAVIGATION?.guestDraftPreserved){e.preventDefault();e.returnValue='';}});
             updateGarageSaveStatus();computeAndDisplay();
+            if (globalThis.RACEPICK_MAP_RECOGNITION?.enabled) {
+                const snapshot=()=>JSON.stringify({server:APP_CONFIG.server,zone:currentZone,tier:currentTier,
+                    account:globalThis.accountUI?.identity?.()||null,revision:mapSelectionRevision,
+                    maps:bigSelects.map((sel,i)=>({big:sel.value,small:smallSelects[i].value}))});
+                globalThis.racepickMaps={snapshot,
+                    catalog:()=>RACE_DATA.tracks.map(track=>({big:track['大地图'],small:track['小地图']})),
+                    apply:(maps,expected)=>{
+                        if(snapshot()!==expected)throw Error('当前选图、档位或账号已变化，请重新识别后确认');
+                        if(!Array.isArray(maps)||maps.length!==5||new Set(maps.map(m=>m.big)).size!==5||
+                            maps.some(m=>!smallMapsByBig[m.big]?.some(s=>s.name===m.small)))throw Error('请补全五张地图，且大地图不能重复');
+                        bigSelects.forEach((sel,i)=>{sel.value=maps[i].big;});
+                        refreshBigMaps();
+                        smallSelects.forEach((sel,i)=>{sel.value=maps[i].small;});
+                        mapSelectionRevision++;computeAndDisplay();return snapshot();
+                    }};
+            }
             globalThis.dispatchEvent?.(new Event('racepick-ready'));
         } catch (err) {
             const hint = globalThis.location?.protocol === 'file:' ? '请通过 HTTP 服务打开页面' : '请稍后重试；若持续失败，请反馈当前服别和错误信息';

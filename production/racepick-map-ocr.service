@@ -1,0 +1,33 @@
+[Unit]
+Description=RacePick isolated CPU map OCR worker
+After=local-fs.target
+
+[Service]
+Type=simple
+User=racepick
+Group=racepick
+WorkingDirectory=/opt/racepick/current
+ExecStart=/opt/racepick/current/.venv/bin/python -B -m backend.map_ocr_supervisor --config /var/lib/racepick/map-recognition/config.json
+Restart=on-failure
+RestartSec=5
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateNetwork=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/racepick/map-recognition
+TemporaryFileSystem=/var/lib/racepick:ro
+BindPaths=/var/lib/racepick/map-recognition
+RestrictAddressFamilies=AF_UNIX
+MemoryHigh=768M
+MemoryMax=1G
+MemorySwapMax=0
+CPUQuota=100%
+TasksMax=64
+LimitNOFILE=128
+KillMode=control-group
+TimeoutStopSec=10
+
+[Install]
+WantedBy=multi-user.target
