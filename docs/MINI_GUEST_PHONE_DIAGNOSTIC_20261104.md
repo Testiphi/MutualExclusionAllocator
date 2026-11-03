@@ -16,7 +16,7 @@
 
 108项客户端测试通过，新增跨realm响应/offset/假类型/非法UTF-8、网络错误分类及敏感信息排除、HTTP200解析失败与网络失败区分、未知结果同code/key恢复。诊断版真实开发者工具SDK再次完成wx.login一次、session一次、双服快照各一次，固定版本与五文件SHA/bytes保持匹配。未mock微信API；没有调用上传、账号、DELETE session、预览或提审。
 
-外层证据目录 `offline-evaluation/mini-guest-phone-diagnostic-20261104-01/` 保存测试日志、SDK报告/截图、生成清单和用户失败截图的保全副本。手机复测尚待用户执行；不能用本地模拟跨realm或再次SDK成功代替手机结果。
+外层证据目录 `offline-evaluation/mini-guest-phone-diagnostic-20261104-01/` 保存测试日志、SDK报告/截图、生成清单及用户电脑截图副本。手机附图已在本轮消息中读取，但所给微信临时文件路径在复制时已不存在，未保存其本地副本；上述手机字段来自消息内附图，不声称原文件已落盘保全。手机复测尚待用户执行；不能用本地模拟跨realm或再次SDK成功代替手机结果。
 
 ## 手机只需复测一次
 
