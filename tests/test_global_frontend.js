@@ -237,13 +237,14 @@ test('server navigation is blocked if the current guest draft cannot be preserve
     assert.equal(app.local.values.has('racepick.guest-profile.v1.global'),false);
 });
 
-function accountUnload({intent=false,mismatch=false,failWrite=false}={}){
-    const profile={cars:['白龙'],stars:{白龙:6}},session=storage({'racepick.account-draft.v1.main':JSON.stringify({revision:4,profile:mismatch?{cars:[],stars:{}}:profile})});
+function accountUnload({intent=false,mismatch=false,failWrite=false,server='cn'}={}){
+    const profile={cars:['白龙'],stars:{白龙:6}},session=storage({['racepick.account-draft.v1.main'+(server==='global'?'.global':'')]:JSON.stringify({revision:4,profile:mismatch?{cars:[],stars:{}}:profile})});
     if(failWrite)session.setItem=()=>{throw Error('quota');};
     const source=read('auth.js'),start=source.indexOf("        addEventListener('beforeunload',e=>{"),end=source.indexOf('\n        });',start)+12;
     let handler;const notices=[];
-    const context=vm.createContext({store:{state:()=>({dirty:true}),snapshot:()=>profile},owner:{id:'main'},sessionStorage:session,report:message=>notices.push(message),addEventListener:(type,fn)=>handler=fn,RACEPICK_SERVER_NAVIGATION:intent?{kind:'server-switch',target:'?server=global'}:null});
-    vm.runInContext(source.slice(start,end),context);
+    const context=vm.createContext({APP_CONFIG:{server},store:{state:()=>({dirty:true}),snapshot:()=>profile},owner:{id:'main'},sessionStorage:session,report:message=>notices.push(message),addEventListener:(type,fn)=>handler=fn,RACEPICK_SERVER_NAVIGATION:intent?{kind:'server-switch',target:'?server=global'}:null});
+    const keys=source.match(/    const profileServer=.*\n    const profileUserKey=.*;/)[0];
+    vm.runInContext(keys+'\n'+source.slice(start,end),context);
     let prevented=false;handler({preventDefault(){prevented=true;},returnValue:undefined});
     return {prevented,notices,session};
 }
@@ -254,6 +255,7 @@ test('account unload exemption requires an explicit server switch and a verified
     assert.deepEqual(allowed.session.writes,['racepick.account-draft.v1.main']);
     assert.equal(accountUnload({intent:true,mismatch:true}).prevented,true);
     assert.equal(accountUnload({intent:true,failWrite:true}).prevented,true);
+    const global=accountUnload({intent:true,server:'global'});assert.equal(global.prevented,false);assert.deepEqual(global.session.writes,['racepick.account-draft.v1.main.global']);
 });
 
 

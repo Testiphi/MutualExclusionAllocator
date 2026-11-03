@@ -30,8 +30,10 @@ SCOPED_FILES=('backend/score_scopes.py','backend/global_scores.py','backend/glob
 COMPONENT_GROUPS=(SCOPED_FILES,COVERAGE_FILES,THEME_FILES,SCORE_FILES,COMMUNITY_FILES,CONTRIBUTION_FILES,FEEDBACK_FILES,GLOBAL_FILES,NOTIFICATION_FILES,USAGE_FILES)
 SELECTION_FILES=('selection_core.js',)
 MINI_FILES=('backend/mini_auth.py','backend/mini_api.py','production/mini-config.example.json','production/mini.env.example','MINI_API_CONTRACT_20261102.md','MINI_DEPLOYMENT_20261102.md')
-COMPONENT_GROUPS=COMPONENT_GROUPS+(MINI_FILES,)
-APP_FILES=BASE_FILES+SCOPED_FILES+COVERAGE_FILES+THEME_FILES+SCORE_FILES+COMMUNITY_FILES+CONTRIBUTION_FILES+FEEDBACK_FILES+GLOBAL_FILES+NOTIFICATION_FILES+USAGE_FILES+SELECTION_FILES+MINI_FILES
+MINI_ACCOUNT_FILES=('backend/mini_accounts.py','production/mini-account-config.example.json','MINI_ACCOUNT_CONTRACT_A_20261103.md')
+GLOBAL_PROFILE_FILES=('backend/global_profiles.py','GLOBAL_PROFILE_CLOUD_20261103.md')
+COMPONENT_GROUPS=COMPONENT_GROUPS+(MINI_FILES,MINI_ACCOUNT_FILES,GLOBAL_PROFILE_FILES)
+APP_FILES=BASE_FILES+SCOPED_FILES+COVERAGE_FILES+THEME_FILES+SCORE_FILES+COMMUNITY_FILES+CONTRIBUTION_FILES+FEEDBACK_FILES+GLOBAL_FILES+NOTIFICATION_FILES+USAGE_FILES+SELECTION_FILES+MINI_FILES+MINI_ACCOUNT_FILES+GLOBAL_PROFILE_FILES
 OCR_CODE_FILES=('backend/map_layout.py','backend/map_recognition.py','backend/map_ocr_engine.py','backend/map_ocr_worker.py',
  'backend/map_ocr_production.py','backend/map_ocr_supervisor.py','map_recognition.js','map_recognition.css',
  'production/ocr-models.json','production/ocr-assets.json','production/ocr-selfcheck.py','production/racepick-map-ocr.service',
@@ -70,6 +72,10 @@ def digest(raw):return hashlib.sha256(raw).hexdigest()
 def allowed(name):return name in APP_FILES or name in OCR_FILES or bool(re.fullmatch(r'wheels/[A-Za-z0-9_.+\-]+\.whl',name))
 
 def verify_selection(contents):
+ if b'from backend.global_profiles import state as global_profile_state' in contents.get('backend/app.py',b'') and not set(GLOBAL_PROFILE_FILES)<=set(contents):
+  raise ValueError('发布包缺少国际账号车库组件')
+ if b'from backend.mini_accounts import make_native_account' in contents.get('backend/mini_api.py',b'') and not set(MINI_ACCOUNT_FILES)<=set(contents):
+  raise ValueError('发布包缺少原生账号适配组件')
  if b'from backend.mini_api import MiniGateway' in contents.get('backend/app.py',b'') and not set(MINI_FILES)<=set(contents):
   raise ValueError('发布包缺少原生适配组件')
  # New pages must carry their dependency; historical pages/bundles remain verifiable.
@@ -154,6 +160,9 @@ def check_score_compatibility(target,info,data_dir):
   if not set(USAGE_FILES)<=set(info['files']) or 'production/score-capability.json' not in info['files'] or json.loads(cap.read_text()).get('usage_schema')!=1:raise ValueError('统计库已启用，禁止切回不兼容旧程序')
  if account_db.exists():
   with closing(sqlite3.connect(account_db.as_uri()+'?mode=ro',uri=True)) as db:
+   if db.execute("SELECT 1 FROM sqlite_master WHERE name='global_profile_schema'").fetchone():
+    rows=db.execute('SELECT version FROM global_profile_schema').fetchall();cap=Path(target)/'production/score-capability.json'
+    if len(rows)!=1 or rows[0][0]!=1 or not set(GLOBAL_PROFILE_FILES)<=set(info['files']) or 'production/score-capability.json' not in info['files'] or json.loads(cap.read_text()).get('global_profile_schema')!=1:raise ValueError('国际账号车库已启用，禁止切回不兼容旧应用')
    if db.execute("SELECT 1 FROM sqlite_master WHERE name='global_score_control'").fetchone():
     cap=Path(target)/'production/score-capability.json'
     if not set(SCOPED_FILES)<=set(info['files']) or 'production/score-capability.json' not in info['files'] or json.loads(cap.read_text()).get('global_score_schema')!=1:raise ValueError('国际成绩状态已启用，禁止切回不兼容旧程序')

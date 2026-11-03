@@ -164,6 +164,7 @@ const api = (() => {
 
     /** 加载已选车辆集合 */
     async loadGarage(knownCars) {
+      if(international && globalThis.RACEPICK_GLOBAL_PROFILE_CLOUD===true && globalThis.accountUI?.active())return accountUI.garage();
       if (international) { const profile = guestProfile(); return profile ? appState.garage(profile.cars, knownCars) : null; }
       if (globalThis.accountUI?.active()) return accountUI.garage();
       if (cfg.dataSource === 'api') {
@@ -176,6 +177,7 @@ const api = (() => {
 
     /** 保存已选车辆集合 */
     async saveGarage(carSet) {
+      if(international && globalThis.RACEPICK_GLOBAL_PROFILE_CLOUD===true && globalThis.accountUI?.active())return accountUI.saveGarage(carSet);
       if (international) { const profile = guestProfile(); return this.saveGuestProfile({cars: [...carSet], stars: profile?.stars || {}, ocMap: profile?.ocMap || {}}, this.guestRevision()); }
       if (globalThis.accountUI?.active()) return accountUI.saveGarage(carSet);
       if (cfg.dataSource === 'api') {

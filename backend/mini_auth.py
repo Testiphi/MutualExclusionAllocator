@@ -208,7 +208,7 @@ def load_config(path):
     if os.name == 'posix' and (stat.S_IMODE(path.stat().st_mode) & 0o077 or path.stat().st_uid != os.geteuid()):
         raise ValueError('原生配置必须为当前用户私有')
     data = json.loads(path.read_text('utf-8'))
-    if set(data) != {'kind', 'state_dir', 'appid', 'app_secret_file', 'image_policy'} or data['kind'] != KIND:
+    if not {'kind', 'state_dir', 'appid', 'app_secret_file', 'image_policy'} <= set(data) or set(data)-{'kind', 'state_dir', 'appid', 'app_secret_file', 'image_policy','account_state_dir'} or data['kind'] != KIND:
         raise ValueError('原生配置字段不正确')
     secret_path = Path(data['app_secret_file'])
     if not secret_path.is_absolute() or secret_path.resolve() != secret_path or not secret_path.is_file() or secret_path.stat().st_nlink != 1:
@@ -217,8 +217,12 @@ def load_config(path):
         raise ValueError('AppSecret文件必须为当前用户私有')
     if data['image_policy'] not in ('disabled', 'private_unmoderated'):
         raise ValueError('图片策略必须显式选择；未接入内容安全服务')
-    return {'store': GuestStore(data['state_dir']), 'verifier': WechatVerifier(data['appid'], secret_path.read_text('utf-8').strip()),
+    result={'store': GuestStore(data['state_dir']), 'verifier': WechatVerifier(data['appid'], secret_path.read_text('utf-8').strip()),
             'fixture': False, 'image_policy': data['image_policy']}
+    if 'account_state_dir' in data:
+        from backend.mini_accounts import AccountStore
+        result['account_store']=AccountStore(data['account_state_dir'])
+    return result
 
 
 if __name__ == '__main__':

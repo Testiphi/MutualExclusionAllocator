@@ -6,6 +6,40 @@ from production_release_tools import APP_FILES,pack,stage,verify,read_bundle
 ROOT=Path(__file__).resolve().parents[1]
 
 class ReleaseTests(unittest.TestCase):
+ def test_native_account_component_required_by_new_gateway(self):
+  from production_release_tools import MINI_ACCOUNT_FILES,manifest
+  import json
+  contents,_=read_bundle(self.bundle)
+  self.assertTrue(set(MINI_ACCOUNT_FILES)<=set(contents))
+  contents={n:raw for n,raw in contents.items() if n not in MINI_ACCOUNT_FILES}
+  target=self.path/'missing-account.zip'
+  with zipfile.ZipFile(target,'w') as z:
+   for n,raw in contents.items():z.writestr(n,raw)
+   z.writestr('manifest.json',json.dumps(manifest(contents,{'fixture':True})))
+  with self.assertRaisesRegex(ValueError,'原生账号适配组件'):read_bundle(target)
+
+ def test_account_only_native_fixture_boots_without_optional_ocr(self):
+  import subprocess,sys
+  target=stage(self.bundle,self.path/'account-only-release')
+  code='''from pathlib import Path
+import sys
+from backend.app import create_app
+from backend.mini_auth import GuestStore,provision as provision_guest
+from backend.mini_accounts import AccountStore,provision as provision_account
+from fastapi.testclient import TestClient
+base=Path(sys.argv[1])
+mini={'store':GuestStore(provision_guest(base/'guest')),'account_store':AccountStore(provision_account(base/'account')),
+      'fixture':True,'verifier':lambda code:'fixture','image_policy':'disabled'}
+app=create_app(base/'web','http://127.0.0.1:8989',mini_config=mini)
+with TestClient(app,base_url='http://127.0.0.1:8989') as client:
+ r=client.post('/api/mini/v1/session',json={'code':'fixture','client_schema':1,'request_key':'fixture-session-key'})
+ assert r.status_code==200,r.text
+ r=client.get('/api/mini/account/v1/session',headers={'Authorization':'Bearer '+r.json()['token']})
+ assert r.status_code==200 and r.json()['actor'] is None,r.text
+print('ACCOUNT_BOOT_OK')'''
+  root=self.path/'account-only-state';root.mkdir()
+  result=subprocess.run([sys.executable,'-B','-c',code,str(root)],cwd=target,capture_output=True,text=True,encoding='utf-8')
+  self.assertEqual(result.returncode,0,result.stderr);self.assertIn('ACCOUNT_BOOT_OK',result.stdout)
  def test_default_bundle_without_optional_ocr_still_boots(self):
   import subprocess,sys
   target=stage(self.bundle,self.path/'no-ocr-release')

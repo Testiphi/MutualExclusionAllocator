@@ -18,6 +18,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 from backend.mini_auth import MiniError, fail, request_key
 
 PREFIX = '/api/mini/v1'
+ACCOUNT_PREFIX = '/api/mini/account/v1'
 
 
 def digest(raw):
@@ -385,10 +386,19 @@ class MiniGateway:
         if config is not None and production and config.get('fixture'):
             raise ValueError('生产禁止使用fixture微信验证')
         self.native = make_native(config, source, service) if config is not None else None
+        self.account=None
+        if config is not None and config.get('account_store') is not None:
+            from backend.mini_accounts import make_native_account
+            roots=[config['store'].root]+([service.root] if service is not None else [])
+            account_root=config['account_store'].root
+            if any(account_root.is_relative_to(root) or root.is_relative_to(account_root) for root in roots):
+                raise ValueError('账号原生状态必须与访客/队列使用互不包含的独立目录')
+            self.account=make_native_account(config,source)
 
     async def __call__(self, scope, receive, send):
         path = scope.get('path', '')
-        if scope['type'] != 'http' or not (path == PREFIX or path.startswith(PREFIX+'/')):
+        is_account=path==ACCOUNT_PREFIX or path.startswith(ACCOUNT_PREFIX+'/')
+        if scope['type'] != 'http' or not (is_account or path == PREFIX or path.startswith(PREFIX+'/')):
             return await self.app(scope, receive, send)
         request = Request(scope, receive)
         async def secure_send(message):
@@ -397,7 +407,8 @@ class MiniGateway:
                 message['headers'] += [(b'cache-control', b'no-store'), (b'x-content-type-options', b'nosniff'), (b'referrer-policy', b'no-referrer')]
             await send(message)
         try:
-            if self.native is None:
+            target=self.account if is_account else self.native
+            if target is None:
                 fail(404, 'NATIVE_DISABLED', '原生入口未启用')
             if request.headers.get('host') != self.origin.netloc:
                 fail(400, 'INVALID_HOST', '无效Host')
@@ -411,6 +422,6 @@ class MiniGateway:
             else:
                 ip = scope['client'][0]
             scope['mini_ip'] = ip
-            return await self.native(scope, receive, secure_send)
+            return await target(scope, receive, secure_send)
         except MiniError as error:
             return await error_response(error)(scope, receive, secure_send)

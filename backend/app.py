@@ -179,9 +179,14 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
     if score_state is not None and (not production or score_version_lab is not None):raise ValueError('score_state仅供独立生产入口使用')
     versioned_scores=score_version_lab is not None or score_state is not None
     if coverage and not production and data_dir and (Path(data_dir)/"production.json").exists():raise ValueError("正式库禁止通过本地coverage入口迁移")
+    fresh_accounts=not (Path(data_dir or ROOT / '.local-accounts')/'accounts.sqlite3').exists()
     store = Store(data_dir or ROOT / '.local-accounts')
+    from backend.global_profiles import state as global_profile_state,migrate as migrate_global_profiles,GlobalProfileInput
+    if fresh_accounts and not production:migrate_global_profiles(store)
+    with store.connect() as db:global_profiles_ready=global_profile_state(db)['global_profile_schema']==1
     app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None, redirect_slashes=not production)
     app.state.store = store
+    app.state.global_profiles=global_profiles_ready
     app.state.contributions = contributions
     app.state.feedback = feedback
     app.state.notifications = notifications
@@ -263,10 +268,15 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
     catalog = json.loads((catalog_root/'cars.json').read_text(encoding='utf-8'))
     known = {c['nickname'] for c in catalog['cars'] if c.get('nickname') and c.get('zones')}
 
+    native_account_marker=object()
+    def session_hash(request):
+        if request.scope.get('racepick.native.account_marker') is native_account_marker:
+            return request.scope['racepick.native.anchor_hash']
+        return digest(request.cookies.get(cookie_name,''))
+
     def session(request, required=True):
-        token = request.cookies.get(cookie_name, '')
         with store.connect() as db:
-            row = db.execute('SELECT * FROM sessions WHERE token_hash=? AND expires_at>?', (digest(token), int(time.time()))).fetchone()
+            row = db.execute('SELECT * FROM sessions WHERE token_hash=? AND expires_at>?', (session_hash(request), int(time.time()))).fetchone()
         if not row and required:
             raise HTTPException(401, '会话已过期，请刷新并重新登录')
         return row
@@ -287,7 +297,7 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
 
     def require_active_session(request,db):
         from backend.community import disabled
-        current=db.execute('SELECT user_id FROM sessions WHERE token_hash=? AND expires_at>?',(digest(request.cookies.get(cookie_name,'')),int(time.time()))).fetchone()
+        current=db.execute('SELECT user_id FROM sessions WHERE token_hash=? AND expires_at>?',(session_hash(request),int(time.time()))).fetchone()
         if not current or not current['user_id']:raise HTTPException(401,'登录已失效，请重新登录')
         if disabled(db,current['user_id']):raise HTTPException(403,'账号已停用')
     app.state.require_active_session=require_active_session
@@ -395,7 +405,7 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
             db.execute('INSERT INTO account_login_stats VALUES(?,?) ON CONFLICT(user_id) DO UPDATE SET last_login=excluded.last_login',(row['id'],int(time.time())))
             if HASHER.check_needs_rehash(row['password_hash']):
                 db.execute('UPDATE users SET password_hash=? WHERE id=?',(HASHER.hash(data.password),row['id']))
-            db.execute('DELETE FROM sessions WHERE token_hash=?',(digest(request.cookies.get(cookie_name,'')),))
+            db.execute('DELETE FROM sessions WHERE token_hash=?',(session_hash(request),))
             csrf=new_session(response,row['id'],db)
             from backend.roles import effective_role
             login_role=effective_role(db,row['id'],row['role'])
@@ -404,7 +414,7 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
     @app.post('/api/auth/logout')
     def logout(request:Request,response:Response):
         with store.connect() as db:
-            db.execute('DELETE FROM sessions WHERE token_hash=?',(digest(request.cookies.get(cookie_name,'')),))
+            db.execute('DELETE FROM sessions WHERE token_hash=?',(session_hash(request),))
         response.delete_cookie(cookie_name,path='/',secure=production,httponly=True,samesite='strict')
         return {'message':'已退出'}
 
@@ -463,21 +473,36 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
         return consume(data.token,'reset',data.password)
 
     @app.get('/api/me/profile')
-    def get_profile(request:Request):
+    def get_profile(request:Request,server:str='cn'):
         owner=user(request)
         if request.headers.get('x-account-id') != owner['id']:
             raise HTTPException(401,'账号已在其他窗口切换，请刷新后重新确认身份')
+        if server not in ('cn','global'):raise HTTPException(422,'服别无效')
+        if server=='global':
+            from backend.global_profiles import get
+            return get(store,owner['id'])
         with store.connect() as db:
             row=db.execute('SELECT * FROM profiles WHERE user_id=?',(owner['id'],)).fetchone()
         if not row: return {'revision':0,'profile':None}
         return {'revision':row['revision'],'profile':{'cars':json.loads(row['cars']),'stars':json.loads(row['stars'])}}
 
     @app.put('/api/me/profile')
-    def put_profile(data:ProfileInput,request:Request):
+    def put_profile(data:ProfileInput|GlobalProfileInput,request:Request,server:str='cn'):
         owner=user(request)
         if request.headers.get('x-profile-save')!='explicit':raise HTTPException(409,'车库已改为手动保存，请刷新页面后点击保存车库')
         if request.headers.get('x-account-id') != owner['id']:
             raise HTTPException(401,'账号已在其他窗口切换，请刷新后重新确认身份')
+        if server not in ('cn','global'):raise HTTPException(422,'服别无效')
+        if server=='global':
+            from backend.global_profiles import put
+            if hasattr(app.state,'global_score_versions'):
+                _,raw=app.state.global_score_versions.current();catalog=json.loads(raw['cars.global.json']);scores=json.loads(raw['gauntlet_data.global.json'])
+            else:
+                catalog=json.loads((ROOT/'cars.global.json').read_bytes());scores=json.loads((ROOT/'gauntlet_data.global.json').read_bytes())
+            names={c['nickname'] for c in catalog['cars'] if c.get('nickname') and c.get('zones')}
+            oc_names={e['cars'][0]['name'] for t in scores['tracks'] for e in t.get('五区',{}).get('理论',[]) if e.get('cars') and e['cars'][0].get('oc') is True}
+            return put(store,owner['id'],GlobalProfileInput.model_validate(data.model_dump()),lambda db:require_active_session(request,db),names,oc_names)
+        if isinstance(data,GlobalProfileInput):raise HTTPException(422,'国服车库不接收国际OC字段或缺失星级字段')
         if len(set(data.cars))!=len(data.cars) or any(c not in known for c in data.cars) or any(c not in known or s<1 or s>6 for c,s in data.stars.items()):
             raise HTTPException(422,'车辆或星级无效；星级保存原始1–6值，分区显示仍沿用现有规则')
         with store.connect() as db:
@@ -534,6 +559,7 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
         result['notifications']=notifications
         result['usage_schema']=1 if usage else 0
         result['coverage_schema']=2 if coverage else 0
+        result['global_profile_schema']=1 if global_profiles_ready else 0
         result['global_score_schema']=1 if hasattr(app.state,'global_score_versions') else 0
         if hasattr(app.state,'global_score_versions'):result['global_score_version']=app.state.global_score_versions.current()[0]['id']
         result['usage']=usage
@@ -563,6 +589,7 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
                    '查看成绩表 <span aria-hidden="true">→</span></a></section>')
             html=html.replace(marker,marker+entry,1)
         if hasattr(app.state,'global_score_versions'):html=html.replace('</head>','<script>globalThis.RACEPICK_VERSIONED_GLOBAL_SCORES=true;</script></head>')
+        if global_profiles_ready:html=html.replace('</head>','<script>globalThis.RACEPICK_GLOBAL_PROFILE_CLOUD=true;</script></head>')
         if versioned_scores:html=html.replace('</head>','<script>globalThis.RACEPICK_VERSIONED_SCORES=true;</script></head>')
         return HTMLResponse(usage_html(html))
 
@@ -596,6 +623,34 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
         if writeback_lab is not None and name in ('gauntlet_data.json','cars.json'):
             return FileResponse(Path(preview_source)/name,headers={'Cache-Control':'no-store'})
         return FileResponse(ROOT/name)
+    def native_request(request, anchor_hash=None, actor_id=None, explicit_save=False):
+        # Only server-owned code can install this per-app object identity. HTTP headers cannot.
+        scope=dict(request.scope)
+        scope['headers']=([(b'x-account-id',actor_id.encode())] if actor_id else [])+([(b'x-profile-save',b'explicit')] if explicit_save else [])
+        scope['state']={'client_ip':request.scope['mini_ip']}
+        scope['racepick.native.account_marker']=native_account_marker
+        scope['racepick.native.anchor_hash']=anchor_hash or digest('')
+        return Request(scope)
+    def native_anchor(response):
+        from http.cookies import SimpleCookie
+        cookie=SimpleCookie();cookie.load(response.headers.get('set-cookie',''))
+        if cookie_name not in cookie:raise RuntimeError('Native login did not create a revocation anchor')
+        hashed=digest(cookie[cookie_name].value)
+        with store.connect() as db:
+            row=db.execute('SELECT user_id,expires_at FROM sessions WHERE token_hash=?',(hashed,)).fetchone()
+        if row is None:raise RuntimeError('Native login anchor missing')
+        return hashed,row['user_id'],row['expires_at']
+    def native_revoke(anchor_hash):
+        with store.connect() as db:db.execute('DELETE FROM sessions WHERE token_hash=?',(anchor_hash,))
+    from types import SimpleNamespace
+    from backend.roles import Redeem
+    redeem=next(route.endpoint for route in app.routes if getattr(route,'path',None)=='/api/auth/redeem-invitation')
+    app.state.native_accounts=SimpleNamespace(request=native_request,anchor=native_anchor,revoke=native_revoke,user=user,
+        handlers={'register':register,'login':login,'logout':logout,'resend-verification':resend,'forgot-password':forgot,
+                  'verify-email':verify,'reset-password':reset,'redeem-invitation':redeem,'get-profile':get_profile,'put-profile':put_profile,
+                  'get-global-profile':lambda request:get_profile(request,'global'),'put-global-profile':lambda data,request:put_profile(data,request,'global')},
+        models={'register':Registration,'login':Credentials,'resend-verification':EmailInput,'forgot-password':EmailInput,
+                'verify-email':TokenInput,'reset-password':ResetInput,'redeem-invitation':Redeem,'put-profile':ProfileInput,'put-global-profile':GlobalProfileInput})
     from backend.mini_api import MiniGateway
     if mini_config is not None and recognition_service is not None:
         mini_root=mini_config['store'].root

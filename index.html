@@ -241,7 +241,7 @@
     /** 加载已保存的星级映射 */
     function loadStarsMap() {
         try {
-            const saved = (globalThis.RACEPICK_SERVER !== 'global' && globalThis.accountUI?.active()) ? accountUI.stars() : api.loadPref(APP_CONFIG.storageKeys.starMap);
+            const saved = ((globalThis.RACEPICK_SERVER !== 'global'||globalThis.RACEPICK_GLOBAL_PROFILE_CLOUD===true) && globalThis.accountUI?.active()) ? accountUI.stars() : api.loadPref(APP_CONFIG.storageKeys.starMap);
             if (saved && typeof saved === 'object' && !Array.isArray(saved)) {
                 starsMap = saved;
             }
@@ -250,7 +250,7 @@
 
     /** 保存星级映射 */
     function saveStarsMap() {
-        if ((globalThis.RACEPICK_SERVER !== 'global' && globalThis.accountUI?.active())) {
+        if (((globalThis.RACEPICK_SERVER !== 'global'||globalThis.RACEPICK_GLOBAL_PROFILE_CLOUD===true) && globalThis.accountUI?.active())) {
             try {
                 accountUI.saveStars(starsMap);
                 storageResult(APP_CONFIG.storageKeys.starMap, null);
@@ -603,9 +603,9 @@
     const guestDraftKey=APP_CONFIG.storageKeys.guestDraft;
     function profileNow(){return {cars:[...selectedCars],stars:{...starsMap},...(APP_CONFIG.server === 'global' ? {ocMap:{...ocMap}} : {})};}
     function updateGarageSaveStatus(){
-        const state=(globalThis.RACEPICK_SERVER !== 'global' && globalThis.accountUI?.active())?accountUI.state():{dirty:guestDirty};
+        const state=((globalThis.RACEPICK_SERVER !== 'global'||globalThis.RACEPICK_GLOBAL_PROFILE_CLOUD===true) && globalThis.accountUI?.active())?accountUI.state():{dirty:guestDirty};
         const node=document.getElementById('garageSaveStatus');
-        if(node)node.textContent=APP_CONFIG.server === 'global' ? (state?.dirty?'国际服本机车库 · 有未保存修改':'国际服车库保存于本机 · 点击保存才会更新') : (state?.dirty?'临时试算中 · 车库/星级有未保存修改':'手动保存 · 点击保存才会更新车库');
+        if(node)node.textContent=APP_CONFIG.server === 'global' && !((globalThis.RACEPICK_GLOBAL_PROFILE_CLOUD===true)&&globalThis.accountUI?.active()) ? (state?.dirty?'国际服本机车库 · 有未保存修改':'国际服车库保存于本机 · 点击保存才会更新') : (state?.dirty?'临时试算中 · 车库/星级有未保存修改':'手动保存 · 点击保存才会更新车库');
         const button=document.getElementById('garageSaveBtn');if(button)button.disabled=state?.status==='saving';
     }
     function stageGuestGarage(){
@@ -617,7 +617,7 @@
     }
     async function saveGarage() {
         try {
-            if((globalThis.RACEPICK_SERVER !== 'global' && globalThis.accountUI?.active())) accountUI.saveGarage(selectedCars);
+            if(((globalThis.RACEPICK_SERVER !== 'global'||globalThis.RACEPICK_GLOBAL_PROFILE_CLOUD===true) && globalThis.accountUI?.active())) accountUI.saveGarage(selectedCars);
             else stageGuestGarage();
         } catch(error){storageResult(APP_CONFIG.storageKeys.garage,error.message);}
         updateGarageSaveStatus();saveZoneMode();
@@ -631,23 +631,23 @@
     });}
     async function commitGarage(){
         try{
-            if((globalThis.RACEPICK_SERVER !== 'global' && globalThis.accountUI?.active()))await accountUI.saveNow();
+            if(((globalThis.RACEPICK_SERVER !== 'global'||globalThis.RACEPICK_GLOBAL_PROFILE_CLOUD===true) && globalThis.accountUI?.active()))await accountUI.saveNow();
             else {api.saveGuestProfile(profileNow(),guestBase);guestBase=api.guestRevision();guestDirty=false;try{globalThis.sessionStorage?.removeItem(guestDraftKey);}catch(e){}}
             storageResult(APP_CONFIG.storageKeys.garage,null);updateGarageSaveStatus();
-            if(!(globalThis.RACEPICK_SERVER !== 'global' && globalThis.accountUI?.active())||!accountUI.state().dirty)document.getElementById('garageSaveStatus').textContent=APP_CONFIG.server === 'global' ? '国际服车库已保存于本机' : '车库已保存';
-            globalThis.Usage?.feature((globalThis.RACEPICK_SERVER!=='global' && globalThis.accountUI?.active())?'garage_save_account':'garage_save_local','success');
+            if(!((globalThis.RACEPICK_SERVER !== 'global'||globalThis.RACEPICK_GLOBAL_PROFILE_CLOUD===true) && globalThis.accountUI?.active())||!accountUI.state().dirty)document.getElementById('garageSaveStatus').textContent=APP_CONFIG.server === 'global' ? (globalThis.RACEPICK_GLOBAL_PROFILE_CLOUD===true&&globalThis.accountUI?.active()?'国际服账号车库已保存':'国际服车库已保存于本机') : '车库已保存';
+            globalThis.Usage?.feature(((globalThis.RACEPICK_SERVER!=='global'||globalThis.RACEPICK_GLOBAL_PROFILE_CLOUD===true) && globalThis.accountUI?.active())?'garage_save_account':'garage_save_local','success');
         }catch(error){await garagePrompt(error.message);}
     }
     async function restoreGarage(){
         if(!await garagePrompt('放弃当前临时选择和星级，恢复已保存的车库？当前地图不会改变。',true))return;
         try{
-            if((globalThis.RACEPICK_SERVER !== 'global' && globalThis.accountUI?.active()))await accountUI.restore();
+            if(((globalThis.RACEPICK_SERVER !== 'global'||globalThis.RACEPICK_GLOBAL_PROFILE_CLOUD===true) && globalThis.accountUI?.active()))await accountUI.restore();
             else{globalThis.sessionStorage?.removeItem(guestDraftKey);guestDirty=false;selectedCars=new Set();starsMap={};ocMap={};const zone=currentZone;await loadGarage();currentZone=zone;loadStarsMap();loadOcMap();guestBase=api.guestRevision();buildMapIndex();renderGarage();computeAndDisplay();}
             updateGarageSaveStatus();
         }catch(error){await garagePrompt(error.message);}
     }
     function restoreGuestDraft(){
-        if((globalThis.RACEPICK_SERVER !== 'global' && globalThis.accountUI?.active()))return;
+        if(((globalThis.RACEPICK_SERVER !== 'global'||globalThis.RACEPICK_GLOBAL_PROFILE_CLOUD===true) && globalThis.accountUI?.active()))return;
         try{
             guestBase=api.guestRevision();
             const raw=globalThis.sessionStorage?.getItem(guestDraftKey);if(!raw)return;
@@ -667,7 +667,7 @@
     }
     function loadOcMap() {
         if (APP_CONFIG.server !== 'global') return;
-        try { ocMap = validatedOcMap(api.guestProfile()?.ocMap); }
+        try { ocMap = validatedOcMap(globalThis.RACEPICK_GLOBAL_PROFILE_CLOUD===true && globalThis.accountUI?.active() ? accountUI.ocMap() : api.guestProfile()?.ocMap); }
         catch(error) { storageResult(APP_CONFIG.storageKeys.garage, error.message); }
     }
     function saveZoneMode() {
@@ -1157,7 +1157,7 @@
             if (ocButton) {
                 const car = ocButton.dataset.ocCar;
                 if (APP_CONFIG.server === 'global' && selectedCars.has(car) && ocAvailable.has(car)) {
-                    ocMap[car] = !ocMap[car]; stageGuestGarage(); renderCarTags(); computeAndDisplay();
+                    ocMap[car] = !ocMap[car]; if(globalThis.RACEPICK_GLOBAL_PROFILE_CLOUD===true && globalThis.accountUI?.active())accountUI.saveOcMap(ocMap);else stageGuestGarage(); renderCarTags(); computeAndDisplay();
                 }
                 return;
             }
@@ -1302,7 +1302,7 @@
     function prepareServerNavigation(event, link, server) {
         if (event.defaultPrevented || event.button > 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
         if (server === APP_CONFIG.server && !APP_CONFIG.serverError) { event.preventDefault(); return; }
-        const account = APP_CONFIG.server !== 'global' && globalThis.accountUI?.active();
+        const account = (APP_CONFIG.server !== 'global'||globalThis.RACEPICK_GLOBAL_PROFILE_CLOUD===true) && globalThis.accountUI?.active();
         if (!account && guestDirty) {
             try {
                 const draft = JSON.stringify({base:guestBase, profile:profileNow()});
@@ -1333,7 +1333,7 @@
         if (APP_CONFIG.server === 'global') {
             document.title = '国际服 · 擂台选车助手';
             const note = document.getElementById('serverNote'); note.hidden = false;
-            note.textContent = '国际服车库保存于本机。仅五区满星理论；开启OC后仅使用已收录的OC成绩。';
+            note.textContent = (globalThis.RACEPICK_GLOBAL_PROFILE_CLOUD===true?'国际服账号车库与国服分开保存。':'国际服车库保存于本机。')+'仅五区满星理论；开启OC后仅使用已收录的OC成绩。';
             document.getElementById('tierToggle').hidden = true;
             document.getElementById('zoneToggle').hidden = true;
         }
@@ -1365,12 +1365,13 @@
             ocAvailable = new Set((RACE_DATA.tracks || []).flatMap(track => (track['五区']?.['理论'] || []).filter(entry => entry.cars?.[0]?.oc === true).map(entry => entry.cars[0].name)));
             buildCarRules();            // 由 zones / star_rule 派生车池与星级规则
 
-            if (APP_CONFIG.server !== 'global' && globalThis.accountUI) await accountUI.init({
+            if ((APP_CONFIG.server !== 'global'||globalThis.RACEPICK_GLOBAL_PROFILE_CLOUD===true) && globalThis.accountUI) await accountUI.init({
                 known: new Set([...zone5Cars, ...zone4Cars]),
                 read: profileNow,
                 apply: profile => {
                     selectedCars = appState.garage(profile.cars, new Set([...zone5Cars, ...zone4Cars]));
                     starsMap = profile.stars;
+                    if(APP_CONFIG.server==='global')ocMap=validatedOcMap(profile.ocMap);
                     buildMapIndex(); renderGarage(); computeAndDisplay();
                 }
             });
@@ -1393,7 +1394,7 @@
             document.getElementById('garageSaveBtn').onclick=commitGarage;
             document.getElementById('garageRestoreBtn').onclick=restoreGarage;
             globalThis.addEventListener?.('garage-save-state',updateGarageSaveStatus);
-            globalThis.addEventListener?.('beforeunload',e=>{if(guestDirty&&!(globalThis.RACEPICK_SERVER !== 'global' && globalThis.accountUI?.active())&&!globalThis.RACEPICK_SERVER_NAVIGATION?.guestDraftPreserved){e.preventDefault();e.returnValue='';}});
+            globalThis.addEventListener?.('beforeunload',e=>{if(guestDirty&&!((globalThis.RACEPICK_SERVER !== 'global'||globalThis.RACEPICK_GLOBAL_PROFILE_CLOUD===true) && globalThis.accountUI?.active())&&!globalThis.RACEPICK_SERVER_NAVIGATION?.guestDraftPreserved){e.preventDefault();e.returnValue='';}});
             updateGarageSaveStatus();computeAndDisplay();
             if (globalThis.RACEPICK_MAP_RECOGNITION?.enabled) {
                 const snapshot=()=>JSON.stringify({server:APP_CONFIG.server,zone:currentZone,tier:currentTier,

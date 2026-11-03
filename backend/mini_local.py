@@ -10,7 +10,7 @@ from backend.mini_auth import GuestStore, MiniError, load_config, provision as p
 from backend.score_repository import provision as provision_scores, validate_lab
 
 
-def create(source, receipt, model_config):
+def create(source, receipt, model_config, accounts=False):
     source = Path(source).resolve()
     expected = json.loads(Path(receipt).read_text('utf-8'))['runtime']
     names = ('cars.json', 'gauntlet_data.json', 'cars.global.json', 'gauntlet_data.global.json', 'global-data-manifest.json')
@@ -35,6 +35,10 @@ def create(source, receipt, model_config):
     guests = provision_guests(parent/secrets.token_hex(12))
     result = {'lab': str(lab), 'guest_state': str(guests), 'data_unfrozen': True, 'production': False,
               'fixture_auth_only': True, 'runtime_sha256': config['reference_sha256']}
+    if accounts:
+        from backend.mini_accounts import provision as provision_accounts
+        parent=ROOT.parent/'.mini-account-sandboxes';parent.mkdir(exist_ok=True)
+        result['account_state']=str(provision_accounts(parent/secrets.token_hex(12)))
     (lab/'mini-integration.json').write_text(json.dumps(result, indent=2), encoding='utf-8')
     return result
 
@@ -46,6 +50,7 @@ def main():
     p.add_argument('--source', type=Path, required=True)
     p.add_argument('--receipt', type=Path, required=True)
     p.add_argument('--model-config', type=Path, required=True)
+    p.add_argument('--accounts', action='store_true', help='显式新建A批账号原生状态；不迁移已有访客状态')
     p = sub.add_parser('serve')
     p.add_argument('--lab', type=Path, required=True)
     p.add_argument('--port', type=int, default=8043)
@@ -54,7 +59,7 @@ def main():
     auth.add_argument('--mini-config', type=Path, help='用户安全配置的真实平台验证；必须绑定本次新建guest_state')
     args = parser.parse_args()
     if args.command == 'create':
-        print(json.dumps(create(args.source, args.receipt, args.model_config), indent=2))
+        print(json.dumps(create(args.source, args.receipt, args.model_config, args.accounts), indent=2))
         return
     if args.port == 8033:
         raise ValueError('原生集成禁止使用原预览端口8033')
@@ -70,10 +75,15 @@ def main():
         return 'explicit-local-fixture-'+code
     if args.fixture_auth:
         mini = {'store': GuestStore(record['guest_state']), 'verifier': fixture_verifier, 'fixture': True, 'image_policy': 'private_unmoderated'}
+        if record.get('account_state'):
+            from backend.mini_accounts import AccountStore
+            mini['account_store']=AccountStore(record['account_state'])
     else:
         mini = load_config(args.mini_config)
         if mini['store'].root != Path(record['guest_state']):
             raise ValueError('本地真实平台配置必须绑定本次新建的guest_state，不接旧状态')
+        if mini.get('account_store') and mini['account_store'].root!=Path(record.get('account_state','')):
+            raise ValueError('A批配置必须绑定本次--accounts创建的新状态')
     app = create_app(lab/'accounts', 'http://127.0.0.1:'+str(args.port), score_version_lab=lab, contributions=True, coverage=True,
                      map_recognition=lab/'config.json', mini_config=mini)
     import uvicorn

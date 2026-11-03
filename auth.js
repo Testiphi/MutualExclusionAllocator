@@ -3,13 +3,15 @@
     let csrf = '', owner = null, store = null, applyProfile = null, readProfile = null, known = null, busy = false;
     let box, message, accountLabel, statusLabel, authDialog;
     let authMode='login', mailToken='', mailMode='file', pendingMailLink=null, sentAction='resend', invitesEnabled=false;
+    const profileServer=typeof APP_CONFIG!=='undefined'&&APP_CONFIG.server==='global'?'global':'cn';
+    const profileUserKey=id=>id+(profileServer==='global'?'.global':'');
     const $ = id => document.getElementById(id);
     const labels = {loading:'正在读取账号资料',saved:'已保存',unsaved:'有未保存修改',saving:'正在保存',conflict:'资料冲突',expired:'登录已失效，草稿已保留',error:'保存失败'};
     async function request(method,path,body) {
         const controller = new AbortController();
         const timeout = setTimeout(() => controller.abort(), path.startsWith('/auth/') ? 60000 : 10000);
         try {
-            const response = await fetch('/api' + path, {
+            const response = await fetch('/api' + path + (path==='/me/profile'&&profileServer==='global'?'?server=global':''), {
                 method, credentials:'same-origin', signal:controller.signal,
                 headers:{'Content-Type':'application/json','X-CSRF-Token':csrf,...(method==='PUT'&&path==='/me/profile'?{'X-Profile-Save':'explicit'}:{}), ...(owner ? {'X-Account-ID':owner.id} : {})},
                 ...(body === undefined ? {} : {body:JSON.stringify(body)})
@@ -88,7 +90,12 @@
                 stars[car] = n;
             }
         }
-        return {cars:[...new Set(profile.cars.filter(c => known.has(c)))],stars};
+        const result={cars:[...new Set(profile.cars.filter(c => known.has(c)))],stars};
+        if(profileServer==='global'){
+            const oc=profile.ocMap||{};if(typeof oc!=='object'||Array.isArray(oc)||Object.values(oc).some(v=>typeof v!=='boolean'))throw Error('国际服OC设置无效，未导入');
+            result.ocMap=Object.fromEntries(Object.entries(oc).filter(([car])=>known.has(car)));
+        }
+        return result;
     }
     async function saveNow(){if(current()===null)store.update(readProfile());return store.flush();}
     function current() { return store ? store.snapshot() : null; }
@@ -138,8 +145,14 @@
             dialog.addEventListener('cancel',e=>{if(busy)e.preventDefault();});dialog.addEventListener('close',()=>trigger.focus());
             return items;
         }
+        function scopedHubPath(href){
+            if(profileServer!=='global')return href;
+            const url=new URL(href,location.origin);
+            if(['/submissions','/score-table'].includes(url.pathname)){url.searchParams.set('server','global');return url.pathname+url.search+url.hash;}
+            return href;
+        }
         function hubLink(items,title,href,description){
-            const a=document.createElement('a');a.className='account-link account-hub-link';a.href=href;const strong=document.createElement('strong');strong.textContent=title;const small=document.createElement('small');small.textContent=description;a.append(strong,small);items.append(a);
+            const a=document.createElement('a');a.className='account-link account-hub-link';a.href=scopedHubPath(href);const strong=document.createElement('strong');strong.textContent=title;const small=document.createElement('small');small.textContent=description;a.append(strong,small);items.append(a);
         }
         const personal=hub('personalCenter','个人中心','管理账号与公开身份；车库保存和恢复在主页车库区操作。');
         personal.innerHTML=`<p id="personalIdentity"></p><p id="personalMessage" role="status"></p><div id="accountActions" hidden><button type="button" id="accountImport">导入本机游客车库</button><button type="button" id="accountRetry" hidden>保存车库</button><button type="button" id="accountLogout">退出账号</button></div>`;
@@ -167,7 +180,7 @@
         message=$('accountMessage'); accountLabel=$('accountLabel'); statusLabel=$('accountStatus');
         const session = await request('GET','/auth/me'); csrf=session.csrf; owner=session.user;mailMode=session.mail_mode||'file';invitesEnabled=session.admin_invites===true;
         if (owner) {
-            store=ProfileStore.create({request,storage:sessionStorage,userId:owner.id,notify:status});
+            store=ProfileStore.create({request,storage:sessionStorage,userId:profileUserKey(owner.id),notify:status});
             await store.init();
             if (current()) validate(current());
         }
@@ -216,7 +229,7 @@
                 if(label && data.feedback_pending!==null) label.textContent='用户反馈'+(data.feedback_pending?'（待处理 '+data.feedback_pending+'）':'');
             }});
             const paths={'/submissions':'submissions','/submissions#review':'review','/feedback?from=%2F':'feedback','/admin-feedback':'feedback_admin'};
-            for(const [path,channel] of Object.entries(paths)){const link=box.querySelector('a[href="'+path+'"]');if(link) unread.track(link,channel);}
+            for(const [path,channel] of Object.entries(paths)){const link=box.querySelector('a[href="'+scopedHubPath(path)+'"]');if(link) unread.track(link,channel);}
             for(const [id,channels] of Object.entries({contributionCenter:'submissions',managementCenter:'review feedback_admin',personalCenter:'feedback'})){
                 const trigger=box.querySelector('[aria-controls="'+id+'"]');if(trigger)unread.track(trigger,channels);
             }
@@ -271,7 +284,7 @@
             const unified=api.guestProfile?.();
             const cars=unified?JSON.stringify(unified.cars):localStorage.getItem(APP_CONFIG.storageKeys.garage);
             if (cars===null) throw new Error('此浏览器来源没有游客车库；线上域名的本地数据不会自动出现在这里');
-            const profile=validate({cars:JSON.parse(cars),stars:unified?.stars||JSON.parse(localStorage.getItem(APP_CONFIG.storageKeys.starMap)||'{}')});
+            const profile=validate({cars:JSON.parse(cars),stars:unified?.stars||JSON.parse(localStorage.getItem(APP_CONFIG.storageKeys.starMap)||'{}'),...(profileServer==='global'?{ocMap:unified?.ocMap||{}}:{})});
             if (!await ask(`用本机游客车库（${profile.cars.length}辆车、${Object.keys(profile.stars).length}项星级）作为当前临时选择？需要点击保存车库才会更新账号，原游客数据会保留。`)) return;
             store.update(profile); applyProfile(profile); report('已导入为临时选择，尚未保存到账号');
         });
@@ -306,7 +319,7 @@
             if(!store?.state().dirty)return;
             if(globalThis.RACEPICK_SERVER_NAVIGATION?.kind==='server-switch'&&owner){
                 try{
-                    const key='racepick.account-draft.v1.'+owner.id,raw=sessionStorage.getItem(key),draft=JSON.parse(raw);
+                    const key='racepick.account-draft.v1.'+profileUserKey(owner.id),raw=sessionStorage.getItem(key),draft=JSON.parse(raw);
                     if(Number.isInteger(draft?.revision)&&JSON.stringify(draft.profile)===JSON.stringify(store.snapshot())){
                         sessionStorage.setItem(key,raw);
                         if(sessionStorage.getItem(key)===raw)return;
@@ -322,6 +335,8 @@
         identity:()=>owner?.id||null,
         garage:()=>{const p=current(); return p===null?null:appState.garage(p.cars,known);},
         stars:()=>current()?.stars || {},
+        ocMap:()=>current()?.ocMap || {},
+        saveOcMap:ocMap=>store.update({...readProfile(),ocMap}),
         saveNow, state:()=>store?.state(),
         restore:async()=>{await store.useRemote();applyProfile(current()||{cars:[...known],stars:{}});},
         saveGarage:cars=>store.update({...readProfile(),cars:[...cars]}),

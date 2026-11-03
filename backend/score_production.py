@@ -146,8 +146,11 @@ def backup(config):
                 name='score-state/backups/'+p.parent.name+'/'+p.name
                 if p.is_file() and safe_backup_name(name):content[name]=p
             from backend.coverage import state as coverage_state
-            with closing(sqlite3.connect(temp_db)) as snapshot_db:coverage_snapshot=coverage_state(snapshot_db)
-            manifest={'format':'racepick-coherent-scores-v1',**coverage_snapshot,**global_state,'current':version,'usage_schema':1 if 'usage.sqlite3' in content else 0,'files':{n:file_hash(v) for n,v in content.items()}}
+            with closing(sqlite3.connect(temp_db)) as snapshot_db:
+                coverage_snapshot=coverage_state(snapshot_db)
+                from backend.global_profiles import state as profile_state
+                profile_snapshot=profile_state(snapshot_db)
+            manifest={'format':'racepick-coherent-scores-v1',**coverage_snapshot,**global_state,**profile_snapshot,'current':version,'usage_schema':1 if 'usage.sqlite3' in content else 0,'files':{n:file_hash(v) for n,v in content.items()}}
             with zipfile.ZipFile(temporary,'x',zipfile.ZIP_DEFLATED) as archive:
                 for n,v in content.items():archive.write(v,n)
                 archive.writestr('backup-manifest.json',encode(manifest))
@@ -166,6 +169,7 @@ def verify_backup(source):
         manifest=json.loads(archive.read('backup-manifest.json'))
         if manifest.get('format')!='racepick-coherent-scores-v1' or set(manifest['files'])!=set(names)-{'backup-manifest.json'}:raise ValueError('备份清单异常')
         if manifest.get('usage_schema',0)!=(1 if 'usage.sqlite3' in manifest['files'] else 0):raise ValueError('统计备份组件声明不匹配')
+        if manifest.get('global_profile_schema',0) not in (0,1):raise ValueError('国际账号车库备份schema无效')
         if manifest.get('coverage_schema',0) not in (0,1,2):raise ValueError('成绩表备份schema无效')
         if manifest.get('global_score_schema',0) not in (0,1):raise ValueError('国际成绩备份schema无效')
         if bool(manifest.get('global_score_schema',0))!=('global-score-state/global-scores.json' in manifest['files']):raise ValueError('国际成绩备份组件声明不匹配')
@@ -205,6 +209,10 @@ def drill(config,source):
         notifications=notification_state(db)
         from backend.coverage import state as coverage_state
         coverage=coverage_state(db)
+        from backend.global_profiles import state as profile_state
+        profiles=profile_state(db)
+        if profiles['global_profile_schema']!=manifest.get('global_profile_schema',0):raise ValueError('国际账号车库备份组件声明不匹配')
+        if profiles['global_profile_schema']:counts['profiles_global']=db.execute('SELECT count(*) FROM profiles_global').fetchone()[0]
         if coverage['coverage_schema']!=manifest.get('coverage_schema',0):raise ValueError('成绩表备份组件声明不匹配')
     usage_schema=0
     if (destination/'usage.sqlite3').exists():
@@ -220,7 +228,7 @@ def drill(config,source):
     with closing(sqlite3.connect(destination/'accounts.sqlite3')) as restored_db:
         _,global_state=backup_files(destination,restored_db)
     if global_state.get('global_score_schema',0)!=manifest.get('global_score_schema',0) or global_state.get('global_score_version')!=manifest.get('global_score_version'):raise ValueError('国际成绩恢复版本与清单不符')
-    return {'drill_directory':str(destination),'version':version,'counts':counts,'pending_batches':pending,'active_database_replaced':False,'usage_schema':usage_schema,**contribution,**feedback,**notifications,**coverage,**global_state}
+    return {'drill_directory':str(destination),'version':version,'counts':counts,'pending_batches':pending,'active_database_replaced':False,'usage_schema':usage_schema,**contribution,**feedback,**notifications,**coverage,**global_state,**profiles}
 
 
 def revert_migration(config,source):
