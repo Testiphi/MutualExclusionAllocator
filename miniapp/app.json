@@ -1,0 +1,11 @@
+{
+  "pages": ["pages/home/home","pages/account/account","pages/coverage/coverage","pages/submissions/submissions","pages/community/community","pages/workbench/workbench"],
+  "usingComponents":{"rp-select":"/components/select/select"},
+  "window": {
+    "navigationBarTitleText": "",
+    "navigationBarBackgroundColor": "#0d1117",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#0d1117"
+  },
+  "style": "v2"
+}
