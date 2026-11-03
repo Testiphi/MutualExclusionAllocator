@@ -118,8 +118,13 @@ setTimeout(() => {
     const probe = globalThis.__probe;
     if (check(typeof probe === 'function', '内联脚本未执行到 initApp()')) {
         const state = probe();
-        check(state.zone5Cars.length === 81, `zone5Cars 应为 81，实际 ${state.zone5Cars.length}`);
-        check(state.zone4Cars.length === 55, `zone4Cars 应为 55，实际 ${state.zone4Cars.length}`);
+        const declared=JSON.parse(read('cars.json')).cars;
+        const zoneCount=zone=>declared.filter(c=>c.nickname&&c.zones?.includes(zone)).length;
+        check(state.zone5Cars.length===zoneCount('五区'),`五区车池与批准数据不符: ${state.zone5Cars.length}`);
+        check(state.zone4Cars.length===zoneCount('四区'),`四区车池与批准数据不符: ${state.zone4Cars.length}`);
+        const cc850=declared.find(c=>c.nickname==='cc850');
+        check(JSON.stringify(state.rules.cc850)===JSON.stringify(cc850.star_rule),'cc850规则未按批准数据派生');
+        check(state.zone4Cars.includes('cc850')===cc850.zones.includes('四区'),'cc850四区车池未按批准数据派生');
         check(Object.keys(state.rules).length === 77,
             `CAR_STAR_RULES 应为 77 车，实际 ${Object.keys(state.rules).length}`);
         for (const car of ['ap0','阿波罗n','avj','迈凯伦p1','叶问']) {
@@ -142,6 +147,6 @@ setTimeout(() => {
         for (const message of failures) console.error('   - ' + message);
         process.exitCode = 1;
     } else {
-        console.log('✅ 启动冒烟测试通过：页面完成启动，车池 81/55、星级规则 77 车均从 cars.json 派生');
+        console.log('✅ 启动冒烟测试通过：页面完成启动，车池与cc850规则均与批准cars.json一致');
     }
 }, 2500);
