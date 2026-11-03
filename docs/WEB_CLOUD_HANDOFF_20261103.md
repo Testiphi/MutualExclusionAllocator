@@ -4,7 +4,7 @@
 
 ## 固定来源与范围
 
-发布源码以本轮新RELEASE.json及收尾回执固定提交为准（覆盖旧777b30a包），分支 `feature/map-layout-parser`，独立干净检出 `build-web-code-20261103`。最终网站发布ID以本轮新RELEASE.json为准；旧730a61cd包已被本次包含维护正式发布的交付取代。后续交接文档提交不改变包内源码。main未合并，小程序树未改；逐功能提交与远端回执见随包 `SOURCE_PUSHES.json`。
+发布源码 `765a4a62567c97a9a2d4f48cf3a8955e3e8cd715`（覆盖旧777b30a包），分支 `feature/map-layout-parser`，独立干净检出 `build-web-code-20261103`。最终网站发布ID `a933c9b746c2e276a9b68d14`；旧730a61cd包已被本次包含维护正式发布的交付取代。后续交接文档提交不改变包内源码。main未合并，小程序树未改；逐功能提交与远端回执见随包 `SOURCE_PUSHES.json`。
 
 维护侧 `DATA_FREEZE_20261103.json` SHA256 `940f8660585c495a780390b709dfd52e80f7610f57e0179c5da937c53c4e4282`，freeze_id=`b57d97a8f4e484be69238ab0`；原冻结ZIP SHA256 `feddf28ce165da510a30936a1efe083b6d3725c3b4b43a7fc781b196957cb9d0`。数据提交为 **null**，没有代维护侧提交。ZIP内34项的大小/SHA/CRC、内外清单及五份runtime原字节均已核对；仅五份runtime入包。
 
@@ -26,9 +26,9 @@
 2. 按 `SHA256SUMS.txt` 全量验证。用随包 `deploy_production.py --bundle racepick-accounts-release.zip` 仅暂存；核对返回目录ID。进入该新目录执行 `bash production/install-runtime.sh`，离线37wheel、pip check、临时数据库/锁/备份恢复和合成OCR自检通过。该安装不是正式初始化/迁移。不要运行 `backend.production init`、旧迁移或provision；不要覆盖全站Nginx/systemd/SMTP配置。
 3. 从当前运行版本做在线成套备份，`backend.score_production verify-backup` 后独立 `restore-drill`，参数使用现场私有配置和实际备份路径。保留SHA/文件数/版本/计数和 `active_database_replaced=false`。新源码同样应先验证它能读取该备份；不能复制测试库或用包JSON覆盖正式score-state。
 4. 迁移与短维护窗口需用户明确确认。暂停备份timer并等待既有备份完成；先停止网站接新请求，等OCR queued/running清零，再停止唯一OCR单元。保留图片/结果/元数据和独立队列目录，不重新provision或删队列。生成并验证停服最终备份、独立恢复；核对业务行/双服活动版本及开关未漂移。
-5. **唯一新增业务迁移**是 `global_profile_schema 0→1`。新目录使用 `.venv/bin/python -B -m backend.global_profiles migrate-production --config <现场私有配置路径>`。源码持有服务锁并先备份，只创建空国际车库组件；须得到 `existing_rows_preserved=true`、profiles_global=0，或完整既有schema1的幂等回执。异常即停、保全现场，不清表或整库还原。不要重跑主schema6/coverage2/global-score1或初始化国际成绩。迁移后再做新版成套备份与独立恢复。
+5. **账号组件新增迁移**是 `global_profile_schema 0→1`。新目录使用 `.venv/bin/python -B -m backend.global_profiles migrate-production --config <现场私有配置路径>`。源码持有服务锁并先备份，只创建空国际车库组件；须得到 `existing_rows_preserved=true`、profiles_global=0，或完整既有schema1的幂等回执。异常即停、保全现场，不清表或整库还原。不要重跑主schema6/coverage2/global-score1或初始化国际成绩。迁移后再做新版成套备份与独立恢复。
 5a. 本次必须一并发布维护数据。完整读取MAINTENANCE_RELEASE_20261103.md，以新包的backend.maintenance_release先对现场只读preview；核对所有新增/删除/变慢/规则变化，不只核19/2项本轮新增。批准摘要绑定现场双服base/五文件SHA/开关/源码冻结。停服最终备份与独立恢复及global-profile迁移完成后，以原账号库owner运行apply，保持服务锁/双服锁，原子创建两服新版本并切换指针。确认目标五文件精确等于批准冻结、CN4516/Global694、cc850规则及国际fxxk入池，原业务行和写开关保持。中断用status恢复；不得手改指针、覆盖JSON或重跑初始化。
-6. 用随包激活工具 `--version <新RELEASE.json中的id> --activate`，仅在前述证据通过且用户批准切换后执行。保留原Nginx、账号/SMTP/成绩开关和OCR路径沙箱。先启动唯一OCR单元，再启动网站；health ready、current与两个实际cwd一致。**生产历史OCR High640MiB/Max768MiB/CPU100%/Swap0/Tasks64**，模板可能为768MiB/1GiB，不能盲覆；现场值需先核。新原生模板路由不因网站发布而开放。已有精确网页OCR8MiB、默认3MiB、业务及统计限流/TLS/可信IP保持。
+6. 用随包激活工具 `--version a933c9b746c2e276a9b68d14 --activate`，仅在前述证据通过且用户批准切换后执行。保留原Nginx、账号/SMTP/成绩开关和OCR路径沙箱。先启动唯一OCR单元，再启动网站；health ready、current与两个实际cwd一致。**生产历史OCR High640MiB/Max768MiB/CPU100%/Swap0/Tasks64**，模板可能为768MiB/1GiB，不能盲覆；现场值需先核。新原生模板路由不因网站发布而开放。已有精确网页OCR8MiB、默认3MiB、业务及统计限流/TLS/可信IP保持。
 7. 逐项检查health主6/coverage2/global-score1/global-profile1、双服活动版本等于维护apply回执的两个target，五文件SHA等于批准冻结；写开关与部署前相同，未创建测试用户/投稿/反馈。本次上线验收必须证明CN4516/Global694及新规则已经实际活动，不能只依据包内有这些文件就宣布数据已更新。若现场含未批准覆盖的后续成绩，停在计划核对阶段，不默默删除。
 8. 用户验收真实账号登录、国服云车库保持、国际车库显式游客导入/保存/读取/OC、409保留两份、两服草稿和登出/切账号隔离；失败GET不覆盖本机。桌面/手机微信核五图中文名说明、相册入口、五槽核对/替图取消/识图/计算/手选、特殊跑法按钮、成绩表“新功能”、OC/SC筛选和方案次序。无真实权益账号的权限档位记待验收，不造积分。
 9. 新版成套备份、全量校验及独立恢复通过，保留profiles_global/OC与原业务计数；手动触发真实备份服务并核成功退出及实际新备份，恢复timer并记NEXT。后续自动执行尚未发生就记待验证。保留旧包/旧release/备份/演练，不清理、不发公告、不新增监控。
