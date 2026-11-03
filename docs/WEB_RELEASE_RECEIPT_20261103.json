@@ -1,0 +1,50 @@
+{
+  "release_id": "730a61cd78a0dd5417ad4e8b",
+  "source_commit": "777b30a30f921c7070f346bdd3da26e993074b06",
+  "data_freeze_id": "b57d97a8f4e484be69238ab0",
+  "data_commit": null,
+  "folder": "E:\\hzz\\work\\MutualExclusionAllocator\\offline-evaluation\\web-release-20261103-01\\RacePick-Web-20261103-730a61cd-delivery",
+  "archive": "E:\\hzz\\work\\MutualExclusionAllocator\\offline-evaluation\\web-release-20261103-01\\RacePick-Web-20261103-730a61cd-delivery.zip",
+  "sha256": "5e3a295fa6bff5d4a820a4a397e4490bfbe6c8a76b64fd49cba1c377e06480fb",
+  "bytes": 317437581,
+  "outer_files": 60,
+  "inner_runtime_files": 168,
+  "inner_sha256": "d8bc2a3397548c1b6a1ec8c6229842c458ce9691f386e8e93e9be94c18063321",
+  "compatible_release_id": "5f9691dd68d630e6623d62c1",
+  "protection": {
+    "all_other_preexisting_protected_files_unchanged": true,
+    "self_owned_committed_changes": [],
+    "protected_files_checked": 35,
+    "clean_code_checkout": true,
+    "production_operations": false
+  },
+  "all_hashes_crc_and_runtime_freeze_verified": true,
+  "production_operations": false,
+  "frontend_frozen": {
+    "passed": 134,
+    "failed": 0
+  },
+  "python_windows_frozen": {
+    "executed": 391,
+    "passed": 390,
+    "skipped": 1
+  },
+  "backend_linux_frozen": {
+    "executed": 291,
+    "passed": 291,
+    "skipped": 0
+  },
+  "actual_linux_ocr_nginx_api": {
+    "passed": true,
+    "screenshots": 9,
+    "same_worker": true,
+    "global_cloud_OC_CAS_backup_restore": true,
+    "queue_cancel_hard_timeout_crash_recovery": true
+  },
+  "source_branch": "feature/map-layout-parser",
+  "main_unchanged": "82492772f7407412c63c973bc5c2e02be87dfba3",
+  "runtime_commit_is_independent_of_document_closeout": true,
+  "next_step": "User forwards complete delivery and CLOUD_CHAT_START.txt to cloud deployment chat; start read-only, no production operations by this chat.",
+  "preservation": "35 preexisting protected files unchanged in SHA/mtime; maintenance dirty files and workbooks not staged; miniapp not changed.",
+  "docker_desktop_recovered": "Only renamed two stale transient socket parent directories; originals retained; no factory reset, VHDX/image deletion or diagnostics upload."
+}
