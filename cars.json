@@ -522,11 +522,13 @@
       "nitro": 49.63,
       "nickname": "cc850",
       "zones": [
-        "五区"
+        "五区",
+        "四区"
       ],
       "star_rule": {
-        "min": 4,
-        "default": 6
+        "min": 3,
+        "default": 6,
+        "zone4Max": 3
       }
     },
     {

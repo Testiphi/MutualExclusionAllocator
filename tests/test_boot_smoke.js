@@ -119,7 +119,9 @@ setTimeout(() => {
     if (check(typeof probe === 'function', '内联脚本未执行到 initApp()')) {
         const state = probe();
         check(state.zone5Cars.length === 81, `zone5Cars 应为 81，实际 ${state.zone5Cars.length}`);
-        check(state.zone4Cars.length === 55, `zone4Cars 应为 55，实际 ${state.zone4Cars.length}`);
+        check(state.zone4Cars.length === 56, `zone4Cars 应为 56，实际 ${state.zone4Cars.length}`);
+        check(state.zone4Cars.includes('cc850') && state.rules.cc850?.min === 3
+            && state.rules.cc850?.zone4Max === 3, 'cc850 四区车池及3星规则应从 cars.json 派生');
         check(Object.keys(state.rules).length === 77,
             `CAR_STAR_RULES 应为 77 车，实际 ${Object.keys(state.rules).length}`);
         for (const car of ['ap0','阿波罗n','avj','迈凯伦p1','叶问']) {
@@ -142,6 +144,6 @@ setTimeout(() => {
         for (const message of failures) console.error('   - ' + message);
         process.exitCode = 1;
     } else {
-        console.log('✅ 启动冒烟测试通过：页面完成启动，车池 81/55、星级规则 77 车均从 cars.json 派生');
+        console.log('✅ 启动冒烟测试通过：页面完成启动，车池 81/56、星级规则 77 车均从 cars.json 派生');
     }
 }, 2500);
