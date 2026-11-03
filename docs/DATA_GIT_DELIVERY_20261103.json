@@ -1,0 +1,117 @@
+{
+  "schema": "racepick.data-git-delivery.v1",
+  "date": "2026-11-03",
+  "authorization": "User authorized remaining changes grouped by function, including other worktrees on their own branches; no feature merge into main",
+  "national_data_commit": "d9f5e065c1dc933f2e545ccde2fcd712c217dc1b",
+  "combined_runtime_data_commit": "613c9bfb4ddfccfe335a949af4f83f41d8369269",
+  "freeze_id": "b57d97a8f4e484be69238ab0",
+  "freeze_manifest_sha256": "940f8660585c495a780390b709dfd52e80f7610f57e0179c5da937c53c4e4282",
+  "git_blob_runtime_exact_matches_freeze": true,
+  "runtime": {
+    "gauntlet_data.json": {
+      "sha256": "2e8bf6ba763a64f24cd1e93be0afbaca8c77e24efcb9a96812952de800b018b6",
+      "bytes": 225341,
+      "normalized_lf_sha256": "2e8bf6ba763a64f24cd1e93be0afbaca8c77e24efcb9a96812952de800b018b6",
+      "hash_basis": "current working-tree file bytes, not HEAD or index"
+    },
+    "cars.json": {
+      "sha256": "ea42daedfdb73a4963e2e70c6cdf91deb29ae6bec5143b697e50d8c877961b17",
+      "bytes": 83653,
+      "normalized_lf_sha256": "ea42daedfdb73a4963e2e70c6cdf91deb29ae6bec5143b697e50d8c877961b17",
+      "hash_basis": "current working-tree file bytes, not HEAD or index"
+    },
+    "cars.global.json": {
+      "sha256": "6d35da66c9c0d2d7335b3e80d6a7351bbc494911a5b1d8dab0a0c2137cbc9759",
+      "bytes": 29852,
+      "normalized_lf_sha256": "6d35da66c9c0d2d7335b3e80d6a7351bbc494911a5b1d8dab0a0c2137cbc9759",
+      "hash_basis": "current working-tree file bytes, not HEAD or index"
+    },
+    "gauntlet_data.global.json": {
+      "sha256": "79958b507b814fb0823e03aa8f97843fafe9b61a558c428336a4879587a33bd2",
+      "bytes": 133918,
+      "normalized_lf_sha256": "79958b507b814fb0823e03aa8f97843fafe9b61a558c428336a4879587a33bd2",
+      "hash_basis": "current working-tree file bytes, not HEAD or index"
+    },
+    "global-data-manifest.json": {
+      "sha256": "7e38469bc6bd6de5498bc1e38c16898c0a34eddb86ead72d610e0e1883e6dbe6",
+      "bytes": 1866,
+      "normalized_lf_sha256": "7e38469bc6bd6de5498bc1e38c16898c0a34eddb86ead72d610e0e1883e6dbe6",
+      "hash_basis": "current working-tree file bytes, not HEAD or index"
+    }
+  },
+  "historical_release_provenance": "Deployed a933c9b7 package was built from approved local freeze with data_commit=null. This later Git archival does not rewrite its provenance or frozen manifests.",
+  "validation": {
+    "data_errors": 0,
+    "data_tests_passed": 73,
+    "global_generator_check": "694 entries/48 cars/44 maps/21 OC/52 SC; byte reproducible",
+    "boot_smoke": "passed; CN zones81/56,77 rules",
+    "workbooks": "ZIP CRC passed; original bytes retained; no re-export or synchronization",
+    "curve_tool": "Python AST syntax check only"
+  },
+  "git_groups": [
+    {
+      "group": "国服成绩、cc850规则与冒烟适配",
+      "commit": "d9f5e065c1dc933f2e545ccde2fcd712c217dc1b",
+      "files": [
+        "cars.json",
+        "gauntlet_data.json",
+        "gauntlet_data.xlsx",
+        "tests/test_boot_smoke.js"
+      ]
+    },
+    {
+      "group": "国际运行数据与工作簿",
+      "commit": "613c9bfb4ddfccfe335a949af4f83f41d8369269",
+      "files": [
+        "cars.global.json",
+        "gauntlet_data.global.json",
+        "global-data-manifest.json",
+        "gauntlet_data.global.xlsx"
+      ]
+    },
+    {
+      "group": "维护历史与冻结说明",
+      "commit": "a911e92f2276d307fd4e18a202890088427d2471",
+      "files": [
+        "docs/DATA_HANDOFF_20261101.json",
+        "docs/DATA_HANDOFF_20261101.md",
+        "docs/DATA_HANDOFF_20261101_CROSS_SERVER.json",
+        "docs/DATA_HANDOFF_20261101_CROSS_SERVER.md",
+        "docs/DATA_HANDOFF_20261101_OWL_SYNC.json",
+        "docs/DATA_HANDOFF_20261101_OWL_SYNC.md",
+        "docs/DATA_HANDOFF_20261101_SPEEDTAIL_BATTISTA_OWL.json",
+        "docs/DATA_HANDOFF_20261101_SPEEDTAIL_BATTISTA_OWL.md",
+        "docs/DATA_HANDOFF_20261103.json",
+        "docs/DATA_HANDOFF_20261103.md",
+        "docs/DATA_FREEZE_20261103.json"
+      ]
+    },
+    {
+      "group": "历史云端运维回执",
+      "commit": "cd56e387fd2ebe0017b07a5e29443f37684c2c88",
+      "files": [
+        "docs/CLOUD_HANDOFF.md",
+        "docs/INDEX.md",
+        "docs/COVERAGE_DEPLOYMENT_RECEIPT_20261030.json",
+        "docs/GLOBAL_SUBMISSIONS_DEPLOYMENT_RECEIPT_20261030.json"
+      ]
+    },
+    {
+      "group": "星级曲线研究工具",
+      "commit": "cdae8dc827ea042eb2d788a1f50788526bcab92b",
+      "files": [
+        "_star_curve_fit.py"
+      ]
+    },
+    {
+      "group": "来源与分享工作簿",
+      "commit": "04fa2ab9eec064c2c2c056dabda20c02c7551558",
+      "files": [
+        "Asphalt Legend - 擂台成绩表.xlsx",
+        "gauntlet_data_shared.xlsx"
+      ]
+    }
+  ],
+  "excluded_from_application": "Original source workbook, share workbook, analysis scripts and maintenance documents are archival repository assets, not additional runtime inputs.",
+  "production_operations_this_git_task": false
+}
