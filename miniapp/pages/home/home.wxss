@@ -136,15 +136,9 @@
 .result-time { font-size:20px; margin-top:8px; }
 .result-unit { font-size:12.8px; color:#8b949e; }
 .empty-result { text-align:center; color:#8f9bcb; font-size:14px; }
-.ocr-workspace { margin:20px 0; padding:15px; border:1px solid #34465f; border-radius:14px; background:#111a29; }
-.ocr-title { font-size:17.6px; font-weight:600; }
-.ocr-purpose { margin:6px 0 16px; color:#94a9c2; font-size:13.6px; }
-.recognition-entry { display:block; margin:0; }
-.recognition-entry .mr-upload { display:flex; width:100%; min-height:200px; flex-direction:column; justify-content:center; align-items:center; gap:12px; padding:20px 12px; border:2px dashed #5273a1; border-radius:16px; background:#152238; color:#edf5ff; font-size:16px; font-weight:500; }
-.recognition-entry .mr-upload-selected { min-height:88px; }
-.upload-icon { position:relative; width:50px; height:50px; color:#89b6ef; }
-.upload-shaft { position:absolute; left:24px; top:8px; height:23px; border-left:2.5px solid; }
-.upload-head { position:absolute; top:10px; left:18px; width:13px; height:13px; border-left:2.5px solid; border-top:2.5px solid; transform:rotate(45deg); }
-.upload-tray { position:absolute; top:28px; left:10px; width:28px; height:13px; border:2.5px solid; border-top:0; border-radius:3px; }
+.ocr-workspace { margin:16px 0; padding:0; }
+.recognition-entry { display:flex; flex-wrap:wrap; align-items:center; gap:10px 12px; margin:0; }
+.recognition-entry button { flex-shrink:0; padding:8px 12px; font-size:14px; border-radius:8px; }
+.ocr-purpose { flex:1; min-width:150px; color:#8b949e; font-size:12px; line-height:1.5; }
 .ocr-status { color:#b5ccec; margin-top:16px; font-size:14px; }
 .ocr-workspace .preview { max-height:190px; }

@@ -24,9 +24,10 @@
     </view>
    </view>
    <view class="card ocr-workspace">
-    <view class="ocr-title">地图识别</view>
-    <view class="ocr-purpose">{{server === 'cn' ? '仅支持能清晰看到五张地图中文名称的游戏截图，自动识别地图并填充。不支持拍屏照片。' : '国际服暂未开放识图'}}</view>
-    <view wx:if="{{server === 'cn'}}" class="recognition-entry"><button class="mr-upload {{image ? 'mr-upload-selected' : ''}}" disabled="{{busy}}" bindtap="chooseImage"><view wx:if="{{!image}}" class="upload-icon"><view class="upload-shaft"></view><view class="upload-head"></view><view class="upload-tray"></view></view><text>{{image ? '更换截图' : '选择已有截图'}}</text></button></view>
+    <view class="recognition-entry">
+     <button wx:if="{{server === 'cn'}}" disabled="{{busy}}" bindtap="chooseImage">{{image ? '更换截图' : '地图识别'}}</button>
+     <text class="ocr-purpose">{{server === 'cn' ? '仅从相册选择能清晰看到五图中文名称的游戏截图，不支持拍屏照片。' : '国际服暂未开放识图'}}</text>
+    </view>
     <view wx:if="{{image}}" class="recognition">
      <image src="{{image}}" mode="widthFix" class="preview" />
      <view class="actions"><button wx:if="{{!serviceStatus.canRetry}}" hidden="{{busy}}" bindtap="recognize">重新识别</button><button wx:if="{{serviceStatus.canRetry}}" loading="{{busy}}" disabled="{{busy}}" bindtap="retryRecognition">继续查询</button><button wx:if="{{busy}}" bindtap="stopRecognition">取消识别</button><button hidden="{{busy}}" bindtap="cancelRecognition">移除图片</button></view>
