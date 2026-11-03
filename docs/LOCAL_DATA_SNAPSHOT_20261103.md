@@ -1,0 +1,13 @@
+# 2026-11-03 功能树既有联调数据归档
+
+本次按用户“剩余修改分功能推送到各自分支、不合并main”授权，保留并提交本树原有4504/693数据，不自动同步主repo或工作簿。它是本地联调历史快照，不是本轮已上线a933c9b7的4516/694冻结，不用于重新构包或生产导入。本树仍没有cc850本次共同min3/四区max3和国际fxxk新增的完整更新；真实生产以主repo最新CLOUD_HANDOFF及WEB_DATA_DEPLOYMENT_RECEIPT_20261103.json为准，不能用功能树旧运维记录覆盖。
+
+本次检查：国服validate_data零错误；数据工具/国际数据62项测试通过；本树启动冒烟通过。这些属于联调快照验证，不是生产或最新冻结验证，也未宣称从当前已更新维护源可再生成旧693数据。原字节保持，无同步/导出/重新冻结、上线、后台操作或清理。
+
+当前原字节SHA256（历史快照，不与主repo冻结混用）：
+
+- gauntlet_data.json: 57964666c7d9669eb70d5c5a94d29a1b6362b33962d5e55d66c7a14de3fd22c2
+- cars.json: 69c9da789f5ad8682a12f05adb21ed3767647f5067fe59c5d281510ee32702ec
+- cars.global.json: bbaf35c754d1162f6bbb5c196ca9bec50aa2a3d40dd00b9ae779dbf6bfdbc567
+- gauntlet_data.global.json: 5cc7a48e655a3a53dfcc346165f10aa97479707de36d375e7b8a58e8a7e9ca39
+- global-data-manifest.json: 0322ec22e68a79626c4bcb201aeb52c772b21b14d52be1a2c14b9e94934cc0b5
