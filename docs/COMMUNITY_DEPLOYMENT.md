@@ -46,3 +46,11 @@
 - Docker检查没有输出，没有发现运行容器；不能单独据此断言 Docker 未安装。
 
 结论：在已检查的软件包、进程和Nginx配置中，没有发现此次PHP漏洞的活动攻击入口；RacePick的Python架构不直接使用PHP，因此未因本漏洞停服、安装PHP或修改配置。手工安装的其他运行环境/面板尚未被完整盘点；若另有PHP服务仍须单独检查，不能将本结论等同于整台服务器绝对安全。
+
+## 2026-10-22 PR 合并完成与交接
+
+用户已通过 [PR #2](https://github.com/Testiphi/MutualExclusionAllocator/pull/2) 将功能分支合入 main。本轮 git fetch 后核验 origin/main=`fdc3a43`，合并提交包含 `b3798ca`（Git祖先检查通过）。该合并同时包含此前成绩版本功能基线。
+
+源码合并不改变生产部署，最近用户确认的线上应用仍为 `651ea3d88a27bdff95088b75`（打包源码880333d）。本轮只更新文档，没有执行服务器命令、重新打包或重启服务。
+
+主工作目录 repo 的本地 main 仍为2b1196a，保留未跟踪的 gauntlet_data_shared.xlsx 与 _star_curve_fit.py，未切换/拉取该工作目录；账号库和工作簿均未操作。文档在 community-controls 工作目录的新分支 docs/cloud-handoff-20261022 上更新，基于远端合并后的main。后续模型从 [CLOUD_HANDOFF.md](CLOUD_HANDOFF.md) 开始。
