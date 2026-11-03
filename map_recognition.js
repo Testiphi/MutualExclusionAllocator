@@ -23,8 +23,8 @@
         const server=root.APP_CONFIG?.server||root.RACEPICK_SERVER||'cn';
         let csrf='',catalog=null,file=null,attempt=null,generation=0,busy=false,objectURL=null;
         const dialog=document.createElement('section');dialog.id='mapRecognitionWorkspace';dialog.className='map-recognition-dialog mr-inline';host.className='map-recognition-host';
-        dialog.innerHTML=`<div class="mr-heading"><div><h2>地图识别</h2><p class="mr-purpose">上传进攻或防守游戏截图，自动识别地图并填充。不支持拍屏照片。</p></div></div>
-          <label class="mr-upload" id="mrDropZone" for="mrFile"><svg class="mr-upload-icon" viewBox="0 0 48 48" fill="none" aria-hidden="true"><path d="M24 31V8m0 0-8 8m8-8 8 8M10 28v10a3 3 0 0 0 3 3h22a3 3 0 0 0 3-3V28" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg><strong id="mrDropTitle">拖入或选择图片</strong><input id="mrFile" type="file" aria-label="浏览并选择游戏截图" accept="image/png,image/jpeg,image/webp"></label>
+        dialog.innerHTML=`<div class="mr-heading"><div><h2>地图识别</h2><p class="mr-purpose">仅支持能清晰看到五张地图中文名称的游戏截图，自动识别地图并填充。不支持拍屏照片。</p></div></div>
+          <label class="mr-upload" id="mrDropZone" for="mrFile"><svg class="mr-upload-icon" viewBox="0 0 48 48" fill="none" aria-hidden="true"><path d="M24 31V8m0 0-8 8m8-8 8 8M10 28v10a3 3 0 0 0 3 3h22a3 3 0 0 0 3-3V28" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg><strong id="mrDropTitle">拖入或选择已有截图</strong><input id="mrFile" type="file" aria-label="选择已有游戏截图" accept=".png,.jpg,.jpeg,.webp"></label>
           <div class="mr-file-name" id="mrFileName"></div><img id="mrPreview" class="mr-preview" alt="本次选择的截图" hidden>
           <div class="mr-controls" id="mrControls" hidden><button type="button" id="mrStart" hidden>重新识别</button><button type="button" id="mrRetry" hidden>重试</button><button type="button" id="mrCancel" hidden>取消识别</button></div>
           <p id="mrStatus" class="mr-status" role="status" aria-live="polite" hidden></p>
@@ -90,7 +90,7 @@
             const ticket=generation+1;await resetJob();if(ticket!==generation||!dialog.isConnected)return false;file=value;
             if(objectURL){URL.revokeObjectURL(objectURL);objectURL=null;}
             $('mrPreview').hidden=!file;$('mrFileName').textContent=file?file.name:'';
-            $('mrDropZone').classList.toggle('mr-upload-selected',!!file);$('mrDropTitle').textContent=file?'更换图片':'拖入或选择图片';
+            $('mrDropZone').classList.toggle('mr-upload-selected',!!file);$('mrDropTitle').textContent=file?'更换截图':'拖入或选择已有截图';
             if(file){objectURL=URL.createObjectURL(file);$('mrPreview').src=objectURL;say('');applied.textContent='';}
             setBusy(false);return true;
         }
@@ -172,7 +172,7 @@
         document.addEventListener('drop',event=>{if(dialog.isConnected){event.preventDefault();clearDrag();if(!$('mrDropZone').contains(event.target))say('请将截图拖入上方虚线区域。');}});
         $('mrStart').onclick=()=>start();$('mrRetry').onclick=()=>start(true);
         $('mrCancel').onclick=async()=>{const ticket=generation+1;await resetJob();if(ticket===generation&&dialog.isConnected)say('已取消识别，当前选图未改变。');};
-        async function close(){clearDrag();const disposal=resetJob();file=null;$('mrFile').value='';$('mrFileName').textContent='';$('mrPreview').hidden=true;$('mrDropZone').classList.remove('mr-upload-selected');$('mrDropTitle').textContent='拖入或选择图片';if(objectURL)URL.revokeObjectURL(objectURL);objectURL=null;say('');applied.textContent='';setBusy(false);await disposal;}
+        async function close(){clearDrag();const disposal=resetJob();file=null;$('mrFile').value='';$('mrFileName').textContent='';$('mrPreview').hidden=true;$('mrDropZone').classList.remove('mr-upload-selected');$('mrDropTitle').textContent='拖入或选择已有截图';if(objectURL)URL.revokeObjectURL(objectURL);objectURL=null;say('');applied.textContent='';setBusy(false);await disposal;}
         $('mrDiscard').onclick=close;
         $('mrApply').onclick=async()=>{
             const item=attempt;if(!item||busy)return;
