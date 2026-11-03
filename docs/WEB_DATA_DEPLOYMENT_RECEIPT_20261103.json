@@ -1,0 +1,263 @@
+{
+  "schema": "racepick.web-data-deployment-receipt.v1",
+  "date": "2026-11-03",
+  "timezone": "Asia/Shanghai",
+  "status": "deployed_and_user_accepted",
+  "evidence": "Server commands executed by user and returned in this chat; agent did not execute production commands. User acceptance is user-reported.",
+  "authorization": "User corrected seed-only scope to website plus approved formal maintenance update, then explicitly authorized migration without re-auditing approved content.",
+  "release_id": "a933c9b746c2e276a9b68d14",
+  "code_commit": "765a4a62567c97a9a2d4f48cf3a8955e3e8cd715",
+  "data_commit": null,
+  "freeze_id": "b57d97a8f4e484be69238ab0",
+  "freeze_manifest_sha256": "940f8660585c495a780390b709dfd52e80f7610f57e0179c5da937c53c4e4282",
+  "archive": {
+    "name": "RacePick-WebData-20261103-a933c9b7-delivery.zip",
+    "bytes": 317469943,
+    "sha256": "064f1fe563e237dd4ba4edcc94a83501f36aa0449ff956ab165b473181055c1b",
+    "outer_files": 62,
+    "sha_entries": 61,
+    "runtime_files": 171,
+    "compat_runtime_files": 158
+  },
+  "superseded_source": "730a61cd78a0dd5417ad4e8b; retained, not used for this deployment",
+  "runtime": {
+    "directory": "/opt/racepick/releases/a933c9b746c2e276a9b68d14",
+    "current_and_both_cwds_match": true,
+    "accounts_pid_at_observation": 210016,
+    "ocr_supervisor_pid_at_observation": 209663,
+    "ocr_worker_pid_at_ready_observation": 209668,
+    "services": "active/running",
+    "local_and_public_health": "ok/production",
+    "ocr_worker": "ready",
+    "pid_note": "Historical observations only; activation and process start timestamps were not returned"
+  },
+  "maintenance": {
+    "plan_digest": "cb40da88a20f8c04701ce2782f09eaaa50302823fbd59d103f4d8c7370a594bd",
+    "receipt_canonical_sha256": "e4633d29a474f6026985fc1d8db30c18a7dbe0668e5bd797315ab7416e170dd8",
+    "receipt_path": "/var/lib/racepick/maintenance-a933c9b7-apply-01.json",
+    "state": "applied",
+    "bases": {
+      "cn": "e209f3e32d0de1dfa7fe6c811a5d5c46",
+      "global": "1252565e65bc887e81e0c677bfeec9ab"
+    },
+    "targets": {
+      "cn": "c815b612a17433f403ae2965000fd74b",
+      "global": "435d5b40fd1aa4a01753a395f28d1f89"
+    },
+    "actual_diff_counts": {
+      "cn": {
+        "before_keys": 4391,
+        "after_keys": 4516,
+        "added": 127,
+        "removed": 2,
+        "faster": 60,
+        "slower": 5,
+        "changed": 0
+      },
+      "global": {
+        "before_keys": 659,
+        "after_keys": 694,
+        "added": 35,
+        "removed": 0,
+        "faster": 11,
+        "slower": 1,
+        "changed": 0
+      }
+    },
+    "removed_entries": "Two river-drift SC entries renamed from 跳图 to 旧跳图 with original values retained; stable-route entries separately added",
+    "method": "Service lock, original accounts owner, CN then Global locks, immutable versions, atomic pointers and audit; no reseed or direct JSON overwrite",
+    "existing_rows_preserved": true,
+    "active_five_hashes_and_public_five_hashes_match_approved_freeze": true,
+    "active_files_sha256": {
+      "gauntlet_data.json": "2e8bf6ba763a64f24cd1e93be0afbaca8c77e24efcb9a96812952de800b018b6",
+      "cars.json": "ea42daedfdb73a4963e2e70c6cdf91deb29ae6bec5143b697e50d8c877961b17",
+      "cars.global.json": "6d35da66c9c0d2d7335b3e80d6a7351bbc494911a5b1d8dab0a0c2137cbc9759",
+      "gauntlet_data.global.json": "79958b507b814fb0823e03aa8f97843fafe9b61a558c428336a4879587a33bd2",
+      "global-data-manifest.json": "7e38469bc6bd6de5498bc1e38c16898c0a34eddb86ead72d610e0e1883e6dbe6"
+    },
+    "rules_verified": {
+      "cc850": {
+        "zones": [
+          "五区",
+          "四区"
+        ],
+        "min": 3,
+        "zone4Max": 3,
+        "default": 6
+      },
+      "global_fxxk": {
+        "asec_id": 235,
+        "max_stars": 5,
+        "in_runtime_pool": true
+      }
+    },
+    "other_catalog_changes_reviewed": "CN AP-0/Apollo N/Aventador J/McLaren P1/VLF Force 1 aliases and rules; Global Regera enters pool"
+  },
+  "business_snapshot": {
+    "basis": "New service backup before user acceptance; later user saves may increase counts",
+    "users": 50,
+    "profiles": 25,
+    "profiles_global": 0,
+    "submissions": 6,
+    "pending_cn": 0,
+    "pending_global": 0,
+    "cn_writes": true,
+    "global_writes": false,
+    "main_schema": 6,
+    "coverage_schema": 2,
+    "global_score_schema": 1,
+    "global_profile_schema": 1,
+    "other_health_components": 1,
+    "contribution_counts": [
+      4,
+      4,
+      7,
+      3
+    ],
+    "feedback_counts": [
+      0,
+      0,
+      0
+    ],
+    "notification_counts": [
+      6,
+      6
+    ],
+    "coverage_counts": [
+      0,
+      0,
+      0
+    ]
+  },
+  "profile_migration": {
+    "from": 0,
+    "to": 1,
+    "already_migrated": false,
+    "initial_profiles": 0,
+    "existing_rows_preserved": true,
+    "other_business_migrations_replayed": false
+  },
+  "ownership": {
+    "accounts_user": "racepick",
+    "uid": 999,
+    "gid": 988,
+    "mode": "0600",
+    "migration_apply_backup_restore_run_as_original_owner": true
+  },
+  "backups": {
+    "existing_automatic": {
+      "path": "/var/lib/racepick/backups/scores-20261102T201702612310Z.zip",
+      "sha256": "4fa6b0aa9dcf27723e0ca5900598c7a44de5f6fc7a629931ee7aa8e69fccf549",
+      "bytes": 2069805,
+      "independent_restore_directory": null
+    },
+    "online": {
+      "path": "/var/lib/racepick/backups/scores-20261103T081935627870Z.zip",
+      "sha256": "c9645be28b3a2cffa2357c33eb9920a8a9b63dd4a9543597d810b5bd66a0c6d7",
+      "bytes": 2071543,
+      "independent_restore_directory": "/var/lib/racepick/restore-drills/27b1ebaf326bda1b0e118cc7"
+    },
+    "stopped_final": {
+      "path": "/var/lib/racepick/backups/scores-20261103T083326088670Z.zip",
+      "sha256": "29c0013747491afa1ef9eb68bc1476c5f3bcf8452da2430cf1adadecfab2570b",
+      "bytes": 2071552,
+      "independent_restore_directory": "/var/lib/racepick/restore-drills/fc53ba41df32485bb60d344d"
+    },
+    "migration_automatic": {
+      "path": "/var/lib/racepick/backups/scores-20261103T083350027604Z.zip",
+      "sha256": null,
+      "bytes": null,
+      "independent_restore_directory": null
+    },
+    "post_profile_migration": {
+      "path": "/var/lib/racepick/backups/scores-20261103T083415622802Z.zip",
+      "sha256": "99f95cd59b3c3de401311c4302f531bc44a76b7960aebc6aa91b0637a8671629",
+      "bytes": 2071721,
+      "independent_restore_directory": "/var/lib/racepick/restore-drills/ab38ee173217a1e39fbdca24"
+    },
+    "maintenance_automatic": {
+      "path": "/var/lib/racepick/backups/scores-20261103T083531126154Z.zip",
+      "sha256": "67a0d69dde1cb57f86548ab2114fb6742ac9fe45109edbc030e96f61a68080f6",
+      "bytes": null,
+      "independent_restore_directory": null
+    },
+    "post_maintenance": {
+      "path": "/var/lib/racepick/backups/scores-20261103T083710457516Z.zip",
+      "sha256": "8f9614dd0632c97d3e1209a6c3b3e884332acc4a5c6558382cf41ca75cd12f97",
+      "bytes": 2145054,
+      "independent_restore_directory": "/var/lib/racepick/restore-drills/3458c3f1d4bed6999fd31e22"
+    },
+    "new_service": {
+      "path": "/var/lib/racepick/backups/scores-20261103T084511778668Z.zip",
+      "sha256": "e6b8b72fe197f33f9dc9c35dece53ed9ddecd38eb753bd29f4a8a19420c1d851",
+      "bytes": 2145403,
+      "independent_restore_directory": "/var/lib/racepick/restore-drills/07d1cdc41550b8fb0c5c87d9"
+    }
+  },
+  "extra_online_restore_by_new_source": "/var/lib/racepick/restore-drills/07be64de8f143331370cd5ec",
+  "restore_policy": {
+    "active_database_replaced": false,
+    "pre_maintenance_files_verified": 33,
+    "post_maintenance_files_verified": 40,
+    "null_fields": "Not returned; do not invent sizes/hashes/drill mappings"
+  },
+  "backup_service": {
+    "start": "2026-11-03T16:45:11+08:00",
+    "exit": "2026-11-03T16:45:12+08:00",
+    "result": "success",
+    "exit_status": 0,
+    "timer_enabled": true,
+    "next": "2026-11-04T04:15:05+08:00",
+    "future_automatic_execution_verified": false
+  },
+  "ocr_effective_limits": {
+    "MemoryHigh": 671088640,
+    "MemoryMax": 805306368,
+    "MemorySwapMax": 0,
+    "CPUQuotaPerSecUSec": "1s",
+    "TasksMax": 64,
+    "PrivateNetwork": "yes",
+    "ProtectSystem": "strict",
+    "RestrictAddressFamilies": "AF_UNIX",
+    "KillMode": "control-group",
+    "queue_drained_before_stop": true,
+    "existing_queue_retained": true
+  },
+  "native": {
+    "process_RACEPICK_MINI_CONFIG_nonempty": false,
+    "public_snapshot_status": 404,
+    "enabled": false,
+    "wechat_console_or_client_release_operations": false
+  },
+  "nginx": "No changes during this deployment; preflight nginx -T rc0, existing exact web OCR 8m/default3m and rate zones retained; sandbox mount view not independently re-inspected this round",
+  "user_acceptance": {
+    "quote": "验收都通过。",
+    "scope_requested_immediately_before_confirmation": [
+      "desktop and phone WeChat",
+      "login",
+      "existing CN garage",
+      "Global cloud garage save/read and OC",
+      "screenshot recognition and calculation"
+    ],
+    "independent_agent_device_testing": false
+  },
+  "rollback": "Maintenance audit applied blocks a38 candidate. Only separately authorized guarded rollback of both exact targets to parents may permit a38; preserve accounts/garages. c06 remains incompatible with global-profile1. Never restore old SQLite for code rollback.",
+  "not_verified": [
+    "Future 2026-11-04 automatic backup",
+    "Long-term capacity and whole-unit peak memory",
+    "Separate 409/two-copy, signout/actor-isolation and failed-GET cases were not individually reported",
+    "Real native WeChat identity/platform/content-moderation; native release remains disabled",
+    "Latest account/garage counts after user acceptance"
+  ],
+  "preservation": "All business and local data retained. No feature merge, announcement, cleanup or monitoring. Deployment stage performed no Git commit/push; subsequent user authorization permits only this round documentation commit/push.",
+  "documentation_closeout": {
+    "authorization": "User explicitly authorized only this deployment, acceptance and handoff documentation to be committed and pushed; preserve other dirty changes; pause afterward",
+    "scope": [
+      "docs/CLOUD_HANDOFF.md (current prefix only)",
+      "docs/INDEX.md (current prefix only)",
+      "docs/WEB_DATA_DEPLOYMENT_RECEIPT_20261103.json"
+    ],
+    "commit_and_remote_receipt": "Stored outside Git in 本地归档/webdata-deployment-closeout-20261103-a933c9b7/push-receipt.json to avoid self-referencing commit IDs",
+    "after_completion": "pause; no feature merge, announcement, cleanup or monitoring"
+  }
+}

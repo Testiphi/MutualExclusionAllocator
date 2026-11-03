@@ -1,3 +1,5 @@
+当前生产（2026-11-03，部署及用户验收完成）：网站a933c9b7与维护CN4516/Global694同批正式上线，国际云车库schema1、cc850规则及国际fxxk入池生效，活动及公网五文件SHA已核验。国服写开/国际写关、原生API关闭；新版真实备份/独立恢复通过，timer恢复，NEXT11月4日04:15:05尚待未来执行。见[CLOUD_HANDOFF](CLOUD_HANDOFF.md)文首及[部署回执](WEB_DATA_DEPLOYMENT_RECEIPT_20261103.json)。下方旧记录为历史。
+
 当前生产（2026-10-31，部署及用户验收完成）：OCR发布c06cc48b已上线，正式worker隔离及资源配置核验通过，用户桌面/手机微信验收均正常。仍使用原双服活动成绩（国际659，不导入包基线664），国际写回关闭。新版真实备份/独立恢复及timer恢复完成，未来自动执行尚未核验；见[CLOUD_HANDOFF](CLOUD_HANDOFF.md)文首、[部署回执](MAP_OCR_DEPLOYMENT_RECEIPT_20261031.json)、[执行记录](TAKEOVER_20261031.md)及[准备阶段核验](MAP_OCR_PREFLIGHT_20261031.md)。下方旧上线/未部署状态均为历史。
 
 # 文档索引

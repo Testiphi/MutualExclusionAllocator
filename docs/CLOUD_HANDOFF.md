@@ -1,3 +1,27 @@
+## 2026-11-03 当前上线：a933c9b7，网站与CN4516/Global694同批正式发布，用户验收通过
+
+本轮生产命令全部由用户执行并逐步回传，代理未登录生产。用户明确纠正旧“新冻结只作种子”范围，本次正式发布维护冻结；旧730a61cd交付保留但不再用作本轮上线来源。后续用户授权直接迁移已审核内容，不重复逐条人工审核；仍完成现场完整计划绑定、漂移检查、成套备份及独立恢复。结构化证据见[网站与维护数据部署回执](WEB_DATA_DEPLOYMENT_RECEIPT_20261103.json)。下方c06及“维护数据未发布”均为历史阶段，不续跑旧迁移。
+
+发布a933c9b746c2e276a9b68d14，源码765a4a62567c97a9a2d4f48cf3a8955e3e8cd715；冻结b57d97a8f4e484be69238ab0、清单SHA940f8660585c495a780390b709dfd52e80f7610f57e0179c5da937c53c4e4282，data_commit=null。整包317469943字节/SHA064f1fe563e237dd4ba4edcc94a83501f36aa0449ff956ab165b473181055c1b，外层62文件/目录61项SHA、内层171文件及兼容158文件通过；37wheel离线安装、pip check、Linux临时库自检及合成OCR通过。未把维护733、参考、工作簿、台账或测试库导入运行。
+
+现场正式基线CN4391、Global659（不是本地4487/664演练）；计划cb40da88a20f8c04701ce2782f09eaaa50302823fbd59d103f4d8c7370a594bd绑定原双服版本/五文件SHA/开关/账号和目标冻结，迁移前自动重算一致。CN新增127/删除2/提速60/变慢5；Global新增35/删除0/提速11/变慢1。两条河畔漂移旧跳图19.9/19.5同值改名“旧跳图”，不是丢失成绩。全部目标内容已由用户批准，包含此前维护更新，不只本轮19/2项。
+
+唯一新增账号组件迁移global_profile_schema0→1成功，existing_rows_preserved=true、初始国际车库0；未重跑主schema6/coverage2/global-score1。维护apply由原账号库owner racepick(UID999/GID988，0600)执行，持服务锁/双服锁，建立两服不可变版本、原子切换指针及保留审计；不重播种、不直接覆盖JSON。实际活动CN c815b612a17433f403ae2965000fd74b / Global435d5b40fd1aa4a01753a395f28d1f89，活动及公网五文件SHA均精确匹配冻结，实际4516/694；cc850共同min3/四区max3/default6与国际fxxk入池均核实。原国服写开/国际写关和绑定保持。
+
+current及网站PID210016、OCR supervisor PID209663实际cwd均指向/opt/racepick/releases/a933c9b746c2e276a9b68d14；这些PID只是回传快照。内外health ok/production，schema6/coverage2/global-score1/global-profile1，其余组件1，OCR ready。原Nginx/systemd配置复用，未覆盖模板；OCR实际High640MiB/Max768MiB/CPU100%/Swap0/Tasks64、PrivateNetwork/ProtectSystem strict/AF_UNIX/control-group均核实。未复做实际挂载视图或长期容量测试。停止前OCR queued/running清零，原队列保留。
+
+停服最终恢复点scores-20261103T083326088670Z.zip，SHA29c0013747491afa1ef9eb68bc1476c5f3bcf8452da2430cf1adadecfab2570b，演练fc53ba41df32485bb60d344d。维护后40文件恢复点scores-20261103T083710457516Z.zip，SHA8f9614dd0632c97d3e1209a6c3b3e884332acc4a5c6558382cf41ca75cd12f97，演练3458c3f1d4bed6999fd31e22。全部路径基于/var/lib/racepick/backups和restore-drills。所有独立恢复active_database_replaced=false；完整在线/迁移自动/迁移后/apply自动等恢复点及缺失字段见机器回执，不编造映射。
+
+新版真实备份服务2026-11-03 16:45:11–16:45:12 CST success/exit0，实际新备份scores-20261103T084511778668Z.zip，2145403字节，SHAe6b8b72fe197f33f9dc9c35dece53ed9ddecd38eb753bd29f4a8a19420c1d851；40文件校验及独立恢复07d1cdc41550b8fb0c5c87d9通过。快照50账号/25国服车库/0国际车库/6投稿、贡献4/4/7/3、反馈0/0/0、通知6/6、覆盖三表0、双服pending0保持；该快照早于用户验收保存，不声称验收后计数仍为0。timer恢复enabled，NEXT2026-11-04 04:15:05 CST，未来执行未验证。本轮也核实11月3日04:17旧自动备份真实成功，非未来成功证明。
+
+原生入口保持关闭：实际网站进程未设置非空RACEPICK_MINI_CONFIG，公网原生snapshot404；国际成绩写开关仍0。未操作微信后台、上传/提审/发布小程序。用户在被要求桌面/手机微信登录、原国服车库、国际云车库保存读取/OC、截图识别和计算后明确回复“验收都通过。”，为用户实际反馈，代理未独立操作手机。409保留两份、登出/切账号/失败GET隔离未单独逐项回传，不另造证据。
+
+维护审计仍applied时a38候选不可直接用，须另获授权、满足双服target/CAS且无后续版本后定点回退维护指针；不恢复旧SQLite，不丢账号/国际车库。c06不兼容global-profile1，不能直接回退。若后续真实成绩版本已产生，禁止按旧target强行回退。
+
+本轮部署与用户验收完成。保留全部业务状态、旧包/发布/备份/演练/队列、测试资料、工作簿和未跟踪文件；无公告、清理、监控、main合并、提交或推送。本次仅新增本地回执并前置更新交接索引，原有dirty内容保留，后续Git操作另按授权。
+
+本轮文档Git收尾：用户随后明确授权仅提交推送本轮部署、验收和交接文档，完成后暂停。仅纳入本文件与INDEX的11月3日前缀及新部署回执；原有历史未提交记录、维护数据、工作簿、测试修改和未跟踪资料继续保留，不合并功能分支。准确提交及远端回执另存本地归档/webdata-deployment-closeout-20261103-a933c9b7/push-receipt.json，避免自引用提交SHA。
+
 ## 2026-10-31 当前上线：c06cc48b，OCR上线与桌面/手机微信验收完成
 
 最终收尾：用户已回传正式常驻OCR单元enabled/active/running，实际CPUQuota1s（100%）、High671088640/Max805306368字节（640/768MiB）、MemorySwapMax0/TasksMax64、racepick用户组、PrivateNetwork/ProtectSystem strict/AF_UNIX及control-group回收均生效。实际supervisor挂载视图的/var/lib/racepick只包含map-recognition，worker为其直接子进程、ready；采样RSS152060KiB为就绪待机值，不替代真实识图峰值或长期容量结论。国际写回仍关闭。用户明确回复“验收均正常”，覆盖此前要求的桌面及手机微信真实截图识别、地图顺序确认/填入/计算、手动选图、双服切换、登录及原车库验收；这是用户实际验收反馈，非代理独立操作手机。运行/备份/timer与公网事实见下文，最终结构化回执见[OCR部署回执](MAP_OCR_DEPLOYMENT_RECEIPT_20261031.json)。本轮部署和验收完成，不继续发布维护成绩、公告、清理或监控；用户后续仅授权本轮部署、验收与交接文档提交推送；Git准确回执保存在工作区本地归档/ocr-deployment-closeout-20261031-01a19177，不夹带历史待提交记录。
