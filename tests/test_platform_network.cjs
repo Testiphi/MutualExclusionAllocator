@@ -40,3 +40,20 @@ test('stage1 probe pins both deliveries and refuses self-consistent but unexpect
  snapshots.cn.version='unexpected';h=make();p=createNetworkProbe(h.wx,config,expected);await assert.rejects(p.run(),/固定交付/);assert.equal(h.calls.length,2);snapshots.cn.version=expected.versions.cn;
  snapshots.cn.capabilities.map_recognition=true;snapshots.cn.catalog_version='a'.repeat(64);h=make();p=createNetworkProbe(h.wx,config,expected);await assert.rejects(p.run(),/第一阶段能力/);assert.equal(h.calls.length,2);
 });
+
+test('native response decoding accepts foreign ArrayBuffers and offset views but rejects object/tag spoofing',()=>{
+ const {responseJSON}=require('../miniapp/adapters/transport'),vm=require('node:vm');const bytes=Array.from(utf8(JSON.stringify({title:'中文🏎️',ok:true}))),foreign=vm.runInNewContext('new Uint8Array('+JSON.stringify(bytes)+').buffer');
+ assert.equal(foreign instanceof ArrayBuffer,false);assert.deepEqual(responseJSON({statusCode:200,data:foreign}),{title:'中文🏎️',ok:true});
+ const offset=vm.runInNewContext('new Uint8Array([0,...'+JSON.stringify(bytes)+',0]).subarray(1,'+(bytes.length+1)+')');assert.equal(responseJSON({data:offset}).ok,true);
+ for(const data of [{ok:true},{[Symbol.toStringTag]:'ArrayBuffer',byteLength:2}])assert.throws(()=>responseJSON({statusCode:200,data}),e=>e.code==='RESPONSE_TYPE_UNSUPPORTED'&&e.status===200);
+ assert.throws(()=>responseJSON({statusCode:200,data:new Uint8Array([0xc0,0x80]).buffer}),e=>e.code==='RESPONSE_JSON_OR_UTF8_INVALID');
+});
+
+test('probe reports only safe network categories and retains the original uncertain exchange',async()=>{
+ const h=harness(()=>({network:true}));let last;h.wx.request=o=>{last=o;queueMicrotask(()=>o.fail({errMsg:'request:fail ssl certificate invalid secret=private-token&code=private-code',errCode:-1202}));return {abort(){}};};
+ const p=createNetworkProbe(h.wx,config);await assert.rejects(p.run());const r=p.report();assert.deepEqual(r.diagnostic,{kind:'tls_or_certificate',nativeCode:-1202});assert.equal(r.errorCode,'WX_REQUEST_FAILED');assert.equal(r.httpStatus,null);assert.equal(last.dataType,'other');assert.equal(last.responseType,'arraybuffer');assert.ok(!JSON.stringify(r).includes('private-'));const original=last.data;await assert.rejects(p.run());assert.deepEqual(last.data,original);assert.equal(p.report().counts.logins,1);
+});
+
+test('successful HTTP with invalid response has a decode code and status instead of an indistinguishable network error',async()=>{
+ const h=harness(()=>({}));h.wx.request=o=>{queueMicrotask(()=>o.success({statusCode:200,data:{token:'private-token',code:'private-code'}}));return {abort(){}};};const p=createNetworkProbe(h.wx,config);await assert.rejects(p.run());const r=p.report();assert.equal(r.httpStatus,200);assert.equal(r.errorCode,'RESPONSE_TYPE_UNSUPPORTED');assert.equal(r.diagnostic.kind,'response_decode');assert.equal(r.diagnostic.responseKind,'unsupported');assert.ok(!JSON.stringify(r).includes('private-'));
+});

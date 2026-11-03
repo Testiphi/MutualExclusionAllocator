@@ -22,6 +22,8 @@
 
 ## 用户真机下一步
 
+更新：用户首次手机扫码失败，尚未通过真机验收。已生成“诊断版2”，请改用[手机失败诊断记录中的新目录与复测步骤](MINI_GUEST_PHONE_DIAGNOSTIC_20261104.md)。下述原工程保留为第一轮证据，不覆盖。
+
 使用本轮独立 `network-probe-sdk` 工程：
 
 `E:\hzz\work\MutualExclusionAllocator\offline-evaluation\mini-guest-stage1-client-20261104-01\network-probe-sdk`
