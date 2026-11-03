@@ -243,7 +243,7 @@ function accountUnload({intent=false,mismatch=false,failWrite=false,server='cn'}
     const source=read('auth.js'),start=source.indexOf("        addEventListener('beforeunload',e=>{"),end=source.indexOf('\n        });',start)+12;
     let handler;const notices=[];
     const context=vm.createContext({APP_CONFIG:{server},store:{state:()=>({dirty:true}),snapshot:()=>profile},owner:{id:'main'},sessionStorage:session,report:message=>notices.push(message),addEventListener:(type,fn)=>handler=fn,RACEPICK_SERVER_NAVIGATION:intent?{kind:'server-switch',target:'?server=global'}:null});
-    const keys=source.match(/    const profileServer=.*\n    const profileUserKey=.*;/)[0];
+    const keys=source.match(/    const profileServer=.*\r?\n    const profileUserKey=.*;/)[0];
     vm.runInContext(keys+'\n'+source.slice(start,end),context);
     let prevented=false;handler({preventDefault(){prevented=true;},returnValue:undefined});
     return {prevented,notices,session};
