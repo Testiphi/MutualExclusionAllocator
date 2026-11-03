@@ -1,0 +1,9 @@
+{
+  "schema": 1,
+  "origin": "",
+  "isolatedServiceDeclared": false,
+  "realWechatConfiguredDeclared": false,
+  "requestDomainConfiguredDeclared": false,
+  "uploadDomainConfiguredDeclared": false,
+  "downloadDomainConfiguredDeclared": false
+}

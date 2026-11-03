@@ -2,7 +2,9 @@
 const {createTransport,responseJSON}=require('./transport');
 const {createSession}=require('./session');
 const {sha256}=require('./hash');
+const {validateNativeConfig}=require('./native_config');
 function createNativeApi(wx,config,{wait=ms=>new Promise(r=>setTimeout(r,ms)),now=Date.now}={}) {
+  config=validateNativeConfig(config);
   if(!config||!config.enabled)throw Error('原生接口未配置');
   const fixture=config.kind==='fixture';
   if(fixture&&((wx.getSystemInfoSync().platform!=='devtools')||!/^http:\/\/127\.0\.0\.1:\d+$/.test(config.origin)))throw Error('fixture仅供本机开发者工具使用');
@@ -17,6 +19,14 @@ function createNativeApi(wx,config,{wait=ms=>new Promise(r=>setTimeout(r,ms)),no
       if(s.schema_version!==1||s.token_type!=='Bearer'||typeof s.identity!=='string'||!s.identity||!Number.isFinite(s.expires_at))throw Error('访客会话响应无效');
       return {token:s.token,identity:s.identity,expiresAt:s.expires_at*1000};
     }});
+  async function reconnectSession(){
+    const state=session.current();
+    if(state.retryAt>now())return session.ensure();
+    if(fixture&&(state.requiresNewCode||(state.identity&&state.expiresAt<=now()+30000)))throw Object.assign(Error('本地fixture凭据已到期或失效，请新建独立联调环境'),{status:401,code:'FIXTURE_CREDENTIALS_EXHAUSTED'});
+    // Unknown/lost response: recover the same code/key. Explicit restart only after a known terminal result.
+    if(state.requiresNewCode||(state.identity&&state.expiresAt<=now()+30000))session.invalidate();
+    await session.ensure();
+  }
   function auth(identity) {
     const s=session.current();
     if(!s.identity||s.expiresAt<=now())throw Object.assign(Error('访客会话已失效，请重新连接'),{status:401});
@@ -39,7 +49,7 @@ function createNativeApi(wx,config,{wait=ms=>new Promise(r=>setTimeout(r,ms)),no
     try{return responseJSON(await transport.upload(prefix+'/map-recognition/jobs'+query(p)+'&request_key='+encodeURIComponent(p.request_key),{filePath:p.path,name:'image',formData:{}}).promise);}catch(e){if(e.status===401)session.invalidate();throw e;}
   }
   return {
-    session,fixture,identity:()=>auth(),metrics:()=>({...metrics}),
+    session,fixture,origin:config.origin,reconnectSession,identity:()=>auth(),metrics:()=>({...metrics}),
     async accountRequest(path,options){auth();return responseJSON(await guestAccount.request('/api/mini/account/v1'+path,options).promise);},
     snapshot:server=>{auth();return json('/snapshot?server='+encodeURIComponent(server));},
     catalog:()=>{auth();return json('/map-recognition/catalog?server=cn');},

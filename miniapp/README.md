@@ -8,12 +8,20 @@
 
 ```powershell
 node tools/prepare_miniapp.cjs --data-receipt ../offline-evaluation/miniprogram-v1-20261102-01/runtime-source.json
-node --test tests/test_miniapp.cjs tests/test_miniapp_local.cjs tests/test_miniapp_dropdown.cjs tests/test_native_api.cjs tests/test_recognition_jobs.cjs tests/test_web_home_mirror.cjs tests/test_account_mirror.cjs tests/test_visual_acceptance.cjs
+node --test tests/test_miniapp.cjs tests/test_miniapp_local.cjs tests/test_miniapp_dropdown.cjs tests/test_native_api.cjs tests/test_recognition_jobs.cjs tests/test_web_home_mirror.cjs tests/test_account_mirror.cjs tests/test_visual_acceptance.cjs tests/test_platform_network.cjs
 ```
 
 该命令生成离线local模式，不调用登录或上传。省略数据回执则是明确标记的mock。五个共享模块从固定Git对象198999a原字节生成；正式presenter、主题与OpenAPI另固定8da1609，从Git原字节生成并记录SHA；JSON机器契约转换为CommonJS，主题生成WXSS。旧网页提取器仅保留作冻结对照，不再参与运行服务。`miniapp/shared/`和`generated/`忽略，不将未冻结4504/693数据当发布来源。切换来源必须先核对协议/依赖及原字节SHA，不从dirty网页抽取新规则。
 
 原生HTTP联调需显式增加 `--native-origin <本地基址>`。隔离fixture还需 `--fixture-code <lab中未用代码> --fixture-key <该代码首次使用的固定key>`，仅开发者工具接受fixture。接口默认关闭；token仅内存，快照严格核验后原子缓存。过期代码不能换key续期，应新建独立lab。8052为本轮全功能测试lab，交付查看环境另为8055；用过的fixture代码/key见 `docs/NATIVE_FULL_MIRROR_INTEGRATION_20261103.md`。旧8044等环境保持。不用生产账号或8033测试库。
+
+## 真实联网准备（2026-11-03）
+
+离线真机用户验收已通过。下一步为真实微信访客会话/两服快照，再OCR，最后RacePick账号与云车库。准备与边界见 [本轮记录](../docs/PLATFORM_NETWORK_PREPARATION_20261103.md)；[网站/运维交接清单](../docs/HANDOFF_PLATFORM_NETWORK_20261103.md) 可直接转交，不需要再买域名。
+
+`node tools/setup_platform_profile.cjs` 只在缺少时创建忽略Git的 `miniapp/platform.profile.local.json`，不会覆盖现有文件。当前origin为空、声明均false。运维确认后填写实际HTTPS origin和已完成事项；不填AppSecret/token。声明不是验收证据。
+
+`node tools/prepare_network_probe.cjs <外层offline-evaluation下全新工程目录>` 生成独立网络探针，拒绝覆盖旧目录；未满足第一阶段声明时保持关闭，生成工程启用域名校验，不改主工程或已验收phone-local。服务就绪后才运行真实SDK检查 `tools/check_platform_network_devtools.cjs <SDK目录> <探针工程> <新证据目录> [自动化端口]`。探针只调用session和两服snapshot，不上传、不登录账号、不写车库。主工程将来用 `--platform-profile miniapp/platform.profile.local.json` 显式构建；当前不切换主工程，避免顺带启动完整业务请求。
 
 ## 开发者工具
 

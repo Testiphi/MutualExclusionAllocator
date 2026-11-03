@@ -106,7 +106,7 @@ function createController({ service, storage, media, render, autoCompute=false,s
   return {
     setProfile(value) {change(()=>{draft.cars=[...(value?.cars||[])];draft.stars={...(value?.stars||{})};draft.oc={...(value?.ocMap||{})};});},
     save, compute, chooseImage, recognize,retryRecognition:()=>recognize(true),
-    async reconnect() {if(!service.reconnect)return;invalidate();error='';busy=true;publish();const ticket=epoch;try{await service.reconnect();if(ticket===epoch)refresh();}catch(e){if(ticket===epoch)error=e.message;}finally{if(ticket===epoch){busy=false;publish();}}},
+    async reconnect() {if(!service.reconnect||busy)return;invalidate(true,true,true);error='';busy=true;publish();const ticket=epoch;try{const value=await service.reconnect();if(ticket===epoch&&visible){refresh();if(value&&draft.server==='cn')acceptRecognition(value);}}catch(e){if(ticket===epoch)error=e.message;}finally{if(ticket===epoch){busy=false;publish();}}},
     setMode(zone, tier) { change(() => { draft.zone = zone; draft.tier = tier; }); },
     setMap(index, map) {
       if (!Number.isInteger(index) || index < 0 || index > 4) return;

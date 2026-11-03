@@ -12,7 +12,7 @@ function createTransport(wx, { baseURL, enabled = false, allowLocal = false,name
   const valid = typeof baseURL === 'string' &&
     (/^https:\/\/[a-z0-9.-]+(?::\d+)?$/i.test(baseURL) ||
       (allowLocal && /^http:\/\/(127\.0\.0\.1|localhost):\d+$/.test(baseURL)));
-  let token = null;
+  let token = null,sessionEpoch=0;
   const active = new Set();
   function start(path, options, upload) {
     if (!enabled || !valid) throw Error('原生服务尚未配置');
@@ -21,13 +21,16 @@ function createTransport(wx, { baseURL, enabled = false, allowLocal = false,name
     const headers = { ...(options.header || {}) };
     if (Object.keys(headers).some(k => /^(cookie|origin|authorization)$/i.test(k))) throw Error('禁止覆盖会话头');
     if (token) headers.Authorization = 'Bearer ' + token;
+    const ticket=sessionEpoch;
+    const stale=()=>Object.assign(Error(namespace==='account'?'账号已变化，已丢弃旧请求响应':'会话已变化，已丢弃旧请求响应'),{code:'STALE_SESSION_RESPONSE'});
     let task;
     const promise = new Promise((resolve, reject) => {
       const done = () => active.delete(task);
       const args = { ...options, url: baseURL + path, header: headers, timeout: 30000,
         success(response) {
           done();
-          if (response.statusCode === 401) token = null;
+          if(ticket!==sessionEpoch){reject(stale());return;}
+          if (response.statusCode === 401) {token = null;sessionEpoch++;}
           if (response.statusCode < 200 || response.statusCode >= 300) {
             let body;try{body=responseJSON(response);}catch(_){}
             const error = Error(body&&typeof body.detail==='string'?body.detail.slice(0,200):'请求失败（' + response.statusCode + '）');
@@ -38,7 +41,7 @@ function createTransport(wx, { baseURL, enabled = false, allowLocal = false,name
           }
           resolve(response);
         },
-        fail(reason) { done();const error=Error('网络请求未完成，请重试');error.nativeReason=reason&&reason.errMsg?String(reason.errMsg).slice(0,240):'';reject(error); }
+        fail(reason) { done();if(ticket!==sessionEpoch){reject(stale());return;}const error=Error('网络请求未完成，请重试');error.nativeReason=reason&&reason.errMsg?String(reason.errMsg).slice(0,240):'';reject(error); }
       };
       if (upload) {
         // wx sets the multipart boundary; callers must not set Content-Type.
@@ -50,8 +53,8 @@ function createTransport(wx, { baseURL, enabled = false, allowLocal = false,name
     return { promise, abort: () => { if (task) { active.delete(task); task.abort(); } } };
   }
   return {
-    setToken(value) { if (typeof value !== 'string' || !value || /[\r\n]/.test(value)) throw Error('无效会话'); token = value; },
-    clearSession() { token = null; for (const task of active) task.abort(); active.clear(); },
+    setToken(value) { if (typeof value !== 'string' || !value || /[\r\n]/.test(value)) throw Error('无效会话'); sessionEpoch++;token = value; },
+    clearSession() { sessionEpoch++;token = null; for (const task of active) task.abort(); active.clear(); },
     request: (path, options = {}) => start(path, options, false),
     upload: (path, options) => start(path, options, true)
   };

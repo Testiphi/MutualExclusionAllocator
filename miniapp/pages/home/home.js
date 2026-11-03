@@ -8,6 +8,7 @@ const bundle = require('../../generated/local-bundle');
 const core = require('../../shared/selection_core');
 const nativeConfig=require('../../generated/native-config');
 const {createNativeService}=require('../../services/native');
+const {createNativeApi}=require('../../adapters/native_api');
 const {visibleCars}=require('../../lib/garage_view');
 const runtime=require('../../services/runtime');
 const {createCloudProfile}=require('../../services/cloud_profile');
@@ -53,11 +54,13 @@ Page({
   },
   currentProfile(){const d=this.state.draft;return {cars:[...d.cars],stars:{...d.stars},...(d.server==='global'?{ocMap:{...d.oc}}:{})};},
   observeCloud(){if(this.cloudReady&&this.cloud&&!this.applyingCloud){const p=this.currentProfile(),key=JSON.stringify(p);if(key!==this.lastCloudProfile){this.lastCloudProfile=key;this.cloud.update(p);}}},
-  async connectNative() {
-    this.setData({initializing:true,error:''});
-    try{const service=await createNativeService(wx,core,nativeConfig);if(!this.unloaded)this.mountService(service);else service.cancel();}
+  async connectNative(restart=false) {
+    if(this.nativeConnectFlight)return this.nativeConnectFlight;
+    const work=(async()=>{this.setData({initializing:true,error:''});
+    try{this.nativeApi=this.nativeApi||createNativeApi(wx,nativeConfig);if(restart)await this.nativeApi.reconnectSession();const service=await createNativeService(wx,core,nativeConfig,{api:this.nativeApi});if(!this.unloaded)this.mountService(service);else service.cancel();}
     catch(e){if(!this.unloaded)this.setData({error:e.message,nativeDiagnostic:e.nativeReason||'',connectionFailed:true});}
-    finally{if(!this.unloaded)this.setData({initializing:false});}
+    finally{if(!this.unloaded)this.setData({initializing:false});}})();
+    this.nativeConnectFlight=work;try{return await work;}finally{if(this.nativeConnectFlight===work)this.nativeConnectFlight=null;}
   },
   updateView() {
     this.observeCloud();
@@ -103,7 +106,7 @@ Page({
   },
   async onShow() {this.homeVisible=true;if(this.account)try{await this.account.refresh();}catch(e){this.setData({cloudStatus:e.message});}if(this.controller){await this.syncAccount();this.controller.show();if(this.account){void runtime.usage()?.visit('home',this.state.draft.server,'resume');void this.refreshHomeIdentity();}}},
   onHide() {this.homeVisible=false;this.setData({homeHub:null}); this.closeDropdown();if (this.controller) this.controller.hide(); },
-  onUnload() { this.unloaded=true;this.cloudTicket=(this.cloudTicket||0)+1;if(this.unsubscribeAccount)this.unsubscribeAccount();this.closeDropdown();if (this.controller) this.controller.destroy(); },
+  onUnload() { this.unloaded=true;this.cloudTicket=(this.cloudTicket||0)+1;if(this.unsubscribeAccount)this.unsubscribeAccount();this.closeDropdown();if (this.controller) this.controller.destroy();if(this.nativeApi)this.nativeApi.session.invalidate(); },
   onPageScroll() { this.closeDropdown(); },
   closeDropdown() { this.dropdownGeneration=(this.dropdownGeneration||0)+1;if(this.data.dropdown)this.setData({dropdown:null}); },
   blockDropdownScroll() {},
@@ -218,7 +221,7 @@ Page({
   async refreshHomeIdentity(){if(!this.account?.state().actor)return;const ticket=this.account.generation();const values=await Promise.allSettled([this.account.call('/notifications'),this.account.call('/contributions/me?period=month')]);if(ticket!==this.account.generation())return;this.setData({unreadCounts:values[0].status==='fulfilled'?values[0].value.counts:{},homeNickname:values[1].status==='fulfilled'?values[1].value.preference.nickname:''});},
   navigate(e){const {page,mode,tab,compose}=e.currentTarget.dataset;if(!['account','coverage','submissions','community','workbench'].includes(page))return;this.setData({homeHub:null});wx.navigateTo({url:'/pages/'+page+'/'+page+'?server='+this.state.draft.server+(mode?'&mode='+encodeURIComponent(mode):'')+(tab?'&tab='+encodeURIComponent(tab):'')+(compose?'&compose=1':'')});},
   compute() { this.controller.compute(); }, chooseImage() { this.controller.chooseImage(); },
-  reconnect() {return this.controller?this.controller.reconnect():this.connectNative();},
+  reconnect() {return this.controller?this.controller.reconnect():this.connectNative(true);},
   retryRecognition() {return this.controller.retryRecognition();},
   recognize() { this.controller.recognize(); }, applyRecognition() { this.controller.applyRecognition(); },
   cancelRecognition() { this.controller.cancelRecognition(); },

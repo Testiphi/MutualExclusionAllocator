@@ -6,8 +6,8 @@ const {requestId}=require('../adapters/id');
 const {enrichModel}=require('../lib/garage_view');
 const {utf8,sha256}=require('../adapters/hash');
 const {createWebHomeAdapter}=require('../lib/home_presenter_adapter');
-async function createNativeService(wx,core,config) {
-  const api=createNativeApi(wx,config);let contexts={},snapshots={},known={},home={},online=false,message='',generation=0,lastBinding=null;
+async function createNativeService(wx,core,config,options={}) {
+  const api=options.api||createNativeApi(wx,config);if(api.origin!==config.origin||api.fixture!==(config.kind==='fixture'))throw Error('服务与原生连接配置不一致');let contexts={},snapshots={},known={},home={},online=false,message='',generation=0,lastBinding=null;
   const cacheKey=s=>'racepick.mini.snapshot.v1.'+sha256(utf8(config.origin)).slice(0,16)+'.'+s;
   function commit(checked) {
     const next={},ids={},presenters={};
@@ -53,9 +53,9 @@ async function createNativeService(wx,core,config) {
     async verifyRecognition(){const b=await catalog();if(!lastBinding||b.identity!==lastBinding.identity||b.version!==lastBinding.version)throw Error('识别结果已失效，请重新识别');},
     cancel(){generation++;jobs.cancel();lastBinding=null;},
     suspend(){generation++;jobs.suspend();},
-    async resume(){await refresh();if(jobs.state().id&&['paused','recoverable','finished'].includes(jobs.state().phase)){await catalog();return wrap(await jobs.resume());}},
-    async reconnect(){generation++;jobs.cancel();lastBinding=null;api.session.invalidate();await refresh();},
-    status(){if(!api.session.current().identity&&online){online=false;message='访客会话已失效，请重新连接';}return {online,fixture:api.fixture,message,canRetry:['paused','recoverable'].includes(jobs.state().phase),task:jobs.state().phase};}
+    async resume(){await refresh();if(jobs.state().request_key&&['paused','recoverable','finished'].includes(jobs.state().phase)){await catalog();return wrap(await jobs.resume());}},
+    async reconnect(){const ticket=++generation,oldIdentity=api.session.current().identity;jobs.suspend();await api.reconnectSession();if(ticket!==generation)throw Error('本次连接已停止');if(oldIdentity&&api.session.current().identity!==oldIdentity){jobs.cancel();lastBinding=null;}await refresh();if(ticket!==generation)throw Error('本次连接已停止');if(jobs.state().request_key){await catalog();return wrap(await jobs.resume());}},
+    status(){const state=api.session.current();if((!state.identity||state.expiresAt<=Date.now())&&online){online=false;message='访客会话已失效，请重新连接';}return {online,fixture:api.fixture,message,canRetry:['paused','recoverable'].includes(jobs.state().phase),task:jobs.state().phase};}
   };
 }
 module.exports={createNativeService};

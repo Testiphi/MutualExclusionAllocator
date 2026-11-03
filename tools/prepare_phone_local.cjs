@@ -14,6 +14,10 @@ for(const file of files){if(file.endsWith('/README.md'))continue;const original=
  if(name==='project.config.json'){const config=JSON.parse(bytes);config.projectname='RacePick-phone-local';config.description='Isolated offline device acceptance, no native backend';bytes=Buffer.from(JSON.stringify(config,null,2)+'\n');}
  write(name,bytes,file);
 }
+// Actual identity stopped being tracked; inherit only the local App ID, never private settings or secrets.
+const localProject=JSON.parse(fs.readFileSync(path.join(root,'miniapp/project.config.json'),'utf8'));
+require('./setup_miniapp_project.cjs').setup(out,localProject.appid);
+const phoneProject=JSON.parse(fs.readFileSync(path.join(out,'project.config.json'),'utf8'));phoneProject.projectname='RacePick-phone-local';phoneProject.description='Isolated offline device acceptance';phoneProject.setting.urlCheck=true;write('project.config.json',Buffer.from(JSON.stringify(phoneProject,null,2)+'\n'),'local-only project identity');
 for(const name of [...Object.keys(provenance.files),'home_presenter.js','feature_contract.js','theme.wxss','functional_theme.wxss','source.json']){const bytes=fs.readFileSync(path.join(root,'miniapp/shared',name));if(provenance.files[name])assert.equal(crypto.createHash('sha256').update(bytes).digest('hex'),provenance.files[name].sha256);write('shared/'+name,bytes,'fixed generated dependency');}
 const bundle=fs.readFileSync(path.join(root,'miniapp/generated/local-bundle.js'));require('../miniapp/adapters/snapshot').verifyLocalBundle(require('../miniapp/generated/local-bundle'));write('generated/local-bundle.js',bundle,'approved unfrozen runtime receipt');write('generated/native-config.js',Buffer.from('module.exports = {enabled:false};\n'),'offline adapter');
 const core=require(path.join(out,'shared/selection_core')),service=require(path.join(out,'services/local')).createLocalService(core,require(path.join(out,'generated/local-bundle')));
