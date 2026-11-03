@@ -48,5 +48,5 @@
   "wechat_upload_or_review": false,
   "announcement_cleanup_monitor": false,
   "push_receipt": "本地归档/merge-all-main-20261103/push-receipt.json",
-  "status": "all_committed_local_branch_tips_integrated_pending_push"
+  "status": "all_committed_local_branch_tips_integrated_and_validated"
 }
