@@ -12,7 +12,7 @@ function make(values=new Map(),auto=false) {
 const saved='racepick.mini.local.draft.v1.cn',working='racepick.mini.local.working.v1.cn';
 test('first entry uses website CN expert/all cars and global theoretical; saved empty stays empty',()=>{
  const f=make();assert.equal(f.state.draft.tier,'高手');assert.equal(f.state.draft.cars.length,81);assert.equal(f.state.dirty,false);assert.equal(f.values.size,0);
- f.c.switchServer('global');assert.equal(f.state.draft.tier,'理论');assert.equal(f.state.draft.cars.length,47);
+ f.c.switchServer('global');assert.equal(f.state.draft.tier,'理论');assert.equal(f.state.draft.cars.length,48);assert.ok(f.state.draft.cars.includes('fxxk'));
  f.c.setCars(f.state.model.cars.map(c=>c.id),false);f.c.save();f.c.switchServer('cn');f.c.switchServer('global');assert.deepEqual(f.state.draft.cars,[]);
  const values=new Map([[saved,{...blank('cn'),cars:[]}]]);const empty=make(values);assert.deepEqual(empty.state.draft.cars,[]);assert.equal(empty.state.draft.tier,'理论','existing tier must not be reset');
 });

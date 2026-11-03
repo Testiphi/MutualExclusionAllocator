@@ -17,7 +17,7 @@ if (!bundle) throw Error('Run prepare_miniapp.cjs with --data-receipt for local 
 const snapshots = verifyLocalBundle(bundle);
 function readBlob(file) { return cp.execFileSync('git',['show',source+':'+file],{cwd:path.resolve(__dirname,'..'),encoding:'utf8'}); }
 // Execute the owning branch's exact tests and frozen web oracle, against the
-// SHA-verified 4504/693 bundle and the generated modules from that same commit.
+// SHA-verified input bundle and the generated modules from that same pinned commit.
 const fixture = {exports:{}};
 new Function('module',readBlob('tests/fixtures/selection_page_reference.cjs'))(fixture);
 new Function('require','__dirname',readBlob('tests/test_selection_core.js'))(name=>{

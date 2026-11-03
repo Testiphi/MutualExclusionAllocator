@@ -1,0 +1,52 @@
+{
+  "schema": "racepick.main-integration.v1",
+  "date": "2026-11-03",
+  "authorization": "User explicitly requested all branches merged into main after authorizing per-branch commits/pushes",
+  "main_before": "3bba3e4875cfcce2bb19ec9c64ed9a8f06bbe123",
+  "integrated_branch_tips": {
+    "feature/map-layout-parser": "3c3fdd989c0bac01ccf22e572cdedb20865921ab",
+    "feature/miniprogram-v1": "635cacc50f72c89bc9fc5644166cd2744cd015a3",
+    "feature/unify-home-style": "1f3f192e21a71b2605b3230d26cd7c8d5a38633a",
+    "docs/cloud-handoff-20261022": "6ef90621d0aa0f4caf9754cdee1b06591952ff51"
+  },
+  "merge_commits": {
+    "website": "e8532c5",
+    "native_client": "1df186f",
+    "demo": "693b967",
+    "historical_docs": "3d84a37"
+  },
+  "conflict_resolution": {
+    "runtime_data": "Retained original main frozen five runtime bytes for CN4516/Global694; no downgrade to feature snapshot4504/693",
+    "workbooks": "Original main bytes preserved; no synchronization/re-export",
+    "boot_smoke": "Use website data-driven checks for declared pools and cc850 rules",
+    "old_cloud_handoff": "Archived at docs/history/CLOUD_HANDOFF_20261022.md; main docs/CLOUD_HANDOFF.md unchanged",
+    "README": "Retain current docs paths and explicitly distinguish current production from historical records"
+  },
+  "security": "635cacc included; real project.config.json remains local/ignored; example touristappid only; history not rewritten and GitHub alert not closed",
+  "validation": {
+    "frontend_tests": 212,
+    "frontend_passed": 212,
+    "python_full": {
+      "executed": 399,
+      "passed": 397,
+      "skipped": 2,
+      "failures": 0,
+      "seconds": 225.881,
+      "platform": "Windows Python3.14",
+      "skips": [
+        "Actual Linux service flock",
+        "Actual Linux release-directory link switch"
+      ]
+    },
+    "data_validation_errors": 0,
+    "global_generation_check": "694 entries/48 cars/44 maps/21 OC/52 SC byte reproducible",
+    "main_runtime_five_file_sha_unchanged": true,
+    "test_adjustment": "Updated mini-program home default-all-cars assertion from historical47 to current48 and explicitly checked fxxk; no application logic changed."
+  },
+  "parallel_work": "Uncommitted miniprogram-v1 visual/admin work is owned by active chat 推进小程序兼容准备 and not captured as completed code by this merge. Working files and ignored local configurations are preserved.",
+  "production_operations": false,
+  "wechat_upload_or_review": false,
+  "announcement_cleanup_monitor": false,
+  "push_receipt": "本地归档/merge-all-main-20261103/push-receipt.json",
+  "status": "all_committed_local_branch_tips_integrated_pending_push"
+}

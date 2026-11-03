@@ -1,5 +1,8 @@
 # [MutualExclusionAllocator](https://github.com/Testiphi/MutualExclusionAllocator)
 
+Current production (2026-11-03): release `a933c9b746c2e276a9b68d14`, CN4516 / Global694, international cloud garages enabled after explicit schema1 migration. Native mini-program API remains disabled and international score writes remain off. See [current cloud handoff](docs/CLOUD_HANDOFF.md). This source-branch integration is not a new production deployment; older dated status sections below are historical.
+
+
 ## Repository layout and handoff
 
 - `docs/`: development, maintenance, deployment and acceptance notes; see the [documentation index](docs/INDEX.md).

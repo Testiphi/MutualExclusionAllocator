@@ -1,5 +1,8 @@
 # [MutualExclusionAllocator](https://github.com/Testiphi/MutualExclusionAllocator)
 
+当前生产（2026-11-03）：发布 `a933c9b746c2e276a9b68d14`，国服4516／国际694，国际云车库schema1已显式迁移并由用户验收。原生小程序API保持关闭，国际成绩写开关保持关闭。现行证据见[云端交接](docs/CLOUD_HANDOFF.md)。本轮源码分支整合不构成重新部署；下方旧日期状态按历史阅读。
+
+
 ## 目录与当前交接入口
 
 - `docs/`：开发、数据维护、部署和验收说明，见[文档索引](docs/INDEX.md)。
