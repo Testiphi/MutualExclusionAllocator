@@ -57,3 +57,6 @@
 测试8052的fixture临近一小时到期后，另外新建了空白本地预览环境，原8052及全部测试库保留：`http://127.0.0.1:8055/`，lab `.score-version-sandboxes/517152525e7b8497fc3581e5`。创建回执 `local-view-lab.json`；当前ignored native-config已显式指向8055，fixture-code-1/key `mini-mirror-user-view-20261103-01`。未登录账号，旧游客地图/车库保留，账号库为空且为file邮件。
 
 `local-view-ready.json`证明最终源码在真实开发者工具使用的新访客identity与8055本机返回一致、online=true、actor=null；`local-view-home.png`已截图。它是新环境接通证明，不把8052的完整业务测试冒称在8055重复执行。新会话仍按协议一小时到期，不延长TTL、不复用过期code；下一次本地联调应按回执新建隔离环境，或由用户安全配置真实平台验证。当前工具无需重新安装或修改设置。
+
+
+后续状态：管理原生逐项与各页外观验收已在 `MINIPROGRAM_LOCAL_ACCEPTANCE_20261103.md` 补齐。本文件保留上轮真实边界，不把旧证据重写成新阶段结果。

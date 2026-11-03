@@ -31,6 +31,9 @@ manifest.mirror.contractModuleSha256=crypto.createHash('sha256').update(contract
 const theme=`/* Generated from ${mirror.ref}:home_theme.json. */\npage { background:${tokens['--rp-bg']};color:${tokens['--rp-text']};font-family:${tokens['--rp-font']}; }\n.mirror-surface {background:${tokens['--rp-surface']};border-color:${tokens['--rp-divider']};}\n.mirror-muted {color:${tokens['--rp-muted']};}\n.mirror-selected {background:${tokens['--rp-selected']};border-color:${tokens['--rp-blue']};}\n`;
 fs.writeFileSync(path.join(output,'theme.wxss'),theme);
 manifest.mirror.themeSha256=crypto.createHash('sha256').update(theme).digest('hex');
+const functional=require('./mini_theme.cjs').functionalTheme(JSON.parse(fs.readFileSync(path.join(output,'home_theme.json'),'utf8')));
+fs.writeFileSync(path.join(output,'functional_theme.wxss'),functional);
+manifest.mirror.functionalThemeSha256=crypto.createHash('sha256').update(functional).digest('hex');
 const homeCode=require('./web_home_adapter.cjs').generateWebHomeAdapter(pageSource.toString('utf8'));
 fs.writeFileSync(path.join(output,'web_home.js'),homeCode);
 manifest.derived={'web_home.js':{source_file:'index.html',source_sha256:crypto.createHash('sha256').update(pageSource).digest('hex'),sha256:crypto.createHash('sha256').update(homeCode).digest('hex')}};

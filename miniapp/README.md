@@ -8,7 +8,7 @@
 
 ```powershell
 node tools/prepare_miniapp.cjs --data-receipt ../offline-evaluation/miniprogram-v1-20261102-01/runtime-source.json
-node --test tests/test_miniapp.cjs tests/test_miniapp_local.cjs tests/test_miniapp_dropdown.cjs tests/test_native_api.cjs tests/test_recognition_jobs.cjs tests/test_web_home_mirror.cjs tests/test_account_mirror.cjs
+node --test tests/test_miniapp.cjs tests/test_miniapp_local.cjs tests/test_miniapp_dropdown.cjs tests/test_native_api.cjs tests/test_recognition_jobs.cjs tests/test_web_home_mirror.cjs tests/test_account_mirror.cjs tests/test_visual_acceptance.cjs
 ```
 
 该命令生成离线local模式，不调用登录或上传。省略数据回执则是明确标记的mock。五个共享模块从固定Git对象198999a原字节生成；正式presenter、主题与OpenAPI另固定8da1609，从Git原字节生成并记录SHA；JSON机器契约转换为CommonJS，主题生成WXSS。旧网页提取器仅保留作冻结对照，不再参与运行服务。`miniapp/shared/`和`generated/`忽略，不将未冻结4504/693数据当发布来源。切换来源必须先核对协议/依赖及原字节SHA，不从dirty网页抽取新规则。
@@ -46,3 +46,16 @@ node tools/check_mirror_devtools.cjs ../offline-evaluation/miniprogram-v1-202611
 HTTP脚本硬限定本机8052、校验lab标记，使用内存随机密码、file outbox和新注册账号，在该新lab明确bootstrap自己的超级管理员、运行隔离审核/应用/回滚。不能指向旧测试库/生产库；完整脚本不应在已存在主超管的旧lab重复执行，下一轮先新建lab并明确更新隔离配置。SDK脚本要求当前没有已登录账号，创建自己的fixture账号，恢复测试前游客记录，只删除自己账号的新临时草稿键；混合按钮/输入与Page handler驱动，不冒称全手工测试。两脚本不上传小程序、不提审、不外发邮件/通知。
 
 开发者工具当前观察2.02.2611022、基础库3.17.5。新增页面须带page.json；SDK0.13.0在更新工具后存在旧页面元数据/方法调用时序问题，夹具以当前路由和真实界面数据等待，不把瞬时失败算通过。不得用清storage/auth/session等缓存修复代码问题。
+
+
+## 本轮逐项本地验收与手机项目
+
+管理与外观本地验收见 `docs/MINIPROGRAM_LOCAL_ACCEPTANCE_20261103.md`，三阶段真实本机流程及89项客户端回归已记录。外层 `offline-evaluation/miniprogram-acceptance-20261103-01/visual-review.html` 可查看网页/原生对照。固定网页UI/接口仍为8da1609；网站并行维护发布变更如实单列，未纳入本分支。
+
+生成独立离线手机项目（只创建本地目录，不执行预览/上传）：
+
+```powershell
+node tools/prepare_phone_local.cjs ../offline-evaluation/miniprogram-acceptance-20261103-01/phone-local
+```
+
+必须先提交本轮miniapp源码；脚本拒绝覆盖已有项目，验证固定依赖/运行数据和两服真实计算。副本API关闭，车库与视图使用独立devicecheck存储前缀，不带原账号/测试状态。由用户按 `docs/PHONE_ACCEPTANCE_20261103.md` 手动导入和预览扫码；不将其视为体验版/正式冻结包或真实网络识图验收。当前主项目8058仍只供开发者工具fixture，不能让手机访问127.0.0.1或绕过fixture平台保护。
