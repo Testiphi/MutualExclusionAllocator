@@ -2,9 +2,9 @@
   "_meta": {
     "server_id": "global",
     "schema_version": 1,
-    "catalog_payload_sha256": "1a76196be7b7dd0bd97056ac8bf857caa0cb26b816bbf9753c7924a4b65c6eb2",
-    "scores_payload_sha256": "bf8c5c645e06197a6ff20f84f27bf91a5398977fe4ae37701c55656ffe80fe47",
-    "dataset_version": "456196d023d41654d06d7ee5a175e41aca8e9128e204099f9d1a15b46ca9314a",
+    "catalog_payload_sha256": "658ddd38125b8b1b952836caf9772c9bfa3b00c78ff5e9e1e205d9cc93166da2",
+    "scores_payload_sha256": "00939c3cc6d0c4f4a1bc3da4df930178ada9d8b542807e38142f9547ea95208d",
+    "dataset_version": "9b83ddd062a4d4b0c15d51dc0eed323aabb8e599e3e9544bc91714b70a7a4259",
     "manifest_file": "global-data-manifest.json"
   },
   "_comment": "International accepted-score vehicles only; EVO configuration metrics remain unknown.",
@@ -33,6 +33,7 @@
     "evo狼崽": "W Motors Lykan Hypersport",
     "evo肥龙": "Bugatti Chiron",
     "f5": "Hennessey Venom F5",
+    "fxxk": "Ferrari FXX K",
     "ps龙": "Bugatti Chiron Pur Sport",
     "r兔": "Rimac Nevera R",
     "ssc": "SSC Tuatara",
@@ -416,6 +417,31 @@
       "acceleration": 80.66,
       "handling": 49.07,
       "nitro": 45.61,
+      "stats_status": "asec_max_star"
+    },
+    {
+      "title": "Ferrari FXX K",
+      "nickname": "fxxk",
+      "asec_id": 235,
+      "base_title": "Ferrari FXX K",
+      "base_class": "S",
+      "class": "S",
+      "class_source": "base_vehicle_class",
+      "variant": "regular",
+      "max_stars": 5,
+      "zones": [
+        "五区"
+      ],
+      "star_rule": {
+        "min": 5,
+        "max": 5,
+        "default": 5
+      },
+      "score": 3832,
+      "max_speed": 363.1,
+      "acceleration": 83.9,
+      "handling": 43.75,
+      "nitro": 72.39,
       "stats_status": "asec_max_star"
     },
     {
