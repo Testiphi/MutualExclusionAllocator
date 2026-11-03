@@ -2,3 +2,6 @@ shared/
 generated/
 project.private.config.json
 local.config.js
+
+# Actual local WeChat project identity; use the tracked example for new checkouts.
+/project.config.json
