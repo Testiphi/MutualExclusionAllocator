@@ -11,7 +11,8 @@ function createNativeApi(wx,config,{wait=ms=>new Promise(r=>setTimeout(r,ms)),no
   const transport=createTransport(wx,{enabled:true,baseURL:config.origin,allowLocal:fixture});
   const guestAccount=createTransport(wx,{enabled:true,baseURL:config.origin,allowLocal:fixture,namespace:'account'});
   const prefix='/api/mini/v1',fingerprints=new Map(),metrics={uploads:0,queries:0,recoveries:0};
-  const json=async(path,options)=>{try{return responseJSON(await transport.request(prefix+path,options).promise);}catch(e){if(e.status===401&&session.current().identity)session.invalidate();throw e;}};
+  const request=async(path,options)=>{try{return await transport.request(prefix+path,options).promise;}catch(e){if(e.status===401&&session.current().identity)session.invalidate();throw e;}};
+  const json=async(path,options)=>responseJSON(await request(path,options));
   const session=createSession(wx,{now,autoRenew:false,setToken:t=>{transport.setToken(t);guestAccount.setToken(t);},clearToken:()=>{transport.clearSession();guestAccount.clearSession();},
     credentials:fixture?async()=>({code:config.fixtureCode,request_key:config.fixtureKey}):undefined,
     exchange:async input=>{
@@ -61,7 +62,7 @@ function createNativeApi(wx,config,{wait=ms=>new Promise(r=>setTimeout(r,ms)),no
         const deadline=now()+35000;
         while(true) {
           current(p);
-          const response=await transport.request(prefix+'/map-recognition/jobs/by-request'+query(p)+'&request_key='+encodeURIComponent(p.request_key)).promise;
+          const response=await request('/map-recognition/jobs/by-request'+query(p)+'&request_key='+encodeURIComponent(p.request_key));
           const r=responseJSON(response);current(p);
           if(r.recovery==='found')return r;
           if(r.recovery==='reading'&&r.retry_same_key===false) {

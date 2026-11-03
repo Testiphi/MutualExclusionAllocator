@@ -57,3 +57,19 @@ test('probe reports only safe network categories and retains the original uncert
 test('successful HTTP with invalid response has a decode code and status instead of an indistinguishable network error',async()=>{
  const h=harness(()=>({}));h.wx.request=o=>{queueMicrotask(()=>o.success({statusCode:200,data:{token:'private-token',code:'private-code'}}));return {abort(){}};};const p=createNetworkProbe(h.wx,config);await assert.rejects(p.run());const r=p.report();assert.equal(r.httpStatus,200);assert.equal(r.errorCode,'RESPONSE_TYPE_UNSUPPORTED');assert.equal(r.diagnostic.kind,'response_decode');assert.equal(r.diagnostic.responseKind,'unsupported');assert.ok(!JSON.stringify(r).includes('private-'));
 });
+
+test('closed OCR capability blocks all catalog/upload requests and reflects explicit refreshed capability',async()=>{
+ let enabled=false;const h=harness((o,u,{session})=>{if(o.url.endsWith('/session'))return {body:session()};if(o.url.includes('/snapshot?')){const e=examples(o.url.endsWith('global')?'global':'cn');e.identity='identity-1';if(e.server==='cn'&&!enabled){e.capabilities.map_recognition=false;e.catalog_version=null;}return {body:e};}throw Error('unexpected OCR request');});
+ const s=await createNativeService(h.wx,require('../miniapp/shared/selection_core'),config);assert.equal(s.autoRecognize,false);assert.equal(s.status().recognitionEnabled,false);const before=h.calls.length;
+ for(const action of [()=>s.recognize({path:'not-read.png',size:1}),()=>s.retryRecognition(),()=>s.verifyRecognition()])await assert.rejects(action(),e=>e.code==='RECOGNITION_DISABLED');assert.equal(h.calls.length,before);
+ enabled=true;await s.reconnect();assert.equal(s.autoRecognize,true);assert.equal(s.status().recognitionEnabled,true);assert.ok(h.calls.every(x=>x.url.includes('/snapshot?')||x.url.endsWith('/session')));
+});
+
+test('401 during original upload recovery invalidates the parent session and blocks further old-owner calls',async()=>{
+ const h=harness((o,u,{session})=>o.url.endsWith('/session')?{body:session()}:{status:401,body:{code:'SESSION_EXPIRED',detail:'expired'}}),api=createNativeApi(h.wx,config);await api.session.ensure();let invalidations=0;api.session.subscribe(s=>{if(!s.identity)invalidations++;});
+ const binding={identity:'identity-1',server:'cn',catalog_version:'a'.repeat(64),request_key:'original-upload-key-0001',path:'never-read.png',size:1};await assert.rejects(api.jobs.recover(binding),e=>e.status===401);assert.equal(api.session.current().identity,null);assert.equal(invalidations,1);const count=h.calls.length;await assert.rejects(api.jobs.recover(binding),e=>e.status===401);assert.equal(h.calls.length,count);assert.equal(h.logins(),1);
+});
+
+test('CN disabled OCR snapshot requires null catalog instead of accepting contradictory capability',()=>{
+ const e=examples('cn'),{verifyNativeSnapshot}=require('../miniapp/adapters/snapshot');e.capabilities.map_recognition=false;assert.throws(()=>verifyNativeSnapshot(e,'cn',e.identity),/能力/);e.catalog_version=null;assert.equal(verifyNativeSnapshot(e,'cn',e.identity).catalogVersion,null);
+});

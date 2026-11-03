@@ -28,8 +28,10 @@ async function createNativeService(wx,core,config,options={}) {
     }catch(e){online=false;message='连接未完成，已保留原地图与车库';throw e;}
   }
   const binding=()=>({server:'cn',identity:api.identity(),version:snapshots.cn.catalogVersion,catalog:contexts.cn.getModel({schema:1,server:'cn',zone:'zone5',tier:'理论',maps:[null,null,null,null,null],cars:[],stars:{},oc:{},routes:{}}).maps});
+  const recognitionEnabled=()=>online&&snapshots.cn.capabilities.map_recognition===true&&/^[a-f0-9]{64}$/.test(snapshots.cn.catalogVersion);
   async function catalog(requireReady=false) {
     if(!online)throw Error('当前离线，识图需要重新连接');
+    if(!recognitionEnabled())throw Object.assign(Error('当前服务尚未开放地图识别，仍可手动选图'),{code:'RECOGNITION_DISABLED'});
     const b=binding(),c=await api.catalog();
     if(c.identity!==b.identity||c.server!=='cn'||c.version!==b.version||c.catalog_version!==b.version||JSON.stringify(c.maps)!==JSON.stringify(b.catalog))throw Object.assign(Error('活动目录已变化，请重新连接后识别'),{status:409});
     if(requireReady&&c.worker!=='ready')throw Error('识别服务尚未就绪，仍可手动选图');
@@ -43,7 +45,7 @@ async function createNativeService(wx,core,config,options={}) {
     commit(cached);online=false;message='离线使用已验证缓存；识图需重新连接';
   }
   return {
-    api,mode:api.fixture?'native-fixture':'native',autoRecognize:true,diagnostics:()=>({task:jobs.state(),network:api.metrics(),versions:{cn:snapshots.cn.version,global:snapshots.global.version}}),
+    api,mode:api.fixture?'native-fixture':'native',get autoRecognize(){return recognitionEnabled();},diagnostics:()=>({task:jobs.state(),network:api.metrics(),versions:{cn:snapshots.cn.version,global:snapshots.global.version}}),
     defaults:server=>home[server].defaults(),
     garageView:(d,query,cls,sort)=>home[d.server].visible(d,query,cls,sort),
     model:d=>({...enrichModel(contexts[d.server].getModel(d),snapshots[d.server],d,core),knownCarIds:known[d.server],topCars:home[d.server].tops(d),subtitle:home[d.server].subtitle(d)}),
@@ -55,7 +57,7 @@ async function createNativeService(wx,core,config,options={}) {
     suspend(){generation++;jobs.suspend();},
     async resume(){await refresh();if(jobs.state().request_key&&['paused','recoverable','finished'].includes(jobs.state().phase)){await catalog();return wrap(await jobs.resume());}},
     async reconnect(){const ticket=++generation,oldIdentity=api.session.current().identity;jobs.suspend();await api.reconnectSession();if(ticket!==generation)throw Error('本次连接已停止');if(oldIdentity&&api.session.current().identity!==oldIdentity){jobs.cancel();lastBinding=null;}await refresh();if(ticket!==generation)throw Error('本次连接已停止');if(jobs.state().request_key){await catalog();return wrap(await jobs.resume());}},
-    status(){const state=api.session.current();if((!state.identity||state.expiresAt<=Date.now())&&online){online=false;message='访客会话已失效，请重新连接';}return {online,fixture:api.fixture,message,canRetry:['paused','recoverable'].includes(jobs.state().phase),task:jobs.state().phase};}
+    status(){const state=api.session.current();if((!state.identity||state.expiresAt<=Date.now())&&online){online=false;message='访客会话已失效，请重新连接';}return {online,fixture:api.fixture,message,recognitionEnabled:recognitionEnabled(),canRetry:['paused','recoverable'].includes(jobs.state().phase),task:jobs.state().phase};}
   };
 }
 module.exports={createNativeService};
