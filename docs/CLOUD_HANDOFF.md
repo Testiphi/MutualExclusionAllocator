@@ -40,6 +40,85 @@ Nginx候选已成套安装、nginx -t和reload通过，精确OCR上传8m/独立6
 
 逐步证据、授权范围和全部恢复点见[本轮接手执行记录](TAKEOVER_20261031.md)、[准备阶段边界](MAP_OCR_PREFLIGHT_20261031.md)。旧“禁止上线”已被后续明确授权覆盖；下方旧部署状态为历史，不续跑迁移或重复provision。数据/用户文件/测试资料/旧包/备份保留，部署阶段未合并main、提交推送、发公告、清理或创建监控；后续仅授权本轮文档Git收尾及新公告草稿，草稿不发布。
 
+## 2026-10-30 22:58 当前上线：3d978fd3，双服运维核验完成，用户验收待进行
+
+本轮生产命令全部由用户逐步执行回传，代理未登录生产。源码1dba7e47eff47fb4423203e0008514aefb6337be，发布3d978fd30812fa8f72ba928d，于22:55:50 CST启动；current与PID188163实际cwd均为/opt/racepick/releases/3d978fd30812fa8f72ba928d，active/running（PID为当时快照）。原bbd92687及所有旧包、旧版、备份/演练均保留。下方旧schema1/国际只读/未部署记录为历史，不据此重跑迁移或回退旧应用。
+
+完整上传包RacePick-Global659-Compat-20261030-3d978fd3-delivery.zip，11070099字节，SHA34d11ecaa1a23dc3e9225f8838b209a611ac178c551152cf23007b302eabbf35；内层SHA484e63317d8b75f152ef65fa136aeaa1e4e347616e2d23def393ed0033f0f429。外置SHA、外层23项清单、内层107文件、源码/种子绑定及CRC通过；19wheel离线LinuxPython3.12安装、临时库迁移/锁/恢复原生自检通过。数据来自批准冻结DATA_HANDOFF_20261030.json（SHA93745f665235ad8928e8514f1977b7948bf92bf14940466a1b9fff83246f4dae），不是新数据Git提交；20份交接文件哈希核验一致。本运维未代维护侧提交数据。
+
+### 两服实际版本与迁移
+
+health主schema6，community/contribution/feedback/notification/usage/global-score均1、coverage2。正式国服版本保持e209f3e32d0de1dfa7fe6c811a5d5c46；cars SHA469aca118891c398d1aa2777721d50449cffa2e48c984bbd57ede0c7cde92d3c，成绩SHAb1d830d8390e38f4bd748d1a9341ee0a011226f97457df449e1a3496fe441e08，国服写回保持开启。国服4458代码基线未覆盖独立score-state或车辆规则。
+
+现场先核实coverage1、国际三表和global-score-state目录均不存在、国服pending0；经在线/停服最终备份恢复后仅显式迁移coverage1→2，原业务行保持，新增coverage_global_choices为空。再从新版本目录按批准dataset b5aa1a40fae685bb9440a78b0453125c4d063cad02d9610e39c4daa934872392及现场国服版本首次初始化国际schema1，already_migrated=false、existing_rows_preserved=true，三件套逐字节等于批准种子。没有重播种已有国际状态或重跑旧组件迁移。
+
+国际活动成绩版本1252565e65bc887e81e0c677bfeec9ab（与64位dataset标识区分），运行659/46车/44图全覆盖/21OC/48特殊；638非OC/611普通路线。完整维护698、四区/高手、36独立参考及工作簿/台账不入运行。国际写回默认关闭，本轮未enable，不影响正常国际投稿审核；正式应用/回滚未验收，开启需用户另行明确授权，不能据“已上线”推断可写。
+
+最终48用户/24车库/6投稿，两服pending均0；贡献4/来源4/事件7/偏好3、反馈三表均0、通知事件6/已读6，国服选图/事件及国际选图均0。原业务行与开关保持，不伪造真实权益数据、不导入测试库。
+
+### 备份恢复与timer
+
+四次成套备份及独立恢复演练均通过、active_database_replaced=false。停服最终恢复点/var/lib/racepick/backups/scores-20261030T145159558604Z.zip，SHA97d7c0529a113810f99cb319b04a282197c784cf5f11fae721428046c46a1b6b；双服迁移后恢复点scores-20261030T145504483676Z.zip，SHA85491278d556547d3f4580831d741c96df851ead1cb8cee8719c44317f6c8f88，含33文件、双服状态、coverage2和统计。完整四次SHA/字节数、迁移自动备份、演练路径见[双服部署机器回执](GLOBAL_SUBMISSIONS_DEPLOYMENT_RECEIPT_20261030.json)。
+
+新版真实备份服务22:58:06至22:58:07 CST手动触发success/exit0；生成/var/lib/racepick/backups/scores-20261030T145807317057Z.zip，2022262字节，SHAd438f26be2ae067739c512e75f68d11e6230ef7cb1e238e794d37695c1f87d23；33项校验、双服版本与coverage2/global-score1声明及独立恢复演练/var/lib/racepick/restore-drills/aeeb83fac7b027f85a3ed36d通过，原库未替换。
+
+timer随后恢复enabled/active(waiting)，NEXT2026-10-31 04:15:48 CST，LAST2026-10-30 04:15:25 CST。本轮已确认今天04:15:25至04:15:26旧单服状态下自动备份真实成功，文件scores-20261029T201526363516Z.zip，SHAe5cd3a9579250d088391ec70253f136e892b9a4e954322f2236e6a906ec8bd7b，28项哈希通过。新双服备份服务手动执行已验证，明天未来定时执行未验证，不记为成功、不创建监控。
+
+### 公网与待用户验收
+
+公网api.js、coverage.js/css、submissions.js/css、score_versions.js及styles.css匹配新包，/score-table匹配文件。国服原子快照与实际活动版本JSON一致；国际原子快照、公开三件套及659批准种子精确字节一致。双服覆盖表只读POST正常、游客level0非参考格隐藏、投稿目标服别正确；错误Origin/CSRF均403，游客两服投稿目录均401。仅建立普通游客会话，未创建账号/投稿/积分，不记录令牌。Nginx原业务5r/s burst30、统计2r/s burst10和原转发保持，本轮未修改或reload配置。
+
+用户桌面与真实手机微信的计算/车库草稿/新入口、真实登录后的双服投稿目录/预填/证据/审核隔离仍待验收；一级两服独立选图、共享累计分/二级权益与降级按真实资格验收，无适用账号则记待验证，不造积分或假数据。国际正式写回/回滚因开关关闭未验收，历史独立已读/审核/反馈真实事件亦不扩写为本轮完成。
+
+本轮只追加本地运维记录，未提交推送；既有未提交659数据/工作簿、未跟踪维护交接和用户文件保留，未同步工作簿、发公告、清理或创建监控。coverage2/global-score1启用后不得切回旧应用/旧备份工具，整套数据恢复必须先保全新增并另获授权。
+
+## 2026-10-30 当前上线：bbd92687，运维验证完成，用户验收待进行
+
+本轮服务器全部操作由用户逐步执行并完整回传，代理未登录生产。应用bbd9268769daca031b1267ed于00:49:44 CST启动；current及PID182239实际cwd一致、active/running（PID为当时快照）。源码3fbc599482855490f1859bd65b3ab53ada30b753，包内数据d06cd7d54838230976342c19c21638b90a5632ac。完整ZIP11050389字节，SHA256=186d4e3cea05516bbb0b4da44e6cf5015cf285467898a5aa2e7a5236cbb42645；外层清单、内层103文件和来源绑定通过，19wheel离线LinuxPython3.12安装及原生临时库迁移/锁/恢复自检通过。下方“未部署”均为历史阶段，不重复迁移或续跑旧步骤。
+
+### 正式数据与组件
+
+health为ok/production，主schema6，community/contribution/feedback/notification/usage/coverage均1，原开关正常。正式国服score_version=e209f3e32d0de1dfa7fe6c811a5d5c46；cars SHA469aca118891c398d1aa2777721d50449cffa2e48c984bbd57ede0c7cde92d3c，成绩SHAb1d830d8390e38f4bd748d1a9341ee0a011226f97457df449e1a3496fe441e08。包内4458基线未覆盖线上score-state或车辆规则。
+
+国际三件套公网哈希与新包一致，运行661条/46车/44图全覆盖/21OC/48特殊，版本0ae6a89d46c8e7707ee3387c7879b59bea69c911c54e07866c38953c8cb9f593；完整维护700、四区/高手、36参考、工作簿与台账未混入运行包。公开参考按实际运行版本计算；国服五区理论本次为玻璃/杰皇/21c（与冻结基线r兔不同），国际为evo狼崽/帝国/9x8，不为迎合包内参考名单改生产成绩。
+
+现场coverage三表均不存在、schema0；停服MainPID0且timer暂停、备份服务结束后，以现场国服版本仅执行coverage首次迁移。already_migrated=false、existing_rows_preserved=true、test_coverage_imported=0；schema1、coverage_choices/events均0。未重跑旧组件迁移。最终47用户/23车库/6投稿、pending_batches0；贡献4/来源4/事件7/偏好3、反馈三表均0、通知事件6/已读6保持。没有伪造积分、投稿或导入测试库；公网CSRF检查仅新增普通游客会话，令牌只在内存未记录。
+
+### 备份、恢复与调度
+
+在线迁移前、停服最终、迁移后和新应用上线后四套成套备份均校验28文件并独立恢复演练，active_database_replaced=false；路径、完整SHA及各演练目录见[本轮部署机器回执](COVERAGE_DEPLOYMENT_RECEIPT_20261030.json)。停服最终恢复点为scores-20261029T163803325040Z.zip，SHA229af5d2ef77cd546c7227cffb237afceb70c50d34fdfb55f33fb97098007196；迁移后恢复点scores-20261029T164845516129Z.zip，SHA7c233fc5ec6f403ac74d72bc6e9c6803a4006ddca85b36faafcf443f7c22dc2b。
+
+上线后真实racepick-backup.service于00:53:40至00:53:41 CST手动触发执行success/exit0，生成/var/lib/racepick/backups/scores-20261029T165341254431Z.zip，1983284字节，SHA7b4549427f8e6038cc2566baa8385dd08eaf5f63bc177e57922d6bd18abfcaba；usage/coverage均schema1，恢复演练目录/var/lib/racepick/restore-drills/499d5f5624436de2a985316f通过，原业务数量与成绩保持。
+
+随后原timer恢复enabled、active(waiting)，NEXT2026-10-30 04:15:21 CST，LAST2026-10-29 04:19:47 CST。新组件服务手动执行和演练已验证；04:15:21未来定时执行未验证，不记为成功、不创建监控。此前10月29日自动备份28项哈希也已核验，详见回执。
+
+### 公网核验与剩余用户验收
+
+公网api.js、coverage.js/css、theme.css、ui.css、submissions.js及styles.css匹配新包；/score-table匹配覆盖表文件，/submissions与生产页脚/统计脚本注入后的HTML逐字节匹配。最初错误探测/submissions.html得到404，是静态白名单设计；纠正测试路由后通过，未修改应用或Nginx。
+
+国服/国际/api/coverage/view只读POST均通过、每组上限48；国服83行、国际44行/46列。游客非参考格无成绩、国际格无国服投稿目标，错误Origin和CSRF均403。生效Nginx已有业务5r/s burst30、统计2r/s burst10、可信回环转发保留；本轮未改配置或reload，未做生产限流压测。
+
+用户桌面/真实手机微信的双服计算、登录/分服车库草稿、参考列/高手星级/筛选翻页、触屏二次轻点及滑动取消、投稿登录回跳/预填/可选证据/失败恢复仍待用户验收。真实账本一级选图/二级权益及账号隔离按现有真实资格验收，无资格或无真实事件的场景留待验证，不补假数据。历史独立已读及审核/反馈真实事件提醒仍待真实事件。代理未独立操作手机微信。
+
+只更新本地交接与部署回执，尚未提交推送。旧包/版本/备份/演练/测试环境/工作簿/未跟踪文件保留；未公告、清理或创建监控。coverage启用后不能简单切回旧无覆盖表应用，需要整套数据恢复时另获授权并先保全新增。
+
+## 2026-10-30 接手只读核验完成：等待本轮范围确认
+
+本轮用户授权接手核验；不续跑历史部署。北京时间00:28左右公网只读采样；以下为本轮实查，历史发布回执单独标注。未登录服务器、未上传、迁移、切换、重启、发布公告或清理；未提交推送或创建监控。
+
+- Git：fetch origin成功，main/origin/main及ls-remote一致为336730fb7ab8266eab995d291a9e4158782e47b5；feature/score-coverage远端为3fbc599482855490f1859bd65b3ab53ada30b753，main较该源码只多5份文档变化。17个登记工作树均检查；主树跟踪文件原先干净，保留3个未跟踪文件（来源Excel、_star_curve_fit.py、gauntlet_data_shared.xlsx）；unify-home-style保留未跟踪examples/unlock-table/。其余树无未忽略修改。community-controls相对main仍独有文档提交6ef9062；feature/track-top-three显示较旧上游领先25，不代表有25项未合入功能，不自动推送或合并。
+- 公网GET https://racepick.cn/api/health 为200、ok/production，主schema6，community/contribution/feedback/notification/usage均1，原开关正常。正式国服score_version=e209f3e32d0de1dfa7fe6c811a5d5c46，已不同于10月25日回执；没有读取私有业务数据或尝试覆盖正式成绩。
+- 公网global-data-manifest.json与api.js逐字节等于本地保存的171d872a制品。国际仍版本1bb0253ce327210b6c02fb2c2ea49682ee628086fec6c7bc987326121b4a6efc、601条/44车/44图42覆盖/21OC/39特殊；coverage.js为404。styles.css同时匹配旧制品和当前本地，单凭该文件不能证明新样式上线。以上支持被读取公网资源仍为旧版；服务器current/PID/cwd、实际发布ID及coverage表状态未现场核验，不能把HTTP证据写成服务端版本实查。
+- 历史已验收功能：双服计算/分服车库、账号/邮件、投稿审核/正式成绩写回、公告/账号管理、贡献榜、反馈、未读提醒/统计及切服修复等，以既有回执的各自范围为准。本轮只读健康与资源核验不重新证明全部用户流程。独立已读及投稿/反馈真实事件提醒仍留待真实事件验证。
+- 最新待发布完整包仍为bbd9268769daca031b1267ed，源码3fbc599、数据d06cd7d。RacePick-Coverage661-20261030-bbd92687-delivery.zip实际11050389字节，SHA256=186d4e3cea05516bbb0b4da44e6cf5015cf285467898a5aa2e7a5236cbb42645；内层SHA256=fc0e6ae9fc0efaf3e85d111a9f8038cefe1f86f2d7be79db46a5a21aecadf8c4。本轮重新核对外层22文件、SHA清单、内层103文件逐项大小/哈希、无未列文件及双层CRC通过；未重构包或激活。旧9f/fe8包已被此交付替代，全部保留。
+- 待发布范围包含样式/主页标志、单份审核意见、富士山提示及urs旧车库兼容、真实覆盖表/账本解锁、固定参考车辆列/48列密度/高手选星、精简国服投稿及触屏二次轻点。仅为既有构包范围记录，本轮尚未获得部署授权。
+- 本地国服4458键，validate_data零错误；国际完整维护700键与运行661条必须区分。运行版本0ae6a89d46c8e7707ee3387c7879b59bea69c911c54e07866c38953c8cb9f593、46车/44图全覆盖/21OC/48特殊，build_global_data --check通过。17份DATA_HANDOFF_20261029清单SHA全部匹配；未同步、导出或逐格重验工作簿。包内4458基线不得覆盖线上score-state；700完整维护、国际四区/高手、36参考、工作簿与台账不自动入运行包。
+- 本机Python3.14.4、Node24.15.0，已装fastapi0.138.1/uvicorn0.49.0/argon2-cffi25.1.0/openpyxl3.1.5/httpx0.28.1。127.0.0.1:8023(PID10332)、8024(PID5576)监听且health200/local/coverage_schema1；仅是本次进程快照，不重用PID执行后续动作；未观察到8021监听。测试服务/库未启停或修改。目标生产仍为Ubuntu24.04 x86_64/CPython3.12，未安装或变更依赖。
+- 本轮实跑58项JS定向（算法/剪枝/成绩/状态/覆盖表/精简投稿）全部通过，启动冒烟通过，国服全库及国际生成器只读检查通过。历史全量117前端/173后端/88工具通过1跳过及Windows演练属于构包回执，本轮未重复全量后端、Linux原生、浏览器或手机微信验收。
+- 两份国际服公告草稿仍存在，未发布；保留所有账号/成绩/反馈/备份、测试库、工作簿和未跟踪文件。根CLAUDE/context与本交接仅追加接手核验记录，保持未提交。
+
+下一步先确认本轮范围：继续本地开发、只核验生产，或启动bbd92687部署。若授权部署，复用COVERAGE_DEPLOYMENT.md及本包流程，只先给用户当前一步服务器只读命令，核对current/PIDcwd、正式score版本、pending_batches、coverage实际schema、Nginx和备份timer/最近真实备份恢复，再逐步推进。现场coverage0才执行本组件首次迁移；完整schema1只升级应用并保留选图/事件，不重跑旧组件迁移。生产现行版本、调度及恢复点仍待现场证据，不编造。
+
 ## 2026-10-30 当前完整交付：参考列与精简投稿bbd92687（未部署）
 
 源码3fbc599482855490f1859bd65b3ab53ada30b753已在远端feature/score-coverage核对，main已快进整合；本收尾文档按授权随main推送，最终远端HEAD另记本地PUSH_RECEIPT。数据仍固定d06cd7d54838230976342c19c21638b90a5632ac，17份交接SHA及25份数据/工作簿/旧包保护路径保持。

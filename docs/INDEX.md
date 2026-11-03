@@ -2,6 +2,10 @@
 
 当前生产（2026-10-31，部署及用户验收完成）：OCR发布c06cc48b已上线，正式worker隔离及资源配置核验通过，用户桌面/手机微信验收均正常。仍使用原双服活动成绩（国际659，不导入包基线664），国际写回关闭。新版真实备份/独立恢复及timer恢复完成，未来自动执行尚未核验；见[CLOUD_HANDOFF](CLOUD_HANDOFF.md)文首、[部署回执](MAP_OCR_DEPLOYMENT_RECEIPT_20261031.json)、[执行记录](TAKEOVER_20261031.md)及[准备阶段核验](MAP_OCR_PREFLIGHT_20261031.md)。下方旧上线/未部署状态均为历史。
 
+当前生产（2026-10-30 22:58）：3d978fd3已上线，coverage2/国际独立成绩schema1，运行659；国际写回关闭，国服开关保持。双服备份恢复与timer恢复已核验，用户桌面/手机微信验收待进行。见[CLOUD_HANDOFF](CLOUD_HANDOFF.md)文首和[双服部署回执](GLOBAL_SUBMISSIONS_DEPLOYMENT_RECEIPT_20261030.json)。下方bbd与旧状态为历史。
+
+当前生产（2026-10-30）：bbd92687已激活，运维/公网接口/新组件备份恢复及timer恢复已验证；用户桌面与真实手机微信验收待进行。见[CLOUD_HANDOFF](CLOUD_HANDOFF.md)文首和[部署回执](COVERAGE_DEPLOYMENT_RECEIPT_20261030.json)。下方“未部署”属于历史构包阶段。
+
 # 文档索引
 
 当前交付：[覆盖表发布完成回执](COVERAGE_RELEASE_RECEIPT_20261029.json)、[云端可复制提示词](COVERAGE_CLOUD_PROMPT_20261029.md)。最终包9f9b2e2b已构建校验，未部署；fe8候选保留但已被替代；历史阶段状态以最新CLOUD_HANDOFF为准。

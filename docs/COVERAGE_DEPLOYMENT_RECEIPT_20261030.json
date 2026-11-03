@@ -1,0 +1,225 @@
+{
+  "date": "2026-10-30",
+  "timezone": "Asia/Shanghai",
+  "status": "DEPLOYED_OPERATIONS_VERIFIED_USER_ACCEPTANCE_PENDING",
+  "evidence_source": "Server commands executed by user and returned in this chat; agent did not access production shell",
+  "release_id": "bbd9268769daca031b1267ed",
+  "previous_release": "171d872a414dea28be25eaa1",
+  "code_commit": "3fbc599482855490f1859bd65b3ab53ada30b753",
+  "data_commit": "d06cd7d54838230976342c19c21638b90a5632ac",
+  "archive": "RacePick-Coverage661-20261030-bbd92687-delivery.zip",
+  "archive_bytes": 11050389,
+  "archive_sha256": "186d4e3cea05516bbb0b4da44e6cf5015cf285467898a5aa2e7a5236cbb42645",
+  "inner_sha256": "fc0e6ae9fc0efaf3e85d111a9f8038cefe1f86f2d7be79db46a5a21aecadf8c4",
+  "platform": {
+    "os": "Ubuntu24.04.5",
+    "architecture": "x86_64",
+    "python": "3.12.3",
+    "wheels": 19,
+    "native_selfcheck": "PASS - temporary DB migrations,locks,restore; no email"
+  },
+  "activation": {
+    "started_at": "2026-10-30T00:49:44+08:00",
+    "pid_snapshot": 182239,
+    "current_and_process_cwd": "/opt/racepick/releases/bbd9268769daca031b1267ed",
+    "service": "active/running",
+    "compatibility_gate": "PASS"
+  },
+  "health": {
+    "status": "ok",
+    "mode": "production",
+    "schema": 6,
+    "community_schema": 1,
+    "contribution_schema": 1,
+    "feedback_schema": 1,
+    "notification_schema": 1,
+    "usage_schema": 1,
+    "coverage_schema": 1,
+    "contributions": true,
+    "feedback": true,
+    "notifications": true,
+    "usage": true,
+    "score_writes": true
+  },
+  "national": {
+    "score_version": "e209f3e32d0de1dfa7fe6c811a5d5c46",
+    "cars_sha256": "469aca118891c398d1aa2777721d50449cffa2e48c984bbd57ede0c7cde92d3c",
+    "scores_sha256": "b1d830d8390e38f4bd748d1a9341ee0a011226f97457df449e1a3496fe441e08",
+    "bundled_4458_baseline_not_applied": true,
+    "five_zone_theory_reference_cars_at_live_version": [
+      "玻璃",
+      "杰皇",
+      "21c"
+    ]
+  },
+  "global": {
+    "dataset_version": "0ae6a89d46c8e7707ee3387c7879b59bea69c911c54e07866c38953c8cb9f593",
+    "score_entries": 661,
+    "physical_cars": 46,
+    "tracks": 44,
+    "covered_tracks": 44,
+    "oc_entries": 21,
+    "special_entries": 48,
+    "non_oc_entries": 640,
+    "normal_entries": 613,
+    "reference_cars": [
+      "evo狼崽",
+      "帝国",
+      "9x8"
+    ],
+    "three_runtime_files_exact_manifest": "PASS",
+    "full_maintenance700_and_reference36_excluded": true
+  },
+  "coverage_migration": {
+    "before_schema": 0,
+    "after_schema": 1,
+    "already_migrated": false,
+    "existing_rows_preserved": true,
+    "test_coverage_imported": 0,
+    "coverage_choices": 0,
+    "coverage_events": 0,
+    "automatic_pre_migration_backup": "/var/lib/racepick/backups/scores-20261029T164811713773Z.zip",
+    "automatic_pre_migration_backup_sha256": null,
+    "old_component_migrations_repeated": false
+  },
+  "business_counts_at_final_preflight": {
+    "users": 47,
+    "profiles": 23,
+    "submissions": 6,
+    "pending_batches": 0,
+    "contributions": 4,
+    "contribution_sources": 4,
+    "contribution_events": 7,
+    "contribution_preferences": 3,
+    "feedback_tickets": 0,
+    "feedback_events": 0,
+    "feedback_requests": 0,
+    "notification_events": 6,
+    "notification_reads": 6,
+    "coverage_choices": 0,
+    "coverage_events": 0
+  },
+  "backup_runs": [
+    {
+      "stage": "online_before_migration",
+      "path": "/var/lib/racepick/backups/scores-20261029T163709957428Z.zip",
+      "bytes": 1983106,
+      "sha256": "949f546c1371f68a10bb9e5a530bcd47ca713ddcdb51cb8381bb7cd5f9386da7",
+      "verified_files": 28,
+      "usage_schema": 1,
+      "coverage_schema": 0,
+      "restore_drill_directory": "/var/lib/racepick/restore-drills/62fba0f5bc4b3ffbe7d4382f",
+      "restore_verified": true,
+      "active_database_replaced": false,
+      "pending_batches": 0
+    },
+    {
+      "stage": "stopped_final_before_migration",
+      "path": "/var/lib/racepick/backups/scores-20261029T163803325040Z.zip",
+      "bytes": 1983106,
+      "sha256": "229af5d2ef77cd546c7227cffb237afceb70c50d34fdfb55f33fb97098007196",
+      "verified_files": 28,
+      "usage_schema": 1,
+      "coverage_schema": 0,
+      "restore_drill_directory": "/var/lib/racepick/restore-drills/efea9df2d01529f877b952a0",
+      "restore_verified": true,
+      "active_database_replaced": false,
+      "pending_batches": 0
+    },
+    {
+      "stage": "stopped_after_migration",
+      "path": "/var/lib/racepick/backups/scores-20261029T164845516129Z.zip",
+      "bytes": 1983275,
+      "sha256": "7c233fc5ec6f403ac74d72bc6e9c6803a4006ddca85b36faafcf443f7c22dc2b",
+      "verified_files": 28,
+      "usage_schema": 1,
+      "coverage_schema": 1,
+      "restore_drill_directory": "/var/lib/racepick/restore-drills/1f842946533a859b7ebdba91",
+      "restore_verified": true,
+      "active_database_replaced": false,
+      "pending_batches": 0
+    },
+    {
+      "stage": "live_new_backup_service",
+      "path": "/var/lib/racepick/backups/scores-20261029T165341254431Z.zip",
+      "bytes": 1983284,
+      "sha256": "7b4549427f8e6038cc2566baa8385dd08eaf5f63bc177e57922d6bd18abfcaba",
+      "verified_files": 28,
+      "usage_schema": 1,
+      "coverage_schema": 1,
+      "restore_drill_directory": "/var/lib/racepick/restore-drills/499d5f5624436de2a985316f",
+      "restore_verified": true,
+      "active_database_replaced": false,
+      "pending_batches": 0
+    }
+  ],
+  "public_checks": {
+    "new_assets_exact": [
+      "api.js",
+      "coverage.js",
+      "coverage.css",
+      "theme.css",
+      "ui.css",
+      "submissions.js",
+      "styles.css"
+    ],
+    "score_table_exact": "PASS",
+    "submissions_production_render_exact": "PASS",
+    "coverage_view_POST_cn_and_global": "PASS",
+    "guest_non_reference_values_hidden": "PASS",
+    "global_submission_targets_absent": "PASS",
+    "bad_origin_403": "PASS",
+    "bad_csrf_403": "PASS",
+    "account_or_submission_created": false,
+    "guest_session_created": true,
+    "secrets_logged": false,
+    "initial_probe_correction": "/submissions.html404 is expected allowlist behavior; corrected to /submissions and production render matched; application unchanged"
+  },
+  "nginx": {
+    "effective_config_checked": true,
+    "syntax": "PASS",
+    "upstream": "127.0.0.1:8001",
+    "business_rate": "5r/s burst30",
+    "usage_rate": "2r/s burst10",
+    "configuration_changed_this_run": false,
+    "reload_performed_this_run": false,
+    "production_rate_load_test": false
+  },
+  "backup_timer": {
+    "restored": true,
+    "unit_file_state": "enabled",
+    "active_state": "active",
+    "sub_state": "waiting",
+    "next_scheduled": "2026-10-30T04:15:21+08:00",
+    "last_timer_trigger": "2026-10-29T04:19:47+08:00",
+    "new_component_backup_service_manually_triggered": "2026-10-30T00:53:40+08:00",
+    "new_component_backup_service_exit": "2026-10-30T00:53:41+08:00",
+    "result": "success",
+    "exit_status": 0,
+    "next_scheduled_run_verified": false
+  },
+  "pending": [
+    "User desktop and real mobile/WeChat regression and touch acceptance",
+    "Real user contribution rights/level1 selection/level2 access and account isolation where eligible; no fabricated points/submissions",
+    "Guest login return,prefill,optional evidence/retry and own pending UI user acceptance",
+    "Independent read/review/feedback notifications remain pending real events as historically recorded",
+    "Next automatic timer run not yet verified; no monitor created"
+  ],
+  "boundaries": {
+    "announcement_published": false,
+    "cleanup_performed": false,
+    "monitor_created": false,
+    "workbooks_synced": false,
+    "production_score_state_overwritten": false,
+    "test_database_imported": false,
+    "smtp_or_nginx_or_systemd_configuration_changed": false,
+    "this_deployment_docs_committed_or_pushed": false
+  },
+  "previous_automatic_backup_verified": {
+    "path": "/var/lib/racepick/backups/scores-20261028T201947780007Z.zip",
+    "sha256": "afa5b31be984dac4d30cc3f19c485bd2c16d9453bd9c025fc4b76836e8edb593",
+    "verified_files": 28,
+    "coverage_schema": 0,
+    "usage_schema": 1
+  }
+}
