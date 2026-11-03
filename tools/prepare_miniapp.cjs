@@ -17,6 +17,20 @@ for (const name of files) {
   manifest.files[name] = { bytes: bytes.length, sha256: crypto.createHash('sha256').update(bytes).digest('hex') };
 }
 const pageSource=cp.execFileSync('git',['show',manifest.source+':index.html'],{cwd:root});
+const mirror=require('../miniapp/mirror-source.json');
+manifest.mirror={source:mirror.ref,files:{}};
+for(const name of [...mirror.files,mirror.contract]) {
+  const bytes=cp.execFileSync('git',['show',mirror.ref+':'+name],{cwd:root});
+  fs.writeFileSync(path.join(output,path.basename(name)),bytes);
+  manifest.mirror.files[name]={sha256:crypto.createHash('sha256').update(bytes).digest('hex'),bytes:bytes.length};
+}
+const tokens=JSON.parse(fs.readFileSync(path.join(output,'home_theme.json'),'utf8')).tokens;
+const contractCode='module.exports = '+fs.readFileSync(path.join(output,path.basename(mirror.contract)),'utf8')+';\n';
+fs.writeFileSync(path.join(output,'feature_contract.js'),contractCode);
+manifest.mirror.contractModuleSha256=crypto.createHash('sha256').update(contractCode).digest('hex');
+const theme=`/* Generated from ${mirror.ref}:home_theme.json. */\npage { background:${tokens['--rp-bg']};color:${tokens['--rp-text']};font-family:${tokens['--rp-font']}; }\n.mirror-surface {background:${tokens['--rp-surface']};border-color:${tokens['--rp-divider']};}\n.mirror-muted {color:${tokens['--rp-muted']};}\n.mirror-selected {background:${tokens['--rp-selected']};border-color:${tokens['--rp-blue']};}\n`;
+fs.writeFileSync(path.join(output,'theme.wxss'),theme);
+manifest.mirror.themeSha256=crypto.createHash('sha256').update(theme).digest('hex');
 const homeCode=require('./web_home_adapter.cjs').generateWebHomeAdapter(pageSource.toString('utf8'));
 fs.writeFileSync(path.join(output,'web_home.js'),homeCode);
 manifest.derived={'web_home.js':{source_file:'index.html',source_sha256:crypto.createHash('sha256').update(pageSource).digest('hex'),sha256:crypto.createHash('sha256').update(homeCode).digest('hex')}};

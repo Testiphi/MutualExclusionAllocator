@@ -142,3 +142,6 @@
 .ocr-purpose { flex:1; min-width:150px; color:#8b949e; font-size:12px; line-height:1.5; }
 .ocr-status { color:#b5ccec; margin-top:16px; font-size:14px; }
 .ocr-workspace .preview { max-height:190px; }
+.site-links{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}.site-links button{font-size:12px;padding:6px 10px}.new-badge{color:#58a6ff;font-size:10px}.cloud-profile{color:#8b949e;font-size:12px;margin:12px 0}.cloud-profile button{display:inline-block;margin:6px 8px 6px 0;font-size:12px;padding:6px 10px}
+
+.site-links button{display:inline-flex;align-items:center;width:auto;max-width:100%;flex:0 1 auto;margin:0}

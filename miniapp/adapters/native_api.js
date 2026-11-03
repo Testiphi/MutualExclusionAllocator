@@ -7,9 +7,10 @@ function createNativeApi(wx,config,{wait=ms=>new Promise(r=>setTimeout(r,ms)),no
   const fixture=config.kind==='fixture';
   if(fixture&&((wx.getSystemInfoSync().platform!=='devtools')||!/^http:\/\/127\.0\.0\.1:\d+$/.test(config.origin)))throw Error('fixture仅供本机开发者工具使用');
   const transport=createTransport(wx,{enabled:true,baseURL:config.origin,allowLocal:fixture});
+  const guestAccount=createTransport(wx,{enabled:true,baseURL:config.origin,allowLocal:fixture,namespace:'account'});
   const prefix='/api/mini/v1',fingerprints=new Map(),metrics={uploads:0,queries:0,recoveries:0};
   const json=async(path,options)=>{try{return responseJSON(await transport.request(prefix+path,options).promise);}catch(e){if(e.status===401&&session.current().identity)session.invalidate();throw e;}};
-  const session=createSession(wx,{now,autoRenew:false,setToken:transport.setToken,clearToken:transport.clearSession,
+  const session=createSession(wx,{now,autoRenew:false,setToken:t=>{transport.setToken(t);guestAccount.setToken(t);},clearToken:()=>{transport.clearSession();guestAccount.clearSession();},
     credentials:fixture?async()=>({code:config.fixtureCode,request_key:config.fixtureKey}):undefined,
     exchange:async input=>{
       const s=await json('/session',{method:'POST',header:{'Content-Type':'application/json'},data:{...input,client_schema:1}});
@@ -39,6 +40,7 @@ function createNativeApi(wx,config,{wait=ms=>new Promise(r=>setTimeout(r,ms)),no
   }
   return {
     session,fixture,identity:()=>auth(),metrics:()=>({...metrics}),
+    async accountRequest(path,options){auth();return responseJSON(await guestAccount.request('/api/mini/account/v1'+path,options).promise);},
     snapshot:server=>{auth();return json('/snapshot?server='+encodeURIComponent(server));},
     catalog:()=>{auth();return json('/map-recognition/catalog?server=cn');},
     jobs:{upload,

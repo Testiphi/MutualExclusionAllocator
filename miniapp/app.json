@@ -1,5 +1,6 @@
 {
-  "pages": ["pages/home/home"],
+  "pages": ["pages/home/home","pages/account/account","pages/coverage/coverage","pages/submissions/submissions","pages/community/community","pages/workbench/workbench"],
+  "usingComponents":{"rp-select":"/components/select/select"},
   "window": {
     "navigationBarTitleText": "",
     "navigationBarBackgroundColor": "#0d1117",

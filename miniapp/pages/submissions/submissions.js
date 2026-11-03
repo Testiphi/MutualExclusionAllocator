@@ -1,0 +1,40 @@
+'use strict';
+const ui=require('../../lib/feature_page'),{requestId}=require('../../adapters/id'),{sha256,utf8}=require('../../adapters/hash'),{facts}=require('../../lib/facts');
+const score=(server='cn')=>({server,oc:false,big:'',small:'',zone:'五区',tier:server==='global'?'理论':'高手',car:'',stars:server==='global'?null:6,route:'',time:'',notes:'',video_url:'',unlisted:false});
+Page({data:{server:'cn',scope:'mine',status:'',q:'',offset:0,items:[],entries:[],pictures:[],busy:false,
+ servers:ui.options(['cn','global'],{cn:'国服',global:'国际服'}),scopes:ui.options(['mine','review'],{mine:'我的投稿',review:'审核队列'}),statusOptions:ui.options(['','draft','pending','needs_info','accepted','ignored'],{'':'全部',...ui.statuses}),zones:ui.options(['五区','四区']),tiers:ui.options(['高手','理论','普通','自动']),stars:ui.options([null,1,2,3,4,5,6],{'null':'不指定'})},
+ onLoad(o){try{ui.install(this);this.setData({server:o.server==='global'?'global':'cn'});this.boot();}catch(e){this.setData({error:e.message});}},
+ async onShow(){if(this.client)void require('../../services/runtime').usage()?.visit('submissions',this.data.server,'resume');if(this.client)try{await this.client.refresh();if(this.client.state().actor&&this.ownerId!==this.client.state().actor.id&&!this.data.busy)this.boot();}catch(e){this.setData({error:e.message});}},
+ draftKey(){return 'racepick.mini.submission-draft.v1.'+sha256(utf8(require('../../generated/native-config').origin)).slice(0,16)+'.'+this.client.state().actor?.id+'.'+this.data.server;},
+ persist(){if(!this.data.detail&&this.client.state().actor?.id===this.ownerId&&this.draftBlockedKey!==this.draftKey())wx.setStorageSync(this.draftKey(),{schema:1,server:this.data.server,entries:this.data.entries});},
+ boot(){return ui.run(this,async()=>{const catalog=await this.client.call('/submissions/catalog?server='+this.data.server);this.catalog=catalog;let entries=[score(this.data.server)];const saved=wx.getStorageSync(this.draftKey());if(saved){if(saved.schema!==1||saved.server!==this.data.server||!Array.isArray(saved.entries)){this.draftBlockedKey=this.draftKey();throw Error('本账号投稿草稿损坏，原记录保留');}entries=saved.entries;}
+  const target=getApp().submissionTarget;if(target){entries=[{...score(this.data.server),...target,server:this.data.server}];getApp().submissionTarget=null;}
+  this.ownerId=this.client.state().actor?.id;this.setData({entries,reference:catalog.reference_label});this.rows();await this.list();if(getApp().openSubmission){const id=getApp().openSubmission;getApp().openSubmission=null;await this.loadDetail(id);}});},
+ rows(){if(!this.catalog)return;this.setData({composeRows:this.data.entries.map((entry,index)=>({index,entry,
+  bigs:[{value:'',label:'选择大地图'},...ui.options([...new Set(this.catalog.tracks.map(t=>t.big))])],
+  smalls:[{value:'',label:'选择小地图'},...ui.options(this.catalog.tracks.filter(t=>t.big===entry.big).map(t=>t.small))],
+  cars:[{value:'',label:'选择车辆'},...this.catalog.cars.map(c=>({value:c.name,label:c.name+' · '+c.title}))],
+  routes:[{value:'',label:'普通跑法'},...ui.options(Array.isArray(this.catalog.routes)?this.catalog.routes.map(r=>typeof r==='string'?r:r.type||r.name).filter(Boolean):Object.keys(this.catalog.routes||{}))]
+ }))});},
+ change(e){const index=Number(e.currentTarget.dataset.index),key=e.currentTarget.dataset.key;this.setData({['entries['+index+'].'+key]:e.detail.value});if(key==='big')this.setData({['entries['+index+'].small']:''});this.rows();try{this.persist();}catch(_){this.setData({error:'草稿暂存失败，当前输入仍保留'});}},
+ toggle(e){const index=Number(e.currentTarget.dataset.index),key=e.currentTarget.dataset.key;this.change({currentTarget:{dataset:{index,key}},detail:{value:!this.data.entries[index][key]}});},
+ add(){if(this.data.entries.length>=20)return;this.setData({entries:[...this.data.entries,score(this.data.server)]});this.rows();this.persist();},
+ remove(e){const entries=this.data.entries.filter((_,i)=>i!==Number(e.currentTarget.dataset.index));this.setData({entries:entries.length?entries:[score(this.data.server)]});this.rows();this.persist();},
+ async list(){const d=this.data;const result=await this.client.call('/submissions?scope='+d.scope+'&status='+d.status+'&q='+encodeURIComponent(d.q)+'&offset='+d.offset+'&server='+d.server);this.setData({items:result.items.map(x=>({...x,statusLabel:ui.statuses[x.status]})),total:result.total});},
+ refresh(){return ui.run(this,()=>this.list());},
+ filter(e){if(this.data.busy)return;this.setData({[e.currentTarget.dataset.key]:e.detail.value,offset:0});this.refresh();},
+ changeServer(e){if(this.data.busy)return;this.persist();this.setData({server:e.detail.value,entries:[],detail:null,pictures:[],offset:0});this.boot();},
+ search(e){this.setData({q:e.detail.value});},
+ page(e){this.setData({offset:Math.max(0,this.data.offset+50*Number(e.currentTarget.dataset.delta))});this.refresh();},
+ create(e){const submit=e.currentTarget.dataset.submit===true||e.currentTarget.dataset.submit==='true';return ui.run(this,async()=>{this.persist();const key=await requestId(wx);const r=await this.client.call('/submissions',{method:'POST',key,data:{request_key:key,entries:this.data.entries}});this.setData({created:r.ids,message:'草稿已创建'});if(submit)for(const id of r.ids){const row=await this.client.call('/submissions/'+id);await this.client.call('/submissions/'+id+'/submit',{method:'POST',data:{revision:row.revision}});}await this.list();});},
+ open(e){return ui.run(this,()=>this.loadDetail(e.currentTarget.dataset.id));},
+ async loadDetail(id){const detail=await this.client.call('/submissions/'+id),pictures=[],canEdit=detail.owner_id===this.client.state().actor?.id&&['draft','needs_info'].includes(detail.status);this.setData({detail:{...detail,statusLabel:ui.statuses[detail.status]},detailFacts:facts({payload:detail.payload,accepted_payload:detail.accepted_payload,comparison:detail.comparison,application:detail.application,contribution_info:detail.contribution_info}),canEdit,entries:canEdit?[detail.payload]:[],pictures:[]});this.rows();for(const image of detail.images||[])pictures.push({...image,path:await this.client.downloadEvidence(image.url)});this.setData({pictures});},
+ copySource(){const url=this.data.detail?.payload?.video_url;if(url)wx.setClipboardData({data:url});},
+ edit(){return ui.run(this,async()=>{this.persist();await this.client.call('/submissions/'+this.data.detail.id,{method:'PUT',data:{revision:this.data.detail.revision,entry:this.data.entries[0]}});await this.loadDetail(this.data.detail.id);await this.list();});},
+ submit(){wx.showModal({title:'提交审核',content:'确认提交当前已保存的投稿和证据？尚未保存的表单修改请先保存。',success:r=>{if(r.confirm)ui.run(this,async()=>{await this.client.call('/submissions/'+this.data.detail.id+'/submit',{method:'POST',data:{revision:this.data.detail.revision}});await this.loadDetail(this.data.detail.id);await this.list();});}});},
+ upload(){return ui.run(this,async()=>{const result=await new Promise((resolve,reject)=>wx.chooseMedia({count:1,mediaType:['image'],sourceType:['album'],sizeType:['original'],success:resolve,fail:()=>reject(Error('未选择图片'))}));const file=result.tempFiles[0];await this.client.uploadEvidence(this.data.detail.id,this.data.detail.revision,{path:file.tempFilePath,size:file.size});await this.loadDetail(this.data.detail.id);});},
+ removeImage(e){wx.showModal({title:'停用此证据',content:'该图片将不再作为当前有效证据；历史审计按原业务保留。',success:r=>{if(r.confirm)ui.run(this,async()=>{await this.client.call('/submissions/'+this.data.detail.id+'/images/'+e.currentTarget.dataset.id,{method:'DELETE',data:{revision:this.data.detail.revision}});await this.loadDetail(this.data.detail.id);});}});},
+ newEntry(){this.setData({detail:null,entries:[score(this.data.server)],pictures:[]});this.rows();},
+ markRead(){return ui.run(this,async()=>{for(const [channel,event_id] of Object.entries(this.data.detail.notification_cursors||{}))if(event_id>0)await this.client.call('/notifications/read',{method:'POST',data:{channel,item_id:this.data.detail.id,event_id}});this.setData({message:'已标为已读'});});},
+ login(){wx.navigateTo({url:'/pages/account/account'});},recover(){return ui.recover(this);},onHide(){try{this.persist();}catch(_){}},onUnload(){ui.cleanup(this);}
+});

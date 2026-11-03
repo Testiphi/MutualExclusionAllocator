@@ -104,6 +104,7 @@ function createController({ service, storage, media, render, autoCompute=false,s
   }
   load('cn'); publish();queueCompute();
   return {
+    setProfile(value) {change(()=>{draft.cars=[...(value?.cars||[])];draft.stars={...(value?.stars||{})};draft.oc={...(value?.ocMap||{})};});},
     save, compute, chooseImage, recognize,retryRecognition:()=>recognize(true),
     async reconnect() {if(!service.reconnect)return;invalidate();error='';busy=true;publish();const ticket=epoch;try{await service.reconnect();if(ticket===epoch)refresh();}catch(e){if(ticket===epoch)error=e.message;}finally{if(ticket===epoch){busy=false;publish();}}},
     setMode(zone, tier) { change(() => { draft.zone = zone; draft.tier = tier; }); },

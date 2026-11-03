@@ -9,6 +9,8 @@ const core = require('../../shared/selection_core');
 const nativeConfig=require('../../generated/native-config');
 const {createNativeService}=require('../../services/native');
 const {visibleCars}=require('../../lib/garage_view');
+const runtime=require('../../services/runtime');
+const {createCloudProfile}=require('../../services/cloud_profile');
 
 Page({
   data: { ready:false, garageOpen: true, query: '', rows: [], cars: [], schemes: [], slotRows: [], schemeIndex:0, activeScheme:null, dropdown:null,sortMode:'alpha',carClass:'',classes:['','R','S','A','B','C','D'] },
@@ -22,10 +24,35 @@ Page({
     this.mountService(service);
   },
   mountService(service) {
+    this.baseService=service;
+    if(service.api){this.account=runtime.mount(wx,nativeConfig,service);this.unsubscribeAccount=this.account.subscribe(s=>{const id=s.actor?.id||'';this.setData({actor:s.actor});if(id!==this.lastAccountActor){this.lastAccountActor=id;this.setData({schemes:[],activeScheme:null,cars:[],selectedCount:0,cloudConflict:null,cloudEmpty:false,cloudLoaded:false});this.cloudReady=false;this.lastCloudProfile=null;if(this.homeVisible&&this.controller)void this.syncAccount();}});}
+    this.mountController(service);
+    if(this.account)void runtime.usage()?.visit('home',this.state.draft.server,'open');
+  },
+  mountController(service,actorId='') {
+    if(this.controller)this.controller.destroy();
     this.service=service;this.setData({connectionFailed:false});
-    this.controller = createController({ service, storage: createStorage(wx, service.mode),autoCompute:true,
+    this.controller = createController({ service:actorId?{...service,defaults:s=>({...service.defaults(s),selectAllOnFirstLoad:false})}:service, storage: createStorage(wx, service.mode,actorId?nativeConfig.origin+'|'+actorId:''),autoCompute:true,
       media: createMedia(wx), render: state => { this.state = state; this.updateView(); } });
   },
+  async syncAccount() {
+    if(!this.account||!this.controller)return;
+    const state=this.account.state(),id=state.actor?.id||'',server=this.state.draft.server;
+    this.setData({actor:state.actor});
+    if(this.cloudActor===id&&this.cloudServer===server&&this.cloudReady)return;
+    const ticket=(this.cloudTicket||0)+1;this.cloudTicket=ticket;this.cloudReady=false;this.cloud=null;
+    if(this.cloudActor!==id){const maps=this.state.draft.maps,zone=this.state.draft.zone,tier=this.state.draft.tier;this.mountController(this.baseService,id);if(this.state.draft.server!==server)this.controller.switchServer(server);this.controller.setMode(zone,tier);maps.forEach((m,i)=>this.controller.setMap(i,m));}
+    this.cloudActor=id;this.cloudServer=server;
+    if(!id){this.setData({cloudStatus:'',cloudConflict:null});return;}
+    this.setData({cloudStatus:'正在读取账号车库…',cloudConflict:null,cloudLoaded:false,cloudEmpty:false});
+    try {const cloud=createCloudProfile(wx,this.account,nativeConfig.origin,server,s=>{if(ticket===this.cloudTicket)this.setData({cloudStatus:s.error||({saved:'账号车库已保存',unsaved:'账号车库尚未保存',saving:'正在保存…',conflict:'车库冲突，请选择如何处理'})[s.status]||s.status});});
+     await cloud.init();if(ticket!==this.cloudTicket||this.account.state().actor?.id!==id)return;
+     this.cloud=cloud;this.applyingCloud=true;this.controller.setProfile(cloud.snapshot());this.applyingCloud=false;this.lastCloudProfile=JSON.stringify(this.currentProfile());this.cloudReady=true;
+     this.setData({cloudLoaded:true,cloudEmpty:cloud.remote()?.profile===null,cloudConflict:cloud.state().status==='conflict'?{local:cloud.snapshot(),remote:cloud.remote()?.profile}:null});
+    }catch(e){if(ticket===this.cloudTicket)this.setData({cloudStatus:e.message});}
+  },
+  currentProfile(){const d=this.state.draft;return {cars:[...d.cars],stars:{...d.stars},...(d.server==='global'?{ocMap:{...d.oc}}:{})};},
+  observeCloud(){if(this.cloudReady&&this.cloud&&!this.applyingCloud){const p=this.currentProfile(),key=JSON.stringify(p);if(key!==this.lastCloudProfile){this.lastCloudProfile=key;this.cloud.update(p);}}},
   async connectNative() {
     this.setData({initializing:true,error:''});
     try{const service=await createNativeService(wx,core,nativeConfig);if(!this.unloaded)this.mountService(service);else service.cancel();}
@@ -33,6 +60,7 @@ Page({
     finally{if(!this.unloaded)this.setData({initializing:false});}
   },
   updateView() {
+    this.observeCloud();
     const s = this.state, d = s.draft, m = s.model;
     const bigs = [...new Set(m.maps.map(x => x.big))];
     this.topKeys=this.topKeys||{};this.topOpen=this.topOpen||{};
@@ -71,11 +99,11 @@ Page({
       zoneIndex: m.zones.indexOf(d.zone), tiers: m.tiers, tierIndex: m.tiers.indexOf(d.tier),
       rows: d.maps.map((m,i)=>row(m,i)), cars, routes, slotRows: s.pending ? s.pending.map((m,i)=>row(m,i,true)) : [],
       emptyResultText:d.maps.some(m=>m&&m.small)?'没有可用方案':'请先选择地图',
-      schemes,schemeIndex,schemeOptions:schemes.map(x=>'方案'+(x.index+1)+' · '+x.rows.map((r,i)=>r.configured?(i+1)+':'+(r.empty?'空':r.car):'').filter(Boolean).join(' ')+' · Σ='+(x.prioritySum==null?'—':x.prioritySum)),activeScheme:schemes[schemeIndex]||null });
+      schemes,schemeIndex,schemeOptions:s.result?s.result.schemes.map((x,i)=>x.summary||('方案'+(i+1)+' · Σ='+x.prioritySum)):[],activeScheme:schemes[schemeIndex]||null });
   },
-  onShow() { if (this.controller) this.controller.show(); },
-  onHide() { this.closeDropdown();if (this.controller) this.controller.hide(); },
-  onUnload() { this.unloaded=true;this.closeDropdown();if (this.controller) this.controller.destroy(); },
+  async onShow() {this.homeVisible=true;if(this.account)try{await this.account.refresh();}catch(e){this.setData({cloudStatus:e.message});}if(this.controller){await this.syncAccount();this.controller.show();if(this.account)void runtime.usage()?.visit('home',this.state.draft.server,'resume');}},
+  onHide() {this.homeVisible=false; this.closeDropdown();if (this.controller) this.controller.hide(); },
+  onUnload() { this.unloaded=true;this.cloudTicket=(this.cloudTicket||0)+1;if(this.unsubscribeAccount)this.unsubscribeAccount();this.closeDropdown();if (this.controller) this.controller.destroy(); },
   onPageScroll() { this.closeDropdown(); },
   closeDropdown() { this.dropdownGeneration=(this.dropdownGeneration||0)+1;if(this.data.dropdown)this.setData({dropdown:null}); },
   blockDropdownScroll() {},
@@ -119,12 +147,13 @@ Page({
   openStars(e) {const car=this.data.cars.find(c=>c.id===e.currentTarget.dataset.id);if(car)this.presentMenu({field:'stars',carId:car.id,options:car.stars.map((n,i)=>({label:'★'+n,value:i,selected:i===car.starIndex}))},'star-'+e.currentTarget.dataset.anchor);},
   openScheme() {this.presentMenu({field:'scheme',options:this.data.schemeOptions.map((label,i)=>({label,value:i,selected:i===this.data.schemeIndex}))},'scheme-trigger');},
   openRoute(e) {const route=this.data.routes[e.currentTarget.dataset.index];if(route)this.presentMenu({field:'route',routeKey:route.key,options:route.options.map((label,i)=>({label,value:i,selected:i===route.optionIndex}))},'route-'+e.currentTarget.dataset.index);},
-  selectAll() {this.controller.setCars(this.data.cars.map(c=>c.id),true);},
-  clearAll() {this.controller.setCars(this.state.model.cars.map(c=>c.id),false);},
+  canEditGarage(){if(this.account?.state().actor&&!this.cloudReady){this.setData({cloudStatus:'账号车库尚未读取，原草稿已保留，请先重试读取'});return false;}return true;},
+  selectAll() {if(this.canEditGarage())this.controller.setCars(this.data.cars.map(c=>c.id),true);},
+  clearAll() {if(this.canEditGarage())this.controller.setCars(this.state.model.cars.map(c=>c.id),false);},
   saveView() {try{wx.setStorageSync(this.lastViewKey,{sortMode:this.data.sortMode,carClass:this.data.carClass});}catch(_){}},
   cycleSort() {const cycle=['alpha','score-desc','score-asc'];this.setData({sortMode:cycle[(cycle.indexOf(this.data.sortMode)+1)%3]});this.saveView();this.updateView();},
   filterClass(e) {this.setData({carClass:e.currentTarget.dataset.value||''});this.saveView();this.updateView();},
-  switchServer(e) { this.controller.switchServer(e.currentTarget.dataset.server); },
+  async switchServer(e) {this.cloudReady=false;this.controller.switchServer(e.currentTarget.dataset.server);await this.syncAccount();},
   selectZone(e) { const i=e.currentTarget&&e.currentTarget.dataset.index;this.controller.setMode(this.state.model.zones[Number(i==null?e.detail.value:i)],this.state.draft.tier); },
   selectTier(e) { const i=e.currentTarget&&e.currentTarget.dataset.index;this.controller.setMode(this.state.draft.zone,this.state.model.tiers[Number(i==null?e.detail.value:i)]); },
   selectScheme(e) { const index=Number(e.detail.value);if(Number.isInteger(index)&&this.data.schemes[index])this.setData({schemeIndex:index,activeScheme:this.data.schemes[index]}); },
@@ -149,14 +178,16 @@ Page({
   toggleTop(e) {const i=Number(e.currentTarget.dataset.index);this.topOpen[i]=!this.topOpen[i];this.updateView();},
   search(e) { this.setData({ query: e.detail.value }); this.updateView(); },
   toggleCar(e) {
+    if(!this.canEditGarage())return;
     const id = e.currentTarget.dataset.id;
     this.controller.setCar(id, !this.state.draft.cars.includes(id));
   },
   selectStars(e) {
+    if(!this.canEditGarage())return;
     const id = e.currentTarget.dataset.id, car = this.state.model.cars.find(x => x.id === id);
     this.controller.setStars(id, car.stars[Number(e.detail.value)]);
   },
-  toggleOc(e) { const id=e.currentTarget.dataset.id;if(this.state.draft.cars.includes(id))this.controller.setOc(id,e.detail&&typeof e.detail.value==='boolean'?e.detail.value:!this.state.draft.oc[id]); },
+  toggleOc(e) {if(!this.canEditGarage())return;const id=e.currentTarget.dataset.id;if(this.state.draft.cars.includes(id))this.controller.setOc(id,e.detail&&typeof e.detail.value==='boolean'?e.detail.value:!this.state.draft.oc[id]); },
   toggleRoute(e) {
     const key=e.currentTarget.dataset.key, value=this.state.draft.routes[key];
     const memoryKey=this.state.draft.server+':'+key;
@@ -171,10 +202,18 @@ Page({
     const key=e.currentTarget.dataset.key, route=this.state.model.routes.find(x=>x.key===key);
     this.controller.setRoute(key, Number(e.detail.value)===0?'all':route.types[Number(e.detail.value)-1]);
   },
-  save() { this.controller.save(); }, restore() {
+  async save() {if(!this.account?.state().actor)return this.controller.save();if(!this.canEditGarage())return;const cloud=this.cloud,ticket=this.cloudTicket;try{await cloud.flush();if(ticket===this.cloudTicket&&cloud===this.cloud)this.setData({cloudEmpty:false,cloudConflict:null});}catch(e){if(ticket===this.cloudTicket&&cloud===this.cloud)this.setData({cloudStatus:e.message,cloudConflict:cloud.conflict()?{local:cloud.conflict().submitted.profile,remote:cloud.conflict().current.profile}:null});}},
+  restore() {
+    if(this.account?.state().actor){if(!this.canEditGarage())return;this.confirmCloud('恢复账号车库','放弃本账号的临时车辆、星级及OC修改，加载云端车库？当前地图保留。',cloud=>cloud.useRemote());return;}
     if(this.state.dirty&&typeof wx.showModal==='function')wx.showModal({title:'恢复已保存车库',content:'放弃当前临时车辆和星级，恢复已保存车库？当前地图不会改变。',success:r=>{if(r.confirm)this.controller.restore();}});
     else this.controller.restore();
   },
+  applyCloud(){this.applyingCloud=true;this.controller.setProfile(this.cloud.snapshot());this.applyingCloud=false;this.lastCloudProfile=JSON.stringify(this.currentProfile());this.setData({cloudConflict:null});},
+  confirmCloud(title,content,action){const cloud=this.cloud,ticket=this.cloudTicket;if(!cloud)return;wx.showModal({title,content,success:async r=>{if(!r.confirm||ticket!==this.cloudTicket||cloud!==this.cloud)return;try{await action(cloud);if(ticket===this.cloudTicket&&cloud===this.cloud)this.applyCloud();}catch(e){if(ticket===this.cloudTicket)this.setData({cloudStatus:e.message});}}});},
+  importGarage(){if(!this.canEditGarage())return;const server=this.state.draft.server;this.confirmCloud('导入本机游客车库','导入到本账号的临时车库。只有点击保存车库后才会上传；游客记录保留。',cloud=>{const storage=createStorage(wx,this.service.mode),saved=storage.read(server),draft=storage.readWorking(server,saved)||saved;if(!draft)throw Error('本机没有已保存的游客车库');cloud.importGuest({cars:draft.cars,stars:draft.stars,...(server==='global'?{ocMap:draft.oc}:{})});});},
+  overwriteCloud(){this.confirmCloud('保存本地版本','保留本地车库，以当前最新云端版本为基线再次保存？',cloud=>cloud.overwrite());},
+  async recoverCloud(){if(!this.cloud){this.setData({cloudStatus:'请先重试读取账号车库'});return;}const cloud=this.cloud,ticket=this.cloudTicket;try{await cloud.recover();if(ticket===this.cloudTicket)this.setData({cloudStatus:'原保存已确认；当前临时修改仍保留。可恢复云端或再次保存处理版本冲突。'});}catch(e){if(ticket===this.cloudTicket)this.setData({cloudStatus:e.message});}},
+  navigate(e){wx.navigateTo({url:'/pages/'+e.currentTarget.dataset.page+'/'+e.currentTarget.dataset.page+'?server='+this.state.draft.server});},
   compute() { this.controller.compute(); }, chooseImage() { this.controller.chooseImage(); },
   reconnect() {return this.controller?this.controller.reconnect():this.connectNative();},
   retryRecognition() {return this.controller.retryRecognition();},

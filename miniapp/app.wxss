@@ -1,3 +1,4 @@
+@import "shared/theme.wxss";
 /* Website theme.css visual values; no shared business rules. */
 page { background:#0d1117; color:#e6edf3; font-family:system-ui,'Segoe UI',Roboto,'Helvetica Neue',sans-serif; font-size:28rpx; line-height:1.5; }
 view,text,button,input,scroll-view { box-sizing:border-box; }
@@ -5,3 +6,6 @@ button { width:auto; margin:0; padding:16rpx 24rpx; border:1rpx solid #30363d; b
 button::after { border:0; }
 button[disabled] { color:#6e7681; background:#161b22; border-color:#21262d; }
 .primary { color:#fff; background:#238636; border-color:#238636; font-weight:600; }
+.mirror-page{padding:20px;font-size:14px}.mirror-page .panel{padding:16px;border:1px solid #21262d;border-radius:12px;margin-bottom:16px}.mirror-page .brand{font-size:24px;font-weight:700}.mirror-page .brand text{color:#ffbe75}.mirror-page .heading{font-size:20px;font-weight:600;margin:16px 0}.mirror-page .muted{color:#8b949e;font-size:12px}.mirror-page input,.mirror-page textarea{width:100%;box-sizing:border-box;padding:10px 12px;background:#0d1117;color:#e6edf3;border:1px solid #30363d;border-radius:8px;font-size:14px;margin:6px 0 14px}.mirror-page input{height:42px}.mirror-page textarea{min-height:100px}.mirror-page .field-label{color:#8b949e;font-size:12px}.mirror-page .actions{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}.mirror-page button{font-size:14px;padding:8px 12px}.mirror-page .error{color:#ffa198;background:#2e1c1c;padding:12px;border-radius:8px;white-space:pre-wrap}.mirror-page .notice{color:#e3b341;margin:10px 0;white-space:pre-wrap}.mirror-page .item{padding:14px 0;border-bottom:1px solid #30363d}.mirror-page .link{color:#58a6ff}.mirror-page .body{white-space:pre-wrap;overflow-wrap:anywhere}.mirror-page .filters{display:flex;flex-wrap:wrap;gap:10px}.mirror-page .filters rp-select{min-width:100px;flex:1}.mirror-page .tag{font-size:12px;color:#8b949e}.mirror-page .empty{color:#8b949e;padding:20px 0;text-align:center}
+
+.mirror-page button{display:inline-block;width:auto;max-width:100%;margin:0;box-sizing:border-box}.mirror-page button[disabled]{background:#161b22!important;color:#6e7681!important;border-color:#21262d!important}.mirror-page .item>button{display:block;width:100%;text-align:left}

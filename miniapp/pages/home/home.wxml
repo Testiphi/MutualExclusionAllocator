@@ -2,6 +2,12 @@
  <view class="shell">
   <view class="home-heading"><view class="brand">Race<text class="brand-pick">Pick</text></view><view class="heading-title">擂台选车助手</view></view>
   <view class="subtitle">{{subtitle}}</view>
+  <view wx:if="{{ready}}" class="site-links">
+   <button data-page="coverage" bindtap="navigate">擂台成绩表 <text class="new-badge">新功能</text></button>
+   <button data-page="account" bindtap="navigate">{{actor ? '个人中心' : '登录 / 注册'}}</button>
+   <button data-page="submissions" bindtap="navigate">成绩投稿</button><button data-page="community" bindtap="navigate">贡献榜 / 公告 / 反馈</button>
+   <button wx:if="{{actor.role === 'admin' || actor.role === 'superadmin'}}" data-page="workbench" bindtap="navigate">管理工作台</button>
+  </view>
   <view wx:if="{{mode === 'mock'}}" class="notice">本地联调 · 模拟目录与结果，非真实计算 / OCR</view>
   <view wx:if="{{mode === 'local'}}" class="notice">本地计算 · 数据未冻结 · 识图尚未接入</view>
   <view wx:if="{{mode === 'native-fixture'}}" class="notice">本地接口联调 · fixture身份，非真实微信鉴权</view>
@@ -63,6 +69,9 @@
    <view class="card garage">
     <button class="garage-heading" bindtap="toggleGarage"><view>我的车库 · 已选 {{selectedCount}} 辆</view><text class="muted">{{garageOpen ? '收起 ▴' : '展开 ▾'}}</text></button>
     <view wx:if="{{garageOpen}}">
+    <view wx:if="{{actor}}" class="cloud-profile"><view>{{cloudStatus}}</view><button wx:if="{{!cloudLoaded}}" bindtap="syncAccount">重试读取账号车库</button><button bindtap="importGarage">导入本机游客车库</button><button bindtap="recoverCloud">核对上次保存</button><view wx:if="{{cloudEmpty}}">账号尚未保存此服车库，可直接选车或导入本机。</view>
+     <view wx:if="{{cloudConflict}}"><view>本地 {{cloudConflict.local.cars.length}} 辆 · 云端 {{cloudConflict.remote.cars.length}} 辆</view><view>两份车库均已保留，请明确选择。</view><button bindtap="restore">加载云端版本</button><button bindtap="overwriteCloud">保存本地版本</button></view>
+    </view>
     <view class="actions"><button bindtap="save">保存车库</button><button bindtap="restore">恢复已保存</button><text wx:if="{{dirty}}" class="save-status">尚未保存</text></view>
 
      <view class="actions garage-tools"><button data-action="select-all" bindtap="selectAll">全部点亮</button><button data-action="clear-all" bindtap="clearAll">全部清空</button><button data-action="sort" bindtap="cycleSort">{{sortLabel}}</button></view>

@@ -7,7 +7,8 @@ function responseJSON(response) {
   throw Error('响应格式无效');
 }
 // Low-level only: no guessed mini routes, no production URL, no automatic retry.
-function createTransport(wx, { baseURL, enabled = false, allowLocal = false } = {}) {
+function createTransport(wx, { baseURL, enabled = false, allowLocal = false,namespace='visitor' } = {}) {
+  if(!['visitor','account'].includes(namespace))throw Error('无效原生空间');
   const valid = typeof baseURL === 'string' &&
     (/^https:\/\/[a-z0-9.-]+(?::\d+)?$/i.test(baseURL) ||
       (allowLocal && /^http:\/\/(127\.0\.0\.1|localhost):\d+$/.test(baseURL)));
@@ -15,9 +16,10 @@ function createTransport(wx, { baseURL, enabled = false, allowLocal = false } = 
   const active = new Set();
   function start(path, options, upload) {
     if (!enabled || !valid) throw Error('原生服务尚未配置');
-    if (!/^\/api\/mini\/v1\/[a-z0-9/_-]+(?:\?[a-z0-9=&_.%-]+)?$/i.test(path)) throw Error('拒绝非原生接口');
+    const scope=namespace==='account'?'/api/mini/account/v1/':'/api/mini/v1/';
+    if (!path.startsWith(scope)||!/^\/api\/mini\/(?:account\/)?v1\/[a-z0-9/_-]+(?:\?[a-z0-9=&_.%-]+)?$/i.test(path)) throw Error('拒绝非原生接口');
     const headers = { ...(options.header || {}) };
-    if (Object.keys(headers).some(k => /^(cookie|authorization)$/i.test(k))) throw Error('禁止覆盖会话头');
+    if (Object.keys(headers).some(k => /^(cookie|origin|authorization)$/i.test(k))) throw Error('禁止覆盖会话头');
     if (token) headers.Authorization = 'Bearer ' + token;
     let task;
     const promise = new Promise((resolve, reject) => {
@@ -29,7 +31,7 @@ function createTransport(wx, { baseURL, enabled = false, allowLocal = false } = 
           if (response.statusCode < 200 || response.statusCode >= 300) {
             let body;try{body=responseJSON(response);}catch(_){}
             const error = Error(body&&typeof body.detail==='string'?body.detail.slice(0,200):'请求失败（' + response.statusCode + '）');
-            error.status = response.statusCode;error.code=body&&body.code;
+            error.status = response.statusCode;error.code=body&&body.code;error.body=body;
             const headers=response.header||{},key=Object.keys(headers).find(k=>k.toLowerCase()==='retry-after'),seconds=key===undefined?NaN:Number(headers[key]);
             if(Number.isFinite(seconds)&&seconds>0)error.retryAfterMs=seconds*1000;
             reject(error); return;

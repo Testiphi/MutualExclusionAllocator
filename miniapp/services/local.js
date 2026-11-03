@@ -1,7 +1,7 @@
 'use strict';
 const { verifyLocalBundle } = require('../adapters/snapshot');
 const {enrichModel}=require('../lib/garage_view');
-const {createWebHomeAdapter}=require('../shared/web_home');
+const {createWebHomeAdapter}=require('../lib/home_presenter_adapter');
 function createLocalService(core, bundle) {
   const snapshots = verifyLocalBundle(bundle);
   const contexts = {}, known = {},home={};
@@ -18,7 +18,7 @@ function createLocalService(core, bundle) {
     defaults:server=>home[server].defaults(),
     garageView:(draft,query,cls,sort)=>home[draft.server].visible(draft,query,cls,sort),
     model: draft=>({...enrichModel(context(draft).getModel(draft),snapshots[draft.server],draft,core),knownCarIds:known[draft.server],topCars:home[draft.server].tops(draft),subtitle:home[draft.server].subtitle(draft)}),
-    calculate: draft=>context(draft).calculate(draft),
+    calculate: draft=>home[draft.server].calculate(draft),
     async recognize() { throw Error('原生识图接口尚未接入，请先手动选图'); },
     async resume() {}, cancel() {}
   };
