@@ -1,0 +1,31 @@
+[Unit]
+Description=RacePick isolated stage-one mini-program guest gateway
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=racepick-mini-test
+Group=racepick-mini-test
+WorkingDirectory=/opt/racepick-mini-test/current
+ExecStart=/opt/racepick-mini-test/current/.venv/bin/python -B -m backend.mini_guest_service serve --snapshot-dir /opt/racepick-mini-test/current/snapshot --mini-config /etc/racepick-mini-test/mini.json --origin https://mini-test.racepick.cn --port 8011
+Restart=on-failure
+RestartSec=5
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+ReadWritePaths=/var/lib/racepick-mini-test
+InaccessiblePaths=/var/lib/racepick /etc/racepick
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+MemoryHigh=96M
+MemoryMax=128M
+MemorySwapMax=0
+CPUQuota=25%
+TasksMax=32
+LimitNOFILE=256
+TimeoutStopSec=10
+
+[Install]
+WantedBy=multi-user.target
