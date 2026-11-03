@@ -34,6 +34,7 @@ def source_files(source,freeze_id):
     source=Path(source).resolve();release=verify(source);provenance=release['provenance']
     if provenance.get('data_source_kind')!='approved_local_freeze' or provenance.get('data_freeze_id')!=freeze_id or provenance.get('data_commit') is not None:
         raise ValueError('必须使用指定本地冻结的完整已校验发布目录')
+    if provenance.get('maintenance_release',{}).get('required') is not True:raise ValueError('此发布包未固定正式维护更新范围，不能作为本次维护发布来源')
     raw={n:(source/n).read_bytes() for n in FILES}
     if set(provenance['data_runtime'])!=set(FILES):raise ValueError('冻结文件集合异常')
     for n,value in raw.items():

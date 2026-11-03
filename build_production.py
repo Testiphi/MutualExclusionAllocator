@@ -39,7 +39,8 @@ def load_frozen_snapshot(path,expected_sha):
    'national_keys':freeze['national_keys'],'international_runtime_entries':freeze['international_runtime_entries']}
 
 def main():
- p=argparse.ArgumentParser(description=__doc__);data=p.add_mutually_exclusive_group(required=True);data.add_argument('--data-source',type=Path);data.add_argument('--data-freeze',type=Path);p.add_argument('--freeze-sha256');p.add_argument('--wheels',type=Path,required=True);p.add_argument('--ocr-assets',type=Path);p.add_argument('--output',type=Path,required=True);a=p.parse_args()
+ p=argparse.ArgumentParser(description=__doc__);data=p.add_mutually_exclusive_group(required=True);data.add_argument('--data-source',type=Path);data.add_argument('--data-freeze',type=Path);p.add_argument('--freeze-sha256');p.add_argument('--publish-maintenance',action='store_true');p.add_argument('--wheels',type=Path,required=True);p.add_argument('--ocr-assets',type=Path);p.add_argument('--output',type=Path,required=True);a=p.parse_args()
+ if a.publish_maintenance and not a.data_freeze:p.error('正式维护发布范围必须绑定批准的--data-freeze')
  if git(ROOT,'status','--porcelain'):raise ValueError('先提交代码，发布包必须绑定干净版本')
  data_names=('gauntlet_data.json','cars.json','cars.global.json','gauntlet_data.global.json','global-data-manifest.json')
  if a.data_freeze:
@@ -56,6 +57,7 @@ def main():
  if wheel_hashes!=lock_hashes:raise ValueError('离线依赖与锁定清单不一致')
  a.output.mkdir(parents=True,exist_ok=False)
  provenance={'code_commit':git(ROOT,'rev-parse','HEAD'),**data_provenance,'created_local':datetime.now().isoformat(timespec='seconds')}
+ if a.publish_maintenance:provenance['maintenance_release']={'required':True,'mode':'explicit-offline-versioned-import','servers':['cn','global'],'entrypoint':'backend.maintenance_release','startup_import':False}
  if a.ocr_assets:provenance['ocr_assets_sha256']=hashlib.sha256((ROOT/'production/ocr-assets.json').read_bytes()).hexdigest()
  info=pack(ROOT,a.data_source or ROOT,a.wheels,a.output/'racepick-accounts-release.zip',provenance,data_contents=data_contents,ocr_assets=a.ocr_assets);read_bundle(a.output/'racepick-accounts-release.zip')
  for name in ('deploy_production.py','production_release_tools.py','PRODUCTION_DEPLOYMENT.md','SCORE_PRODUCTION_DEPLOYMENT.md','COMMUNITY_DEPLOYMENT.md','CONTRIBUTIONS_PRODUCTION.md','FEEDBACK_PRODUCTION.md','GARAGE_DEPLOYMENT.md','LOCAL_INTERNATIONAL.md','INTERNATIONAL_DEPLOYMENT.md','SERVER_SWITCH_FIX.md','NOTIFICATIONS_LOCAL.md','USAGE_LOCAL.md','UNREAD_USAGE_DEPLOYMENT.md','COVERAGE_DEPLOYMENT.md','GLOBAL_SUBMISSIONS_DEPLOYMENT.md'):shutil.copyfile(ROOT/('docs/'+name if name.endswith('.md') else name),a.output/name)

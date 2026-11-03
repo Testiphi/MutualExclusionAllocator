@@ -40,6 +40,7 @@ class MaintenanceReleaseTests(unittest.TestCase):
         parent=Path(self.f.temp.name);wheels=parent/'wheels';wheels.mkdir();(wheels/'fixture-1-py3-none-any.whl').write_bytes(b'fixture only')
         self.freeze='b'*24
         provenance={'code_commit':'c'*40,'data_commit':None,'data_source_kind':'approved_local_freeze',
+                    'maintenance_release':{'required':True},
                     'data_freeze_id':self.freeze,'data_freeze_manifest_sha256':'d'*64,'data_source_archive_sha256':'e'*64,
                     'data_runtime':{n:{'sha256':digest(v),'bytes':len(v)} for n,v in raw.items()}}
         bundle=parent/'test-only.zip';pack(ROOT,ROOT,wheels,bundle,provenance,data_contents=raw)
