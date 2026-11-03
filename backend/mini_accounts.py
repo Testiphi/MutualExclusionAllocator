@@ -142,6 +142,7 @@ class AccountStore:
 def make_native_account(config, source):
     app=FastAPI(docs_url=None,redoc_url=None,openapi_url=None,redirect_slashes=False)
     accounts,guests,web=config['account_store'],config['store'],source.native_accounts
+    from backend import mini_features
     guest_actions={'register','login','resend-verification','forgot-password','verify-email','reset-password'}
 
     def actor_for(request,row):
@@ -155,7 +156,7 @@ def make_native_account(config, source):
                 'profiles':{'cn':'account','global':'account' if getattr(source,'global_profiles',False) else 'unavailable'},
                 'authentication':{'mail_mode':'production' if source.mail_service.config.production else source.mail_service.config.mode,
                                   'mail_token_ttl_seconds':1800,'persistent_wechat_binding':False,'reauth_max_age_seconds':600},
-                'native_batches':{'A':'ready','B':'pending','C':'pending','D':'pending','E':'pending'}}
+                'native_batches':dict.fromkeys(('A','B','C','D','E'),'ready'),'feature_writes':{'fixture_only':True,'enabled':mini_features.writes_enabled(config,source)}}
 
     def session_result(request,sid):
         row=accounts.authenticate('Bearer '+accounts.token(sid),guests);actor=actor_for(request,row)
@@ -163,7 +164,7 @@ def make_native_account(config, source):
                 'actor':actor,'expires_at':row['expires'],'authenticated_at':row['authenticated_at'],
                 'features':features(),'association':{'kind':'session_only','persistent_binding':False,
                     'guest_identity':guests.authenticate('Bearer '+guests.token(row['guest_sid']))['identity']},
-                'high_privilege_writes_ready':False}
+                'high_privilege_writes_ready':mini_features.writes_enabled(config,source) and actor['role'] in ('admin','superadmin') and time.time()-row['authenticated_at']<=600}
 
     def expected_actor(request):
         if request.headers.get('x-account-id')!=request.state.actor['id']:
@@ -179,13 +180,18 @@ def make_native_account(config, source):
             recovery=path.startswith(PREFIX+'/operations/')
             guest_needed=(path.startswith(PREFIX+'/auth/') and action in guest_actions) or (recovery and request.query_params.get('action') in guest_actions|{'reauth'})
             session_guest=path==PREFIX+'/session' and request.method=='GET' and not request.headers.get('authorization','').startswith('Bearer rpa1.')
-            if guest_needed or session_guest:
+            feature=mini_features.match(request)
+            public=feature is not None and feature['access']=='public'
+            if public and not request.headers.get('authorization'):
+                request.state.guest=None;request.state.actor=None
+            elif (public and not request.headers.get('authorization','').startswith('Bearer rpa1.')) or guest_needed or session_guest:
                 request.state.guest=guests.authenticate(request.headers.get('authorization'))
             else:
                 row=accounts.authenticate(request.headers.get('authorization'),guests)
                 request.state.account=row;request.state.actor=actor_for(request,row)
                 request.state.guest=guests.authenticate('Bearer '+guests.token(row['guest_sid']))
                 if path!=PREFIX+'/session':expected_actor(request)
+            if feature is not None:await mini_features.guard(request,feature,config,source)
             return await call_next(request)
         except MiniError as error:return error_response(error)
         except HTTPException as error:return error_response(account_error(error))
@@ -314,6 +320,7 @@ def make_native_account(config, source):
         status,value=await run_in_threadpool(accounts.operation,'account:'+row['sid'],key,'profile-save:'+selected,{'server':selected,**body},invoke)
         return JSONResponse(value,status_code=status)
 
+    app.state.native_features=mini_features.install(app,config,source)
     return app
 
 

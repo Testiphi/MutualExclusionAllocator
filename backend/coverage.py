@@ -57,13 +57,13 @@ def rights(db,actor,server='cn'):
 
 def unlocked(access,server,big):return access['level']==2 or access['level']==1 and access['chosen']==map_id(big,server)
 
-def records(track,zone,tier,route):
+def records(track,zone,tier,route,oc=False):
     result={}
     for entry in track.get(zone,{}).get(tier,[]):
         value=entry.get('time')
         if type(value) not in (int,float) or not math.isfinite(value) or value<=0 or bool(entry.get('sc'))!=bool(route) or (route and entry.get('sc_type')!=route):continue
         for car in entry.get('cars',[]):
-            if car.get('oc'):continue
+            if bool(car.get('oc',False))!=oc:continue
             k=(car['name'],car.get('stars'));result[k]=min(value,result.get(k,value))
     return result
 
@@ -83,8 +83,9 @@ def run_types(track,mode):
     if track.get('has_special_route') and track.get('special_route_note') in SC_TYPES:types.add(track['special_route_note'])
     return sorted(types)
 
-def matrix(data,catalog,access,*,server='cn',zone='五区',tier='理论',big='all',route='normal',query='',stars='all',offset=0,gaps=False,star_map=None):
+def matrix(data,catalog,access,*,server='cn',zone='五区',tier='理论',big='all',route='normal',query='',stars='all',offset=0,gaps=False,star_map=None,oc=False):
     if server not in ('cn','global') or zone not in ('五区','四区') or tier not in ('理论','高手') or route not in ('normal','special'):raise HTTPException(422,'表格范围无效')
+    if type(oc) is not bool or (oc and server!='global'):raise HTTPException(422,'该服别不支持OC表格')
     if server=='global':require_scope(server,catalog,zone,tier)
     if stars!='all' and stars not in ('1','2','3','4','5','6'):raise HTTPException(422,'星级无效')
     star_map=star_map or {}
@@ -97,7 +98,7 @@ def matrix(data,catalog,access,*,server='cn',zone='五区',tier='理论',big='al
     for index,track in enumerate(data['tracks']):
         seen=set()
         for run in run_types(track,route):
-            for name,star in records(track,zone,tier,run):
+            for name,star in records(track,zone,tier,run,oc):
                 if name not in bounds:continue
                 low,high=bounds[name]
                 if tier=='理论' and star in (None,high) or tier=='高手' and type(star) is int and low<=star<=high:seen.add(name)
@@ -117,18 +118,18 @@ def matrix(data,catalog,access,*,server='cn',zone='五区',tier='理论',big='al
     for t in data['tracks']:
         if big!='all' and map_id(t['大地图'],server)!=big:continue
         for run in run_types(t,route):
-            found=records(t,zone,tier,run);cells=[]
+            found=records(t,zone,tier,run,oc);cells=[]
             for c in columns:
                 target={k:c[k] for k in ('car','stars')};target.update(big=t['大地图'],small=t['小地图'],zone=zone,tier=tier,route=run)
-                if server=='global':target.update(server='global',oc=False)
+                if server=='global':target.update(server='global',oc=oc)
                 values=[found[k] for k in ((c['car'],None),(c['car'],c['max_stars'])) if k in found] if tier=='理论' else [found[c['car'],c['stars']]] if (c['car'],c['stars']) in found else []
                 value=min(values,default=None)
                 is_sample=c['car'] in samples
                 visible=unlocked(access,server,t['大地图']) or is_sample
-                cells.append({'key':key(target),'status':'empty' if value is None else 'filled','value':value if visible else None,'public':is_sample,'target':target})
+                cells.append({'key':key(target),'status':'empty' if value is None else 'filled','value':value if visible else None,'public':is_sample,'target':target,'value_source':'runtime_dataset' if value is not None else 'missing','calculation':'none','visibility':'public' if is_sample else 'unlocked' if visible else 'locked'})
             if gaps and not any(c['status']=='empty' for c in cells):continue
             rows.append({'big':t['大地图'],'small':t['小地图'],'route':run,'map_id':map_id(t['大地图'],server),'cells':cells})
-    return {'columns':columns,'rows':rows,'column_total':len(candidates),'column_offset':offset,'column_limit':COLUMN_LIMIT}
+    return {'columns':columns,'rows':rows,'column_total':len(candidates),'column_offset':offset,'column_limit':COLUMN_LIMIT,'oc':oc,'provenance':'runtime projection; independent measurement/estimation lineage not included'}
 
 class CoverageView(BaseModel):
     model_config=ConfigDict(extra='forbid')
@@ -142,6 +143,7 @@ class CoverageView(BaseModel):
     offset:int=Field(default=0,ge=0,le=5000)
     gaps:bool=False
     star_map:dict[str,StrictInt]=Field(default_factory=dict,max_length=200)
+    oc:bool=False
 
 class Choice(BaseModel):
     model_config=ConfigDict(extra='forbid')
@@ -164,11 +166,11 @@ def install(app,store,root,user):
         return data,catalog,data['_meta']['dataset_version']
     @app.get('/score-table')
     def page():return HTMLResponse((root/'coverage.html').read_text(encoding='utf-8'))
-    def listing_data(request:Request,server:str='cn',zone:str='五区',tier:str='理论',big:str='all',route:str='normal',q:str='',stars:str='all',offset:int=0,gaps:bool=False,star_map=None):
+    def listing_data(request:Request,server:str='cn',zone:str='五区',tier:str='理论',big:str='all',route:str='normal',q:str='',stars:str='all',offset:int=0,gaps:bool=False,star_map=None,oc:bool=False):
         if len(q)>80 or not 0<=offset<=5000:raise HTTPException(422,'筛选范围无效')
         current=actor(request);data,catalog,version=source(server)
         with store.connect() as db:
-            access=rights(db,current,server);result=matrix(data,catalog,access,server=server,zone=zone,tier=tier,big=big,route=route,query=q,stars=stars,offset=offset,gaps=gaps,star_map=star_map)
+            access=rights(db,current,server);result=matrix(data,catalog,access,server=server,zone=zone,tier=tier,big=big,route=route,query=q,stars=stars,offset=offset,gaps=gaps,star_map=star_map,oc=oc)
             own={}
             if current:
                 for row in db.execute("SELECT id,status,payload FROM submissions WHERE owner_id=? AND status IN ('draft','pending','needs_info','accepted') AND NOT EXISTS(SELECT 1 FROM write_receipts WHERE submission_id=submissions.id) ORDER BY updated_at",(current['id'],)):
@@ -180,8 +182,8 @@ def install(app,store,root,user):
                       capabilities=capabilities(server,catalog),maps=[{'id':map_id(name,server),'name':name} for name in dict.fromkeys(t['大地图'] for t in data['tracks'])])
         return JSONResponse(result,headers={'Cache-Control':'private, no-store','Vary':'Cookie'})
     @app.get('/api/coverage')
-    def listing(request:Request,server:str='cn',zone:str='五区',tier:str='理论',big:str='all',route:str='normal',q:str='',stars:str='all',offset:int=0,gaps:bool=False):
-        return listing_data(request,server,zone,tier,big,route,q,stars,offset,gaps)
+    def listing(request:Request,server:str='cn',zone:str='五区',tier:str='理论',big:str='all',route:str='normal',q:str='',stars:str='all',offset:int=0,gaps:bool=False,oc:bool=False):
+        return listing_data(request,server,zone,tier,big,route,q,stars,offset,gaps,oc=oc)
     @app.post('/api/coverage/view')
     def query_view(body:CoverageView,request:Request):
         # Read-only query body keeps per-car choices out of a potentially oversized URL.

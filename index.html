@@ -10,6 +10,7 @@
     <script src="allocator.js"></script>
     <script src="race_scores.js"></script>
     <script src="selection_core.js"></script>
+    <script src="home_presenter.js"></script>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="theme.css">
 </head>
@@ -344,23 +345,10 @@
      * @returns {string[]} 过滤结果
      */
     /** 昵称别名映射：不同叫法指向同一辆车 */
-    const NICKNAME_ALIASES = {
-        '第六元素': '六子',
-        '兔子': 'c2',
-    };
+    const NICKNAME_ALIASES = homePresenter.aliases;
 
     function filterBySearch(carList, query) {
-        if (!query) return [...carList];
-        const q = query.toLowerCase();
-        return carList.filter(car => {
-            if (car.includes(query)) return true;
-            if (nickToName[car] && nickToName[car].toLowerCase().includes(q)) return true;
-            // 别名匹配：查所有指向此车的别名键
-            for (var aliasKey in NICKNAME_ALIASES) {
-                if (NICKNAME_ALIASES[aliasKey] === car && aliasKey.includes(query)) return true;
-            }
-            return false;
-        });
+        return homePresenter.filterBySearch(carList,query,{nickToName,aliases:NICKNAME_ALIASES});
     }
 
     /**
@@ -370,11 +358,7 @@
      * @returns {string[]}
      */
     function filterByClass(carList, cls) {
-        if (!cls) return [...carList];
-        return carList.filter(car => {
-            const stats = carStats[nickToName[car]];
-            return stats && stats.class === cls;
-        });
+        return homePresenter.filterByClass(carList,cls,{carStats,nickToName});
     }
 
     /**
@@ -384,19 +368,7 @@
      * @returns {string[]} 排序后的新数组
      */
     function sortCarList(carList, mode) {
-        const sorted = [...carList];
-        if (mode === 'score-desc' || mode === 'score-asc') {
-            sorted.sort((a, b) => {
-                const left = carStats[nickToName[a]]?.score, right = carStats[nickToName[b]]?.score;
-                const leftKnown = Number.isFinite(left), rightKnown = Number.isFinite(right);
-                if (leftKnown !== rightKnown) return leftKnown ? -1 : 1;
-                if (!leftKnown) return a.localeCompare(b, 'zh');
-                return mode === 'score-desc' ? right - left : left - right;
-            });
-        } else {
-            sorted.sort((a, b) => a.localeCompare(b, 'zh'));
-        }
-        return sorted;
+        return homePresenter.sortCarList(carList,mode,{carStats,nickToName});
     }
 
     // ========================== 数据加载与索引 ==========================
@@ -488,12 +460,7 @@
 
     /** 候选已按页面口径排序；单图参考不扣除其他图分配的车。 */
     function getTopCars(candidate, ownedInZone, big, small, zone) {
-        const cars = [...new Set(candidate.groups.flat())].filter(car => ownedInZone.has(car)).slice(0, 3);
-        return cars.map(car => ({
-            car,
-            stars: currentTier === '理论' ? null : getCarStars(car),
-            score: getCarScore(big, small, car, zone),
-        }));
+        return homePresenter.getTopCars(candidate,ownedInZone,{tier:currentTier,starsFor:getCarStars,scoreFor:car=>getCarScore(big,small,car,zone)});
     }
 
     /** 保留同图的展开状态；换图、清空后重新默认折叠。只更新内容，不触发求解。 */
@@ -1021,17 +988,9 @@
         schemeSelect.disabled = false;
         schemeCountBadge.textContent = currentBestSchemes.length;
         currentBestSchemes.forEach((scheme, idx) => {
-            const totalScore = getTotalScore(scheme);
             const option = document.createElement('option');
             option.value = idx;
-            // 方案摘要: 按行号列出各图选车 + 总优先级分（越小越优）
-            const parts = [];
-            for (let i = 0; i < ROWS; i++) {
-                const big = bigSelects[i].value;
-                const small = smallSelects[i].value;
-                if (big && small) parts.push(`${i+1}:${scheme.assignment[i] || '空'}`);
-            }
-            option.textContent = `方案${idx+1} · ${parts.join(' ')} · Σ=${totalScore}`;
+            option.textContent = homePresenter.schemeSummary(scheme,bigSelects.map((sel,i)=>({big:sel.value,small:smallSelects[i].value})),idx);
             schemeSelect.appendChild(option);
         });
         schemeSelect.value = 0;
@@ -1245,17 +1204,8 @@
     }
 
     function updateSubtitle() {
-        if (APP_CONFIG.server === 'global') { const sub = document.querySelector('.sub'); if (sub) sub.textContent = '国际服 · 五区满星理论参考 · 含特殊跑法'; return; }
-        const tierInfo = RACE_DATA?.tier_info?.[currentTier];
-        const sub = document.querySelector('.sub');
-        if (sub && tierInfo) {
-            let desc = tierInfo.desc;
-            // 理论档在四区模式下显示不同描述
-            if (currentTier === '理论' && currentZone === 'zone4') {
-                desc = '顶级特改理论成绩，默认最优解，含特殊跑法';
-            }
-            sub.textContent = desc;
-        }
+        const sub=document.querySelector('.sub'),text=homePresenter.subtitle(APP_CONFIG.server,RACE_DATA,currentZone,currentTier);
+        if(sub&&text!==null)sub.textContent=text;
     }
 
     // 四区/五区切换

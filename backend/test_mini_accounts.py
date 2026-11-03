@@ -155,13 +155,13 @@ class NativeAccountTests(unittest.TestCase):
             db.execute('INSERT INTO account_controls VALUES(?,1,1,?)',(value['actor']['id'],int(time.time())))
         self.assertEqual(self.client.get(P+'/session',headers=auth).status_code,403)
 
-    def test_all_three_account_roles_get_server_actor_and_only_batch_a_is_ready(self):
+    def test_all_three_account_roles_get_server_actor_and_published_batch_contracts(self):
         for i,role in enumerate(['player','admin','superadmin']):
             email=self.register('role'+str(i)+'@example.test')
             if role!='player':set_role(self.root/'website',email,role)
             value,auth=self.login(email)
             self.assertEqual(value['actor']['role'],role)
-            self.assertEqual(value['features']['native_batches'],{'A':'ready','B':'pending','C':'pending','D':'pending','E':'pending'})
+            self.assertEqual(value['features']['native_batches'],{'A':'ready','B':'ready','C':'ready','D':'ready','E':'ready'})
             self.assertEqual(self.client.get(P+'/profile?server=cn',headers=auth).status_code,200)
             self.assertEqual(self.client.post('/api/admin/score-versions',headers=auth,json={}).status_code,403)
 

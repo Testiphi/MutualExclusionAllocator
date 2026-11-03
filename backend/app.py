@@ -185,6 +185,7 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
     if fresh_accounts and not production:migrate_global_profiles(store)
     with store.connect() as db:global_profiles_ready=global_profile_state(db)['global_profile_schema']==1
     app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None, redirect_slashes=not production)
+    app.state.production = production
     app.state.store = store
     app.state.global_profiles=global_profiles_ready
     app.state.contributions = contributions
@@ -599,7 +600,7 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
     if writeback_lab is not None:
         from backend.writeback import install as install_writeback
         install_writeback(app,store,ROOT,user,writeback_lab,preview_source)
-    assets={'styles.css','config.js','api.js','app_state.js','allocator.js','race_scores.js','selection_core.js','cars.json','gauntlet_data.json','auth.js','profile_store.js','accounts.css','submissions.js','submissions.css','admin_access.js','data_previews.js','data_previews.css','writeback_lab.js','announcements.js','admin_accounts.js'}
+    assets={'styles.css','config.js','api.js','app_state.js','allocator.js','race_scores.js','selection_core.js','home_presenter.js','home_theme.json','cars.json','gauntlet_data.json','auth.js','profile_store.js','accounts.css','submissions.js','submissions.css','admin_access.js','data_previews.js','data_previews.css','writeback_lab.js','announcements.js','admin_accounts.js'}
     assets.update({'ui.css','theme.css','notifications.js'})
     if recognition_service:assets.update({'map_recognition.js','map_recognition.css'})
     assets.update({'cars.global.json','gauntlet_data.global.json','global-data-manifest.json'})
@@ -651,6 +652,7 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
                   'get-global-profile':lambda request:get_profile(request,'global'),'put-global-profile':lambda data,request:put_profile(data,request,'global')},
         models={'register':Registration,'login':Credentials,'resend-verification':EmailInput,'forgot-password':EmailInput,
                 'verify-email':TokenInput,'reset-password':ResetInput,'redeem-invitation':Redeem,'put-profile':ProfileInput,'put-global-profile':GlobalProfileInput})
+    app.state.native_feature_routes={(method,route.path):route for route in app.routes if hasattr(route,"endpoint") for method in (getattr(route,"methods",None) or [])}
     from backend.mini_api import MiniGateway
     if mini_config is not None and recognition_service is not None:
         mini_root=mini_config['store'].root

@@ -53,7 +53,7 @@ test('120 equal-vector assignments survive before the 25-result truncation',()=>
     compare(maps,new Set(cars));
 });
 test('real page candidates: complete ordered frontiers and limits',()=>{
-    const sources=Object.fromEntries(['index.html','app_state.js','race_scores.js','selection_core.js'].map(f=>[f,read(f)]));
+    const sources=Object.fromEntries(['index.html','app_state.js','race_scores.js','selection_core.js','home_presenter.js'].map(f=>[f,read(f)]));
     const cases=require('../perf/page_inputs').prepare(sources,JSON.parse(read('cars.json')),JSON.parse(read('gauntlet_data.json')));
     for(const c of cases) compare(c.candidates,new Set(c.owned));
 });

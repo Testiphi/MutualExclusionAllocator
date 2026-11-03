@@ -42,7 +42,7 @@ function page() {
             new Set(getCurrentCarList().filter(c=>selectedCars.has(c))));
     `;
     new Function('document', 'out', 'panels', 'APP_CONFIG',
-        read('app_state.js') + read('race_scores.js') + read('selection_core.js') + inline.replace('initApp();', setup))(
+        read('app_state.js') + read('race_scores.js') + read('selection_core.js') + read('home_presenter.js') + inline.replace('initApp();', setup))(
         {getElementById: element, createElement: element}, out, panels,
         {server:'cn',storageKeys:{guestDraft:'racepick.guest-draft.v1'}});
     const expert = [entry('A', 20, 6), entry('A', 24, 3), entry('A', 18, 6, '跳图'),

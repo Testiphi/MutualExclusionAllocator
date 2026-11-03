@@ -19,7 +19,7 @@ async function call(method,path,body,account=session?.user?.id){
  const data=await r.json().catch(()=>({detail:'服务器响应无法识别，请刷新核对'}));if(!r.ok)throw Error(typeof data.detail==='string'?data.detail:'字段不符合要求，请核对');return data;
  }catch(e){if(e.name==='AbortError')throw Error('请求超时，请刷新核对；已保存草稿不会自动重复创建。');throw e;}finally{clearTimeout(timer);}
 }
-function query(){return new URLSearchParams({server:$('server').value,zone,tier,big:$('map').value,route:$('route').value,q:$('search').value,stars:legacyStars,offset:String(offset),gaps:String($('gaps').checked)});}
+function query(){return new URLSearchParams({server:$('server').value,zone,tier,big:$('map').value,route:$('route').value,q:$('search').value,stars:legacyStars,offset:String(offset),gaps:String($('gaps').checked),oc:String($('server').value==='global'&&!!$('oc').checked)});}
 function option(select,value,text){const o=node('option',text);o.value=value;select.append(o);}
 function clear(){ clearSelection();$('head').replaceChildren();$('body').replaceChildren();$('summary').textContent='';view=null; }
 async function load(focusCar=null){
@@ -34,6 +34,7 @@ async function load(focusCar=null){
   view=data;offset=data.column_offset;pageSize=data.column_limit||48;$('map').replaceChildren();option($('map'),'all','全部地图');$('choice').replaceChildren();
   for(const m of data.maps){option($('map'),m.id,m.name);option($('choice'),m.id,m.name);}
   $('map').value=data.maps.some(m=>m.id===chosen)?chosen:'all';params.delete('big');
+  $('oc-filter').hidden=$('server').value!=='global';$('oc-legend').textContent=data.oc?'OC超频':'非OC';
   render();if(scroll){$('sheet-wrap').scrollLeft=scroll.left;$('sheet-wrap').scrollTop=scroll.top;const selected=headerStars.get(focusCar);if(selected?.focus)selected.focus({preventScroll:true});}if(globalThis.history?.replaceState)history.replaceState(null,'','/score-table?'+query());if(view.production===false)$('message').textContent='独立本地验收，投稿仅进入测试库。';
   const pick=params.get('pick');if(pick){params.delete('pick');const cell=data.rows.flatMap(r=>r.cells).find(c=>c.key===pick);if(cell&&cell.status==='empty')open(cell);else $('message').textContent='所选格子已变化，请重新选择。';}
  }catch(e){if(stamp===ticket){clear();$('message').textContent=e.message;}}
@@ -44,7 +45,8 @@ function render(){
  const access=view.access,global=view.server==='global';
  $('home-link').href=global?'/?server=global':'/';$('submit-link').href='/submissions'+(global?'?server=global':'');$('choose-map').hidden=access.level!==1||!!access.chosen;
  $('rights').textContent=access.admin?'管理账号可查看当前服全部成绩。':access.level===2?'两服成绩已全部解锁。':access.chosen&&access.level===1?'已开放所选大地图。':'已开放部分成绩，其余可贡献解锁。';
- $('sheets').replaceChildren();for(const [z,t] of (view.capabilities?.zones||['五区','四区']).flatMap(z=>(view.capabilities?.tiers||['理论','高手']).filter(t=>['理论','高手'].includes(t)).map(t=>[z,t]))){const b=node('button',z+' · '+t);b.setAttribute('aria-current',String(z===zone&&t===tier));b.onclick=()=>{zone=z;tier=t;offset=0;void load();};$('sheets').append(b);}
+ $('sheets').replaceChildren();for(const [z,t] of (view.capabilities?.zones||['五区','四区']).flatMap(z=>(view.capabilities?.tiers||['理论','高手']).filter(t=>['理论','高手'].includes(t)).map(t=>[z,t]))){const b=node('button',z+' · '+t);b.setAttribute('aria-current',String(z===zone&&t===tier));b.onclick=()=>{zone=z;tier=t;offset=0;$('oc').checked=params.get('oc')==='true';$('oc').onchange=()=>{offset=0;load();};
+void load();};$('sheets').append(b);}
  $('sheet').style.setProperty('--coverage-columns',String(view.columns.length));
  const h=node('tr');for(const [label,cls] of [['#','row-num'],['大地图','map-col'],['小地图'+($('route').value==='special'?' / 跑法':''),'track-col']]){const th=node('th',label);th.className=cls;h.append(th);}
  for(const c of view.columns){
@@ -108,14 +110,19 @@ function bindCell(button,cell){
 $('sheet-wrap').onscroll=()=>{scrollBlockedUntil=Date.now()+200;if(lastPointer?.kind==='touch')lastPointer.moved=true;clearSelection();};
 globalThis.addEventListener?.('scroll',clearSelection,{passive:true});
 
-$('filters').onsubmit=e=>{e.preventDefault();offset=0;void load();};
-for(const id of ['server','map','route','gaps'])$(id).onchange=()=>{offset=0;if(id==='server'){zone='五区';tier='理论';$('map').value='all';params.delete('big');}void load();};
-$('previous-columns').onclick=()=>{offset=Math.max(0,offset-pageSize);void load();};$('next-columns').onclick=()=>{offset+=pageSize;void load();};
+$('filters').onsubmit=e=>{e.preventDefault();offset=0;$('oc').checked=params.get('oc')==='true';$('oc').onchange=()=>{offset=0;load();};
+void load();};
+for(const id of ['server','map','route','gaps'])$(id).onchange=()=>{offset=0;if(id==='server'){zone='五区';tier='理论';$('map').value='all';params.delete('big');}$('oc').checked=params.get('oc')==='true';$('oc').onchange=()=>{offset=0;load();};
+void load();};
+$('previous-columns').onclick=()=>{offset=Math.max(0,offset-pageSize);$('oc').checked=params.get('oc')==='true';$('oc').onchange=()=>{offset=0;load();};
+void load();};$('next-columns').onclick=()=>{offset+=pageSize;$('oc').checked=params.get('oc')==='true';$('oc').onchange=()=>{offset=0;load();};
+void load();};
 for(const b of document.querySelectorAll('[data-close]'))b.onclick=()=>{if(!writing)$(b.dataset.close).close();};
 
 $('choose-map').onclick=()=>{$('choice-error').textContent='';$('choice-dialog').showModal();};
 $('choice-dialog').oncancel=e=>{if(writing)e.preventDefault();};
 $('confirm-choice').onclick=async()=>{if(writing)return;writing=true;$('confirm-choice').disabled=$('choice').disabled=true;try{await call('POST','/coverage/choice',{server:$('server').value,map_id:$('choice').value});$('choice-dialog').close();await load();}catch(e){$('choice-error').textContent=e.message;}finally{writing=false;$('confirm-choice').disabled=$('choice').disabled=false;}};
 $('progress').onclick=()=>{if(!view)return;const a=view.access;$('progress-summary').textContent=`累计积分 ${a.points}；有效贡献 ${a.valid}；高质量 ${a.high}${a.admin?'；管理账号工作权限独立于贡献等级':''}。`;$('one-status').textContent=a.level>=1?'已达成':'未达成';$('two-status').textContent=a.level>=2?'已达成':'未达成';$('progress-dialog').showModal();};
+$('oc').checked=params.get('oc')==='true';$('oc').onchange=()=>{offset=0;load();};
 void load();
 })();

@@ -116,7 +116,7 @@ print('ACCOUNT_BOOT_OK')'''
   snapshot={n:(ROOT/n).read_bytes() for n in names}
   code=self.path/'code'
   for name in APP_FILES:
-   relative=Path('docs')/name if name.endswith('.md') else Path(name)
+   relative=Path('docs')/name if name.endswith('.md') or name=='MINI_FEATURES_OPENAPI_20261103.json' else Path(name)
    target=code/relative;target.parent.mkdir(parents=True,exist_ok=True);shutil.copyfile(ROOT/relative,target)
   (code/'cars.global.json').write_bytes(b'checkout data must not be used')
   bundle=self.path/'frozen.zip'

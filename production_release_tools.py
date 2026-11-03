@@ -32,8 +32,10 @@ SELECTION_FILES=('selection_core.js',)
 MINI_FILES=('backend/mini_auth.py','backend/mini_api.py','production/mini-config.example.json','production/mini.env.example','MINI_API_CONTRACT_20261102.md','MINI_DEPLOYMENT_20261102.md')
 MINI_ACCOUNT_FILES=('backend/mini_accounts.py','production/mini-account-config.example.json','MINI_ACCOUNT_CONTRACT_A_20261103.md')
 GLOBAL_PROFILE_FILES=('backend/global_profiles.py','GLOBAL_PROFILE_CLOUD_20261103.md')
-COMPONENT_GROUPS=COMPONENT_GROUPS+(MINI_FILES,MINI_ACCOUNT_FILES,GLOBAL_PROFILE_FILES)
-APP_FILES=BASE_FILES+SCOPED_FILES+COVERAGE_FILES+THEME_FILES+SCORE_FILES+COMMUNITY_FILES+CONTRIBUTION_FILES+FEEDBACK_FILES+GLOBAL_FILES+NOTIFICATION_FILES+USAGE_FILES+SELECTION_FILES+MINI_FILES+MINI_ACCOUNT_FILES+GLOBAL_PROFILE_FILES
+MIRROR_FILES=('backend/mini_features.py','MINI_FEATURES_COMMON_20261103.md','MINI_BATCH_B_20261103.md','MINI_BATCH_C_20261103.md','MINI_BATCH_D_20261103.md','MINI_BATCH_E_20261103.md','MINI_FEATURES_OPENAPI_20261103.json')
+HOME_FILES=('home_presenter.js','home_theme.json','HOME_PRESENTER_CONTRACT_20261103.md')
+COMPONENT_GROUPS=COMPONENT_GROUPS+(MINI_FILES,MINI_ACCOUNT_FILES,GLOBAL_PROFILE_FILES,MIRROR_FILES,HOME_FILES)
+APP_FILES=BASE_FILES+SCOPED_FILES+COVERAGE_FILES+THEME_FILES+SCORE_FILES+COMMUNITY_FILES+CONTRIBUTION_FILES+FEEDBACK_FILES+GLOBAL_FILES+NOTIFICATION_FILES+USAGE_FILES+SELECTION_FILES+MINI_FILES+MINI_ACCOUNT_FILES+GLOBAL_PROFILE_FILES+MIRROR_FILES+HOME_FILES
 OCR_CODE_FILES=('backend/map_layout.py','backend/map_recognition.py','backend/map_ocr_engine.py','backend/map_ocr_worker.py',
  'backend/map_ocr_production.py','backend/map_ocr_supervisor.py','map_recognition.js','map_recognition.css',
  'production/ocr-models.json','production/ocr-assets.json','production/ocr-selfcheck.py','production/racepick-map-ocr.service',
@@ -72,6 +74,13 @@ def digest(raw):return hashlib.sha256(raw).hexdigest()
 def allowed(name):return name in APP_FILES or name in OCR_FILES or bool(re.fullmatch(r'wheels/[A-Za-z0-9_.+\-]+\.whl',name))
 
 def verify_selection(contents):
+ if b'from backend import mini_features' in contents.get('backend/mini_accounts.py',b'') and not set(MIRROR_FILES)<=set(contents):raise ValueError('发布包缺少原生B-E组件')
+ if b'home_presenter.js' in contents['index.html'] and not set(HOME_FILES)<=set(contents):raise ValueError('发布包缺少主页presenter组件')
+ if 'home_theme.json' in contents:
+  theme=json.loads(contents['home_theme.json'])
+  for name,item in theme['sources'].items():
+   if digest(item['text'].encode('utf-8'))!=item['sha256_utf8_lf']:raise ValueError('主题导出内容校验失败')
+   if name in contents and digest(contents[name].replace(b'\r\n',b'\n'))!=item['sha256_utf8_lf']:raise ValueError('主题导出与当前CSS不一致')
  if b'from backend.global_profiles import state as global_profile_state' in contents.get('backend/app.py',b'') and not set(GLOBAL_PROFILE_FILES)<=set(contents):
   raise ValueError('发布包缺少国际账号车库组件')
  if b'from backend.mini_accounts import make_native_account' in contents.get('backend/mini_api.py',b'') and not set(MINI_ACCOUNT_FILES)<=set(contents):
@@ -91,9 +100,9 @@ def pack(code,data,wheels,output,provenance,data_contents=None,ocr_assets=None):
  if output.exists():raise ValueError('输出文件已存在，不覆盖')
  snapshot_sets=({'cars.json','gauntlet_data.json'},{'cars.json','gauntlet_data.json',*GLOBAL_FILES[:3]})
  if data_contents is not None and set(data_contents) not in snapshot_sets:raise ValueError('数据快照必须为两份国服JSON或完整五份双服JSON')
- content={n:(data_contents[n] if data_contents is not None and n in data_contents else ((data if n in ('cars.json','gauntlet_data.json') else code)/('docs/'+n if n.endswith('.md') else n)).read_bytes()) for n in APP_FILES}
+ content={n:(data_contents[n] if data_contents is not None and n in data_contents else ((data if n in ('cars.json','gauntlet_data.json') else code)/('docs/'+n if n.endswith('.md') or n=='MINI_FEATURES_OPENAPI_20261103.json' else n)).read_bytes()) for n in APP_FILES}
  if ocr_assets is not None:
-  content.update({n:(code/('docs/'+n if n.endswith('.md') else n)).read_bytes() for n in OCR_CODE_FILES})
+  content.update({n:(code/('docs/'+n if n.endswith('.md') or n=='MINI_FEATURES_OPENAPI_20261103.json' else n)).read_bytes() for n in OCR_CODE_FILES})
   content.update({n:(Path(ocr_assets)/n).read_bytes() for n in OCR_ASSET_FILES})
  verify_ocr(content)
  content.update({'wheels/'+p.name:p.read_bytes() for p in wheels.glob('*.whl')})
