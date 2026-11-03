@@ -31,6 +31,7 @@ class MaintenanceReleaseTests(unittest.TestCase):
         raw['gauntlet_data.json']=encode(data).encode()
         cars=json.loads(raw['cars.json']);car=next(c for c in cars['cars'] if c.get('nickname')=='cc850')
         car['zones']=['五区','四区'];car['star_rule'].update(min=3,zone4Max=3)
+        car['score']=int(car.get('score',0))+1  # Still changes a disposable catalog when input already has cc850 rules.
         raw['cars.json']=encode(cars).encode()
         catalog,global_data,manifest=[json.loads(raw[n]) for n in m.FILES[2:]]
         catalog['cars'][0]['score']+=1
