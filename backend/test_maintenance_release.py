@@ -142,6 +142,8 @@ class MaintenanceReleaseTests(unittest.TestCase):
         self.assertEqual({'cn':cn.current()[0]['id'],'global':gl.current()[0]['id']},plan['bases'])
         check_score_compatibility(target,{'files':dict.fromkeys(APP_FILES)},self.f.path)
         with self.assertRaises(ValueError):self.apply(plan)
+        fresh=self.plan();self.assertNotEqual(fresh['digest'],plan['digest'])
+        self.assertEqual(self.apply(fresh)['state'],'applied')
 
     @unittest.skipUnless(os.name=='posix','actual Linux service flock required')
     def test_live_service_lock_refuses_release(self):

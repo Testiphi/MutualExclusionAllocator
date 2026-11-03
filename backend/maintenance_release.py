@@ -4,6 +4,7 @@ import argparse
 import json
 import os
 from pathlib import Path
+import re
 import secrets
 import sqlite3
 import time
@@ -91,7 +92,9 @@ def catalog_diff(before,after):
     return {'cars':[{'title':k,'before':old.get(k),'after':new.get(k)} for k in sorted(old.keys()|new.keys()) if old.get(k)!=new.get(k)],
             'other_fields':[{'field':k,'before':a.get(k),'after':b.get(k)} for k in sorted(a.keys()|b.keys()) if k!='cars' and a.get(k)!=b.get(k)]}
 
-def preview(config,source,freeze_id):
+def preview(config,source,freeze_id,request_key=None):
+    request_key=request_key or secrets.token_hex(16)
+    if not re.fullmatch('[A-Za-z0-9_-]{16,80}',request_key):raise ValueError('维护计划request_key无效')
     target,provenance=source_files(source,freeze_id)
     root,store,cn,gl=writers(config)
     with store.connect() as db:
@@ -100,7 +103,7 @@ def preview(config,source,freeze_id):
         bases={'cn':cn.current_id(db),'global':gl.current_id(db)}
         controls={n:dict(db.execute('SELECT * FROM '+n+' WHERE slot=1').fetchone()) for n in ('score_control','global_score_control')}
     _,national=cn.versions.read(bases['cn']);_,international=gl.versions.read(bases['global'])
-    body={'schema':1,'kind':'racepick-maintenance-release','source':provenance,
+    body={'schema':1,'kind':'racepick-maintenance-release','request_key':request_key,'source':provenance,
           'account_binding':digest((root/'production.json').read_bytes()),'bases':bases,'controls':controls,
           'base_hashes':{n:digest(v) for n,v in {**national,**international}.items()},
           'scores':{'cn':difference(national[FILES[0]],target[FILES[0]]),'global':difference(international[FILES[3]],target[FILES[3]])},
@@ -150,7 +153,7 @@ def apply(config,source,plan,expected_digest):
             if previous:
                 if previous['state']!='applied' or {s:w.current_id(db) for s,w in [('cn',cn),('global',gl)]}!=previous['targets']:raise ValueError('此计划已执行或回退且状态已变化；禁止重复发布')
                 return {**previous,'idempotent':True}
-        if preview(config,source,plan['source']['freeze_id'])!=plan:raise ValueError('基线/规则/开关/源或计划变化，必须重新预览批准')
+        if preview(config,source,plan['source']['freeze_id'],plan['request_key'])!=plan:raise ValueError('基线/规则/开关/源或计划变化，必须重新预览批准')
         point=backup(config);verify_backup(point)
         target,_=source_files(source,plan['source']['freeze_id'])
         with cn.versions.lock(),gl.versions.lock(),closing(sqlite3.connect(root/'accounts.sqlite3')) as db,db:
@@ -207,12 +210,13 @@ def main():
     p=argparse.ArgumentParser(description=__doc__);p.add_argument('action',choices=['preview','apply','status','rollback'])
     p.add_argument('--config',type=Path,required=True);p.add_argument('--source',type=Path);p.add_argument('--freeze-id')
     p.add_argument('--plan',type=Path);p.add_argument('--expected-plan');p.add_argument('--id');p.add_argument('--expected-receipt')
+    p.add_argument('--request-key')
     p.add_argument('--confirm-all-differences',action='store_true');p.add_argument('--output',type=Path,required=True);a=p.parse_args()
     if a.output.exists():p.error('输出已存在，不覆盖证据')
     config=settings(a.config)
     if a.action=='preview':
         if not a.source or not a.freeze_id:p.error('preview需要--source/--freeze-id')
-        result=preview(config,a.source,a.freeze_id)
+        result=preview(config,a.source,a.freeze_id,a.request_key)
     elif a.action=='apply':
         if not a.source or not a.plan or not a.expected_plan or not a.confirm_all_differences:p.error('apply需要源/计划/批准摘要及全部差异确认')
         result=apply(config,a.source,json.loads(a.plan.read_bytes()),a.expected_plan)
