@@ -1,0 +1,15 @@
+{
+  "schema": 1,
+  "deliveryId": "9d856fba3f6b825b255bc17e",
+  "source": "0b97dae9e1003c1bc2c4c5b7a189b81cb4002112",
+  "origin": "https://mini-test.racepick.cn",
+  "globalDataset": "9b83ddd062a4d4b0c15d51dc0eed323aabb8e599e3e9544bc91714b70a7a4259",
+  "versions": {"cn":"593ecc7222ceea5856b2f576b4f5bca8","global":"e29f52e7f81c3e337985bf05dedb7e88"},
+  "files": {
+    "cars.global.json":{"bytes":29852,"sha256":"6d35da66c9c0d2d7335b3e80d6a7351bbc494911a5b1d8dab0a0c2137cbc9759"},
+    "cars.json":{"bytes":83653,"sha256":"ea42daedfdb73a4963e2e70c6cdf91deb29ae6bec5143b697e50d8c877961b17"},
+    "gauntlet_data.global.json":{"bytes":133918,"sha256":"79958b507b814fb0823e03aa8f97843fafe9b61a558c428336a4879587a33bd2"},
+    "gauntlet_data.json":{"bytes":225341,"sha256":"2e8bf6ba763a64f24cd1e93be0afbaca8c77e24efcb9a96812952de800b018b6"},
+    "global-data-manifest.json":{"bytes":1866,"sha256":"7e38469bc6bd6de5498bc1e38c16898c0a34eddb86ead72d610e0e1883e6dbe6"}
+  }
+}

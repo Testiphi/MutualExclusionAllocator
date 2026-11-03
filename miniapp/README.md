@@ -21,7 +21,9 @@ node --test tests/test_miniapp.cjs tests/test_miniapp_local.cjs tests/test_minia
 
 `node tools/setup_platform_profile.cjs` 只在缺少时创建忽略Git的 `miniapp/platform.profile.local.json`，不会覆盖现有文件。当前origin为空、声明均false。运维确认后填写实际HTTPS origin和已完成事项；不填AppSecret/token。声明不是验收证据。
 
-`node tools/prepare_network_probe.cjs <外层offline-evaluation下全新工程目录>` 生成独立网络探针，拒绝覆盖旧目录；未满足第一阶段声明时保持关闭，生成工程启用域名校验，不改主工程或已验收phone-local。服务就绪后才运行真实SDK检查 `tools/check_platform_network_devtools.cjs <SDK目录> <探针工程> <新证据目录> [自动化端口]`。探针只调用session和两服snapshot，不上传、不登录账号、不写车库。主工程将来用 `--platform-profile miniapp/platform.profile.local.json` 显式构建；当前不切换主工程，避免顺带启动完整业务请求。
+`node tools/prepare_network_probe.cjs <外层offline-evaluation下全新工程目录> --expected docs/MINI_STAGE1_EXPECTED_20261104.json` 生成独立网络探针，拒绝覆盖旧目录；未满足第一阶段声明时保持关闭，启用时必须指定固定交付期望。生成工程启用域名校验，不改主工程或已验收phone-local。服务就绪后才运行真实SDK检查 `tools/check_platform_network_devtools.cjs <SDK目录> <探针工程> <新证据目录> [自动化端口]`。探针只调用session和两服snapshot，不上传、不登录账号、不写车库。主工程将来用 `--platform-profile miniapp/platform.profile.local.json` 显式构建；当前不切换主工程，避免顺带启动完整业务请求。
+
+2026-11-04：隔离入口与真实微信访客/两服固定快照已由开发者工具SDK实际通过；105项本地测试通过，真机待用户手动预览扫码。具体工程、结果和步骤见[第一阶段客户端验收](../docs/MINI_GUEST_STAGE1_CLIENT_20261104.md)。旧准备段落与前一日记录按历史边界阅读。
 
 ## 开发者工具
 
