@@ -95,6 +95,10 @@ class JobStore:
         now=time.time()
         with self.connect() as db:
             ids=[r['id'] for r in db.execute("SELECT id FROM jobs WHERE expires<=? AND state!='expired'",(now,))]
+            if db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='safety_checks'").fetchone():
+                overdue=[r[0] for r in db.execute("SELECT j.id FROM jobs j JOIN safety_checks s ON j.id=s.job_id WHERE j.state='checking' AND s.deadline<=?",(now,))]
+                db.executemany("UPDATE jobs SET state='failed',error='IMAGE_SAFETY_TIMEOUT',finished=? WHERE id=? AND state='checking'",[(now,j) for j in overdue])
+                ids.extend(overdue)
             db.execute("UPDATE jobs SET state='expired',result=NULL,error='图片与结果已到期，请重新上传' WHERE expires<=?",(now,))
             if self.production:
                 db.execute("DELETE FROM jobs WHERE expires<?",(now-600,))
@@ -102,9 +106,28 @@ class JobStore:
                 # Native V1 retention also applies in explicitly isolated local integration.
                 # Historical website demo rows retain their existing lifecycle.
                 db.execute("DELETE FROM jobs WHERE owner LIKE 'mini-v1:%' AND expires<?",(now-600,))
+            if db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='safety_checks'").fetchone():
+                db.execute('DELETE FROM safety_checks WHERE job_id NOT IN (SELECT id FROM jobs)')
         for job_id in ids:self.remove_media(job_id)
 
+    def prepare_safety_schema(self):
+        """Explicit opt-in migration, never performed during normal queue startup."""
+        with self.connect() as db:
+            db.executescript('''CREATE TABLE IF NOT EXISTS safety_schema(version INTEGER NOT NULL);
+                CREATE TABLE IF NOT EXISTS safety_checks(
+                job_id TEXT PRIMARY KEY, deadline REAL NOT NULL, error_code TEXT);''')
+            if not db.execute('SELECT version FROM safety_schema').fetchall():
+                db.execute('INSERT INTO safety_schema VALUES (1)')
+            if [r[0] for r in db.execute('SELECT version FROM safety_schema')] != [1]:
+                raise ValueError('Unsupported safety schema')
+
     def create(self,owner,key,server,version,raw,mime,*,catalog=None,client=None):
+        return self._create(owner,key,server,version,raw,mime,catalog=catalog,client=client)[0]
+
+    def create_for_safety(self,owner,key,server,version,raw,mime,*,catalog,client):
+        return self._create(owner,key,server,version,raw,mime,catalog=catalog,client=client,safety=True)
+
+    def _create(self,owner,key,server,version,raw,mime,*,catalog=None,client=None,safety=False):
         self.cleanup();image_sha=digest(raw)
         if not 16<=len(key)<=80 or not all(c.isalnum() or c in '-_' for c in key):
             raise RecognitionError(422,'请求编号无效，请重新开始')
@@ -115,10 +138,14 @@ class JobStore:
                 if (old['image_sha'],old['server'],old['version'])!=(image_sha,server,version):
                     raise RecognitionError(409,'同一请求编号不能用于不同截图或服别')
                 if old['state']=='expired':raise RecognitionError(410,'任务已到期，请重新开始')
-                return old['id']
-            if db.execute("SELECT count(*) FROM jobs WHERE owner=? AND state IN ('queued','running')",(owner,)).fetchone()[0]>=2:
+                return old['id'],False
+            if safety:
+                if (not db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='safety_schema'").fetchone()
+                        or [r[0] for r in db.execute('SELECT version FROM safety_schema')] != [1]):
+                    raise RecognitionError(503,'图片安全组件尚未显式准备')
+            if db.execute("SELECT count(*) FROM jobs WHERE owner=? AND state IN ('queued','running','checking')",(owner,)).fetchone()[0]>=2:
                 raise RecognitionError(429,'已有识别正在进行，请等待或取消后重试')
-            if db.execute("SELECT count(*) FROM jobs WHERE state IN ('queued','running')").fetchone()[0]>=8:
+            if db.execute("SELECT count(*) FROM jobs WHERE state IN ('queued','running','checking')").fetchone()[0]>=8:
                 raise RecognitionError(429,'识别队列已满，请稍后重试')
             if db.execute('SELECT count(*) FROM jobs WHERE owner=? AND created>?',(owner,time.time()-600)).fetchone()[0]>=20:
                 raise RecognitionError(429,'截图提交过于频繁，请稍后再试')
@@ -135,12 +162,28 @@ class JobStore:
             try:
                 with path.open('xb') as f:f.write(raw)
                 db.execute('INSERT INTO jobs(id,owner,request_key,server,version,image_sha,mime,state,created,expires) VALUES (?,?,?,?,?,?,?,?,?,?)',
-                           (job_id,owner,key,server,version,image_sha,mime,'queued',now,now+TTL))
+                           (job_id,owner,key,server,version,image_sha,mime,'checking' if safety else 'queued',now,now+TTL))
                 if self.production:db.execute('UPDATE jobs SET catalog=?,client=? WHERE id=?',(json.dumps(catalog,ensure_ascii=False),client,job_id))
+                if safety:db.execute('INSERT INTO safety_checks VALUES (?,?,NULL)',(job_id,now+60))
             except Exception:
                 if path.exists():path.unlink()
                 raise
-        return job_id
+        return job_id,True
+
+    def complete_safety(self,job_id,approved,error_code=None):
+        now=time.time()
+        with self.connect() as db:
+            db.execute('BEGIN IMMEDIATE')
+            row=db.execute('SELECT deadline FROM safety_checks WHERE job_id=?',(job_id,)).fetchone()
+            if not row:raise ValueError('Safety admission is missing')
+            if row[0]<=now:approved=False;error_code='IMAGE_SAFETY_TIMEOUT'
+            result=db.execute("UPDATE jobs SET state=?,error=?,finished=? WHERE id=? AND state='checking' AND expires>?",
+                ('queued' if approved else 'failed',None if approved else error_code,
+                 None if approved else now,job_id,now))
+            if result.rowcount:
+                db.execute('UPDATE safety_checks SET error_code=? WHERE job_id=?',(None if approved else error_code,job_id))
+        if not approved:self.remove_media(job_id)
+        return bool(result.rowcount)
 
     def expire_pending(self,queue_seconds=120):
         with self.connect() as db:
