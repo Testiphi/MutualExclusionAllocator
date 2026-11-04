@@ -1,0 +1,33 @@
+{
+  "date": "2026-11-04",
+  "authorization": "User requested function-separated commits/pushes and reported mini-program handoff delivered; no main merge or production operations",
+  "feature_branch": "feature/map-layout-parser",
+  "remote_feature_head_verified": "bfcf97e1511ee3d418a1f558c30a3ba0148d5286",
+  "commits": [
+    {"sha": "cea43865eb741d4971086efa8a0a4de6e585d83c", "scope": "baselineCheck SDK, local rehearsal and shared safety queue; shared pure snapshot/result modules"},
+    {"sha": "5d39af53f776dae6676b222e451679f2f5f41892", "scope": "isolated native HTTP guest gateway, Unix socket port, original-key recovery and manual fallback"},
+    {"sha": "eeb966cd879060b64cb62a5bb68e606bf4e0acb2", "scope": "offline dependency locks, packaging/verification/Linux harness, service/Nginx templates, compatibility guard and missing bridge startup dependency fix"},
+    {"sha": "bfcf97e1511ee3d418a1f558c30a3ba0148d5286", "scope": "historical stage1 and OCR preparation/release evidence; current production state points to main handoff"}
+  ],
+  "previous_unpushed_commit_included": "0b97dae9e1003c1bc2c4c5b7a189b81cb4002112",
+  "feature_files_in_batch": 54,
+  "main_scope": "documentation only: current deployment receipt, sanitized native OCR binding/handoff, historical stage1 evidence, index and this Git receipt",
+  "main_merge_performed": false,
+  "main_document_commit": "the commit containing this receipt; exact SHA available from Git, intentionally not self-referenced",
+  "validation": {
+    "windows_related_suite": {"executed": 143, "passed": 120, "skipped": 23, "failed": 0},
+    "dedicated_sdk_mock_suite": {"executed": 7, "passed": 7, "skipped": 0, "failed": 0, "environment": "existing SDK venv with already-installed user-site Pillow dependencies; not a fresh locked environment", "overlaps_related_suite": true},
+    "sdk_environment_initial_import_failure": "Pillow absent from dedicated venv; existing user-site dependency path added for test invocation only; no network install",
+    "actual_packaged_bridge_module_import_regression": "passed; included in related suite",
+    "json_parse": "passed",
+    "secret_pattern_and_path_scope_review": "passed for explicitly listed batch files; no real credential files included",
+    "staged_diff_whitespace": "passed after removal of two extra EOF blank lines"
+  },
+  "production_changes_this_git_task": false,
+  "supplier_calls_this_git_task": 0,
+  "sealed_zip_or_source_metadata_rewritten": false,
+  "production_source_limit": "Production remains approved sealed35bd plus recorded single runtime module from7241; new Git commits are archival/development state, not a rebuilt or newly deployed source claim",
+  "business_data_workbooks_models_wheels_archives_credentials_or_test_databases_staged": false,
+  "mini_program_handoff": "user reports forwarded; no other-chat messaging or device acceptance inferred",
+  "publication_cleanup_or_monitor_creation": false
+}

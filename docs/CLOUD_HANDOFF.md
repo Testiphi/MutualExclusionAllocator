@@ -1,3 +1,211 @@
+## 2026-11-04 按功能Git归档与推送，不重新部署；小程序侧已由用户转交
+
+用户授权“分功能推送一下”，并确认小程序侧已转交；不据此推断客户端开发/真机验收完成。本轮功能树按白名单拆为：cea43865eb741d4971086efa8a0a4de6e585d83c（baselineCheck SDK/共享安全队列）、5d39af53f776dae6676b222e451679f2f5f41892（原生HTTP桥/原key恢复）、eeb966cd879060b64cb62a5bb68e606bf4e0acb2（离线交付/模板/桥启动依赖修复）、bfcf97e1511ee3d418a1f558c30a3ba0148d5286（阶段文档）；连同既有未推0b97dae已推送origin/feature/map-layout-parser，ls-remote已核。主repo仅归档最新现场交接/原字节绑定及本批Git回执，未把功能分支合入main。当前线上仍是封存35bd加明确补件，不宣称这些新Git提交已重新构包或部署；source_commit=null等历史包元数据不倒改。
+
+提交前Windows本地相关143执行/120通过/23环境跳过，已有SDK专用venv加本机Pillow依赖路径另跑7项全部通过（均mock HTTP，无真实供应商/服务器请求；不能将重叠项简单相加）。新增打包依赖隔离导入回归已包含；仅去掉两纯模块额外EOF空行，未改行为。审查54个功能文件/7个现场文件的显式清单、JSON、密钥模式与diff空白；实际密钥、业务库、工作簿、模型、wheel/ZIP及现场脚本未加入Git，原资料保留。SDK专用venv首次因缺Pillow未能导入，补用已安装依赖路径后通过，未联网安装。详见[Git交付回执](GIT_DELIVERY_20261104.json)。本次没有服务器操作、额外付费审核、公告、清理或新监控。
+
+## 2026-11-04 CN原生OCR服务端正式开启，唯一合成审核通过；真实微信/手机OCR待验收
+
+用户执行最终续开命令回传CN_NATIVE_OCR_ACTIVATED，回执`/root/racepick-deploy/mini-ocr-20261104-35bd5c5d/native-final-nudoqb0h/activation.json`。bridge和guest active并enabled for boot；阿里配置mode live、bridge enabled true、guest image_policy aliyun_baseline。公网CN catalog无token401/no-store、双服snapshot无token401、账号路径404；peer UID996实际socket目录验证CN catalog57876474bd3cd25c283e79a471be99ec76d4e58ed16fa0e2c8ae2a6cdf0b9ced/83图，前次完整maps SHA7b4e180ed199d4319f4b756477039232038043214a9a239d20ac782f97670b54；Global请求明确拒绝。账号/B–E及Global OCR保持关闭，原唯一worker/网页OCR ready，正式CN c815b612a17433f403ae2965000fd74b / Global435d5b40fd1aa4a01753a395f28d1f89保持。backup.timer active；未观察未来定时任务成功，不增设监控或清理。
+
+本轮授权的唯一一次非私人合成图baselineCheck已在native-enable-ddobc7_8阶段明确通过，后续修复/最终命令均无供应商调用，不重试、不额外传图；不据此声称正式启用后用户流量或账单次数。队列schema仅0→1一次，原jobs指纹保留、当时job_count0；完整guest/queue保全在native-enable-ddobc7_8/guest-and-original-queue.tar.gz，实际SHA见服务器preservation.json（尚未回传，不编造）。保持兼容网站7241，不回旧a933/旧队列库来撤销schema，避免丢新任务；关闭时只退原生配置/路由并保留兼容代码/schema1/状态。
+
+实际运行来源为封存v2交付35bd加一个明确记录的运行依赖补件：bridge/backend/map_ocr_production.py取自已校验7241网站，SHA3c8a7d64564da8d7804bd0f35a8aba960ee922d86573af8973c857ec10718872、4495字节，回执bridge-repair-y_eccy1a/runtime-repair.json；原ZIP/SOURCE/manifest未倒改，不能宣称目录仍是零附加文件的原包。开发树builder已修正BRIDGE清单，并通过1项实际打包模块集合隔离导入回归；未提交推送/重构v3包。两次续开间最后公网门禁问题记录为：最终输出首次nginx404、短暂等待后401，说明reload后立即判失败过早；不是新一轮供应商失败。
+
+完成范围仅服务端CN开放、唯一合成图审核和目录/未认证公网门禁。未做激活后的真实微信会话、multipart实图→审核→唯一worker→结果、同key恢复/取消/过期/切网/前后台或iOS/Android验收；供应商通过也不等于OCR五图识别通过。小程序回交见[CN原生OCR服务端交接](MINI_OCR_CN_CLOUD_HANDOFF_20261104.md)与[固定OCR绑定](MINI_OCR_CN_BINDING_20261104.json)。用户后续需独立OCR检查工程，真实uploadFile合法域名/平台声明/隐私提示及获准样图、额外调用按后续授权处理，本聊天不操作微信后台/上传提审发布或向其他聊天发任务。至此停止额外生产操作，保留所有失败/回退/备份证据。
+
+## 2026-11-04 桥依赖与目录已通过，最后公网门禁异常回退，未获得正式开启成功证据
+
+用户回传bridge-repair-y_eccy1a：已从7241网站补入bridge/backend/map_ocr_production.py，SHA3c8a7d64564da8d7804bd0f35a8aba960ee922d86573af8973c857ec10718872/4495字节，不改ZIP；BRIDGE_CATALOG_READY确认CN目录57876474bd3cd25c283e79a471be99ec76d4e58ed16fa0e2c8ae2a6cdf0b9ced、83图、maps SHA7b4e180ed199d4319f4b756477039232038043214a9a239d20ac782f97670b54、Global false。guest本地catalog401已通过，后续Nginx测试/重载执行后公网cn_catalog_gate断言失败，命令未输出实际status/body；reload异步生效竞争为可能原因，不可写成已确认根因。回退disabled配置/原site，bridge clean stop；rate/proxy新文件按设计保留，后续必须比较复用，不再“不存在”断言。schema/供应商探针均未重跑。下一步仅续已授权最后激活，明确打印实际HTTP、给reload有界就绪等待，失败自动关闭并保留路由诊断；无新付费/迁移。
+
+## 2026-11-04 桥故障确认缺少map_ocr_production依赖，本地打包修复通过，现场续开待执行
+
+用户journal确认ModuleNotFoundError backend.map_ocr_production；原站三服务及timer active、bridge inactive、审核/桥/guest均disabled，once标记保留、正式公网health和指针保持。已本地给build_mini_ocr_delivery.BRIDGE补map_ocr_production，并新增只使用实际BRIDGE文件集隔离导入启动依赖的回归，1项通过；不扩大为Linux/真实供应商新验收。拟现场仅补缺失文件，来源已激活7241网站backend/map_ocr_production.py，封存manifest SHA3c8a7d64564da8d7804bd0f35a8aba960ee922d86573af8973c857ec10718872、4495字节；这与开发树文件并非同字节，严禁拿开发树替换或改写网站文件。将原封存ZIP保留，在运行bridge新增该依赖并另记runtime修复回执，不倒改发布ID/manifest。后续只复用已有schema1及唯一审核通过证据，启动桥/CN网关/Nginx，无任何审核调用、迁移或业务库恢复。现场修复/续开尚未执行。
+
+## 2026-11-04 schema1与唯一一次供应商合成审核已通过，桥未就绪，原生OCR尚未开放
+
+用户执行合并命令回传：保全目录native-enable-ddobc7_8；QUEUE_PRESERVED_AND_SCHEMA_READY为0_to_1/jobs_preserved=true/job_count0；SINGLE_BASELINECHECK_APPROVED明确通过，唯一授权的非私人合成图审核调用已消耗，不得重试，保留base下baselineCheck-once-20261104.reserved标记。随后guest UID通过socket取catalog等待20次仍Bridge not ready，循环只捕获OSError/ValueError未输出具体原因，需桥journal定位。失败在guest image_policy切换及Nginx新路由之前；回退路径已运行恢复disabled配置、停止桥并恢复原服务/timer，实际健康待只读回传。schema1保留，不恢复旧队列、不重复迁移或付费。待核/修复仅桥启动与其目录访问，未知原因不得猜作已确认。
+
+## 2026-11-04 用户明确授权schema/桥/一次非私人合成图审核及CN原生OCR上线，合并命令待执行
+
+用户授权三项实际上线、限一次非私人合成图baselineCheck、不自动重试；保留业务/访客/原队列/备份，Global及账号/B–E关闭。已准备外部合并脚本offline-evaluation/mini-ocr-gateway-release-20261104-01/deployment-enable-native-22.py（不改封存v2）。计划停原生/网页准入后仅在原队列无进行中任务时短停唯一worker，保全guest/queue，再显式prepare_safety_schema 0→1并核原jobs指纹保持；schema1已存在则不重复。恢复原站后，写全局唯一一次调用保留标记，实际owner用已有SDK对内存合成图最多一次review（含必要临时OSS上传），无重试；只有明确通过才启动桥、peer UID目录检查、guest aliyun_baseline及新增CN精确Nginx路由，原session/snapshot预算和正式成绩保持。成功将bridge/guest设开机启用；失败保持兼容网站/schema1，退disabled配置/原站路由，不恢复旧DB、不重试付费。用户已获知CN开放后真实用户上传会正常产生按量审核费。脚本仅本地AST语法检查，不冒充生产执行；后续以用户回传为准，手机/真实微信OCR未验收。
+
+## 2026-11-04 桥单元安装静态检查完成，用户要求直接推进真实上线
+
+用户回传BRIDGE_UNIT_PREPARED_STATIC：单元loaded/inactive/dead/MainPID0/disabled，User racepick、Group racepick-mini-test，High256MiB/Max512MiB/Swap0/CPU100%/Tasks32，关键保护字段yes/strict；前后静态verify退出成功。现有cloudmonitor.service的KillMode=none及旧/var/run警告非本桥问题，未修改其单元。密钥/配置metadata保持，无队列迁移或供应商调用。用户明确不再逐项重复验证、尽快上线；后续不循环离线/静态测试。真实OCR仍受此前明确禁止迁移/启动桥/真实传图付费及原生关闭约束，需要一次明确新增上线范围后再给用户合并的必要部署步骤；静态完成不等于实际桥/供应商/公网OCR已启用。
+
+## 2026-11-04 桥单元安装及静态检查获授权，待用户执行
+
+用户授权继续准备桥服务单元并静态检查，仍保留现有密钥/数据，排除队列迁移、桥启动、真实传图/付费和公网原生OCR开启。拟严格对照封存bridge.service.in与既有prepared单元，核路径/UID/GID和disabled配置；在systemd-analyze verify通过后只新建/etc/systemd/system/racepick-ocr-bridge.service（已有单元/链接/drop-in则停并保留），root0644，daemon-reload后核loaded/inactive/disabled及关键隔离/资源字段，不enable/start。不会执行单元中的--allow-live-calls入口，配置仍false/disabled；不读取密钥正文或打开队列库。尚待用户执行回传，不记单元安装或静态检查已完成；静态验证不等于实际运行隔离/资源/供应商验收。
+
+## 2026-11-04 disabled审核/桥配置已安装，离线校验通过
+
+用户回传DISABLED_CONFIGS_READY及运行owner的纯解析检查结果：safety mode=disabled、service=baselineCheck、region=cn-shanghai；bridge enabled=false、allowed_uid996/socket_gid987。实际/etc/racepick-ocr-safety/aliyun-baseline.json和bridge.json均UID999/GID988/0600，对照原prepared候选及封存模板与现场路径完成安装，未改已封存包。检查只读这两份配置，credentials_loaded=false、queue_opened=false、provider_called=false；既有凭据文件stat身份/属主/权限/大小/mtime前后保持，未读取密钥正文。桥仍inactive、guest image_policy disabled，未迁移队列/启服务/传图/付费。此配置准备任务已完成，无API鉴权有效性或真实OCR通过证据。后续单元准备、队列schema、启动桥和联网调用均依后续明确授权逐步处理，不自动推进。
+
+## 2026-11-04 仅disabled审核/桥配置安装获授权，待用户执行
+
+用户授权继续准备disabled审核配置与桥配置，保留现有密钥/数据，禁止队列迁移、桥启动、真实传图/付费和原生OCR开放。拟复用先前prepared-configs的aliyun-baseline.json/bridge.json，先逐项对照封存包模板及实际guest UID996/GID987、snapshot路径；仅新建/etc/racepick-ocr-safety下两JSON（任一已存在先停止保留），owner999/group988/0600。随后以实际owner调用纯配置解析器离线校验，不初始化JobStore、不读凭据或调用供应商；目录与凭据仅stat前后比较。不开systemd单元、不改guest配置、不开关。尚无用户执行回传，不记配置已安装。
+
+## 2026-11-04 baselineCheck凭据私有落盘及离线权限检查通过，仍未联网调用
+
+用户回传OFFLINE_FORMAT_AND_OWNER_CHECK_PASSED、GUEST_ACCESS_DENIED_CHECK_PASSED及CREDENTIALS_PREPARED_OFFLINE。实际/etc/racepick-ocr-safety目录UID999/GID988/0700，aliyun-baseline-credentials.json文件UID999/GID988/0600；已由实际运行owner执行适配器read_credentials，仅离线检查格式、owner、私有mode等，访客用户os.access读取权限检查为拒绝。未在聊天/文档保存任何密钥值、长度或哈希；文件已存在，后续不得重跑创建命令覆盖或要求用户回传正文。桥inactive、guest image_policy disabled，经本步命令复核；未启动桥、改运行开关、迁移队列、外发图片或付费调用。RAM最小策略绑定为用户确认，密钥有效性、供应商鉴权/实际权限尚未联网核验；不能把离线检查当成阿里接通或OCR验收。首次落盘命令因/dev/tty以r+打开失败，在任何输入或落盘前退出；改w模式后用户成功执行，错误证据保留。当前凭据准备任务完成，后续配置/接入按新授权逐步执行，不自动推进。
+
+## 2026-11-04 RAM准备用户确认完成，凭据私有落盘命令待执行
+
+用户明确回传专用用户已创建、密钥私下保存、两项最小权限已绑定，属于用户确认，未以真实API调用验证授权。随后授权由用户执行隐藏输入写服务器凭据并核权限；仍排除真实传图/付费、桥启动和原生OCR开启。命令拟核桥inactive及guest disabled，仅新建/etc/racepick-ocr-safety/aliyun-baseline-credentials.json（已存在则停止保留），目录改为racepick主owner/group且0700、凭据0600，适配器read_credentials以实际owner离线读格式/权限，并核guest用户不能读取；不输出密钥、长度、哈希，不读取或输出其他秘密，不更改运行配置。尚待用户执行回传，不能记凭据已落盘/有效或供应商接通。该目录owner调整服务于原定UID999的未来读取，不能宣称与同UID网站存在独立账号隔离。
+
+## 2026-11-04 新阶段仅授权准备baselineCheck专用RAM与凭据配置
+
+用户要求先说明专用RAM权限、密钥准备及私有存放路径，仍由用户逐步执行回传；未授权真实传图/付费，原生OCR继续关闭。已对照当前适配器和阿里官方DescribeUploadToken/ImageModeration授权页核两Action及Resource*；策略不能把ImageModeration进一步限制为baselineCheck（官方未列此服务条件），baselineCheck由程序固定。拟让用户先在RAM控制台创建专用程序用户、附加两Action自定义策略、生成并私下保管AccessKey；尚无用户完成回传，不记创建/绑定/密钥落盘完成。当前适配器只接收access_key_id/access_key_secret两字段文件，不支持直接填STS三元组。计划路径/etc/racepick-ocr-safety/aliyun-baseline-credentials.json、运行owner racepick UID999、文件0600；现目录root700，后续落盘须显式准备可由该UID遍历的目录权限，不能只chown文件。现在不改服务器、不启桥、不改disabled配置、不迁移队列；本轮无供应商API调用。
+
+## 2026-11-04 兼容网站7241与disabled访客网关35bd上线，公网只读收尾通过
+
+本次服务器操作全部由用户逐步执行回传。最终READ_ONLY_CLOSEOUT_PASSED确认：网站current及accounts PID218390、原唯一OCR监督者PID218388的cwd为`/opt/racepick/releases/7241d9d67cc99178bd7d2d14`；guest PID218393的cwd为`/opt/racepick-mini-ocr/releases/35bd5c5d2e618b555de3a70c/guest`，三者active/running。网站沿a933仅叠加批准6个兼容文件；封存源码source_commit=null，不能把base提交当此次新源码提交。公网health200/ok/no-store，schema6/coverage2/global-profile1/global-score1；正式CN c815b612a17433f403ae2965000fd74b、Global435d5b40fd1aa4a01753a395f28d1f89保持，国服写开，原网页OCR enabled/worker ready。此次health未回Global写开关，不据旧备份推断实时状态。
+
+原生图片policy disabled；双服公网snapshot无token均401/no-store，OCR catalog404（该404未返回Cache-Control，不声称所有关闭响应均no-store）。bridge inactive/dead/MainPID0；未迁移识图安全schema、启桥、配置阿里密钥或付费传图，账号/B–E和微信后台/上传提审/发布不在本次范围。guest实际High128MiB/Max256MiB、Swap0/CPU25%/Tasks32；原OCR640/768MiB、Swap0/CPU100%/Tasks64保持。该资源观测非高并发容量或真实OCR接入验收。
+
+最终私有保全目录`/root/racepick-deploy/mini-ocr-20261104-35bd5c5d/cutover-final-b21osho2`，guest-queue-configs.tar.gz SHA `e4117c68d392900cfbfc55d9257da98f07325e018fd51bf4f86b71471672d13e`；最终业务备份`/var/lib/racepick/backups/scores-20261104T062600889850Z.zip` SHA `20890cd75924498920e5ad01cb765545257082437b598c391bd50ac1deae52c1`，独立恢复`/var/lib/racepick/restore-drills/d56fbfb914503c8898d758d6`通过。该备份快照50账号/25国服车库/0国际车库/6投稿，两服pending0，contribution/feedback/notification/coverage/global-profile/global-score/usage组件通过、active_database_replaced=false；计数不是后续实时库计数。全部业务数据、原访客状态/密钥、原队列、旧发布及历次备份/演练保留，无维护数据导入或旧库恢复。
+
+backup.timer已enabled/active/waiting，NEXT2026-11-05 04:19:52 CST仅为计划；最近定时任务仍11月4日04:20:06—04:20:07 success/0，早于本次切换，不能宣称新版本定时备份已运行。新版本现场手动backup/独立drill在最终停写保全中已通过。真实微信会话/手机双服快照未在本次切换后重验，原生OCR更未实图验收。两次失败及回退证据保留：首次预检漏cwd/隐藏stderr，显式cwd后通过；第二次因缺失/etc/racepick-ocr-safety导致226/NAMESPACE，补空root700目录并完成短时沙箱inspect后再成功切换。后续部署必须预建此隔离目录，不修改已封存ZIP。
+
+本轮兼容切换与HTTP收尾已完成；下一阶段schema/bridge/供应商调用/原生OCR启用等待单独新任务，不自动推进。未提交推送、发布公告、清理或创建监控。完整阶段证据见[部署准备与现场回执](MINI_OCR_DEPLOYMENT_PREPARATION_20261104.json)；下方记录按历史时间阅读。
+
+## 2026-11-04 用户回传兼容切换成功标记，公网收尾待核
+
+用户仅回传COMPATIBLE_CUTOVER_READY; native OCR remains closed.，按成功标记记录本轮兼容切换完成反馈；完整cutover.json、新保全路径/SHA及现场PID未回传，不补造。下一步只读收尾核实际current/运行cwd、公网health与原生关闭门禁、备份timer及过滤后的切换回执。目标网站7241d9d67cc99178bd7d2d14、guest交付35bd5c5d2e618b555de3a70c；不据标记声称真实微信/手机重新验收，或未来备份成功。队列迁移/bridge/密钥/付费/原生OCR开放继续排除，未提交推送或发布公告。
+
+## 2026-11-04 guest沙箱inspect成功，兼容切换重试待执行
+
+用户创建/核空root700目录/etc/racepick-ocr-safety后，短时systemd检查racepick-mini-ocr-check-2bc092f0成功exit0、2.360秒；与候选guest相同关键挂载/用户/资源设置下只读快照五文件通过，未加载鉴权配置/GuestStore、未监听或启模型/供应商，现行服务保持。该inspect不等于实际HTTP/会话验收。下一步复用已安装且字节相同的disabled mini-ocr.json，短维护内刷新保全并重试兼容切换，仍不迁移队列/启动桥/写密钥/付费。尚无切换成功证据。
+
+## 2026-11-04 guest失败根因已确认：缺失InaccessiblePaths目录导致226/NAMESPACE
+
+用户journal明确候选guest在Python启动前因/etc/racepick-ocr-safety不存在而挂载命名空间失败。部署前置遗漏，不是应用HTTP401问题。current已退a933，三原服务active/running，bridge inactive/dead，timer active/waiting，公网health正常且两服指针及worker ready保持。候选mini-ocr.json现已存在、UID996/GID987/0600；重试时必须比较并复用，不能继续原来的“不存在”断言，也不删除它。下一步创建空root700 safety目录并短时systemd隔离inspect（只读快照、无GuestStore/凭据/监听），尚待执行；不写密钥或启桥。不改已封存v2 ZIP；后续部署说明须列该目录前置条件。
+
+## 2026-11-04 第二次切换因guest就绪检查失败回退，待日志诊断
+
+用户回传COMPATIBILITY_PASSED、FINAL_PRESERVATION_PASSED，新私有目录cutover-retry-q2p2wqw6；完整preservation.json/新备份SHA尚未回传。脚本已换兼容网站/安装disabled guest后，在guest snapshot未于时限内返回401处失败；未取得实际HTTP响应/日志，不能断言启动失败或特定原因。回退路径执行，原OCR/accounts/guest和timer恢复start exit0，实际current/健康待核；无业务库恢复、队列迁移或桥启动。下一步仅日志和恢复状态只读诊断，不重复切换。旧维护窗口保全及原版本均保留。
+
+## 2026-11-04 显式候选cwd兼容检查通过，原服务/公网/备份调度恢复已确认
+
+用户回传PRECHECK_EXIT=0及COMPATIBILITY_PASSED；current仍a933，accounts PID217801、OCR PID217799、guest PID217804均active/running，bridge inactive/dead，backup.timer active/waiting。公网健康ok、CN c815b612/Global435d5b40保持、原OCR worker ready。先前stderr未取得，不能断言其精确异常；显式cwd后检查通过，无候选不兼容证据。下一步在同一次用户执行的短维护内刷新停写保全并切兼容网站/disabled guest，避免停服等待另一轮；尚未执行。禁止队列迁移/bridge启动/密钥/付费/原生OCR开放的范围持续有效。
+
+## 2026-11-04 切换在兼容预检失败，尚未改链接或单元，原服务恢复命令返回0
+
+用户回传候选python经runuser执行verify/check_score_compatibility返回1；原脚本capture_output未显示stderr，且未给python -c设置候选cwd。工作目录/模块导入是可能原因，未经stderr验证不得定论。失败发生在任何配置安装或current切换之前，原代码未变；OCR/accounts/guest/timer恢复start均exit0，仅证明命令返回，实际健康待读。下一步只读重跑预检（显式cwd候选、显示stderr）并核原current/健康/timer，不重复停服、保全或切换，不迁移、不启动桥。
+
+## 2026-11-04 最终保全完成，原服务与timer已停，兼容切换待用户执行
+
+用户回传FINAL_PRESERVATION_READY：私有pre-cutover-ean3ghkc内guest/queue/config归档4156字节，SHA968232bd268baf11bacbaa90de34c7200ea36de35d4edc3a1c6a46fe636d170f。最终业务备份scores-20261104T061602123354Z.zip，SHAa6d28999b4a799771c802597771ba30109ea99b769e80009b7ff443ba0a7352f；独立restore-drills/a8e8236c59613f9630a24eb9通过，活动库未替换、两服指针/计数保持。原guest/accounts/OCR服务已停止，backup.timer inactive；尚未切换或迁移，bridge未启动。下一条命令拟安装disabled guest配置/单元、以业务owner执行新工具兼容检查后原子换current、启动原唯一OCR与网站及新guest并恢复timer；失败仅退代码/单元，不恢复旧业务库，不写为已完成。
+
+## 2026-11-04 最新业务备份恢复通过，短维护窗口保全待执行
+
+用户回传LATEST_BUSINESS_BACKUP_READY：新备份scores-20261104T061419070871Z.zip、2150420字节、SHA60ea305938ed111683fbe8692e981d109b89169586619b701fd4e09d41deaa82，严格校验及独立restore-drills/c17af807b720ca8752cc83ca通过；50账号/25国服车库/0国际车库/6投稿，CN c815b612/Global435d5b40，两服处理中0，active_database_replaced=false，无迁移切换。下一步短暂停原服务和timer、保全guest/原队列/配置并生成最终业务备份；尚未执行，不记停服或切换完成。最终保全成功后留在维护窗口等待下一条切换命令；如保全失败则尝试恢复原服务及timer，保留所有证据。
+
+## 2026-11-04 兼容版本切换已授权，最新业务备份待用户执行
+
+用户明确授权兼容网站/访客网关切换，图片继续disabled；保留全部业务数据、访客状态、原队列和备份。明确排除队列迁移、bridge启动、阿里密钥/付费调用及公网原生OCR开启。下一步由用户以现有racepick owner和a933工具生成最新成套业务备份并独立drill；本地已准备命令，尚无执行回传，不记为完成。该步骤不停服务、不切换；访客/原队列的停写保全留到后续短维护窗口。先前早晨备份与独立恢复证据保留，不冒充最新快照。
+
+## 2026-11-04 v2候选配置生成完成，等待明确实际切换范围
+
+用户回传PREPARED_CONFIGS_READY，5个候选文件仅保存在`/root/racepick-deploy/mini-ocr-20261104-35bd5c5d/prepared-configs`，guest UID996、queue owner999、socket GID987/现有racepick-mini-test组；image_policy=disabled、bridge enabled=false、safety mode=disabled，未写真实新凭据、/etc或启动服务，未迁移切换。源码、环境、备份独立恢复和候选配置的准备阶段完成；按用户要求不再循环验包。
+
+拟请求的第一阶段实际授权为：保全现有业务/独立访客状态及原队列后，将兼容网站从a933切至7241候选，访客服务从9d856切至v2网关但图片仍disabled；复用既有OCR单元/队列与资源限制、原成绩指针及写开关，收尾恢复备份调度并验健康。不需要为这个关闭图片的阶段迁移识图安全schema，也不启动bridge。真实RAM配置、受控付费样图、queue schema0→1和公网OCR开启另阶段明确授权。当前尚未获实际切换授权，代理未操作服务器。
+
+## 2026-11-04 v2三套离线运行环境服务器准备完成，待候选配置与切换授权
+
+用户回传整条暂存/离线安装脚本成功标记PREPARATION_READY及No broken requirements found：guest/bridge固定目录`/opt/racepick-mini-ocr/releases/35bd5c5d2e618b555de3a70c`，网站候选`/opt/racepick/releases/7241d9d67cc99178bd7d2d14`。均为新暂存环境，未调用会加载第二模型的网站安装器自检；脚本未启动服务、迁移/activate或配置真实密钥及供应商调用。本轮不再重复用户已确认的核对。
+
+下一步仅在`/root/racepick-deploy/mini-ocr-20261104-35bd5c5d/prepared-configs`新私有目录渲染默认关闭JSON与两服务单元，不写/etc。计划复用guest现有主组作socket共享组，新bridge进程仍以queue owner运行；不更改现行账号/用户组成员或队列权限。沿用已有微信字段及state，仅复制配置中的密钥文件引用，不读取/复制密钥文件本体；阿里credentials文件仍不创建。实际安装配置、队列schema迁移、服务切换/公网OCR及付费样图仍需明确后续范围，不能把“尽快准备上线”扩成真实密钥或正式切换授权。
+
+## 2026-11-04 用户要求停止重复核对，直接推进v2暂存与离线环境准备
+
+用户已回传v2服务器ZIP312131724字节/SHAf5f58f917ac2c41d26bc3b2ed4fc098ebd9ac4b139a83e4275c9f73fc032e41d通过，随后明确“无需再一项项核对，之前已经由其他对话核对完成了。尽快准备上线不要死扣核对”。按用户确认接受其他对话已完成的核对，不再重复压缩包清单验证，不把本聊天未执行的命令写成新实测证据。
+
+下一步直接新目录解压暂存并离线安装guest/bridge及新网站7241候选的运行环境；尚待用户执行回传，不替换现行current、不启动新服务、不迁移业务/队列、不配真实密钥或真实传图付费。为保留唯一现有OCR模型及服务器资源，本步骤不调用网站install-runtime.sh中会额外加载模型的OCR自检，只按已锁wheel安装并pip check。所有旧发布、状态、备份和独立恢复目录保留；遇到已存在目标保留并回传，不删除重做。迁移/切换和开启公网仍须后续明确范围。
+
+## 2026-11-04 v2部署准备第四步：独立恢复通过，正式服务未切换
+
+用户按已明示范围以racepick执行，仅新建私有工作区`/var/lib/racepick/mini-ocr-restore-20261104-t35ng_gx`，对副本运行a933原工具，实际演练目录`restore-drills/1268d89c30fdadaa74fa1d80`。来源固定备份SHA2e6bdbfa17a75d4ac3a9ca585d56bfb0194bdea7a7f8e6b2ac2772d5b33c238e。恢复CN c815b612/Global435d5b40、50账号/25国服车库/0国际车库/6投稿，两服处理中0；contribution1及4/4/7/3、反馈1三表0、通知1及6/6、coverage2三表0、global-profile1/global-score1/usage1均通过，副本CN写开/Global写关。owner999/mode700，active_database_replaced=false、live_db_inode_preserved=true、live_migration_or_switch_performed=false，current前后a933断言通过。
+
+上述计数仍为04:20备份恢复副本，不能当实时业务计数。独立目录写入与正式数据/配置写入分别记录；没有停服或调用正式restore/migrate，也不清理新旧演练目录。下一步仅拟新建私有上传暂存目录并让用户上传35bd5c5d v2完整ZIP及校验文件，尚未核服务器包字节，不解包/安装/启动；访客状态和原OCR队列的保全仍须在任何服务变更前单独完成。结构化事实并入MINI_OCR_DEPLOYMENT_PREPARATION_20261104.json。
+
+## 2026-11-04 v2只读准备第三步通过：备份SQL完整，独立目录恢复尚待执行
+
+用户回传RAM-only核验：accounts/usage完整性及外键均ok，备份CN c815b612/Global435d5b40与清单一致，coverage2/global-profile1、usage1，CN写开/Global写关、两服处理中批次0。备份快照50账号/25国服车库/0国际车库/6投稿；不能把04:20快照当实时计数或认定之后未新增/删除车库。脚本未查询contribution_rules版本，不将输出中没有contribution_schema同名表解释为组件未启用。
+
+截至第三步仍无文件解包、正式SQLite打开或生产写入，独立恢复未完成。已核当前工具drill会新建私有目录并校验全部版本/绑定；下一步拟以原数据owner在新的mini-ocr-restore-20261104-*私有工作区恢复副本，再对该副本调用a933原工具独立演练，避免改动既有restore-drills权限或触及正式SQLite sidecar。命令须明确新增目录写入范围，由用户执行回传；不授权业务迁移/切换或真实供应商调用。结构化事实见MINI_OCR_DEPLOYMENT_PREPARATION_20261104.json。
+
+## 2026-11-04 v2只读准备第二步通过：今日定时备份文件完整，恢复尚待验证
+
+用户逐步回传同一固定备份scores-20261103T202007179082Z.zip（2149586字节/SHA2e6bdbfa17a75d4ac3a9ca585d56bfb0194bdea7a7f8e6b2ac2772d5b33c238e）：ZIP CRC、严格清单及40载荷逐项SHA通过，ZIP合计41成员含backup-manifest。备份声明CN c815b612/Global435d5b40、coverage2/global-score1/global-profile1/usage1，与第一步版本一致。服务实际ExecMainStart/Exit为11月4日04:20:06–04:20:07 CST，success/0；timer enabled、active/waiting，NEXT11月5日04:15:08，不能记未来运行成功。
+
+本次没有解压、打开正式SQLite、恢复或替换正式库。备份SQL逻辑完整性/计数和独立落盘恢复尚待检查；备份快照不等于此刻账号/国际车库数量，不能从global-profile1声明推断具体行数。下一步仅将备份SQL镜像读入RAM核完整性/外键/指针和聚合计数，不读个人字段或写服务器文件；独立恢复并未因此完成。所有真实密钥/供应商调用、迁移/切换仍未授权，公网OCR继续关闭。结构化第二步证据已并入MINI_OCR_DEPLOYMENT_PREPARATION_20261104.json。
+
+## 2026-11-04 12:38 v2部署准备第一步只读回传，尚无生产写入
+
+用户仅授权逐步只读准备，继续排除真实密钥/传图付费、迁移/切换和公网启用。用户回传确认网站current、accounts PID210016及OCR supervisor PID209663实际cwd均a933/源码765a4a6；访客PID214505实际cwd仍第一阶段9d856/0b97dae，image_policy=disabled，网站原生配置未设置。新桥unit not-found、两份安全配置不存在；内外health200/ok，主6/coverage2/global-score1/global-profile1，双服活动版本仍c815b612/435d5b40，CN写开；Global写开关本次health未返回，不据历史值冒充本次实查。所有PID仅为本次快照，worker209668来自state文件，尚未独立核其cwd。
+
+服务器Python3.12.3，内存总1740MiB/可用1024MiB、系统swap已用81MiB，磁盘可用27GiB；OCR实际High640/Max768MiB/Swap0/Tasks64，guest Max128MiB。后续新增预算须现场评估，不能将候选上限相加当作实际占用或盲覆原单元。原队列999:988/目录700/SQLite600，guest996:987/状态目录700。
+
+backup.service Result success/exit0，timer active(waiting)，LAST11月4日04:20:06、NEXT11月5日04:15:08。最新实际文件scores-20261103T202007179082Z.zip，2149586字节/SHA2e6bdbfa17a75d4ac3a9ca585d56bfb0194bdea7a7f8e6b2ac2772d5b33c238e，读取期间大小/mtime稳定；尚未核CRC/清单/逐项SHA或独立恢复，不写为恢复验收通过。原生仍关闭，代理未操作服务器。结构化记录MINI_OCR_DEPLOYMENT_PREPARATION_20261104.json；下一步仍只读核该固定备份，不解包/恢复或迁移。
+
+## 2026-11-04 原生HTTP接桥、Ubuntu离线锁与完整v2候选交付完成，未部署
+
+用户授权仅本地HTTP接线、Ubuntu离线依赖与完整可校验包，继续排除真实密钥/供应商传图付费、服务器及公网启用。本轮新增独立mini_ocr_guest_service和socket-only端口，提取纯snapshot/result模块；原访客状态和session key不重建，账号/B–E及Global OCR关闭。默认image_policy=disabled/bridge enabled=false，默认仍只session/snapshot；显式开启的本地夹具验证CN目录及原key/owner/图片/目录恢复，关闭上传后保留原任务查/恢复/取消，guest不能配置队列/业务库或RAM凭据路径。
+
+最终交付ID **35bd5c5d2e618b555de3a70c**，内层网站候选ID **7241d9d67cc99178bd7d2d14**；整包`offline-evaluation/mini-ocr-gateway-release-20261104-01/RacePick-MiniOCR-Baseline-20261104-delivery-v2.zip`，312131724字节，SHA256 **f5f58f917ac2c41d26bc3b2ed4fc098ebd9ac4b139a83e4275c9f73fc032e41d**。外层305文件/304项目录SHA、完整ZIP CRC及逐字节目录回读、源码清单、分环境锁和内层172文件manifest通过。源码为封存未提交快照，source_commit=null、开发base0b97dae9e1003c1bc2c4c5b7a189b81cb4002112，source tree SHA f0eb44207daede26e4f262c2fdbb430b36cb0fdb4ed930ce25eacf1d7b1bc1a5；不冒充新Git提交，本轮未提交推送。
+
+网站严格以已验收a933为基底，仅叠加本轮6个共享后端/兼容文件；CODE_DIFF确认HTML/CSS/JS/模型和原37wheel字节保持，不自动发布其他本地页面更新。五JSON仅为b57d97a8批准快照/种子，data_commit=null，不覆盖正式score-state、不导入维护733/工作簿、不重复维护或业务迁移。新队列schema及兼容cap准备必须未来显式授权；新工具只读发现schema1/部分结构会拒绝旧容量代码。旧c06/global-profile回退限制继续有效，不能恢复旧库丢车库。
+
+Windows合并142执行/122通过/20项Linux跳过；Ubuntu24.04.3用户态/CPython3.12.16完整124项通过无跳过，guest14/bridge37/web37/validation55 wheel均离线require-hashes安装和pip check通过。真实隔离Nginx HTTPS→guest UID10002→Unix→broker UID10001验证队列文件不可见、同key一次模拟审核、实际8MiB PNG202、封装/session超限413、Cookie/Origin403及Global OCR403，关闭上传后手选/取消保持。systemd255候选语法检查退出0，仅使用本地路径/数字UID和基线target夹具，非实际单元/cgroup验收。最终内层网站7241d9d6实际包又通过Ubuntu独立临时库迁移/锁/恢复与真实CPU合成RACEPICK识别自检（8.21秒）；无邮件或供应商请求，不等于游戏中文截图、真实微信或手机验收。
+
+准备说明在功能树docs/ALIYUN_OCR_RELEASE_PREPARATION_20261104.md，最终机器回执docs/MINI_OCR_RELEASE_RECEIPT_20261104.json及上述artifact目录COMPLETE_DELIVERY_RECEIPT_20261104.json。首次Ubuntu夹具漏文件/测试依赖、Windows新测试连接未关闭、v1校验器计数显示问题均已纠正，失败/旧候选保留，唯一推荐v2。原15份数据/工作簿SHA/大小/mtime保持。现网仍仅沿最近a933及第一阶段已验收记录，本轮未重新核服务器current/健康/备份timer。
+
+下一步若用户授权进入部署，先仅给当前一步只读核验，由用户执行回传；再结合成套备份/独立恢复、实际UID/GID/路径/资源确认兼容升级和queue schema所需授权。私有RAM配置、样图限量付费调用、Nginx/systemd/切换及微信uploadFile域名均后续分别按授权逐步办理。公网OCR仍关闭；无服务器/微信后台/上传提审发布、业务数据变更、公告、清理旧资料或监控。
+
+## 2026-11-04 SDK传输及共享单队列桥本地实现完成，公网OCR仍关闭
+
+用户授权继续本地真实SDK传输/共享桥/模拟及可做的Linux隔离验证，明确排除真实密钥、向审核服务传图/付费调用、服务器操作和公网启用。本轮功能树新增image_safety_sdk.py、ocr_queue_bridge.py及对应测试/默认关闭模板和独立SDK依赖清单，修改共用map_recognition.py支持显式safety schema、checking审核状态及共享配额。官方SDK签名/模型与oss2上传由模拟HTTP边界验证；真实SDK运行在独立、硬截止回收的子进程，默认配置和显式live授权双门禁。受限Unix socket桥验SO_PEERCRED/固定owner与CN目录，复用同一个JobStore；checking占8任务/owner2及同IP20/600秒额度但worker不能领取，取消/过期/关闭不允许审核迟到回包复活。
+
+Windows新套件48执行/37通过/11项Linux专用跳过，另官方SDK模拟线测3项通过（含新增HTTP500不重试）；既有访客/原生/OCR相关53回归通过。本机Docker启动因Inference manager失败，用户截图确认；未reset、删镜像/卷或上传诊断。改在现有WSL的本轮独立Alpine root中，以mount/network/PID namespace、UID10001、只读root和96MiB临时tmpfs运行，46项全部通过，业务路径不可见且未加载OCR模型。真实SDK线测仅Windowsmock，Linux子进程测试为合成目标，不是Linux真实阿里调用或Ubuntu/systemd/cgroup验收。便携静态Python加载Pillow失败及首次临时空间不足如实留记；Alpine root完整归档/SHA后只删除本轮新建临时root释放空间，Docker原数据保持。
+
+说明/机器回执在map-layout-parser/docs/ALIYUN_SDK_QUEUE_BRIDGE_LOCAL_20261104.md、ALIYUN_SDK_QUEUE_BRIDGE_LOCAL_RECEIPT_20261104.json；日志、SDK解析版本和Linux运行时归档在offline-evaluation/mini-ocr-sdk-bridge-20261104-01。15份运行JSON/工作簿SHA/大小/mtime保持；除明确修改的JobStore外，原网关/身份/worker/监督者6文件SHA保持。未提交推送/构部署包。原生HTTP网关尚未接桥，第一阶段仍session/snapshot和image disabled，不能仅填入密钥打开公网。下一步本地接线/Ubuntu离线锁/构包兼容后，才按用户授权配置真实凭据和现场UID/GID/路径；新增识图安全schema另需显式授权，serve不自动迁移，不重跑global-profile/维护迁移。旧a933网页JobStore不计算checking，未来须协调共用代码升级，不能只新增桥后混跑旧容量逻辑。保留正式账号/成绩/备份/原队列，不操作微信后台/账号B–E或小程序发布。
+
+## 2026-11-04 用户选定baselineCheck，本地适配与模拟测试完成，公网OCR仍关闭
+
+用户明确采用阿里云baselineCheck，后付费服务已由用户开通；本轮仅授权本地适配器/配置/模拟测试，排除真实传图/付费调用、服务器和公网开启。私有识图仅回传5槽地图名称，用户明确不购买广告引流专项；此前postImageCheck30元候选建议由本轮baselineCheck范围覆盖。基础安全审核与文字OCR仍分开，不能拿识别成功当审核通过。
+
+功能树新增backend/image_safety_aliyun.py、image_safety_local.py、test_image_safety_aliyun.py，production/aliyun-baseline.config.example.json及两项Action的RAM策略提案。适配器只支持disabled/simulation，未实现真实SDK网络传输、不读凭据；本地回执表位于同一个临时识图SQLite，复用原JobStore，不建第二队列或模型。owner/key/图SHA/目录绑定，同key/并发/重启/响应丢失不重复模拟送审，明确none+nonLabel才入队，拒绝/未知/超时关闭。local recover诊断状态没有改原生HTTP契约。不能仅填入凭据就开启此准备版本。
+
+新增23项模拟及既有访客/原生/OCR队列48项回归全部通过，Windows合成图/新临时目录，无真实阿里或微信调用。7份原网关/队列/worker代码与15份运行JSON/工作簿SHA/大小/mtime核对保持。说明与机器回执在map-layout-parser/docs/ALIYUN_BASELINE_LOCAL_PREPARATION_20261104.md、ALIYUN_BASELINE_LOCAL_RECEIPT_20261104.json，均未提交推送。生产socket桥/共享待审准入/待审取消及关闭收尾、Linux资源隔离、真实SDK/凭据加载、样图付费测试和现场切换仍待相应授权及验证。未操作服务器/微信后台、提交推送、公告、清理或监控；公网图片策略和原生入口保持原状态。
+
+## 2026-11-04 OCR提供方公开文档核验完成，尚未选定或接入
+
+用户要求优先核实微信官方再比较二进制送审；本轮普通HTTPS成功读取当前微信mediaCheckAsync官方正文/Markdown（页面标注2026-10-29编辑），补充了此前读取失败的证据。2.0要求真实OpenID且近2小时访问、media_url可下载、10M及有限图片格式，最终结果30分钟内异步回调。当前仅存HMAC摘要的GuestStore、无媒体下载入口和拟60秒安全截止都需调整，不能将wx.login通过当审核权限通过，也不能将30分钟回调当删除期限。当前官方单价及供应商留存期限未核实，不据非官方“免费”文章写0元保证。
+
+建议下一步候选为阿里云国内同步ImageModeration的本地上传方式，较广范围可选postImageCheck30元/万次，baselineCheck15元/万次不涵盖全部治理风险；最终选择仍待用户决定。官方本地流程先上传提供方临时OSS，文件30分钟、结果查询近30天，不能宣称零留存。腾讯CI确有Base64批量接口但仍需绑定桶、按场景计费及>5MB大图处理；腾讯IMS为另一产品，其Base64后10MB限制不足接收原始8MiB图片。微信权限/scene匹配、云供应商数据删除与使用条款等未核项见功能树docs/MINI_OCR_SAFETY_PROVIDER_REVIEW_20261104.md。10份官方公开文档快照及SHA回执存offline-evaluation/mini-ocr-provider-review-20261104-01，不含秘密或私人图片。
+
+本轮仅研究和本地交接更新，没有审核API调用/图片外发、服务开通/付费、服务器或微信后台操作、运行代码/开关修改、提交推送。公网OCR保持关闭；本报告是选型建议，不是接入授权或可部署包。
+
+## 2026-11-04 第一阶段用户验收回交，第二阶段OCR仅方案准备
+
+用户本轮回交：mini-test真实微信访客及双服固定快照已通过开发者工具，且“诊断版2手机上也通过了”。这是用户验收反馈；没有机型/系统版本，不能扩展为iOS/Android双系统、相册上传、OCR或账号验收。下方第一阶段“SDK待验证”为当时记录，原始回执保留。源码0b97dae/交付9d856fba仅session/snapshot，图片disabled；本轮未重新访问服务器，不声称现行进程、备份或证书续期已重核。
+
+当前任务已由旧730交付部署请求转为网站侧OCR开发准备；730整包SHA、60文件逐字节、59项目录SHA、主168/兼容158文件及冻结绑定重新通过，但主站最新运维记录a933已完成部署验收，不能再拿730重跑迁移或覆盖上线来源。fetch和ls-remote核对main/origin/main为39dcce916e4bc7f82fb58d245df4d61f1426a286；网站功能树0b97dae较远端3c3fdd9领先1提交，本轮未推送/合并。25个登记工作树已查，既有修改与未跟踪资料保留；原测试服务未启停。
+
+用户选择“尚未选择，先给接入方案”。网站功能树map-layout-parser/docs下新增MINI_OCR_STAGE2_PLAN_20261104.md、MINI_OCR_STAGE2_PROTOCOL_DRAFT_20261104.md、MINI_OCR_STAGE2_RESPONSE_DRAFT_20261104.json及MINI_OCR_STAGE2_PREPARATION_RECEIPT_20261104.json，均为未提交的本地方案，尚无新OCR运行代码、固定提交或交付ID。方案提出受限Unix socket桥接唯一JobStore/监督者、先审核后领取、共享事务配额和独立固定目录；协议增补仍待评审。安全提供方、外发/留存及实际平台声明未定，不启用private_unmoderated，不向外部送图，公网OCR继续关闭。
+
+本轮Windows既有访客/原生协议33项通过，不证明新桥/审核实现。Docker Linux引擎不可连接，未启动Docker/WSL，新架构Linux隔离/资源/并发测试待完成。账号/B–E、生产变更、服务器安装切换、微信后台、上传体验版/提审/发布均排除；未向其他聊天派任务。后续先评审方案与选择安全提供方，再实现并隔离验证；现场操作另按用户授权一次一步，不重跑global-profile/维护迁移，不恢复旧库，不清理或创建监控。
+
+## 2026-11-04 隔离小程序访客HTTPS入口已就绪，真实微信SDK验证待进行
+
+本轮由用户逐步执行授权的独立测试准备、DNS、ACME证书和隔离服务接通。正式网站仍为下文a933，生产账号/车库/成绩/原OCR及备份调度保持，未部署主站新版本、开启主站原生API或重跑业务迁移。独立origin=https://mini-test.racepick.cn，源码0b97dae9e1003c1bc2c4c5b7a189b81cb4002112（本机功能树固定，未推送/合main）、交付9d856fba3f6b825b255bc17e；仅POST访客session及GET双服snapshot，image_policy=disabled，账号/B–E/OCR关闭。详见[回交小程序侧](MINI_GUEST_STAGE1_CLOUD_HANDOFF_20261104.md)及[独立激活回执](MINI_GUEST_STAGE1_ACTIVATION_RECEIPT_20261104.json)。
+
+实际TLS域名/系统CA/呈现证书验证通过，接口门禁401/400/403/404/413符合预期，无真实微信code请求。私有真实平台配置已安全加载，不在Git/聊天/交付中记录值；不等于平台有效性已验证。独立UID996/GID987，服务PID214505/cwd固定release、仅127.0.0.1:8011，128MiB/25%CPU/Swap0/Tasks32及挂载隐藏正式文件已核验。最后观测schema1、sessions/codes/uploads均0；采样内存约34.5MiB/峰值34.9MiB仅短期未认证流量。服务active/running，**开机自启disabled**。原Nginx和两份证书26项基线保持；新配置、两个阶段备份、源SHA与证据边界见回执。
+
+下一步由用户登记request合法域名，交小程序侧建独立网络检查工程，真实wx.login→内存访客token→双服UTF8原字节/SHA/bytes/identity验证；先开发者工具再用户手动真机，不跳过域名/TLS校验、不上传/提审。当前不宣称真实平台、SDK或手机通过。证书截至2027-02-01T15:03:46Z；00:11观测snap.certbot.renew.timer NEXT11月4日06:00仅为当时计划，新证书自动续期及续期后加载未验证。独立访客状态未加入正式业务备份，未新增监控/定时清理/备份任务。不开启OCR/账号下一阶段；Git收尾另按授权。
+
 ## 2026-11-03 当前上线：a933c9b7，网站与CN4516/Global694同批正式发布，用户验收通过
 
 本轮生产命令全部由用户执行并逐步回传，代理未登录生产。用户明确纠正旧“新冻结只作种子”范围，本次正式发布维护冻结；旧730a61cd交付保留但不再用作本轮上线来源。后续用户授权直接迁移已审核内容，不重复逐条人工审核；仍完成现场完整计划绑定、漂移检查、成套备份及独立恢复。结构化证据见[网站与维护数据部署回执](WEB_DATA_DEPLOYMENT_RECEIPT_20261103.json)。下方c06及“维护数据未发布”均为历史阶段，不续跑旧迁移。

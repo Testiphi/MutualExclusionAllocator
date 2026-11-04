@@ -1,0 +1,530 @@
+{
+  "date": "2026-11-04",
+  "timezone": "Asia/Shanghai",
+  "target_delivery_id": "35bd5c5d2e618b555de3a70c",
+  "phase": "cn_native_ocr_activated_one_synthetic_supplier_review_approved_device_acceptance_pending",
+  "step24_final_activation": {
+    "evidence": "user returned CN_NATIVE_OCR_ACTIVATED and full activation receipt",
+    "directory": "/root/racepick-deploy/mini-ocr-20261104-35bd5c5d/native-final-nudoqb0h",
+    "bridge": "active; enabled for boot",
+    "guest": "active; enabled for boot",
+    "cn_native_ocr": "enabled",
+    "cn_catalog_version": "57876474bd3cd25c283e79a471be99ec76d4e58ed16fa0e2c8ae2a6cdf0b9ced",
+    "maps": 83,
+    "maps_sha256_from_prior_peer_check": "7b4e180ed199d4319f4b756477039232038043214a9a239d20ac782f97670b54",
+    "global_ocr": false,
+    "accounts_B_to_E": false,
+    "public_catalog_without_token": {"http": 401, "cache_control": "no-store"},
+    "cn_snapshot_without_token": 401,
+    "global_snapshot_without_token": 401,
+    "accounts_path": 404,
+    "nginx_reload_observation": "first HTTPS catalog request returned nginx404; bounded wait next response401/no-store; initial immediate post-reload assertion was premature",
+    "supplier_calls_in_final_command": 0,
+    "previous_authorized_single_synthetic_review": "approved; not repeated; no post-activation traffic billing claim",
+    "queue_schema": "1; initial0_to_1 only; not repeated in repair/final commands",
+    "backup_timer": "active; future scheduled execution not verified",
+    "cn_score_version": "c815b612a17433f403ae2965000fd74b",
+    "global_score_version": "435d5b40fd1aa4a01753a395f28d1f89",
+    "credentials_metadata": "unchanged by final command",
+    "runtime_extra_module": "bridge/backend/map_ocr_production.py copied from verified7241; SHA3c8a7d64564da8d7804bd0f35a8aba960ee922d86573af8973c857ec10718872/4495bytes; sealed ZIP unchanged",
+    "real_authenticated_http_upload_cancel_recover": "not performed after live activation",
+    "real_wechat_and_device_acceptance": "pending",
+    "further_production_actions": "none automatically; no extra supplier probe, cleanup, publication, monitoring or Git commit/push"
+  },
+  "step23_repair_attempt": {
+    "evidence": "user returned RUNTIME_DEPENDENCY_REPAIR and BRIDGE_CATALOG_READY, then public cn_catalog_gate assertion and rollback output",
+    "repair_directory": "/root/racepick-deploy/mini-ocr-20261104-35bd5c5d/bridge-repair-y_eccy1a",
+    "runtime_added_module": "bridge/backend/map_ocr_production.py",
+    "source_release": "7241d9d67cc99178bd7d2d14",
+    "sha256": "3c8a7d64564da8d7804bd0f35a8aba960ee922d86573af8973c857ec10718872",
+    "bytes": 4495,
+    "sealed_zip_changed": false,
+    "bridge_catalog_verified": {"catalog_version": "57876474bd3cd25c283e79a471be99ec76d4e58ed16fa0e2c8ae2a6cdf0b9ced", "maps": 83, "maps_sha256": "7b4e180ed199d4319f4b756477039232038043214a9a239d20ac782f97670b54", "global_ocr": false},
+    "native_guest_local_catalog_gate": "passed expected 401 before Nginx change",
+    "failure": "public catalog gate unexpected response; actual HTTP status/body not printed by command",
+    "nginx_reload_race": "possible, not established; previous command queried immediately after async reload",
+    "rollback": "disabled configs restored and original site reloaded; bridge stopped cleanly; actual final public health not returned",
+    "new_nginx_rate_proxy_files": "retained; compare exact contents and reuse on next step, do not assert absent",
+    "schema_migration_and_supplier_probe_repeated": false,
+    "next_action": "resume already-authorized final activation with bounded read-only readiness wait and explicit actual HTTP evidence; no paid calls"
+  },
+  "step22_enable_attempt": {
+    "authorization": "user explicitly authorized schema migration, bridge activation, CN native OCR routes and exactly one nonprivate synthetic baselineCheck probe; no automatic supplier retry; Global and accounts B-E closed",
+    "evidence": "user returned preservation/migration and SINGLE_BASELINECHECK_APPROVED followed by Bridge not ready and rollback path output",
+    "private_directory": "/root/racepick-deploy/mini-ocr-20261104-35bd5c5d/native-enable-ddobc7_8",
+    "migration": "0_to_1",
+    "jobs_preserved": true,
+    "job_count_at_migration": 0,
+    "synthetic_supplier_review": "approved; authorized one-shot probe consumed; DO NOT RETRY",
+    "one_shot_marker": "/root/racepick-deploy/mini-ocr-20261104-35bd5c5d/baselineCheck-once-20261104.reserved",
+    "failed_step": "guest-UID catalog socket readiness after bridge start; actual OSError hidden by polling loop; journal pending",
+    "guest_or_nginx_ocr_activation_reached": false,
+    "failure_handler": "restore disabled config, stop bridge, start original services/timer; exact current health not yet returned",
+    "next_action": "read-only bridge journal and restored state; do not repeat migration or paid probe"
+  },
+  "step21_bridge_unit": {
+    "evidence": "user returned BRIDGE_UNIT_PREPARED_STATIC and systemctl properties",
+    "path": "/etc/systemd/system/racepick-ocr-bridge.service",
+    "load_state": "loaded",
+    "active_state": "inactive/dead",
+    "unit_file_state": "disabled",
+    "pid": 0,
+    "user": "racepick",
+    "group": "racepick-mini-test",
+    "memory_high": 268435456,
+    "memory_max": 536870912,
+    "memory_swap_max": 0,
+    "cpu_quota": "1s",
+    "tasks_max": 32,
+    "static_verification": "passed before and after installation",
+    "unrelated_host_warnings": "existing cloudmonitor.service KillMode=none and legacy /var/run PIDFile warnings; no changes authorized or performed to this unit",
+    "credentials_and_config_metadata": "preserved by command assertions",
+    "queue_migration_or_provider_calls": false,
+    "user_steering": "stop repeated individual verification and expedite actual go-live",
+    "scope_pending": "explicit permission to move beyond previous no queue migration/no bridge start/no real image or paid call/native OCR disabled constraints"
+  },
+  "step20_disabled_configs": {
+    "evidence": "user returned DISABLED_CONFIGS_READY and offline parser results",
+    "safety_config": {"path": "/etc/racepick-ocr-safety/aliyun-baseline.json", "uid": 999, "gid": 988, "mode": "0600", "safety_mode": "disabled", "service": "baselineCheck", "region": "cn-shanghai"},
+    "bridge_config": {"path": "/etc/racepick-ocr-safety/bridge.json", "uid": 999, "gid": 988, "mode": "0600", "enabled": false, "allowed_uid": 996, "socket_gid": 987},
+    "credentials_loaded": false,
+    "existing_credential_stat_identity_permissions_size_mtime": "preserved",
+    "queue_opened": false,
+    "queue_migration": false,
+    "bridge_started": false,
+    "provider_called": false,
+    "native_image_policy": "disabled",
+    "next_scope": "configuration preparation complete; await next explicitly authorized operation"
+  },
+  "step19_credentials": {
+    "evidence": "user returned CREDENTIALS_PREPARED_OFFLINE and both offline checks passed",
+    "ram_user_and_minimal_policy": "user reports dedicated user created and two-action policy bound; no API authorization verification",
+    "directory": {"path": "/etc/racepick-ocr-safety", "uid": 999, "gid": 988, "mode": "0700"},
+    "credentials": {"path": "/etc/racepick-ocr-safety/aliyun-baseline-credentials.json", "uid": 999, "gid": 988, "mode": "0600"},
+    "offline_adapter_parser_as_owner": "passed",
+    "guest_os_access_read_check": "denied as expected",
+    "provider_key_validity_and_authorization": "not tested online",
+    "provider_calls_or_image_uploads": false,
+    "bridge_started": false,
+    "native_image_policy": "disabled",
+    "queue_migration": false,
+    "first_attempt_failure": "opening /dev/tty with r+ raised UnsupportedOperation before input/writes; corrected w mode succeeded",
+    "secret_values_or_fingerprints_recorded": false,
+    "next_scope": "await next explicit configuration/integration task; do not recreate existing credential file"
+  },
+  "step18": {
+    "evidence": "user returned READ_ONLY_CLOSEOUT_PASSED with detailed server output",
+    "website_current": "/opt/racepick/releases/7241d9d67cc99178bd7d2d14",
+    "accounts": {"pid": 218390, "active": true, "cwd_matches": true},
+    "original_ocr_supervisor": {"pid": 218388, "active": true, "cwd_matches": true, "worker_health": "ready", "memory_high": 671088640, "memory_max": 805306368, "swap_max": 0, "cpu_quota": "1s", "tasks_max": 64},
+    "guest": {"pid": 218393, "active": true, "actual_cwd": "/opt/racepick-mini-ocr/releases/35bd5c5d2e618b555de3a70c/guest", "memory_high": 134217728, "memory_max": 268435456, "swap_max": 0, "cpu_quota": "250ms", "tasks_max": 32},
+    "bridge": "inactive/dead; MainPID0",
+    "backup_timer": {"enabled": true, "active": "waiting", "last_trigger": "2026-11-04 04:20:06 CST", "next_scheduled": "2026-11-05 04:19:52 CST", "future_execution_verified": false},
+    "last_scheduled_backup_service": "2026-11-04 04:20:06 to 04:20:07 CST; success/0; predates compatible cutover",
+    "final_cutover_receipt": "/root/racepick-deploy/mini-ocr-20261104-35bd5c5d/cutover-final-b21osho2/cutover.json",
+    "guest_queue_configs_archive": "/root/racepick-deploy/mini-ocr-20261104-35bd5c5d/cutover-final-b21osho2/guest-queue-configs.tar.gz",
+    "guest_queue_configs_sha256": "e4117c68d392900cfbfc55d9257da98f07325e018fd51bf4f86b71471672d13e",
+    "final_business_backup": "/var/lib/racepick/backups/scores-20261104T062600889850Z.zip",
+    "final_business_backup_sha256": "20890cd75924498920e5ad01cb765545257082437b598c391bd50ac1deae52c1",
+    "independent_restore": "/var/lib/racepick/restore-drills/d56fbfb914503c8898d758d6",
+    "backup_snapshot_counts": {"users": 50, "profiles": 25, "profiles_global": 0, "submissions": 6},
+    "pending_cn_global_batches": [0, 0],
+    "active_database_replaced": false,
+    "public_health": {"http": 200, "cache_control": "no-store", "status": "ok", "schema": 6, "coverage_schema": 2, "global_profile_schema": 1, "global_score_schema": 1, "cn_version": "c815b612a17433f403ae2965000fd74b", "global_version": "435d5b40fd1aa4a01753a395f28d1f89", "cn_writes": true, "global_writes": "not returned by this health response", "original_web_ocr": "enabled/ready"},
+    "public_guest_snapshot_without_token": {"cn": 401, "global": 401, "cache_control": "no-store"},
+    "public_native_ocr_catalog": {"http": 404, "cache_control": null},
+    "native_image_policy": "disabled",
+    "queue_migration": false,
+    "provider_credentials_or_paid_calls": false,
+    "real_wechat_and_device_reacceptance": "not performed in this cutover",
+    "source_commit": null,
+    "git_commit_push": "not authorized or performed",
+    "follow_up_scope": "OCR queue schema, bridge, supplier credentials/calls and native OCR enablement require a subsequent explicit task; no further server operations automatically scheduled"
+  },
+  "step17": {
+    "evidence": "user returned only COMPATIBLE_CUTOVER_READY; native OCR remains closed.",
+    "cutover_success": "user-reported success marker; detailed receipt not returned",
+    "expected_website": "7241d9d67cc99178bd7d2d14",
+    "expected_guest_delivery": "35bd5c5d2e618b555de3a70c",
+    "public_acceptance": "pending",
+    "next_action": "read-only actual process cwd, health, native closed gates, timer state and sanitized final receipt"
+  },
+  "step16": {
+    "evidence": "user returned GUEST_SANDBOX_INSPECT_PASSED",
+    "safety_directory": "/etc/racepick-ocr-safety; root-private empty directory prerequisite created/checked",
+    "transient_unit": "racepick-mini-ocr-check-2bc092f0.service",
+    "result": "success; exit0; runtime2.360s",
+    "scope": "candidate guest sandbox and fixed snapshot inspect only; no auth config loading, listener, guest store, OCR model or provider credentials",
+    "persistent_services_changed": false,
+    "next_action": "compatible cutover retry reusing exact disabled candidate config; latest maintenance preservation; no queue migration or bridge start"
+  },
+  "step15": {
+    "evidence": "user returned journal, path metadata and PUBLIC_HEALTH",
+    "root_cause": "systemd 226/NAMESPACE: InaccessiblePaths target /etc/racepick-ocr-safety absent; Python never started for candidate guest",
+    "website_current": "/opt/racepick/releases/a933c9b746c2e276a9b68d14",
+    "original_services": "active/running",
+    "backup_timer": "active/waiting",
+    "bridge": "inactive/dead",
+    "public_health": "ok; unchanged CN/Global pointers and original worker ready",
+    "candidate_guest_config": "already installed; UID996/GID987 mode0600; retain and compare on retry instead of rejecting its existence",
+    "next_action": "create empty root-private safety directory if absent, then bounded systemd transient snapshot inspect with candidate guest sandbox; no persistent service switch or credentials"
+  },
+  "step14_failure": {
+    "evidence": "user returned compatibility/preservation success followed by Guest gateway did not become ready",
+    "private_directory": "/root/racepick-deploy/mini-ocr-20261104-35bd5c5d/cutover-retry-q2p2wqw6",
+    "final_preservation": "passed; full preservation.json not returned yet",
+    "compatible_website_was_activated": true,
+    "failure": "guest unauthenticated snapshot did not return expected 401 within readiness deadline; actual response/log unknown",
+    "rollback_commands": "original code/unit rollback path executed; original OCR/accounts/guest and backup timer start exit 0",
+    "recovery_health_verified": false,
+    "business_database_restored": false,
+    "next_action": "read-only guest journal and actual restored versions/health; do not retry cutover until diagnosed"
+  },
+  "step13": {
+    "evidence": "user returned READ_ONLY_DIAGNOSIS_DONE",
+    "explicit_candidate_cwd_precheck_exit": 0,
+    "compatibility": "passed",
+    "website_current": "/opt/racepick/releases/a933c9b746c2e276a9b68d14",
+    "original_services": "all active/running",
+    "bridge": "inactive/dead",
+    "backup_timer": "active/waiting",
+    "public_health": "ok; original CN/Global pointers retained; OCR worker ready",
+    "root_cause_limit": "prior stderr unavailable; explicit cwd precheck passes, no evidence of candidate incompatibility",
+    "next_action": "one bounded user-executed maintenance step: refresh preservation, compatible cutover, health and timer recovery"
+  },
+  "step12_failure": {
+    "evidence": "user returned CalledProcessError from owner-run compatibility precheck",
+    "failed_command": "candidate python -B -c verify/check_score_compatibility via runuser",
+    "stderr": "not returned because subprocess capture_output suppressed it",
+    "candidate_cwd_explicitly_set": false,
+    "possible_cause_unverified": "python -c from /root may not find candidate modules",
+    "code_link_switched": false,
+    "guest_unit_or_config_installed": false,
+    "recovery_start_exit_codes": {"ocr": 0, "accounts": 0, "guest": 0, "backup_timer": 0},
+    "recovery_health_verified": false,
+    "next_action": "read-only precheck with explicit candidate cwd and visible stderr; original health/timer inspection"
+  },
+  "step11": {
+    "evidence": "user returned FINAL_PRESERVATION_READY",
+    "private_directory": "/root/racepick-deploy/mini-ocr-20261104-35bd5c5d/pre-cutover-ean3ghkc",
+    "guest_queue_configs_archive_bytes": 4156,
+    "guest_queue_configs_archive_sha256": "968232bd268baf11bacbaa90de34c7200ea36de35d4edc3a1c6a46fe636d170f",
+    "final_business_backup": "/var/lib/racepick/backups/scores-20261104T061602123354Z.zip",
+    "final_business_backup_sha256": "a6d28999b4a799771c802597771ba30109ea99b769e80009b7ff443ba0a7352f",
+    "drill_directory": "/var/lib/racepick/restore-drills/a8e8236c59613f9630a24eb9",
+    "active_database_replaced": false,
+    "original_three_services": "stopped",
+    "backup_timer": "inactive",
+    "migration_or_switch": false,
+    "bridge_started": false
+  },
+  "step10": {
+    "evidence": "user returned LATEST_BUSINESS_BACKUP_READY",
+    "backup": "/var/lib/racepick/backups/scores-20261104T061419070871Z.zip",
+    "bytes": 2150420,
+    "sha256": "60ea305938ed111683fbe8692e981d109b89169586619b701fd4e09d41deaa82",
+    "strict_backup_verification": "passed",
+    "drill_directory": "/var/lib/racepick/restore-drills/c17af807b720ca8752cc83ca",
+    "counts": {"users": 50, "profiles": 25, "profiles_global": 0, "submissions": 6},
+    "cn_version": "c815b612a17433f403ae2965000fd74b",
+    "global_version": "435d5b40fd1aa4a01753a395f28d1f89",
+    "pending_batches": 0,
+    "global_pending_batches": 0,
+    "active_database_replaced": false,
+    "migration_or_switch": false
+  },
+  "authorization": "User explicitly authorizes compatible website and disabled-image guest cutover. Preserve all business data, guest state, original queue and backups. No queue migration, bridge start, Aliyun credentials, paid calls or public native OCR enablement. Commands are user-executed one step at a time.",
+  "evidence_source": "user-returned server output; agent did not access production",
+  "step1": {
+    "observed_at": "2026-11-04T12:38:18+08:00",
+    "python": "3.12.3",
+    "kernel": "6.8.0-139-generic x86_64",
+    "memory_mib": {
+      "total": 1740,
+      "available": 1024,
+      "swap_used": 81
+    },
+    "disk_available": "27GiB",
+    "website": {
+      "current": "/opt/racepick/releases/a933c9b746c2e276a9b68d14",
+      "release_id": "a933c9b746c2e276a9b68d14",
+      "code_commit": "765a4a62567c97a9a2d4f48cf3a8955e3e8cd715",
+      "pid_snapshot": 210016,
+      "actual_cwd_matches": true,
+      "native_config_nonempty": false
+    },
+    "ocr": {
+      "supervisor_pid_snapshot": 209663,
+      "actual_cwd_matches_website": true,
+      "worker_state_pid_snapshot": 209668,
+      "worker_actual_cwd_not_read": true,
+      "state": "ready",
+      "run_id": "e409c0ef26d04ae6",
+      "memory_current_bytes": 198443008,
+      "memory_high_bytes": 671088640,
+      "memory_max_bytes": 805306368,
+      "swap_max": 0,
+      "tasks_max": 64
+    },
+    "guest": {
+      "release_id": "9d856fba3f6b825b255bc17e",
+      "code_commit": "0b97dae9e1003c1bc2c4c5b7a189b81cb4002112",
+      "pid_snapshot": 214505,
+      "actual_cwd_matches": true,
+      "uid": 996,
+      "gid": 987,
+      "image_policy": "disabled",
+      "memory_current_bytes": 39559168,
+      "memory_max_bytes": 134217728
+    },
+    "queue_owner": {
+      "uid": 999,
+      "gid": 988,
+      "directory_mode": "0700",
+      "database_mode": "0600",
+      "database_bytes": 53248
+    },
+    "bridge_unit": "not-found",
+    "safety_configuration_files": "absent",
+    "backup": {
+      "service_result": "success",
+      "exec_main_status": 0,
+      "timer": "active/waiting",
+      "last_trigger": "2026-11-04 04:20:06 CST",
+      "next": "2026-11-05 04:15:08 CST",
+      "path": "/var/lib/racepick/backups/scores-20261103T202007179082Z.zip",
+      "bytes": 2149586,
+      "sha256": "2e6bdbfa17a75d4ac3a9ca585d56bfb0194bdea7a7f8e6b2ac2772d5b33c238e",
+      "stable_during_hash": true,
+      "manifest_crc_and_members_not_yet_verified": true,
+      "independent_restore_not_yet_verified": true
+    },
+    "health": {
+      "local_http": 200,
+      "public_http": 200,
+      "status": "ok",
+      "mode": "production",
+      "schema": 6,
+      "coverage_schema": 2,
+      "global_profile_schema": 1,
+      "global_score_schema": 1,
+      "cn_version": "c815b612a17433f403ae2965000fd74b",
+      "global_version": "435d5b40fd1aa4a01753a395f28d1f89",
+      "cn_writes": true,
+      "global_writes_not_returned": true
+    }
+  },
+  "next": "Request concrete authorization for compatible website and disabled-image guest cutover only; defer queue migration/bridge start/keys/provider calls/public OCR until separately authorized",
+  "unverified": [
+    "live queue safety schema/counts",
+    "current account/garage counts and global write switch",
+    "current Nginx routes/candidate runtime mount/cgroup capacity",
+    "private guest state and OCR queue independent preservation plan",
+    "preservation backups of current guest state and original OCR queue before any service change"
+  ],
+  "production_writes_performed": false,
+  "migration_or_switch_authorized": false,
+  "public_ocr_enabled_by_this_work": false,
+  "commit_push": false,
+  "step2": {
+    "observed_at": null,
+    "timestamp_note": "user return did not include command execution time",
+    "backup_path": "/var/lib/racepick/backups/scores-20261103T202007179082Z.zip",
+    "backup_sha256": "2e6bdbfa17a75d4ac3a9ca585d56bfb0194bdea7a7f8e6b2ac2772d5b33c238e",
+    "backup_bytes": 2149586,
+    "zip_crc_passed": true,
+    "strict_manifest_all_members_sha_passed": true,
+    "archive_members": 41,
+    "manifest_payloads_verified": 40,
+    "backup_schema": {
+      "format": "racepick-coherent-scores-v1",
+      "cn_version": "c815b612a17433f403ae2965000fd74b",
+      "global_version": "435d5b40fd1aa4a01753a395f28d1f89",
+      "coverage": 2,
+      "global_score": 1,
+      "global_profile": 1,
+      "usage": 1
+    },
+    "backup_service": {
+      "start": "2026-11-04 04:20:06 CST",
+      "exit": "2026-11-04 04:20:07 CST",
+      "result": "success",
+      "status": 0
+    },
+    "timer_enabled": true,
+    "timer_active_waiting": true,
+    "independent_restore_verified": false,
+    "active_database_replaced": false,
+    "files_extracted": false,
+    "live_database_opened": false
+  },
+  "step3": {
+    "observed_at": null,
+    "source": "user returned RAM-only backup SQL verification",
+    "backup_accounts_integrity": "ok",
+    "backup_accounts_foreign_keys": "ok",
+    "backup_usage_integrity": "ok",
+    "backup_usage_foreign_keys": "ok",
+    "backup_usage_schema": 1,
+    "backup_counts": {
+      "users": 50,
+      "profiles": 25,
+      "profiles_global": 0,
+      "submissions": 6
+    },
+    "counts_are_backup_snapshot_not_live": true,
+    "backup_schema_versions": {
+      "community_schema": [
+        1
+      ],
+      "feedback_schema": [
+        1
+      ],
+      "notification_schema": [
+        1
+      ],
+      "coverage_schema": [
+        2
+      ],
+      "global_profile_schema": [
+        1
+      ]
+    },
+    "contribution_schema_not_queried_by_this_script": true,
+    "cn_version": "c815b612a17433f403ae2965000fd74b",
+    "global_version": "435d5b40fd1aa4a01753a395f28d1f89",
+    "cn_writes_in_backup": true,
+    "global_writes_in_backup": false,
+    "pending_batches_in_backup": {
+      "score_batches": 0,
+      "global_score_batches": 0
+    },
+    "no_live_SQLite_opened": true,
+    "no_files_extracted": true,
+    "independent_directory_restore_verified": false
+  },
+  "step4": {
+    "observed_at": null,
+    "evidence": "user execution output; no agent production access",
+    "workspace": "/var/lib/racepick/mini-ocr-restore-20261104-t35ng_gx",
+    "drill_directory": "/var/lib/racepick/mini-ocr-restore-20261104-t35ng_gx/restore-drills/1268d89c30fdadaa74fa1d80",
+    "backup_sha256": "2e6bdbfa17a75d4ac3a9ca585d56bfb0194bdea7a7f8e6b2ac2772d5b33c238e",
+    "independent_restore_verified": true,
+    "active_database_replaced": false,
+    "live_db_inode_preserved": true,
+    "owner_uid": 999,
+    "mode": "0700",
+    "counts": {
+      "users": 50,
+      "profiles": 25,
+      "profiles_global": 0,
+      "submissions": 6
+    },
+    "cn_version": "c815b612a17433f403ae2965000fd74b",
+    "global_version": "435d5b40fd1aa4a01753a395f28d1f89",
+    "pending_cn": 0,
+    "pending_global": 0,
+    "schemas": {
+      "usage": 1,
+      "coverage": 2,
+      "global_profile": 1,
+      "global_score": 1,
+      "contribution": 1,
+      "feedback": 1,
+      "notification": 1
+    },
+    "coverage_counts": {
+      "coverage_choices": 0,
+      "coverage_events": 0,
+      "coverage_global_choices": 0
+    },
+    "contribution_counts": {
+      "contributions": 4,
+      "contribution_sources": 4,
+      "contribution_events": 7,
+      "contribution_preferences": 3
+    },
+    "feedback_counts": {
+      "feedback_tickets": 0,
+      "feedback_events": 0,
+      "feedback_requests": 0
+    },
+    "notification_counts": {
+      "notification_events": 6,
+      "notification_reads": 6
+    },
+    "writes_in_restored_copy": {
+      "cn": true,
+      "global": false
+    },
+    "live_migration_or_switch_performed": false
+  },
+  "server_preparation_writes_performed": true,
+  "server_preparation_write_scope": "new owner-private isolated restore workspace only; user executed",
+  "active_business_database_modified_by_this_work": false,
+  "production_writes_field_scope": "active production business data/configuration; excludes separately recorded isolated restore preparation files",
+  "step5": {
+    "evidence": "user reports directory created and ZIP/checksum uploaded; file attributes and server-side SHA not yet returned",
+    "staging_directory": "/root/racepick-deploy/mini-ocr-20261104-35bd5c5d",
+    "uploaded_files": [
+      "RacePick-MiniOCR-Baseline-20261104-delivery-v2.zip",
+      "RacePick-MiniOCR-Baseline-20261104-delivery-v2.zip.sha256"
+    ],
+    "package_sha_verified": false,
+    "package_extracted": false,
+    "runtime_installed": false,
+    "new_service_started": false
+  },
+  "step6": {
+    "evidence": "user returned server output",
+    "archive": "/root/racepick-deploy/mini-ocr-20261104-35bd5c5d/RacePick-MiniOCR-Baseline-20261104-delivery-v2.zip",
+    "bytes": 312131724,
+    "sha256": "f5f58f917ac2c41d26bc3b2ed4fc098ebd9ac4b139a83e4275c9f73fc032e41d",
+    "size_check": "passed",
+    "uploaded_checksum_check": "passed",
+    "stable_during_hash": true,
+    "files_extracted": false,
+    "runtime_installed": false,
+    "service_started": false
+  },
+  "step7": {
+    "status": "further_repeated_checks_waived_by_user",
+    "user_instruction": "无需再一项项核对，之前已经由其他对话核对完成了。尽快准备上线不要死扣核对",
+    "evidence_class": "user-reported completion in other chats; not new server output in this chat",
+    "agent_will_not_repeat_archive_inventory_checks": true
+  },
+  "step8": {
+    "evidence": "user returned PREPARATION_READY after the complete set-e offline staging/install script",
+    "delivery_runtime_root": "/opt/racepick-mini-ocr/releases/35bd5c5d2e618b555de3a70c",
+    "website_candidate": "/opt/racepick/releases/7241d9d67cc99178bd7d2d14",
+    "guest_bridge_website_offline_envs_prepared": true,
+    "pip_check_passed": true,
+    "new_services_started": false,
+    "migration_applied": false,
+    "activation_performed": false,
+    "real_keys_configured": false,
+    "provider_calls": false
+  },
+  "step9": {
+    "evidence": "user returned PREPARED_CONFIGS_READY",
+    "directory": "/root/racepick-deploy/mini-ocr-20261104-35bd5c5d/prepared-configs",
+    "files": [
+      "aliyun-baseline.json",
+      "bridge.json",
+      "mini-ocr.json",
+      "racepick-mini-test.service",
+      "racepick-ocr-bridge.service"
+    ],
+    "guest_uid": 996,
+    "queue_owner_uid": 999,
+    "socket_gid": 987,
+    "socket_group": "racepick-mini-test",
+    "guest_image_policy": "disabled",
+    "bridge_enabled": false,
+    "safety_mode": "disabled",
+    "new_credentials_written": false,
+    "installed_into_etc": false,
+    "service_started": false,
+    "migration_or_switch": false
+  }
+}

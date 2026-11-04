@@ -1,3 +1,11 @@
+2026-11-04 分功能Git交付：内容安全/共享队列cea4386、原生网关5d39af5、离线交付及启动依赖修复eeb966c、阶段文档bfcf97e，已推feature/map-layout-parser；主repo仅归档现场交接，不合并功能分支、不重新部署、不倒改封存包来源。用户已转交小程序侧，手机OCR验收仍待后续。见[Git回执](GIT_DELIVERY_20261104.json)。
+
+2026-11-04 最新线上：网站7241、原生交付35bd加已记录的单文件运行依赖补件；CN OCR服务端已开启，baselineCheck唯一合成审核通过，共享桥/guest active并开机启用，原队列schema1仅迁移一次。Global OCR及账号/B–E关闭，正式双服成绩及原网站/worker保持，backup.timer active。真实微信/手机OCR和激活后的实图完整链路尚未验收。见[CLOUD_HANDOFF](CLOUD_HANDOFF.md)文首、[现场回执](MINI_OCR_DEPLOYMENT_PREPARATION_20261104.json)、[小程序回交](MINI_OCR_CN_CLOUD_HANDOFF_20261104.md)。下方disabled与a933记录按历史阅读。
+
+2026-11-04 最新兼容上线：网站7241d9d67cc99178bd7d2d14、隔离访客网关交付35bd5c5d2e618b555de3a70c的实际PID/cwd及公网健康/关闭门禁通过；原双服成绩指针、原网页OCR和单队列保留，原生图片disabled、bridge停止、未迁移队列或配阿里密钥/付费。最新业务备份独立恢复及访客/原队列保全完成，backup.timer恢复enabled/active；未来定时执行和本次真实微信/手机重验未核实。见[CLOUD_HANDOFF](CLOUD_HANDOFF.md)文首及[现场回执](MINI_OCR_DEPLOYMENT_PREPARATION_20261104.json)。下方a933及第一阶段记录为历史。
+
+2026-11-04 隔离访客测试入口：https://mini-test.racepick.cn 已通过服务端TLS/门禁/资源及挂载隔离核验，真实微信SDK/真机待验证；主网站a933保持。仅访客会话和4516/694固定快照，图片/账号/B–E关闭；新服务未设开机自启。见[小程序回交](MINI_GUEST_STAGE1_CLOUD_HANDOFF_20261104.md)、[激活回执](MINI_GUEST_STAGE1_ACTIVATION_RECEIPT_20261104.json)及[CLOUD_HANDOFF](CLOUD_HANDOFF.md)文首。
+
 2026-11-03 main源码整合：已合入所有本地分支的已提交分支头，包括网站共享核心/原生接口、小程序客户端、安全配置修复、独立Demo和旧PR文档；保留main已上线4516/694原字节。前端212通过，Python399执行/397通过/2项Linux专用跳过；并行小程序未提交外观/管理页开发仍留原树。仅Git整合，不重新部署。见[整合回执](MAIN_INTEGRATION_20261103.json)。
 
 2026-11-03 数据Git归档：批准冻结对应五份运行数据已分别按国服/国际服提交，组合数据提交613c9bfb4ddfccfe335a949af4f83f41d8369269的Git blob逐字节匹配冻结。原已部署包的data_commit=null仍作为构包历史保留，不倒改制品。详见[Git数据交付回执](DATA_GIT_DELIVERY_20261103.json)。来源表、分享表、研究工具仅仓库归档，不扩大应用包。
@@ -11,6 +19,14 @@
 当前生产（2026-10-30）：bbd92687已激活，运维/公网接口/新组件备份恢复及timer恢复已验证；用户桌面与真实手机微信验收待进行。见[CLOUD_HANDOFF](CLOUD_HANDOFF.md)文首和[部署回执](COVERAGE_DEPLOYMENT_RECEIPT_20261030.json)。下方“未部署”属于历史构包阶段。
 
 # 文档索引
+
+2026-11-04 最新本地完整交付：[主交接](CLOUD_HANDOFF.md)。原生HTTP接桥、Ubuntu离线锁与v2候选35bd5c5d完成；功能树docs/MINI_OCR_RELEASE_RECEIPT_20261104.json绑定整包SHA及验证，docs/ALIYUN_OCR_RELEASE_PREPARATION_20261104.md为配置/部署边界。Ubuntu124项、Windows122通过20跳过及包内临时库/CPU合成识别通过；公网OCR关闭、未部署或真实送审，数据仅作种子，源码仍未提交封存快照。先核v2 README_FIRST及主repo最新交接，不续跑历史业务迁移。
+
+2026-11-04 最新本地SDK/共享桥：[主交接最新记录](CLOUD_HANDOFF.md)。网站功能树docs/ALIYUN_SDK_QUEUE_BRIDGE_LOCAL_20261104.md及机器回执记真实SDK模拟HTTP、Unix socket单队列桥与WSL断网非root隔离46项通过；真实阿里调用、原生HTTP接线、Ubuntu/systemd/生产均未验收，公网OCR仍关闭。共用JobStore新增识图安全schema只能显式迁移，现场未执行。
+
+2026-11-04 阿里云baselineCheck本地准备：用户已选定基础检测并确认服务开通；本地适配器/配置模板及23项模拟、48项既有回归通过，默认disabled，真实SDK传输/生产共享桥尚待完成。功能树说明 `map-layout-parser/docs/ALIYUN_BASELINE_LOCAL_PREPARATION_20261104.md`，实际状态见[CLOUD_HANDOFF](CLOUD_HANDOFF.md)。未真实传图、付费调用或上线。
+
+2026-11-04 最新阶段：第一阶段真实访客/固定快照已由用户回交开发者工具和“诊断版2手机”通过；OCR仅网站侧方案准备，提供方未选、公网OCR关闭。详见[CLOUD_HANDOFF最新记录](CLOUD_HANDOFF.md)。本地设计、协议草案、响应示意和回执保存在网站功能工作树 `map-layout-parser/docs/MINI_OCR_STAGE2_*_20261104.*`，未提交、未实现新桥/安全审核、未形成可部署包。
 
 2026-10-31 小程序开发注意：[UGC声明、审核缺口与验收要求](MINIPROGRAM_COMPATIBILITY_20261030.md)。已记录成绩投稿、公开昵称、识图图片、反馈等入口；内容安全API/昵称审核等尚未完成，不能用OCR或成绩业务审批冒充内容安全审核。本次仅固定文档，未改功能/数据/发布包；后续开发须按首版实际范围落实并验收。
 

@@ -1,0 +1,202 @@
+{
+  "schema": "racepick.mini-guest-stage1-activation.v1",
+  "date": "2026-11-04",
+  "timezone": "Asia/Shanghai",
+  "status": "https_gateway_ready_real_wechat_sdk_verification_pending",
+  "evidence": "User executed server commands and returned results; HTTP/TLS requests originated from the server to its public hostname, not from the WeChat SDK or a phone. Agent did not run production commands.",
+  "authorization": "User separately authorized isolated preparation, DNS, HTTP ACME/certonly certificate preparation, then fresh actual guest state/private configuration/HTTPS routes/independent service install and start.",
+  "origin": "https://mini-test.racepick.cn",
+  "delivery_id": "9d856fba3f6b825b255bc17e",
+  "code_commit": "0b97dae9e1003c1bc2c4c5b7a189b81cb4002112",
+  "code_commit_location": "Local feature/map-layout-parser commit; not pushed or merged to main by this phase",
+  "archive": {
+    "bytes": 3243638,
+    "sha256": "a48875c79258d5c662847879afbd74603baf08ad6ff238c78dd2179b53c856e7"
+  },
+  "snapshot": {
+    "kind": "isolated immutable test snapshot, not production score-state pointers",
+    "versions": {
+      "cn": "593ecc7222ceea5856b2f576b4f5bca8",
+      "global": "e29f52e7f81c3e337985bf05dedb7e88"
+    },
+    "files": {
+      "cars.global.json": {
+        "sha256": "6d35da66c9c0d2d7335b3e80d6a7351bbc494911a5b1d8dab0a0c2137cbc9759",
+        "bytes": 29852
+      },
+      "cars.json": {
+        "sha256": "ea42daedfdb73a4963e2e70c6cdf91deb29ae6bec5143b697e50d8c877961b17",
+        "bytes": 83653
+      },
+      "gauntlet_data.global.json": {
+        "sha256": "79958b507b814fb0823e03aa8f97843fafe9b61a558c428336a4879587a33bd2",
+        "bytes": 133918
+      },
+      "gauntlet_data.json": {
+        "sha256": "2e8bf6ba763a64f24cd1e93be0afbaca8c77e24efcb9a96812952de800b018b6",
+        "bytes": 225341
+      },
+      "global-data-manifest.json": {
+        "sha256": "7e38469bc6bd6de5498bc1e38c16898c0a34eddb86ead72d610e0e1883e6dbe6",
+        "bytes": 1866
+      }
+    },
+    "cn_keys": 4516,
+    "global_entries": 694,
+    "global_dataset_version": "9b83ddd062a4d4b0c15d51dc0eed323aabb8e599e3e9544bc91714b70a7a4259",
+    "freeze_id": "b57d97a8f4e484be69238ab0",
+    "freeze_manifest_sha256": "940f8660585c495a780390b709dfd52e80f7610f57e0179c5da937c53c4e4282",
+    "source_website_release": "a933c9b746c2e276a9b68d14",
+    "source_website_code_commit": "765a4a62567c97a9a2d4f48cf3a8955e3e8cd715",
+    "source_website_data_commit": null
+  },
+  "scope": {
+    "methods": [
+      "POST /api/mini/v1/session",
+      "GET /api/mini/v1/snapshot?server=cn|global"
+    ],
+    "image_policy": "disabled",
+    "map_recognition_capability": false,
+    "catalog_version": null,
+    "account_api_enabled": false,
+    "business_B_E_enabled": false,
+    "ocr_worker_started": false,
+    "formal_website_native_api_changed": false
+  },
+  "platform": {
+    "real_wechat_verifier_configured": true,
+    "private_configuration_loaded": true,
+    "platform_credentials_validity_verified": false,
+    "real_code_exchange_verified": false,
+    "fixture_verifier_used_in_live_service": false,
+    "credentials_recorded_in_this_receipt": false
+  },
+  "service": {
+    "unit": "racepick-mini-test.service",
+    "user": "racepick-mini-test",
+    "uid": 996,
+    "gid": 987,
+    "release_directory": "/opt/racepick-mini-test/releases/9d856fba3f6b825b255bc17e",
+    "cwd_matches_release": true,
+    "pid_at_observation": 214505,
+    "pid_is_historical_observation": true,
+    "unit_sha256": "0da2c40f7e0577ae315aa790a2af16ddeadb838ed5901a7a03966d771564d000",
+    "unit_paths": "Immutable physical release; generic current-based example was rendered before install",
+    "listen": "127.0.0.1:8011",
+    "active_state": "active",
+    "sub_state": "running",
+    "boot_enablement": "disabled",
+    "restart_policy": "on-failure,5s",
+    "MemoryHigh": 100663296,
+    "MemoryMax": 134217728,
+    "MemorySwapMax": 0,
+    "CPUQuotaPerSecUSec": "250ms",
+    "TasksMax": 32,
+    "ProtectHome": "yes",
+    "ProtectSystem": "strict",
+    "ReadWritePaths": [
+      "/var/lib/racepick-mini-test"
+    ],
+    "InaccessiblePaths": [
+      "/var/lib/racepick",
+      "/etc/racepick"
+    ],
+    "formal_files_visible_in_sampled_mount_view": {
+      "/var/lib/racepick/accounts.sqlite3": false,
+      "/etc/racepick/production.json": false
+    },
+    "sample": {
+      "MemoryCurrent": 36155392,
+      "MemoryPeak": 36626432,
+      "TasksCurrent": 1,
+      "scope": "Short post-start unauthenticated checks, not sustained load or authenticated snapshot load"
+    }
+  },
+  "state": {
+    "directory": "/var/lib/racepick-mini-test/guests",
+    "directory_mode": "0700",
+    "state_json_token_key_sqlite_owner": "racepick-mini-test:racepick-mini-test",
+    "file_modes": "0600",
+    "guest_schema": 1,
+    "sqlite_quick_check": "ok",
+    "counts_at_last_observation": {
+      "sessions": 0,
+      "codes": 0,
+      "uploads": 0
+    },
+    "count_timestamp": "Exact timestamp not returned; observed after HTTPS gate checks on2026-11-04",
+    "fixture_state_retained_separately": "/var/lib/racepick-mini-test/selfcheck-20261103-01",
+    "private_config": "/etc/racepick-mini-test/mini.json",
+    "private_config_mode": "0600",
+    "secret_file": "/etc/racepick-mini-test/app-secret",
+    "secret_file_mode": "0600",
+    "formal_or_old_fixture_state_copied": false,
+    "independent_private_state_backup_configured": false,
+    "backup_note": "Existing formal coherent backup was not extended; no new monitor/timer/cleanup job was created"
+  },
+  "tls": {
+    "certificate_hostname_and_system_trust_verified": true,
+    "served_certificate_matches_issued_leaf": true,
+    "protocol_observed": "TLSv1.3",
+    "leaf_der_sha256": "3c7ab8dc29c8f75761cdcaa50ccb5f7858619c3f3a0b365a777e9baec0c6952e",
+    "san": [
+      "mini-test.racepick.cn"
+    ],
+    "issuer": "Lets Encrypt YE2",
+    "not_after_utc": "2027-02-01T15:03:46Z",
+    "wechat_sdk_trust_verified": false
+  },
+  "https_gate_checks": {
+    "cn_and_global_snapshot_without_token": 401,
+    "empty_session_json": 400,
+    "browser_origin": 403,
+    "browser_cookie": 403,
+    "account_session": 404,
+    "B_E_contract": 404,
+    "ocr_job_upload": 404,
+    "session_body_4097_bytes": 413,
+    "cors_allow_origin_header_absent": true,
+    "native_json_cache_control": "no-store",
+    "redirects_allowed_in_probe": false,
+    "valid_platform_code_submitted_by_ops": false
+  },
+  "nginx": {
+    "rate_conf": "/etc/nginx/conf.d/racepick-mini-guest-rate.conf",
+    "rate_conf_sha256": "86ff000436a9c1e8b6ea3662cd6dcd82091a5069c7e866dffb35704f9f3d34e7",
+    "proxy_conf": "/etc/nginx/snippets/racepick-mini-test-proxy.conf",
+    "proxy_conf_sha256": "5e691bd23759c8d0044b159a22d39b43e0ecf31a633998f80f17979c5475a044",
+    "https_site": "/etc/nginx/sites-available/racepick-mini-test-https.conf",
+    "https_site_sha256": "029598b7c9c9cef0da1bbed478e0175f0ff37f16d95397a7d9792e454e71eddd",
+    "nginx_test": "passed",
+    "reload": "successful per user results and subsequent TLS/gate verification",
+    "new_edge_rate": "5r/s burst10",
+    "body_limit": "4KiB",
+    "proxy_timeouts": "connect3s/send12s/read12s",
+    "original_nginx_and_both_certificate_baselines_unchanged": true,
+    "before_https_backup": "/root/racepick-deploy/mini-guest-stage1-20261103-9d856fba/nginx-before-https",
+    "baseline_entries": 26,
+    "baseline_sha256": "2cea7b058fcfa13fd9723b3f6e28c26f7dc6edb43270fa4b374b7cac78a3b2bd",
+    "original_acme_backup_baseline_sha256": "b8862c8f11ddd5742a73cb47346928c24b131d35aae1bd918a621e666d0bc830"
+  },
+  "formal_site": {
+    "release": "a933c9b746c2e276a9b68d14",
+    "health": "ok",
+    "ocr": "ready",
+    "cn_version": "c815b612a17433f403ae2965000fd74b",
+    "global_version": "435d5b40fd1aa4a01753a395f28d1f89",
+    "nginx_accounts_original_ocr_and_backup_timer": "active",
+    "formal_accounts_or_score_data_migrated_or_imported": false,
+    "formal_website_or_ocr_restarted": false
+  },
+  "remaining": [
+    "User registers actual request legal domain; registration not yet confirmed",
+    "Independent client network-check project keeps legal-domain/TLS validation enabled",
+    "Real wx.login -> in-memory guest token -> raw CN/Global snapshot identity/SHA/byte validation via DevTools, then phone",
+    "Boot enablement currently disabled; no automatic change made",
+    "Existing Certbot timer/renewal webroot observed, but this new certificate automatic renewal and subsequent Nginx reload remain unverified",
+    "Real authenticated/concurrent capacity and long-term memory remain unverified",
+    "OCR/content-safety/account/B-E later phases remain separately scoped; no uploadFile/downloadFile registration requested now"
+  ],
+  "completion_scope": "Server-side stage-one gateway ready; not a declaration of successful real WeChat or phone acceptance",
+  "git": "Local handoff only; no new commit/push/merge performed after the runtime source commit"
+}

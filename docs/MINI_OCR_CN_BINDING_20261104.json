@@ -1,0 +1,392 @@
+{
+  "origin": "https://mini-test.racepick.cn",
+  "delivery_id": "35bd5c5d2e618b555de3a70c",
+  "website_release_id": "7241d9d67cc99178bd7d2d14",
+  "source_commit": null,
+  "snapshot_versions": {
+    "cn": "593ecc7222ceea5856b2f576b4f5bca8",
+    "global": "e29f52e7f81c3e337985bf05dedb7e88"
+  },
+  "files": {
+    "cars.global.json": {
+      "bytes": 29852,
+      "sha256": "6d35da66c9c0d2d7335b3e80d6a7351bbc494911a5b1d8dab0a0c2137cbc9759"
+    },
+    "cars.json": {
+      "bytes": 83653,
+      "sha256": "ea42daedfdb73a4963e2e70c6cdf91deb29ae6bec5143b697e50d8c877961b17"
+    },
+    "gauntlet_data.global.json": {
+      "bytes": 133918,
+      "sha256": "79958b507b814fb0823e03aa8f97843fafe9b61a558c428336a4879587a33bd2"
+    },
+    "gauntlet_data.json": {
+      "bytes": 225341,
+      "sha256": "2e8bf6ba763a64f24cd1e93be0afbaca8c77e24efcb9a96812952de800b018b6"
+    },
+    "global-data-manifest.json": {
+      "bytes": 1866,
+      "sha256": "7e38469bc6bd6de5498bc1e38c16898c0a34eddb86ead72d610e0e1883e6dbe6"
+    }
+  },
+  "global_dataset": "9b83ddd062a4d4b0c15d51dc0eed323aabb8e599e3e9544bc91714b70a7a4259",
+  "cn_catalog_version": "57876474bd3cd25c283e79a471be99ec76d4e58ed16fa0e2c8ae2a6cdf0b9ced",
+  "maps": [
+    {
+      "big": "古老斗技场",
+      "small": "偏僻小道"
+    },
+    {
+      "big": "古老斗技场",
+      "small": "十字路口"
+    },
+    {
+      "big": "古老斗技场",
+      "small": "旧时风情"
+    },
+    {
+      "big": "古老斗技场",
+      "small": "跌宕之路"
+    },
+    {
+      "big": "大桥海湾",
+      "small": "喧闹铁路"
+    },
+    {
+      "big": "大桥海湾",
+      "small": "城市狂飙"
+    },
+    {
+      "big": "大桥海湾",
+      "small": "水滨"
+    },
+    {
+      "big": "大桥海湾",
+      "small": "隧道"
+    },
+    {
+      "big": "高地穿梭",
+      "small": "幽灵船"
+    },
+    {
+      "big": "高地穿梭",
+      "small": "灯塔"
+    },
+    {
+      "big": "高地穿梭",
+      "small": "高原峡谷"
+    },
+    {
+      "big": "高地穿梭",
+      "small": "魔法岛屿"
+    },
+    {
+      "big": "明珠港口",
+      "small": "东方巴黎"
+    },
+    {
+      "big": "明珠港口",
+      "small": "双环岛"
+    },
+    {
+      "big": "明珠港口",
+      "small": "未来之路"
+    },
+    {
+      "big": "明珠港口",
+      "small": "触摸天空"
+    },
+    {
+      "big": "沙漠迷雾",
+      "small": "国王的复兴"
+    },
+    {
+      "big": "沙漠迷雾",
+      "small": "地下冲刺"
+    },
+    {
+      "big": "沙漠迷雾",
+      "small": "岛屿幻想"
+    },
+    {
+      "big": "沙漠迷雾",
+      "small": "高塔赛道"
+    },
+    {
+      "big": "西部牧场",
+      "small": "时间旅行"
+    },
+    {
+      "big": "西部牧场",
+      "small": "曲直高速"
+    },
+    {
+      "big": "西部牧场",
+      "small": "铁道迷"
+    },
+    {
+      "big": "西部牧场",
+      "small": "龙卷风"
+    },
+    {
+      "big": "神山垭口",
+      "small": "信仰之跃"
+    },
+    {
+      "big": "神山垭口",
+      "small": "冰封地堡"
+    },
+    {
+      "big": "神山垭口",
+      "small": "山崩"
+    },
+    {
+      "big": "神山垭口",
+      "small": "自由落体"
+    },
+    {
+      "big": "热带天堂",
+      "small": "地狱谷"
+    },
+    {
+      "big": "热带天堂",
+      "small": "胜地冲刺"
+    },
+    {
+      "big": "热带天堂",
+      "small": "酒店大道"
+    },
+    {
+      "big": "樱花港",
+      "small": "城市绿洲"
+    },
+    {
+      "big": "樱花港",
+      "small": "急速之争"
+    },
+    {
+      "big": "樱花港",
+      "small": "明治冲击"
+    },
+    {
+      "big": "樱花港",
+      "small": "樱花城堡"
+    },
+    {
+      "big": "摩登城市",
+      "small": "公园竞速"
+    },
+    {
+      "big": "摩登城市",
+      "small": "富豪之旅"
+    },
+    {
+      "big": "摩登城市",
+      "small": "睦邻友好"
+    },
+    {
+      "big": "摩登城市",
+      "small": "飞艇竞速"
+    },
+    {
+      "big": "沙漠高速",
+      "small": "发夹弯冲刺"
+    },
+    {
+      "big": "沙漠高速",
+      "small": "桥间争霸"
+    },
+    {
+      "big": "沙漠高速",
+      "small": "蜿蜒之路"
+    },
+    {
+      "big": "沙漠高速",
+      "small": "隧道冲刺"
+    },
+    {
+      "big": "狂野赛车场",
+      "small": "侧面视角"
+    },
+    {
+      "big": "狂野赛车场",
+      "small": "弯道终点"
+    },
+    {
+      "big": "狂野赛车场",
+      "small": "极速前进"
+    },
+    {
+      "big": "狂野赛车场",
+      "small": "直道冲刺"
+    },
+    {
+      "big": "雄鹰之城",
+      "small": "前往码头"
+    },
+    {
+      "big": "雄鹰之城",
+      "small": "拉博卡"
+    },
+    {
+      "big": "雄鹰之城",
+      "small": "水上狂飙"
+    },
+    {
+      "big": "雄鹰之城",
+      "small": "穿越城市"
+    },
+    {
+      "big": "冰火岛",
+      "small": "地心之外"
+    },
+    {
+      "big": "冰火岛",
+      "small": "地心探险"
+    },
+    {
+      "big": "冰火岛",
+      "small": "破冰船"
+    },
+    {
+      "big": "冰火岛",
+      "small": "穿越地心"
+    },
+    {
+      "big": "花都疾驰",
+      "small": "地铁冲刺"
+    },
+    {
+      "big": "花都疾驰",
+      "small": "河畔漂移"
+    },
+    {
+      "big": "花都疾驰",
+      "small": "艺术之旅"
+    },
+    {
+      "big": "花都疾驰",
+      "small": "铁塔飞跃"
+    },
+    {
+      "big": "旷野飙车",
+      "small": "世外萄园"
+    },
+    {
+      "big": "旷野飙车",
+      "small": "山野小路"
+    },
+    {
+      "big": "旷野飙车",
+      "small": "河岸狂飙"
+    },
+    {
+      "big": "旷野飙车",
+      "small": "河滨城堡"
+    },
+    {
+      "big": "极昼之地",
+      "small": "凌云狂飙"
+    },
+    {
+      "big": "极昼之地",
+      "small": "变幻之风"
+    },
+    {
+      "big": "极昼之地",
+      "small": "未来融合"
+    },
+    {
+      "big": "极昼之地",
+      "small": "飞向未来"
+    },
+    {
+      "big": "狮城",
+      "small": "乐园追逐"
+    },
+    {
+      "big": "狮城",
+      "small": "天旋地转"
+    },
+    {
+      "big": "狮城",
+      "small": "海岸飞驰"
+    },
+    {
+      "big": "狮城",
+      "small": "狮城竞速"
+    },
+    {
+      "big": "凌空之巅",
+      "small": "漂移回响"
+    },
+    {
+      "big": "凌空之巅",
+      "small": "疾速冲锋"
+    },
+    {
+      "big": "凌空之巅",
+      "small": "速度螺旋"
+    },
+    {
+      "big": "凌空之巅",
+      "small": "钢铁坠落"
+    },
+    {
+      "big": "海港博物馆",
+      "small": "海洋爆冲"
+    },
+    {
+      "big": "海港博物馆",
+      "small": "赛博幻影"
+    },
+    {
+      "big": "海港博物馆",
+      "small": "集装箱风暴"
+    },
+    {
+      "big": "海港博物馆",
+      "small": "飞越城市"
+    },
+    {
+      "big": "季风秘境",
+      "small": "疾风原野"
+    },
+    {
+      "big": "季风秘境",
+      "small": "瀑布飞驰"
+    },
+    {
+      "big": "季风秘境",
+      "small": "岩石地带"
+    },
+    {
+      "big": "季风秘境",
+      "small": "碎石山路"
+    }
+  ],
+  "maps_sha256": "7b4e180ed199d4319f4b756477039232038043214a9a239d20ac782f97670b54",
+  "expected_authenticated_capabilities": {
+    "cn_map_recognition": true,
+    "cn_catalog_version": "57876474bd3cd25c283e79a471be99ec76d4e58ed16fa0e2c8ae2a6cdf0b9ced",
+    "global_map_recognition": false,
+    "global_catalog_version": null,
+    "image_policy": "aliyun_baseline",
+    "accounts_enabled": false,
+    "B_E_enabled": false
+  },
+  "evidence": {
+    "peer_uid_catalog": "verified on server; 83 maps and exact maps binding",
+    "public_unauthenticated_catalog": "401/no-store",
+    "real_authenticated_snapshot_and_upload_after_activation": "not verified",
+    "supplier": "one nonprivate synthetic review approved; no repeat",
+    "device_acceptance": "pending"
+  },
+  "runtime_added_module": {
+    "path": "bridge/backend/map_ocr_production.py",
+    "source_release": "7241d9d67cc99178bd7d2d14",
+    "sha256": "3c8a7d64564da8d7804bd0f35a8aba960ee922d86573af8973c857ec10718872",
+    "bytes": 4495,
+    "sealed_zip_changed": false
+  }
+}
