@@ -26,7 +26,7 @@ function networkDiagnostic(reason){
   const diagnostic={kind};if(reason&&Number.isInteger(reason.errCode)&&Math.abs(reason.errCode)<1e9)diagnostic.nativeCode=reason.errCode;if(reason&&Number.isInteger(reason.errno)&&Math.abs(reason.errno)<1e9)diagnostic.errno=reason.errno;return diagnostic;
 }
 // Low-level only: no guessed mini routes, no production URL, no automatic retry.
-function createTransport(wx, { baseURL, enabled = false, allowLocal = false,namespace='visitor' } = {}) {
+function createTransport(wx, { baseURL, enabled = false, allowLocal = false,namespace='visitor',clearOnUnauthorized=true } = {}) {
   if(!['visitor','account'].includes(namespace))throw Error('无效原生空间');
   const valid = typeof baseURL === 'string' &&
     (/^https:\/\/[a-z0-9.-]+(?::\d+)?$/i.test(baseURL) ||
@@ -49,7 +49,7 @@ function createTransport(wx, { baseURL, enabled = false, allowLocal = false,name
         success(response) {
           done();
           if(ticket!==sessionEpoch){reject(stale());return;}
-          if (response.statusCode === 401) {token = null;sessionEpoch++;}
+          if (response.statusCode === 401&&clearOnUnauthorized) {token = null;sessionEpoch++;}
           if (response.statusCode < 200 || response.statusCode >= 300) {
             let body;try{body=responseJSON(response);}catch(_){}
             const error = Error(body&&typeof body.detail==='string'?body.detail.slice(0,200):'请求失败（' + response.statusCode + '）');
