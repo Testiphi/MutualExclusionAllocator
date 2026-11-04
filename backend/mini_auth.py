@@ -201,21 +201,24 @@ class WechatVerifier:
         return data['openid']
 
 
-def load_config(path):
+def load_config(path, *, image_bridge=False):
     path = Path(path).absolute()
     if path.resolve() != path or path.is_symlink():
         raise ValueError('原生配置不能为链接')
     if os.name == 'posix' and (stat.S_IMODE(path.stat().st_mode) & 0o077 or path.stat().st_uid != os.geteuid()):
         raise ValueError('原生配置必须为当前用户私有')
     data = json.loads(path.read_text('utf-8'))
-    if not {'kind', 'state_dir', 'appid', 'app_secret_file', 'image_policy'} <= set(data) or set(data)-{'kind', 'state_dir', 'appid', 'app_secret_file', 'image_policy','account_state_dir'} or data['kind'] != KIND:
+    allowed={'kind','state_dir','appid','app_secret_file','image_policy','account_state_dir'}
+    if image_bridge:allowed.add('bridge_socket')
+    if not {'kind', 'state_dir', 'appid', 'app_secret_file', 'image_policy'} <= set(data) or set(data)-allowed or data['kind'] != KIND:
         raise ValueError('原生配置字段不正确')
     secret_path = Path(data['app_secret_file'])
     if not secret_path.is_absolute() or secret_path.resolve() != secret_path or not secret_path.is_file() or secret_path.stat().st_nlink != 1:
         raise ValueError('AppSecret需独立的服务端凭据文件')
     if os.name == 'posix' and (stat.S_IMODE(secret_path.stat().st_mode) & 0o077 or secret_path.stat().st_uid != os.geteuid()):
         raise ValueError('AppSecret文件必须为当前用户私有')
-    if data['image_policy'] not in ('disabled', 'private_unmoderated'):
+    policies=('disabled','aliyun_baseline') if image_bridge else ('disabled','private_unmoderated')
+    if data['image_policy'] not in policies:
         raise ValueError('图片策略必须显式选择；未接入内容安全服务')
     result={'store': GuestStore(data['state_dir']), 'verifier': WechatVerifier(data['appid'], secret_path.read_text('utf-8').strip()),
             'fixture': False, 'image_policy': data['image_policy']}
