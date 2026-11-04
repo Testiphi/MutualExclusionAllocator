@@ -22,8 +22,8 @@ function responseJSON(response) {
 }
 function networkDiagnostic(reason){
   const message=reason&&typeof reason.errMsg==='string'?reason.errMsg.toLowerCase():'';
-  const kind=/not in domain|url.*domain|domain.*list|合法域名/.test(message)?'domain_rejected':/ssl|tls|certificate|cert |证书/.test(message)?'tls_or_certificate':/dns|resolve|name.*resolved/.test(message)?'dns':/timeout|timed out/.test(message)?'timeout':/abort|cancel/.test(message)?'cancelled':/connect|network|网络/.test(message)?'connection':'unknown';
-  const diagnostic={kind};if(reason&&Number.isInteger(reason.errCode)&&Math.abs(reason.errCode)<1e9)diagnostic.nativeCode=reason.errCode;return diagnostic;
+  const kind=/not in domain|url.*domain|domain.*list|合法域名/.test(message)?'domain_rejected':/ssl|tls|certificate|cert |证书/.test(message)?'tls_or_certificate':/dns|resolve|name.*resolved/.test(message)?'dns':/timeout|timed out/.test(message)?'timeout':/abort|cancel/.test(message)?'cancelled':/enoent|no such file|file.*not.*exist|file.*permission|file.*read/.test(message)?'file_access':/parameter|argument|invalid.*url/.test(message)?'invalid_argument':/connect|network|socket|reset|refused|closed|网络/.test(message)?'connection':'unknown';
+  const diagnostic={kind};if(reason&&Number.isInteger(reason.errCode)&&Math.abs(reason.errCode)<1e9)diagnostic.nativeCode=reason.errCode;if(reason&&Number.isInteger(reason.errno)&&Math.abs(reason.errno)<1e9)diagnostic.errno=reason.errno;return diagnostic;
 }
 // Low-level only: no guessed mini routes, no production URL, no automatic retry.
 function createTransport(wx, { baseURL, enabled = false, allowLocal = false,namespace='visitor' } = {}) {
