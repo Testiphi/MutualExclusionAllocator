@@ -1,3 +1,7 @@
+2026-11-05 最新接手与暂停范围：用户回交并在客户端文档记录本台iPhone基础相册OCR/五图确认通过（独立mini-phone-ocr-02，不是早期合成上传失败试次）；不扩为Android、前后台/切网或手机账号通过，不再发图复测。下一阶段是A账号/双服云车库**隔离联网准备**，尚无可用账号入口新交付；未认证账号session于UTC2026-11-04 16:05:35（北京时间11月5日00:05:35）返回404。客户端140项测试及默认关闭account-probe已准备，真实账号/云车库/邮件未验收。本轮只更新本索引与[CLOUD_HANDOFF最新段](CLOUD_HANDOFF.md)，单独提交推送后暂停，不继续开发或操作服务器；旧“手机待验收”与disabled记录按历史阶段阅读。
+
+账号下一阶段以[原生A契约](MINI_ACCOUNT_CONTRACT_A_20261103.md)、[Global云车库契约](GLOBAL_PROFILE_CLOUD_20261103.md)为准：服务端校验父访客，账号Bearer独立；新测试账号/隔离库由网页与原生共同使用，CN/Global记录及revision分开。先方案与固定交付，先登录/双服只读，再另明确云写范围；file outbox优先，真实邮件、正式库接入、迁移/部署另授权。不能仅加Nginx账号路由冒充轻量guest已加载账号组件，不能启B–E/改原OCR唯一队列或正式成绩。客户端本机资料在 `miniprogram-v1/docs/PHONE_OCR_ACCEPTED_20261104.md`、`HANDOFF_ACCOUNT_NETWORK.md`、`ACCOUNT_NETWORK_PREPARATION.md`，本轮只读核对、不推客户端分支。来源/验收边界、最小路由、恢复/冲突与完整保护规则见[CLOUD_HANDOFF](CLOUD_HANDOFF.md)文首。
+
 2026-11-04 分功能Git交付：内容安全/共享队列cea4386、原生网关5d39af5、离线交付及启动依赖修复eeb966c、阶段文档bfcf97e，已推feature/map-layout-parser；主repo仅归档现场交接，不合并功能分支、不重新部署、不倒改封存包来源。用户已转交小程序侧，手机OCR验收仍待后续。见[Git回执](GIT_DELIVERY_20261104.json)。
 
 2026-11-04 最新线上：网站7241、原生交付35bd加已记录的单文件运行依赖补件；CN OCR服务端已开启，baselineCheck唯一合成审核通过，共享桥/guest active并开机启用，原队列schema1仅迁移一次。Global OCR及账号/B–E关闭，正式双服成绩及原网站/worker保持，backup.timer active。真实微信/手机OCR和激活后的实图完整链路尚未验收。见[CLOUD_HANDOFF](CLOUD_HANDOFF.md)文首、[现场回执](MINI_OCR_DEPLOYMENT_PREPARATION_20261104.json)、[小程序回交](MINI_OCR_CN_CLOUD_HANDOFF_20261104.md)。下方disabled与a933记录按历史阅读。
