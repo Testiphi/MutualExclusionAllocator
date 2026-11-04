@@ -1,0 +1,216 @@
+{
+  "date": "2026-11-04",
+  "status": "complete_locally_verified_candidate_not_deployed",
+  "release_id": "35bd5c5d2e618b555de3a70c",
+  "archive": "E:\\hzz\\work\\MutualExclusionAllocator\\offline-evaluation\\mini-ocr-gateway-release-20261104-01\\RacePick-MiniOCR-Baseline-20261104-delivery-v2.zip",
+  "archive_bytes": 312131724,
+  "archive_sha256": "f5f58f917ac2c41d26bc3b2ed4fc098ebd9ac4b139a83e4275c9f73fc032e41d",
+  "archive_checksum_file": "E:\\hzz\\work\\MutualExclusionAllocator\\offline-evaluation\\mini-ocr-gateway-release-20261104-01\\RacePick-MiniOCR-Baseline-20261104-delivery-v2.zip.sha256",
+  "delivery_dir": "E:\\hzz\\work\\MutualExclusionAllocator\\offline-evaluation\\mini-ocr-gateway-release-20261104-01\\RacePick-MiniOCR-Baseline-20261104-delivery-v2",
+  "directory_files": 305,
+  "directory_sha_entries": 304,
+  "strict_directory_sha_manifest_and_outer_crc_verified": true,
+  "website_release_id": "7241d9d67cc99178bd7d2d14",
+  "website_runtime_files": 172,
+  "website_zip_sha256": "61a987781e56ee0221d0b67c49d30a572680e1faef00d28564eb8ed281d7b2d1",
+  "source_commit": null,
+  "source_base_commit": "0b97dae9e1003c1bc2c4c5b7a189b81cb4002112",
+  "source_tree_sha256": "f0eb44207daede26e4f262c2fdbb430b36cb0fdb4ed930ce25eacf1d7b1bc1a5",
+  "source_files_matched_actual_workspace": true,
+  "source_kind": "sealed_uncommitted_source_snapshot",
+  "data_freeze_id": "b57d97a8f4e484be69238ab0",
+  "data_freeze_manifest_sha256": "940f8660585c495a780390b709dfd52e80f7610f57e0179c5da937c53c4e4282",
+  "data_commit": null,
+  "data_use": "approved immutable snapshot and package seed only; existing official score-state and rules never imported or replaced",
+  "website_overlay": {
+    "allowed_overlay": [
+      "backend/map_recognition.py",
+      "backend/mini_api.py",
+      "backend/mini_auth.py",
+      "backend/mini_result.py",
+      "production_release_tools.py",
+      "production/score-capability.json"
+    ],
+    "base_release": "a933c9b746c2e276a9b68d14",
+    "changed_files": [
+      "backend/map_recognition.py",
+      "backend/mini_api.py",
+      "backend/mini_auth.py",
+      "backend/mini_result.py",
+      "production/score-capability.json",
+      "production_release_tools.py"
+    ],
+    "maintenance_data_imported": false,
+    "ui_assets_unchanged": true
+  },
+  "validation": {
+    "date": "2026-11-04",
+    "scope": "local-only, no real credentials or supplier calls",
+    "ubuntu": {
+      "target": "Ubuntu24.04.3 userspace / CPython3.12.16 x86_64 in WSL chroot",
+      "unit": {
+        "tests": 124,
+        "failures": 0,
+        "errors": 0,
+        "skips": 0,
+        "model_loaded": false
+      },
+      "integration": {
+        "passed": true,
+        "broker": {
+          "ready": true,
+          "uid": 10001
+        },
+        "guest": {
+          "ready": true,
+          "uid": 10002,
+          "queue_hidden": true,
+          "model_loaded": false
+        },
+        "tls": "verified isolated CA and IP SAN, not public TLS",
+        "nginx": "Ubuntu1.24.0 real -t and HTTPS proxy",
+        "cn_version": "593ecc7222ceea5856b2f576b4f5bca8",
+        "global_version": "e29f52e7f81c3e337985bf05dedb7e88",
+        "catalog_version": "57876474bd3cd25c283e79a471be99ec76d4e58ed16fa0e2c8ae2a6cdf0b9ced",
+        "catalog_maps_sha256": "7b4e180ed199d4319f4b756477039232038043214a9a239d20ac782f97670b54",
+        "edge_statuses": {
+          "maximum_image": 202,
+          "cookie": 403,
+          "origin": 403,
+          "accounts": 404,
+          "global_ocr": 403,
+          "session_oversize": 413,
+          "upload_oversize": 413
+        },
+        "same_key_supplier_reviews": 1,
+        "total_reviews_including_second_large_image": 2,
+        "maximum_image_bytes": 8388608,
+        "disabled_snapshot_manual": true,
+        "supplier_transport": "mock only",
+        "worker": "one synthetic claim/finish thread, no OCR model"
+      },
+      "network": "private namespace loopback only; no external route",
+      "root_readonly": true,
+      "synthetic_tls_only": true
+    },
+    "windows": {
+      "executed": 142,
+      "passed": 122,
+      "linux_only_skipped": 20
+    },
+    "offline_install": {
+      "guest_wheels": 14,
+      "bridge_wheels": 37,
+      "website_wheels": 37,
+      "validation_wheels": 55,
+      "all_require_hashes_no_index": true,
+      "all_pip_check_passed": true
+    },
+    "systemd_templates": {
+      "syntax_verify_exit": 0,
+      "systemd_version": "255.4-1ubuntu8.18",
+      "runtime_systemd_and_cgroups_tested": false,
+      "fixture_substitutions": "numeric UIDs, local paths and dependency target stubs only; ExecStart not executed"
+    },
+    "not_verified": [
+      "production current/health/backup/timer",
+      "actual RAM permission/provider response/retention",
+      "real WeChat stage2 SDK or phone",
+      "actual systemd mount/cgroup and long-running concurrency capacity"
+    ],
+    "failures_preserved": [
+      "initial Ubuntu fixture missing config and transitive test modules, corrected",
+      "early Windows new fixture SQLite handles were not closed, corrected",
+      "full WSL archive extraction had a terminfo symlink failure; used verified native minimal Ubuntu libraries and GNU Python extraction"
+    ],
+    "operations": {
+      "production_server_commands": false,
+      "real_keys_configured": false,
+      "supplier_paid_calls": false,
+      "private_images_sent": false,
+      "public_ocr_enabled": false,
+      "wechat_backend_changed": false,
+      "git_commit_push_merge": false
+    },
+    "evidence": {
+      "ubuntu-final-max-image.log": {
+        "sha256": "bc4cbf64a7fd9ab3001885f8339631c659c56074c7de5a6d407ac4161c15bb58",
+        "bytes": 23248
+      },
+      "windows-final.log": {
+        "sha256": "3f78938154dc14f34bc78ccda9ff4bf1ca8e2fc596333c727560a0a04c3173d9",
+        "bytes": 1355
+      },
+      "ubuntu-install-guest.log": {
+        "sha256": "640f2845d565d784ff39ce9aa5e8c182e0e5fa571ec2978223f04a0069dffc86",
+        "bytes": 1863
+      },
+      "ubuntu-install-bridge.log": {
+        "sha256": "f4b7c057a1e3634b12e68fba4b6ec2155176dfc379b701e48630d101f718de7a",
+        "bytes": 5440
+      },
+      "ubuntu-install-web.log": {
+        "sha256": "90d2c1f7a8b838efbb947e8e46bfdb133a59f00f00060c9d0c7f17e5489422b9",
+        "bytes": 5023
+      },
+      "ubuntu-install-validation.log": {
+        "sha256": "be7608f2093bddb15da10759c0803c8f44a145ad165a03c8171748b71f49be61",
+        "bytes": 7931
+      },
+      "systemd-verify-final.log": {
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0
+      },
+      "crcmod-pure-build.json": {
+        "sha256": "e26633256f0ce35c3c5c2d3e3eaaf6aa0b61d5cff16a1a6b5152f1333cd54069",
+        "bytes": 560
+      },
+      "python-source-verification.json": {
+        "sha256": "d7c55d434a496e327be057c28875cf61ea8e57cd64df8be2a9cf8a63bd7aceec",
+        "bytes": 299
+      }
+    }
+  },
+  "postseal_selfcheck": {
+    "tested_exact_website_release_id": "7241d9d67cc99178bd7d2d14",
+    "ubuntu_native_owned_temporary_database_migration_lock_restore": "passed",
+    "real_cpu_ocr_synthetic": {
+      "ocr_selfcheck": "passed",
+      "input": "synthetic RACEPICK",
+      "seconds": 8.21,
+      "platform": "linux",
+      "business_database_touched": false
+    },
+    "email_sent": false,
+    "log_sha256": "e0d2f3df26463147f24aee5dc5507a886d99d558f8b0d957feea548f413b14c5",
+    "no_supplier_api_calls": true
+  },
+  "protection": {
+    "15_preexisting_runtime_workbook_paths_sha_bytes_mtime_unchanged": true,
+    "all_existing_business_data_backups_queues_untouched": true,
+    "website_html_css_js_assets_model_bytes_and_original_wheels_unchanged": true,
+    "no_unrelated_ui_updates_in_website": true
+  },
+  "operations": {
+    "real_keys_configured": false,
+    "real_supplier_images_or_paid_calls": false,
+    "production_server_commands": false,
+    "public_ocr_enabled": false,
+    "wechat_backend_or_mini_upload_review_release": false,
+    "git_commit_push_merge": false,
+    "monitoring_created": false
+  },
+  "remaining_for_authorized_live_rollout": [
+    "read-only current/health/versions/queue/backup/timer/resource inspection by user",
+    "source review and any separately authorized Git archival",
+    "coherent backup and independent recovery proof",
+    "explicit approved website compatibility upgrade and queue safety schema preparation",
+    "actual runtime UID/GID/path configuration and systemd sandbox/cgroup checks",
+    "private RAM configuration and separately authorized bounded sample calls",
+    "actual public HTTPS/WeChat OCR acceptance and backup scheduler closeout"
+  ],
+  "supersedes_local_candidate": {
+    "id": "a6d241804f05cb23e158411a",
+    "reason": "verifier file-count display variable corrected; previous candidate retained"
+  }
+}

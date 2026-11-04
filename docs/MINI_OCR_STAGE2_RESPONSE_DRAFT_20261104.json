@@ -1,0 +1,136 @@
+{
+  "kind": "racepick-mini-ocr-stage2-proposed-response-fixtures-v1",
+  "status": "draft_not_implemented",
+  "real_http_evidence": false,
+  "contains_secrets_or_real_media": false,
+  "examples": [
+    {
+      "case": "safety_pending",
+      "http_status": 202,
+      "headers": {
+        "Cache-Control": "no-store"
+      },
+      "body": {
+        "id": "0123456789abcdef0123456789abcdef",
+        "server": "cn",
+        "catalog_version": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "state": "queued",
+        "result": null,
+        "error": null,
+        "expires_at": 1793754000,
+        "error_code": null
+      }
+    },
+    {
+      "case": "image_safety_rejected",
+      "http_status": 200,
+      "headers": {
+        "Cache-Control": "no-store"
+      },
+      "body": {
+        "id": "0123456789abcdef0123456789abcdef",
+        "server": "cn",
+        "catalog_version": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "state": "failed",
+        "result": null,
+        "error": "图片安全处理未通过，请继续手动选图",
+        "expires_at": 1793754000,
+        "error_code": "IMAGE_SAFETY_REJECTED"
+      }
+    },
+    {
+      "case": "image_safety_unavailable",
+      "http_status": 200,
+      "headers": {
+        "Cache-Control": "no-store"
+      },
+      "body": {
+        "id": "0123456789abcdef0123456789abcdef",
+        "server": "cn",
+        "catalog_version": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "state": "failed",
+        "result": null,
+        "error": "图片安全处理未通过，请继续手动选图",
+        "expires_at": 1793754000,
+        "error_code": "IMAGE_SAFETY_UNAVAILABLE"
+      }
+    },
+    {
+      "case": "image_safety_timeout",
+      "http_status": 200,
+      "headers": {
+        "Cache-Control": "no-store"
+      },
+      "body": {
+        "id": "0123456789abcdef0123456789abcdef",
+        "server": "cn",
+        "catalog_version": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "state": "failed",
+        "result": null,
+        "error": "图片安全处理未通过，请继续手动选图",
+        "expires_at": 1793754000,
+        "error_code": "IMAGE_SAFETY_TIMEOUT"
+      }
+    },
+    {
+      "case": "cancelled",
+      "http_status": 200,
+      "headers": {
+        "Cache-Control": "no-store"
+      },
+      "body": {
+        "id": "0123456789abcdef0123456789abcdef",
+        "server": "cn",
+        "catalog_version": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "state": "cancelled",
+        "result": null,
+        "error": null,
+        "expires_at": 1793754000,
+        "error_code": null
+      }
+    },
+    {
+      "case": "uncertain_upload_recovered",
+      "http_status": 200,
+      "headers": {
+        "Cache-Control": "no-store"
+      },
+      "body": {
+        "recovery": "found",
+        "id": "0123456789abcdef0123456789abcdef",
+        "server": "cn",
+        "catalog_version": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "state": "queued",
+        "result": null,
+        "error": null,
+        "expires_at": 1793754000,
+        "error_code": null
+      }
+    },
+    {
+      "case": "upload_rate_limited",
+      "http_status": 429,
+      "headers": {
+        "Cache-Control": "no-store",
+        "Retry-After": "5"
+      },
+      "body": {
+        "schema_version": 1,
+        "code": "OCR_LIMITED",
+        "detail": "识别队列已满，请稍后查询原请求编号"
+      }
+    },
+    {
+      "case": "expired",
+      "http_status": 410,
+      "headers": {
+        "Cache-Control": "no-store"
+      },
+      "body": {
+        "schema_version": 1,
+        "code": "JOB_EXPIRED",
+        "detail": "图片与结果已到期，请继续手动选图"
+      }
+    }
+  ]
+}

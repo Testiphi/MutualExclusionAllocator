@@ -1,0 +1,169 @@
+{
+  "date": "2026-11-04",
+  "status": "design_preparation_only_not_deployable",
+  "scope": "guest OCR architecture / provider evaluation / protocol draft",
+  "branch": "feature/map-layout-parser",
+  "source_base": "0b97dae9e1003c1bc2c4c5b7a189b81cb4002112",
+  "origin_main": "39dcce916e4bc7f82fb58d245df4d61f1426a286",
+  "origin_feature": "3c3fdd989c0bac01ccf22e572cdedb20865921ab",
+  "new_ocr_commit": null,
+  "new_ocr_delivery_id": null,
+  "code_files_sha256": {
+    "mini_guest_service.py": "24f7acffa9b7b5a3b6934b65480d095a5b5cdedc14772c759532491631f5785e",
+    "mini_api.py": "b733c386e8997051b699c9572313fc927abba767b851ae6b2dca788a6cf9e400",
+    "mini_auth.py": "0d758e319ebe289b879547ef50faa2b5f0697517175e72236e4a4e01712abb28",
+    "map_recognition.py": "41fcc7396ad3f066ec355469949ec5b52c1843aecb3e39c4da99427b437c4bf9",
+    "map_ocr_production.py": "dad54dd911832ad418c6b78cbac913686ab6cf8d53c2aee62a4b3e790903d792",
+    "map_ocr_supervisor.py": "7c6d67041421488f2554538a14ac7072fbc6dd821d31136dd7f9cdd0b763a2ec",
+    "map_ocr_worker.py": "d72a6b1454c430b43c59da277c459adf48f2bbbabc4133b5856e2de6d3e06b19"
+  },
+  "stage_one_acceptance": {
+    "source": "user report in current chat",
+    "devtools_guest_and_snapshots": true,
+    "phone_quote": "诊断版2手机上也通过了",
+    "device_model": null,
+    "os_version": null,
+    "ocr_or_album_verified": false,
+    "both_ios_android_verified": false
+  },
+  "current_live_state": {
+    "source": "main repo docs/CLOUD_HANDOFF.md prior operations receipts",
+    "new_server_read_performed": false,
+    "website_last_recorded_release": "a933c9b746c2e276a9b68d14",
+    "guest_last_recorded_release": "9d856fba3f6b825b255bc17e",
+    "guest_ocr_last_recorded": "disabled"
+  },
+  "legacy_730a61_verification": {
+    "sha256": "5e3a295fa6bff5d4a820a4a397e4490bfbe6c8a76b64fd49cba1c377e06480fb",
+    "bytes": 317437581,
+    "outer_crc_and_folder_byte_equality": true,
+    "directory_sha_entries_passed": 59,
+    "primary_runtime_files": 168,
+    "compat_runtime_files": 158,
+    "freeze_id": "b57d97a8f4e484be69238ab0",
+    "data_commit": null,
+    "use_for_deployment": false
+  },
+  "tests": {
+    "command": "python -B -m unittest backend.test_mini_guest_service backend.test_mini_api backend.test_mini_production",
+    "platform": "Windows Python3.14",
+    "executed": 33,
+    "passed": 33,
+    "duration_seconds": 28.573,
+    "scope": "existing protocol and disabled-image entry; no new safety or bridge implementation"
+  },
+  "linux": {
+    "docker_engine_available": false,
+    "new_socket_isolation_tested": false,
+    "new_systemd_nginx_tested": false,
+    "existing_history_is_not_stage2_evidence": true
+  },
+  "provider": {
+    "user_choice": "尚未选择，先给接入方案",
+    "selected": null,
+    "images_sent": false,
+    "service_enabled_or_paid": false,
+    "official_wechat_doc_fetch": "two official documentation pages inaccessible; no current API specifications asserted"
+  },
+  "operations": {
+    "production_commands_executed": false,
+    "wechat_backend_changed": false,
+    "mini_upload_review_release": false,
+    "messages_sent_to_other_chats": false,
+    "new_monitoring": false,
+    "cleanup": false,
+    "commit_push_or_merge": false
+  },
+  "protected_inputs_snapshot": {
+    "repo\\cars.json": {
+      "sha256": "ea42daedfdb73a4963e2e70c6cdf91deb29ae6bec5143b697e50d8c877961b17",
+      "bytes": 83653,
+      "mtime_ns": 1793686114164336300
+    },
+    "repo\\gauntlet_data.json": {
+      "sha256": "2e8bf6ba763a64f24cd1e93be0afbaca8c77e24efcb9a96812952de800b018b6",
+      "bytes": 225341,
+      "mtime_ns": 1793686114176792200
+    },
+    "repo\\cars.global.json": {
+      "sha256": "6d35da66c9c0d2d7335b3e80d6a7351bbc494911a5b1d8dab0a0c2137cbc9759",
+      "bytes": 29852,
+      "mtime_ns": 1793686114604933100
+    },
+    "repo\\gauntlet_data.global.json": {
+      "sha256": "79958b507b814fb0823e03aa8f97843fafe9b61a558c428336a4879587a33bd2",
+      "bytes": 133918,
+      "mtime_ns": 1793686114608927600
+    },
+    "repo\\global-data-manifest.json": {
+      "sha256": "7e38469bc6bd6de5498bc1e38c16898c0a34eddb86ead72d610e0e1883e6dbe6",
+      "bytes": 1866,
+      "mtime_ns": 1793686114613209700
+    },
+    "repo\\gauntlet_data.xlsx": {
+      "sha256": "74e3d1e694ff463f4c0b148024c059435dfd2fb41fa1071f9ab66218862b2d4e",
+      "bytes": 123740,
+      "mtime_ns": 1793686089689475000
+    },
+    "repo\\gauntlet_data.global.xlsx": {
+      "sha256": "6efb52d9dc56f103870ee1894072950cfa0025b543d79c4ccac954db2c9d3a2c",
+      "bytes": 40749,
+      "mtime_ns": 1793686094235302800
+    },
+    "repo\\gauntlet_data_shared.xlsx": {
+      "sha256": "f8a1360231154ecfc0f56e8801eedc85b90fe25c7c0741ff42a3d18b6e337976",
+      "bytes": 142004,
+      "mtime_ns": 1793686092275550600
+    },
+    "map-layout-parser\\cars.json": {
+      "sha256": "69c9da789f5ad8682a12f05adb21ed3767647f5067fe59c5d281510ee32702ec",
+      "bytes": 83612,
+      "mtime_ns": 1793613795692977200
+    },
+    "map-layout-parser\\gauntlet_data.json": {
+      "sha256": "57964666c7d9669eb70d5c5a94d29a1b6362b33962d5e55d66c7a14de3fd22c2",
+      "bytes": 224850,
+      "mtime_ns": 1793613795693525500
+    },
+    "map-layout-parser\\cars.global.json": {
+      "sha256": "bbaf35c754d1162f6bbb5c196ca9bec50aa2a3d40dd00b9ae779dbf6bfdbc567",
+      "bytes": 29264,
+      "mtime_ns": 1793613795694552900
+    },
+    "map-layout-parser\\gauntlet_data.global.json": {
+      "sha256": "5cc7a48e655a3a53dfcc346165f10aa97479707de36d375e7b8a58e8a7e9ca39",
+      "bytes": 133767,
+      "mtime_ns": 1793613795694552900
+    },
+    "map-layout-parser\\global-data-manifest.json": {
+      "sha256": "0322ec22e68a79626c4bcb201aeb52c772b21b14d52be1a2c14b9e94934cc0b5",
+      "bytes": 1866,
+      "mtime_ns": 1793613795695550100
+    },
+    "map-layout-parser\\gauntlet_data.xlsx": {
+      "sha256": "62cd5c19a11614b9ad6ab6cdb350ef1137bd84e6c8d10072fcaf93933e5af5d2",
+      "bytes": 123526,
+      "mtime_ns": 1793383660409615900
+    },
+    "map-layout-parser\\gauntlet_data.global.xlsx": {
+      "sha256": "e166872aa592fa89766cba98fabf9b9ae8a6389dba0cbaf7c20d5d25a509d4b0",
+      "bytes": 40508,
+      "mtime_ns": 1793383660394130200
+    }
+  },
+  "remaining": [
+    "provider selection and real terms/permissions/limits",
+    "client review of draft additions",
+    "queue port and Unix bridge implementation",
+    "safety gate and race/cancel/recovery tests",
+    "Linux isolated resources and security evidence",
+    "fixed deliverable and authorized stepwise server operations",
+    "actual OCR DevTools / phone / iOS Android acceptance"
+  ],
+  "artifacts": {
+    "MINI_OCR_STAGE2_PLAN_20261104.md": "b1643037d011de82fef6c89aee9e8988b4a83e553e9324699672c59d8597af61",
+    "MINI_OCR_STAGE2_PROTOCOL_DRAFT_20261104.md": "63b911b00e7ca978cc1d0c8580c775efd9c7485ee4af7df536751ce622ef996d",
+    "MINI_OCR_STAGE2_RESPONSE_DRAFT_20261104.json": "aacbbd20b5a662128f0e4801ff885aab99b6312b21e4efb5eef16900ed9bde37"
+  },
+  "protected_inputs_rechecked_unchanged": true
+}

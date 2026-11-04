@@ -1,0 +1,104 @@
+{
+  "schema": "racepick.mini-guest-server-preparation.v1",
+  "date": "2026-11-03",
+  "timezone": "Asia/Shanghai",
+  "status": "offline_runtime_and_inprocess_linux_fixture_verified_not_activated",
+  "evidence": "Server commands executed and returned by user; agent did not operate production or browser terminal",
+  "authorization": "Create isolated test user/directories, upload/stage, offline install and Linux isolated selfcheck only. DNS/Nginx/service startup remain excluded.",
+  "delivery_id": "9d856fba3f6b825b255bc17e",
+  "code_commit": "0b97dae9e1003c1bc2c4c5b7a189b81cb4002112",
+  "archive": {
+    "bytes": 3243638,
+    "sha256": "a48875c79258d5c662847879afbd74603baf08ad6ff238c78dd2179b53c856e7"
+  },
+  "manifest_payload_files": 34,
+  "user": {
+    "name": "racepick-mini-test",
+    "uid": 996,
+    "gid": 987,
+    "login_shell": "/usr/sbin/nologin",
+    "home": "/nonexistent",
+    "home_created": false
+  },
+  "directories": {
+    "/opt/racepick-mini-test": "root:root 0755",
+    "/opt/racepick-mini-test/releases": "root:root 0755",
+    "/var/lib/racepick-mini-test": "racepick-mini-test:racepick-mini-test 0700",
+    "/etc/racepick-mini-test": "racepick-mini-test:racepick-mini-test 0700"
+  },
+  "release": {
+    "path": "/opt/racepick-mini-test/releases/9d856fba3f6b825b255bc17e",
+    "owner": "root:root",
+    "mode": "0755",
+    "offline_wheels": 13,
+    "pip_check": "passed",
+    "release_manifest_reverified_after_install_and_selfcheck": true,
+    "test_current_link_created": false
+  },
+  "snapshots": {
+    "cn_version": "593ecc7222ceea5856b2f576b4f5bca8",
+    "global_version": "e29f52e7f81c3e337985bf05dedb7e88",
+    "versions_are_test_identifiers_not_production_pointers": true,
+    "approved_data_keys": {
+      "cn": 4516,
+      "global": 694
+    },
+    "image_policy": "disabled",
+    "account_bridge": false,
+    "business_bridge": false,
+    "ocr_worker": false
+  },
+  "linux_selfcheck": {
+    "script_sha256": "c8f0bffa761b48bb3c622db81d7a748bc5cd5b41125876e36cc96e57ccb9d2fe",
+    "script_bytes": 5864,
+    "initial_attempt": "Stopped at missing upload file before fixture execution; uploaded and SHA verified afterward",
+    "passed": true,
+    "platform": "linux",
+    "uid": 996,
+    "gid": 987,
+    "checks": [
+      "fixture_session_and_same_key_recovery",
+      "cn_exact_utf8_identity_sha_bytes",
+      "global_exact_utf8_identity_sha_bytes",
+      "host_https_proxy_ip_origin_cookie_boundary",
+      "accounts_business_ocr_disabled_and_body_limit",
+      "no_business_or_ocr_modules_or_state"
+    ],
+    "max_rss_kib": 52232,
+    "measurement_scope": "Single in-process fixture; not resident HTTP, Nginx, systemd sandbox or sustained load",
+    "fixture_only": true,
+    "real_wechat_verified": false,
+    "tcp_listener_started": false,
+    "systemd_started": false,
+    "nginx_changed": false,
+    "retained_fixture": "/var/lib/racepick-mini-test/selfcheck-20261103-01",
+    "result_file": "/var/lib/racepick-mini-test/selfcheck-20261103-01/result.json"
+  },
+  "unchanged": {
+    "port_8011_no_listener": true,
+    "accounts_service": "active",
+    "original_ocr_service": "active",
+    "original_backup_timer": "active",
+    "production_current_last_verified_during_install": "/opt/racepick/releases/a933c9b746c2e276a9b68d14",
+    "production_data_copied": false,
+    "old_test_state_copied": false,
+    "dns_modified": false,
+    "nginx_modified": false,
+    "real_wechat_credentials_read_or_configured": false
+  },
+  "pending": [
+    "Domain DNS authorization and current record verification",
+    "Independent CA-trusted subdomain certificate and ACME route authorization",
+    "Nginx candidate review/test and authorization",
+    "Private real-platform credentials and fresh actual guest state",
+    "Service unit review and explicit startup authorization",
+    "Actual HTTPS/SDK/real wx.login/phone validation",
+    "Resident/cgroup memory and longer-running capacity"
+  ],
+  "unit_preparation": {
+    "candidate_not_installed": "E:\\hzz\\work\\MutualExclusionAllocator\\offline-evaluation\\mini-guest-stage1-20261103-01\\CANDIDATE-racepick-mini-test.service",
+    "sha256": "f13531b5bf93b4c1ae3b148607e1a99f28363cc264a01dba27dd6dc54cbc30d1",
+    "reason": "Use the immutable physical release paths for WorkingDirectory/interpreter/snapshot; loader intentionally rejects symlink-containing snapshot paths. Do not install the generic current-based example without rendering."
+  },
+  "git": "Runtime source fixed in local commit; no further commit/push/merge authorized or performed in this preparation closeout"
+}
