@@ -44,6 +44,7 @@ function createNativeApi(wx,config,{wait=ms=>new Promise(r=>setTimeout(r,ms)),no
     const view=new Uint8Array(bytes);
     if(view.byteLength!==p.size||p.size>8388608)throw Error('截图大小已变化，请重新选择');
     const hash=sha256(view),previous=fingerprints.get(p.request_key);
+    if(p.expected_sha256&&hash!==p.expected_sha256)throw Object.assign(Error('图片不在本次授权样图范围'),{code:'protocol'});
     if(previous&&previous!==hash)throw Object.assign(Error('原截图已变化，不能重用上传请求'),{code:'protocol'});
     fingerprints.set(p.request_key,hash);current(p);
     metrics.uploads++;

@@ -42,3 +42,12 @@ test('partial results keep exact slot positions and cannot overwrite maps until 
 test('late background result cannot publish and foreground resumes the same task without a new send',async()=>{
  const f=fixture({maxUploads:1,uploadDomainDeclared:true});await f.probe.connect();await f.probe.choose();f.probe.setConsent(true);let finish;f.handler=(o,u)=>!u&&o.url.includes('/jobs/')?new Promise(r=>{finish=r;}):null;const running=f.probe.recognize();while(!finish)await new Promise(r=>setImmediate(r));f.probe.hide();finish({body:f.job()});await assert.rejects(running);assert.equal(f.probe.report().pending,null);f.probe.show();f.handler=()=>null;await f.probe.resume();assert.equal(f.probe.report().state,'pending_confirmation');assert.equal(f.calls.filter(c=>c.upload).length,1);
 });
+
+test('authorized sample SHA is checked before any upload and the successful send can be explicitly locked',async()=>{
+ const bad=fixture({maxUploads:1,uploadDomainDeclared:true,sampleSha256:'a'.repeat(64)});await bad.probe.connect();await bad.probe.choose();bad.probe.setConsent(true);await assert.rejects(bad.probe.recognize(),e=>e.code==='protocol');assert.equal(bad.calls.filter(c=>c.upload).length,0);
+ const good=fixture({maxUploads:1,uploadDomainDeclared:true,sampleSha256:crypto.createHash('sha256').update(new Uint8Array([1,2,3])).digest('hex')});await good.probe.connect();await good.probe.choose();good.probe.setConsent(true);await good.probe.recognize();assert.equal(good.calls.filter(c=>c.upload).length,1);good.probe.lockUploads();assert.equal(good.probe.report().maxUploads,0);await assert.rejects(good.probe.resume(),e=>e.code==='UPLOAD_NOT_AUTHORIZED');assert.equal(good.calls.filter(c=>c.upload).length,1);
+});
+
+test('OCR upload failure retains only safe diagnostic category and never raw native text',async()=>{
+ const f=fixture({maxUploads:1,uploadDomainDeclared:true});await f.probe.connect();await f.probe.choose();f.probe.setConsent(true);f.wx.uploadFile=o=>{queueMicrotask(()=>o.fail({errMsg:'uploadFile:fail ssl certificate invalid private-code private-token',errCode:-1202}));return {abort(){}};};await assert.rejects(f.probe.recognize());const r=f.probe.report();assert.equal(r.errorCode,'WX_REQUEST_FAILED');assert.deepEqual(r.diagnostic,{kind:'tls_or_certificate',nativeCode:-1202});assert.equal(r.httpStatus,null);assert.ok(!JSON.stringify(r).includes('private-'));assert.equal(r.counts.uploads,1);
+});
