@@ -1,0 +1,33 @@
+[Unit]
+Description=RacePick isolated guest HTTP to OCR queue bridge
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=racepick-mini-test
+Group=racepick-mini-test
+SupplementaryGroups=__SOCKET_GROUP__
+WorkingDirectory=__DELIVERY_ROOT__/guest
+ExecStart=__DELIVERY_ROOT__/guest/.venv/bin/python -B -m backend.mini_ocr_guest_service serve --snapshot-dir __DELIVERY_ROOT__/snapshot --mini-config /etc/racepick-mini-test/mini-ocr.json --origin https://mini-test.racepick.cn --port 8011
+Restart=on-failure
+RestartSec=5
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+ReadWritePaths=/var/lib/racepick-mini-test/guests
+InaccessiblePaths=/var/lib/racepick /etc/racepick /etc/racepick-ocr-safety
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+MemoryHigh=128M
+MemoryMax=256M
+MemorySwapMax=0
+CPUQuota=25%
+TasksMax=32
+LimitNOFILE=128
+KillMode=control-group
+TimeoutStopSec=10
+
+[Install]
+WantedBy=multi-user.target

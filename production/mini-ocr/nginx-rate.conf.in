@@ -1,0 +1,3 @@
+# http{} context only. Keep the existing website's independent budgets unchanged.
+limit_req_zone $binary_remote_addr zone=rp_mini_guest_stage2:1m rate=5r/s;
+limit_req_zone $binary_remote_addr zone=rp_mini_ocr_stage2:1m rate=2r/s;

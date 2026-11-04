@@ -1,0 +1,49 @@
+# Candidate include for the EXISTING mini-test HTTPS server, not a whole-site template.
+# Replace __PROXY_INCLUDE__ only after reviewing the actual server configuration.
+location = /api/mini/v1/session {
+    limit_req zone=rp_mini_guest_stage2 burst=10 nodelay;
+    limit_req_status 429;
+    client_max_body_size 4k;
+    client_body_timeout 5s;
+    proxy_read_timeout 12s;
+    include __PROXY_INCLUDE__;
+}
+location = /api/mini/v1/snapshot {
+    limit_req zone=rp_mini_guest_stage2 burst=10 nodelay;
+    limit_req_status 429;
+    client_max_body_size 4k;
+    proxy_read_timeout 5s;
+    include __PROXY_INCLUDE__;
+}
+location = /api/mini/v1/map-recognition/catalog {
+    limit_req zone=rp_mini_ocr_stage2 burst=4 nodelay;
+    limit_req_status 429;
+    client_max_body_size 4k;
+    proxy_read_timeout 5s;
+    include __PROXY_INCLUDE__;
+}
+location = /api/mini/v1/map-recognition/jobs {
+    limit_req zone=rp_mini_ocr_stage2 burst=4 nodelay;
+    limit_req_status 429;
+    client_max_body_size 8454144;
+    client_body_timeout 20s;
+    proxy_request_buffering off;
+    proxy_buffering off;
+    proxy_read_timeout 25s;
+    include __PROXY_INCLUDE__;
+}
+location = /api/mini/v1/map-recognition/jobs/by-request {
+    limit_req zone=rp_mini_ocr_stage2 burst=4 nodelay;
+    limit_req_status 429;
+    client_max_body_size 4k;
+    proxy_read_timeout 5s;
+    include __PROXY_INCLUDE__;
+}
+location ~ "^/api/mini/v1/map-recognition/jobs/[a-f0-9]{32}$" {
+    limit_req zone=rp_mini_ocr_stage2 burst=4 nodelay;
+    limit_req_status 429;
+    client_max_body_size 4k;
+    proxy_read_timeout 5s;
+    include __PROXY_INCLUDE__;
+}
+# The host's existing default location must continue to return 404 for other paths.
