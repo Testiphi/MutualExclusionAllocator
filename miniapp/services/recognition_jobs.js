@@ -53,7 +53,10 @@ function createRecognitionJobs({api,createKey,currentBinding,now=Date.now,wait=m
       if(typeof job.expires_at!=='number'||!Number.isFinite(job.expires_at))throw error('识别任务到期信息无效','protocol');
       if(job.expires_at*1000<=now())throw error('图片与识别结果已到期，请重新选择截图','expired');
       if(job.state==='succeeded'){const value=result(a,job);phase='finished';return value;}
-      if(job.state==='failed')throw error('识别失败，请检查截图后重试','failed');
+      if(job.state==='failed'){
+        if(['IMAGE_SAFETY_REJECTED','IMAGE_SAFETY_UNAVAILABLE','IMAGE_SAFETY_TIMEOUT'].includes(job.error_code))throw Object.assign(error('图片安全处理未通过，请继续手动选图','failed'),{safetyCode:job.error_code});
+        throw error('识别失败，请检查截图后重试','failed');
+      }
       if(job.state==='cancelled')throw error('识别任务已取消','cancelled');
       if(job.state==='expired')throw error('图片与识别结果已到期','expired');
       if(!['queued','running'].includes(job.state))throw error('未知识别任务状态','protocol');
