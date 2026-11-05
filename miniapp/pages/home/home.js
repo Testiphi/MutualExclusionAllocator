@@ -28,7 +28,7 @@ Page({
   mountService(service) {
     this.baseService=service;
     this.account=runtime.mount(wx,nativeConfig,service,accountConfig);this.setData({accountAvailable:!!this.account,accountRestricted:runtime.policy().restricted,allowCloudWrites:runtime.policy().allowCloudWrites});
-    if(this.account){this.unsubscribeAccount=this.account.subscribe(s=>{const id=s.actor?.id||'',generation=this.account.generation();this.setData({actor:s.actor});if(id!==this.lastAccountActor||generation!==this.lastAccountGeneration){this.lastAccountActor=id;this.lastAccountGeneration=generation;this.setData({schemes:[],activeScheme:null,cars:[],selectedCount:0,cloudConflict:null,cloudEmpty:false,cloudLoaded:false,unreadCounts:{},homeNickname:'',homeHub:null});this.cloudReady=false;this.lastCloudProfile=null;if(this.homeVisible&&this.controller)void this.syncAccount();}});}
+    if(this.account){this.unsubscribeAccount=this.account.subscribe(s=>{const id=s.actor?.id||'',generation=this.account.generation();this.setData({actor:s.actor});if(id!==this.lastAccountActor||generation!==this.lastAccountGeneration){this.lastAccountActor=id;this.lastAccountGeneration=generation;this.setData({schemes:[],activeScheme:null,cars:[],selectedCount:0,cloudConflict:null,cloudEmpty:false,cloudLoaded:false,unreadCounts:{},homeNickname:'',homeHub:null});this.cloudReady=false;this.lastCloudProfile=null;if(this.homeVisible&&this.controller&&!this.refreshingAccount)void this.syncAccount();}});}
     this.mountController(service);
     if(this.account)void runtime.usage()?.visit('home',this.state.draft.server,'open');
   },
@@ -52,7 +52,7 @@ Page({
      await cloud.init();if(ticket!==this.cloudTicket||this.account.state().actor?.id!==id)return;
      this.cloud=cloud;this.applyingCloud=true;this.controller.setProfile(cloud.snapshot());this.applyingCloud=false;this.lastCloudProfile=JSON.stringify(this.currentProfile());this.cloudReady=true;this.setData({cloudStatus:cloud.state().dirty?'账号临时修改已保留':cloud.remote()?.profile===null?'账号尚未保存此服车库':'已读取账号车库'});
      this.setData({cloudLoaded:true,cloudEmpty:cloud.remote()?.profile===null,cloudConflict:cloud.state().status==='conflict'?{local:cloud.snapshot(),remote:cloud.remote()?.profile}:null});
-    }catch(e){if(ticket===this.cloudTicket)this.setData({cloudStatus:e.message});}
+    }catch(e){if(ticket===this.cloudTicket){if(e.code==='PROFILE_RECOVERY_REQUIRED'&&this.account.state().actor?.id===id){this.cloud=runtime.cloudProfile(wx,server);this.cloudReady=true;this.applyCloud();}this.setData({cloudStatus:e.message});}}
   },
   accountDiagnostics(){return runtime.diagnostics();},
   currentProfile(){const d=this.state.draft;return {cars:[...d.cars],stars:{...d.stars},...(d.server==='global'?{ocMap:{...d.oc}}:{})};},
@@ -107,7 +107,7 @@ Page({
       emptyResultText:d.maps.some(m=>m&&m.small)?'没有可用方案':'请先选择地图',
       schemes,schemeIndex,schemeOptions:s.result?s.result.schemes.map((x,i)=>x.summary||('方案'+(i+1)+' · Σ='+x.prioritySum)):[],activeScheme:schemes[schemeIndex]||null });
   },
-  async onShow() {this.homeVisible=true;if(this.account)try{await this.account.refresh();}catch(e){this.setData({cloudStatus:e.message});}if(this.controller){await this.syncAccount(true);this.controller.show();if(this.account){void runtime.usage()?.visit('home',this.state.draft.server,'resume');void this.refreshHomeIdentity();}}},
+  async onShow() {this.homeVisible=true;this.refreshingAccount=true;try{if(this.account)await this.account.refresh();}catch(e){this.setData({cloudStatus:e.message});}finally{this.refreshingAccount=false;}if(this.controller){await this.syncAccount(true);this.controller.show();if(this.account){void runtime.usage()?.visit('home',this.state.draft.server,'resume');void this.refreshHomeIdentity();}}},
   onHide() {this.homeVisible=false;this.setData({homeHub:null}); this.closeDropdown();if (this.controller) this.controller.hide(); },
   onUnload() { this.unloaded=true;this.cloudTicket=(this.cloudTicket||0)+1;if(this.unsubscribeAccount)this.unsubscribeAccount();this.closeDropdown();if (this.controller) this.controller.destroy();if(this.nativeApi)this.nativeApi.session.invalidate(); },
   onPageScroll() { this.closeDropdown(); },

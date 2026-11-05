@@ -8,7 +8,7 @@ assert.equal(config.allowCloudWrites,false);assert.equal(local.setting.urlCheck,
 (async()=>{const app=await sdk.connect({wsEndpoint:'ws://127.0.0.1:'+ports.actualAutoPort}),exceptions=[];app.on('exception',()=>exceptions.push('runtime exception'));
  const report={buildId:build.buildId,planId:build.planId,actualAutoPort:ports.actualAutoPort,exceptions,realLogin:false,realDevice:false,requestsExpected:0};
  try{
-  let p=await app.currentPage();if(p?.path==='pages/account/account')await app.reLaunch('/pages/home/home');for(let i=0;i<60;i++){try{p=await app.currentPage();if(p?.path==='pages/home/home'&&await p.data('buildId')===build.buildId&&await p.data('ready'))break;}catch(_){}await new Promise(r=>setTimeout(r,150));}
+  let p;try{p=await app.currentPage();}catch(_){}if(p?.path==='pages/account/account')await app.reLaunch('/pages/home/home');for(let i=0;i<60;i++){try{p=await app.currentPage();if(p?.path==='pages/home/home'&&await p.data('buildId')===build.buildId&&await p.data('ready'))break;}catch(_){}await new Promise(r=>setTimeout(r,150));}
   assert.equal(await p.data('buildId'),build.buildId);assert.equal(await p.data('ready'),true);assert.equal(await p.data('accountRestricted'),true);assert.equal(await p.data('allowCloudWrites'),false);
   const info=await app.callWxMethod('getAccountInfoSync');assert.equal(info.miniProgram.appId===local.appid,true);report.appIdMatches=true;
   report.initial=await app.evaluate(()=>getCurrentPages()[0].accountDiagnostics());assert.ok(Object.values(report.initial.counts).every(n=>n===0));
