@@ -7,6 +7,8 @@ const cp = require('node:child_process');
 const root = path.resolve(__dirname, '..');
 // Validate connection intent before writing any generated files.
 const native=require('./native_profile.cjs').nativeFlags(process.argv.slice(2));
+const accountIndex=process.argv.indexOf('--account-profile');
+const accountProfile=require('../miniapp/services/account_connection').validateAccountProfile(accountIndex<0?{enabled:false}:JSON.parse(fs.readFileSync(path.resolve(process.argv[accountIndex+1]),'utf8')));
 const config = require('../miniapp/shared-source.json');
 const files = config.files;
 const output = path.join(root, 'miniapp/shared');
@@ -41,6 +43,7 @@ fs.writeFileSync(path.join(output,'web_home.js'),homeCode);
 manifest.derived={'web_home.js':{source_file:'index.html',source_sha256:crypto.createHash('sha256').update(pageSource).digest('hex'),sha256:crypto.createHash('sha256').update(homeCode).digest('hex')}};
 fs.writeFileSync(path.join(output, 'source.json'), JSON.stringify(manifest, null, 2) + '\n');
 console.log(JSON.stringify(manifest, null, 2));
+let dataBinding=null;
 const receiptIndex = process.argv.indexOf('--data-receipt');
 const generated = path.join(root,'miniapp/generated'); fs.mkdirSync(generated,{recursive:true});
 if (receiptIndex !== -1) {
@@ -49,7 +52,7 @@ if (receiptIndex !== -1) {
   const receipt = JSON.parse(fs.readFileSync(receiptPath, 'utf8'));
   const expected = ['cars.json','gauntlet_data.json','cars.global.json','gauntlet_data.global.json','global-data-manifest.json'];
   if (Object.keys(receipt.runtime).sort().join() !== [...expected].sort().join()) throw Error('运行文件白名单不符');
-  const bundle = { kind: 'local-unfrozen', files: {}, hashes: receipt.runtime };
+  const bundle = { kind: 'local-unfrozen', files: {}, hashes: receipt.runtime };dataBinding=receipt.runtime;
   for (const name of expected) {
     const bytes = fs.readFileSync(path.join(path.dirname(receiptPath), 'runtime', name));
     if (bytes.length !== receipt.runtime[name].bytes || crypto.createHash('sha256').update(bytes).digest('hex') !== receipt.runtime[name].sha256) throw Error('本地数据SHA不符：' + name);
@@ -59,3 +62,8 @@ if (receiptIndex !== -1) {
   console.log('已生成未冻结本地数据；原生连接模式以generated/native-config.js为准');
 } else fs.writeFileSync(path.join(generated,'local-bundle.js'),'module.exports = null;\n');
 fs.writeFileSync(path.join(generated,'native-config.js'),'module.exports = '+JSON.stringify(native)+';\n');
+
+fs.writeFileSync(path.join(generated,'account-config.js'),'module.exports = '+JSON.stringify(accountProfile)+';\n');
+const clientFiles=cp.execFileSync('git',['ls-files','-z','miniapp'],{cwd:root,encoding:'utf8'}).split('\0').filter(n=>/\.(js|wxml|wxss)$/.test(n));
+const clientHashes=Object.fromEntries(clientFiles.map(n=>[n,crypto.createHash('sha256').update(fs.readFileSync(path.join(root,n))).digest('hex')]));
+fs.writeFileSync(path.join(generated,'build-info.js'),'module.exports = '+JSON.stringify({buildId:crypto.createHash('sha256').update(JSON.stringify(manifest)+JSON.stringify(native)+JSON.stringify(accountProfile)+JSON.stringify(dataBinding)+JSON.stringify(clientHashes)).digest('hex').slice(0,20)})+';\n');
