@@ -1,0 +1,10 @@
+{
+  "schema": 1,
+  "planId": "mini-account-probe-readonly-20261106-01",
+  "origin": "https://account-test.racepick.cn",
+  "enabled": true,
+  "isolatedServiceDeclared": true,
+  "accountRoutesDeclared": true,
+  "allowCloudWrites": false,
+  "readOnly": true
+}
