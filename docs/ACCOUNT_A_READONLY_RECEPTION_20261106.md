@@ -29,12 +29,29 @@
 
 最初 `account-check` / 9432没有取得页面，不能算编译成功；该目录保留。固定绑定改为JS模块后生成 `account-check-js` 才获得上述页面与SDK证据。SDK旧版page.callMethod调用另遇方法错误，改用官方evaluate调用明确connect；失败均未发送账号登录。没有用端口请求值代替实际autoPort，也没有清缓存/认证状态。
 
-## 当前等待与验收边界
+## 真实隔离账号开发者工具只读通过
 
-已请用户在当前 `account-check-js` 模拟器私下输入准备好的隔离凭据，明确登录一次，然后分别读取两服；自动化不读取表单，不提交密码，不在凭据阶段截图。读取安全报告时只访问probe.report，先核buildId，不遍历页面/网络/日志。真实账号结果仍待用户完成及本轮接收核验，不能把上面的健康、fixture或真实父访客当成登录通过。
+用户已明确回复“已完成登录及双服读取”。随后官方SDK仅读取同一buildId的probe.report，未重新登录、编译、截图或触发业务请求。固定证据为外层 `devtools-account-acceptance/result.json`：真实player登录1次、认证profile GET2次，CN与Global均revision0/profile=null；tokenKind、parentIdentityMatches、sessionOnly、expiresWithinParent、roleMatches均true，无pendingAuth、无errorCode、异常0。profileWrites/recoveries/logouts均0；两服dirty=false，无pendingSave/冲突。ProfileStore内部status=saved在此仅表示读取状态就绪，不能解释为发送过云保存。用户操作的精确完成时间未提供，不以文件落盘时间推断。
 
-通过条件：真实player会话由原AccountClient验证rpa1、有效期及实际父association/session_only，双服GET均成功、revision/profile状态明确、写入计数0。两个null只证明本次认证读到未保存状态，不能证明网页/原生同记录同步或真实保存。
+本次已满足开发者工具真实隔离账号只读通过条件：原AccountClient验证rpa1、有效期及实际父association/session_only，双服GET均成功、revision/profile状态明确、写入计数0。两个null只证明本次认证读到未保存状态，不能证明网页/原生同记录同步或真实保存；真实合法空车库读取也未由此覆盖，null/empty区分仍另有本地fixture证据。
 
-开发者工具真实账号只读通过后，才准备独立手机步骤。手机账号、真实同记录同步、保存/冲突/退出/再认证/撤销及身份变化专项仍未验收；不恢复OCR额度、不发图、不发邮件、不注册，不操作服务器/数据库/生产/微信后台、上传提审发布或推送合并。服务未开机自启、证书续期加载待核，不属于本轮客户端执行范围。
+已在开发者工具真实账号只读通过后准备独立手机工程，见下节。手机账号、真实同记录同步、保存/冲突/退出/再认证/撤销及身份变化专项仍未验收；不恢复OCR额度、不发图、不发邮件、不注册，不操作服务器/数据库/生产/微信后台、上传提审发布或推送合并。服务未开机自启、证书续期加载待核，不属于本轮客户端执行范围。
 
 本轮代码可本地提交；准确提交ID另记外层commit-receipt.json，不倒改已生成工程的原始source/dirty或封存交付source_commit。
+
+## 手机独立只读工程与步骤（尚未执行真机）
+
+路径：`E:/hzz/work/MutualExclusionAllocator/offline-evaluation/mini-account-readonly-phone-20261106-01/account-check`。
+planId：`mini-account-probe-readonly-phone-20261106-01`；buildId：`89883d823650ca3c7e38`。保持独立origin/actor/server/plan作用域；AppID仅在本机工程配置，未加入Git。旧开发者工具账号会话与旧OCR工程/预约保持，没有退出或撤销。
+
+官方CLI实际autoPort9434；官方SDK核页面buildId、AppID匹配布尔true、urlCheck=true、无private override、SDK3.17.6、异常0。仅完成编译，所有请求计数0，connected=false/loginAttempted=false。证据在新外层preflight/result.json与输入凭据前截图。没有自动预览、上传体验版、提审或发布。
+
+用户手机步骤：
+
+1. 确认开发者工具打开的是上述手机独立工程，目录尾为 `mini-account-readonly-phone-20261106-01/account-check`，保持域名/TLS/证书校验；在开发者工具点“预览”，手机微信扫描这份工程的新二维码。无需添加任何uploadFile/downloadFile域名。
+2. 手机上点一次“核固定来源、双服快照与访客入口”。等待报告connected=true、bindingVerified=true、snapshotChecks.cn/global=true；失败即停留原页，不重开/换码或恢复旧身份。此处必须是手机新wx.login与新父访客，不能接用模拟器凭据。
+3. 在手机私下输入同一隔离邮箱/密码，只点一次“明确登录”。不要故意输错，不注册、不重置、不再认证；未知结果只保留原操作，先回传错误码，不换key重登。
+4. 依次选国服、国际服，各点一次“读取该服云车库”。预期真实player、两服authenticatedRead=true；当前无写入情况下预期revision0/kind=null。任何失败/503均不当空库。不要保存/导入/退出。
+5. 仅复制页面底部的脱敏JSON报告为文字，并告知手机型号、系统和微信版本；不发送邮箱、密码、token、code或带输入框的截图。该工程buildId由本固定生成回执绑定。报告应显示authPosts1、profileReads2、profileWrites0；这是待核标准，不是已发生计数。
+
+若429，遵守Retry-After且不自动重试；不假定日预算恢复。若未知登录结果，保留原key/action于当前进程，只核对原登录；404也不证明未执行，不关闭进程或新开工程重登。手机结果回交前不得记录真机通过，不扩大为Android/其他设备/切网前后台/退出/云写验收。
