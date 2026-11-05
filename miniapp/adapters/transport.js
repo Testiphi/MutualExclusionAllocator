@@ -78,4 +78,4 @@ function createTransport(wx, { baseURL, enabled = false, allowLocal = false,name
     upload: (path, options) => start(path, options, true)
   };
 }
-module.exports = { createTransport, responseJSON };
+module.exports = { createTransport, responseJSON, networkDiagnostic };

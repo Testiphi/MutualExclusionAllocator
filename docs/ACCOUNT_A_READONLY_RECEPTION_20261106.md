@@ -55,3 +55,18 @@ planId：`mini-account-probe-readonly-phone-20261106-01`；buildId：`89883d8236
 5. 仅复制页面底部的脱敏JSON报告为文字，并告知手机型号、系统和微信版本；不发送邮箱、密码、token、code或带输入框的截图。该工程buildId由本固定生成回执绑定。报告应显示authPosts1、profileReads2、profileWrites0；这是待核标准，不是已发生计数。
 
 若429，遵守Retry-After且不自动重试；不假定日预算恢复。若未知登录结果，保留原key/action于当前进程，只核对原登录；404也不证明未执行，不关闭进程或新开工程重登。手机结果回交前不得记录真机通过，不扩大为Android/其他设备/切网前后台/退出/云写验收。
+
+## 手机健康检查失败：已保留证据，根因待诊断
+
+用户回传原只读手机报告：state=failed、HEALTH_REQUEST_FAILED，healthReads2；healthVerified/bindingVerified=false，snapshot/guestSession/account/auth/profile/写入/恢复/退出计数全部0，loginAttempted=false。用户确认仍为iPhone14/iOS27.0.1/微信8.0.79。原始失败时间、HTTP状态及网络失败类别未提供，原客户端健康fail回调也未保留它们，不能补造为域名、TLS、DNS或缓存已确认。证据在新外层 `mini-account-health-phone-20261106-01/user-original-failure.json`。这次手机尝试失败，不影响已独立完成的开发者工具真实隔离账号只读证据，也不能将手机记为通过。
+
+本轮从本机另外只读GET一次健康入口为200、交付匹配、enabled=true/cloud_writes=false；只证明该次本机到入口的读取，不证明手机链路正常。没有服务器、微信后台、DNS/TLS配置、旧身份/缓存/额度修改。
+
+客户端补齐：复用transport中已有networkDiagnostic分类器，健康fail仅保留kind与数字nativeCode/errno；HTTP失败保留httpStatus及Retry-After，不保留errMsg/正文/头部/敏感信息。不改变TLS/域名校验，不自动重试。新增healthOnly模式，即使健康200也在wx.login前停止，guest/账号接口被额外禁止；同一进程只允许一次健康检查，未知账号操作不受此新模式覆盖。
+
+新的独立诊断工程：`E:/hzz/work/MutualExclusionAllocator/offline-evaluation/mini-account-health-phone-20261106-01/health-check`。
+planId `mini-account-probe-health-phone-20261106-01`；buildId **b8e537fb26040596f9f7**；窗口工程名 **RacePick-account-health-only**。页面仅有健康检查与复制脱敏报告，不显示账号输入框。所有旧工程/报告/身份/草稿继续保留。
+
+150项客户端测试通过（新增网络类别脱敏、健康成功不进入访客/账号、HTTP429遵守等待三项）。官方CLI实际autoPort9435，官方SDK页面buildId/AppID匹配布尔true、urlCheck=true、无private override、SDK3.17.6、异常0；仅编译，网络计数全部0。preflight/result.json及无凭据截图在上述新外层目录。未自动预览、上传体验版、提审或发布。手机诊断仍待执行，不把fixture/编译当手机联网结果。
+
+用户下一步只在新诊断工程点开发者工具“预览”，手机扫码核对页面工程号，然后点一次“仅检查一次健康入口”，使用“复制脱敏报告”回传文字；本次不输入账号、不登录。若健康成功报告state=health_checked/connected=false/bindingVerified=false，这是健康专用工程的预期设计，不等于账号异常。若失败，按新报告判断下一步；不关闭校验、不重复点按钮/重发登录，不从未来新诊断反推此前两次失败的唯一根因。
