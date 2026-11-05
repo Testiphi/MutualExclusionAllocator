@@ -70,3 +70,18 @@ planId `mini-account-probe-health-phone-20261106-01`；buildId **b8e537fb2604059
 150项客户端测试通过（新增网络类别脱敏、健康成功不进入访客/账号、HTTP429遵守等待三项）。官方CLI实际autoPort9435，官方SDK页面buildId/AppID匹配布尔true、urlCheck=true、无private override、SDK3.17.6、异常0；仅编译，网络计数全部0。preflight/result.json及无凭据截图在上述新外层目录。未自动预览、上传体验版、提审或发布。手机诊断仍待执行，不把fixture/编译当手机联网结果。
 
 用户下一步只在新诊断工程点开发者工具“预览”，手机扫码核对页面工程号，然后点一次“仅检查一次健康入口”，使用“复制脱敏报告”回传文字；本次不输入账号、不登录。若健康成功报告state=health_checked/connected=false/bindingVerified=false，这是健康专用工程的预期设计，不等于账号异常。若失败，按新报告判断下一步；不关闭校验、不重复点按钮/重发登录，不从未来新诊断反推此前两次失败的唯一根因。
+
+## 手机健康诊断通过，准备只读试次02
+
+用户回交buildId `b8e537fb26040596f9f7` / planId `mini-account-probe-health-phone-20261106-01`，与生成回执逐项匹配。报告state=health_checked、healthDiagnostic.kind=http/httpStatus200、healthVerified=true、errorCode=null；healthReads1，其余全部计数0、loginAttempted=false。当前证据为用户手机报告，非代理操作手机；报告未给完成时间或设备字段，设备沿用户最近明确确认的iPhone14/iOS27.0.1/微信8.0.79背景，不捏造自动采集元数据。原文及接收摘要：`mini-account-health-phone-20261106-01/user-health-success.json`。
+
+本次可以记为该手机试次的健康HTTPS读取及固定健康响应校验通过。healthOnly工程的connected=false/bindingVerified=false符合设计，不是失败；尚未建立父访客、读取快照、登录账号或读取云车库。原手机试次01的两次健康失败继续保留，根因仍未知；不把后续成功解释为已经证明缓存、重启、二维码或网络切换的唯一原因。
+
+在该结果通过后生成新的只读手机试次02，不复用/清理旧工程或借用其会话：
+
+- 工程：`E:/hzz/work/MutualExclusionAllocator/offline-evaluation/mini-account-readonly-phone-20261106-02/account-check`。
+- planId：`mini-account-probe-readonly-phone-20261106-02`；buildId：**907f11208ef688380cf5**。
+- 原始生成来源：代码提交 `1f051cb76a49d616fc3b756707439e9a7b9f50ab`，生成时工作树干净；没有本轮运行代码修改，既有150项客户端测试结果不冒充新运行。
+- 官方CLI实际autoPort9436；SDK核页面buildId、AppID匹配布尔true、urlCheck=true、无private override、SDK3.17.6、异常0。仅编译且所有网络计数0，healthOnly=false/allowCloudWrites=false，输入凭据前截图已检查。证据在新外层preflight/result.json及截图。未自动预览、上传体验版、提审或发布。
+
+手机下一步：从新试次02工程预览扫码，核对工程号907f11208ef688380cf5；点一次“核固定来源、双服快照与访客入口”，仅当connected/bindingVerified/snapshotChecks.cn/global均true后，用户私下输入隔离邮箱/密码明确登录一次，再分别读取CN/Global各一次。回传底部脱敏JSON文字，不发送凭据/截图。任何失败立即停留原页面，只回传报告，不重复登录、不更换key；429遵守等待。只读试次02的真实手机微信交换、快照、账号及双服读取仍待执行，不提前记为通过。云写、退出/再认证/撤销/冲突/真实同记录同步范围保持未授权或未验收；OCR和服务器均未操作。
