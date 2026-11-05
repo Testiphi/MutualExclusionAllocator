@@ -33,3 +33,16 @@
 额外完整镜像夹具测试已通过：从主页本地游客选车开始，明确fixture登录后账号null不导入游客数据，原游客工作草稿保持；两服切换保留各自账号草稿，返回主页重新GET仍保留草稿，保存门禁无PUT。该测试使用原主页/Controller/LocalService/AccountClient/ProfileStore及固定五文件，wx接口仅内存模拟，不是真实登录。回到主页的账号刷新期间暂缓订阅触发同步，避免同一次onShow重复GET。未知保存重载被挡时仍保留可核对的原store，不进入“无store无法查询”的循环。
 
 后续最终源码/预检信息追加在下节；原01/02/03工程及所有中断资料保留。03首次SDK尚未取得currentPage即退出，改为有界等待初始页面后通过，异常与请求计数均0；只修改SDK等待逻辑，不关闭业务校验。
+
+## 最终独立工程预检通过
+
+- 工程：`E:/hzz/work/MutualExclusionAllocator/offline-evaluation/mini-account-mirror-20261106-04/app`。
+- planId：`mini-account-mirror-20261106-04`；页面buildId：**e08f90fc815de4813731**。
+- 生成源码提交：**57455c4329ce73424962102914dd5b9e6f28f9f6**，生成时工作树干净；前一基础提交f586e32245d9db5d26d97dd65f0a76bf480e8e80。后续仅本文及交接索引更新，不倒改生成来源。
+- 官方CLI实际autoPort **9440**，已按返回值连接；官方SDK核主页实际buildId、AppID匹配布尔true、urlCheck=true、无private override、SDK3.17.6、异常0。实际执行本地主页加载、CN/Global切换、账号页、注册模式被拦、返回主页；账号连接层health/guest/snapshot/login/profile/session/recovery计数始终全部0。
+- 无凭据主页/账号页截图已查看，预检完整JSON为新外层preflight/preflight.json，来源和逐文件SHA/bytes为mirror-project-receipt.json；最终164项日志与归档回执同目录。全部五共享模块另实核逐字节匹配固定198999a。
+- 未调用预览、上传体验版、提审或发布。新工程仍使用本地固定数据计算，原生OCR连接关闭；独立账号仅在用户将来明确提交登录时建立自己的父访客，不修改既有OCR工程或额度。
+
+用户回来后可从这一工程集中验收，旧探针/手机01/02以及健康诊断均不需重测。建议先开发者工具确认主页登录—返回—双服null/临时草稿—切服/计算—恢复页面链路，再用同一固定工程手机验收。只读保存保持禁止；界面fixture冲突等准备已测试，但真实写/跨网页同步需要网站新交付与用户单列授权，未因本轮完成而开放。
+
+本轮只完成客户端接线、本地夹具与编译预检，没有新的真实账号或手机结果；不沿用前阶段独立探针结果冒充完整镜像验收。网站主树/功能树原有修改与未跟踪内容检查仍保留，未改公共文件。准确最终文档提交见外层final-receipt.json，未推送或合并。
