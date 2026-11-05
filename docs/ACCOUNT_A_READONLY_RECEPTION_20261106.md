@@ -93,3 +93,21 @@ planId `mini-account-probe-health-phone-20261106-01`；buildId **b8e537fb2604059
 当前尚未回交试次02的底部脱敏JSON，因此真实手机报告中的buildId/planId、sessionValidation、两服revision/profile状态及精确请求次数尚未逐字段核验，不把先前模拟器计数或预期值填作手机实测。已请用户直接复制当前报告，不要求重测、重新登录/读取或发送凭据/截图。完成时刻未提供，不能以归档落盘时间补造。
 
 云写开关继续false；本轮没有服务器/公共后端/微信后台操作、OCR/邮件/注册、退出/再认证/撤销、推送合并或发布。合法空车库、真实云保存/重载/冲突、网页与原生同记录同步及其他设备/网络专项仍未因此验收；两个null的模拟器读值不证明同步。此前手机健康失败证据继续保留，唯一根因仍未知。接收手机机器报告后只补核验与归档，不自动进入写阶段。
+
+## 最终接收：手机试次02脱敏报告核验通过
+
+用户已补发完整字段的手机只读报告，buildId **907f11208ef688380cf5** / planId **mini-account-probe-readonly-phone-20261106-02** 与固定生成配置匹配。原粘贴仅缺最后一个顶层右花括号；原文原样保留于试次02外层 `user-phone-readonly-report.raw.txt`，解析时只补该括号，未补任何业务字段。接收校验及规范化副本为 `user-phone-readonly-acceptance.json`。来源为用户手机回交，不冒充代理直接操作或独立抓包；未附实际完成时间，不补造。
+
+逐字段通过：
+
+- state=logged_in、errorCode=null、connected=true、role=player、pendingAuth=false；readOnly=true、healthOnly=false、allowCloudWrites=false。
+- health HTTP200、healthVerified/bindingVerified=true，snapshotChecks.cn/global=true，固定健康及五文件/版本/Global三件套校验链已由该固定客户端执行。
+- sessionValidation的tokenKind、parentIdentityMatches、sessionOnly、expiresWithinParent、roleMatches全部true，对应原AccountClient登录校验。用户亲自在手机输入隔离凭据，本轮没有取回凭据或新发登录。
+- CN/Global各authenticatedRead=true、revision0、kind=null；hasProfile=false、dirty=false、pendingSave=false、hasConflict=false。内部status=saved仅表示读取状态，不代表发送过保存。
+- 实际报告计数：health1、guest session1、snapshot2、A访客session GET1、auth login1、profile GET2；profile PUT0、recovery0、logout0。registration/mailActions/media/batchesBE均false。
+
+因此本轮**开发者工具及本台手机的账号A与双服云车库只读联网初验已通过**。设备背景沿用户确认的iPhone14/iOS27.0.1/微信8.0.79；报告本身没有设备/SDK字段，不将开发者工具SDK3.17.6冒充手机自动采集结果。客户端150项测试是前阶段既有结果，本轮只核验回交与更新文档，没有重跑测试或请求服务器。
+
+本轮范围收尾：保持客户端allowCloudWrites=false与既有服务只读交付，不改服务端开关，不自动退出/再认证/撤销、不发PUT/OCR/邮件、不注册、不清旧状态、不操作服务器/公共后端/微信后台、不推送合并或发布。手机试次01的健康失败与后续健康成功均保留，原失败唯一根因仍未知。
+
+尚未验收：真实已保存空车库、云保存/重载/冲突、网页与原生同记录同步、退出/再认证/撤销/身份变化专项，以及Android/其他设备、切网/前后台等。两服null仅证明本次认证读取均无保存记录，不能证明同步或真实保存。后续若推进写阶段，先由用户单列范围，并由网站侧固定回交可写交付/开关；不直接开启当前探针allowCloudWrites或试发PUT。服务开机自启和证书续期加载仍是网站/运维待核事项，不属本轮客户端执行。
