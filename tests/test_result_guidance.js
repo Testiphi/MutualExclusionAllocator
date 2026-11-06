@@ -21,8 +21,8 @@ test('sparse configured slots do not accidentally count a different result row a
 test('unknown candidate input never diagnoses missing data',()=>{
  assert.equal(guide([null,null],[]),null);assert.equal(guide([null,null],[{},candidate()]),null);
 });
-test('native local presenter uses the exact preview source and matches browser guidance on both servers',()=>{
- const manifest=require('../miniapp/shared/source.json');assert.equal(manifest.localPresenterPreview.sha256,crypto.createHash('sha256').update(fs.readFileSync(path.resolve(__dirname,'../home_presenter.js'))).digest('hex'));
+test('native local presenter uses the exact reviewed source and matches browser guidance on both servers',()=>{
+ const manifest=require('../miniapp/shared/source.json');assert.equal((manifest.localPresenterPreview||manifest.mirror.files['home_presenter.js']).sha256,crypto.createHash('sha256').update(fs.readFileSync(path.resolve(__dirname,'../home_presenter.js'))).digest('hex'));
  const {verifyLocalBundle}=require('../miniapp/adapters/snapshot'),snapshots=verifyLocalBundle(require('../miniapp/generated/local-bundle'));
  const {createWebHomeAdapter}=require('../miniapp/lib/home_presenter_adapter');
  for(const server of ['cn','global']){

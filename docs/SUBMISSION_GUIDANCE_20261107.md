@@ -24,7 +24,7 @@
 - 分类及文案放在DOM无关的 `home_presenter.js`，两端使用同一份实现；既有五个共享算法/状态模块、成绩/车辆/地图/估算规则不改。
 - 网页修改index/styles和投稿地图预填；提示位于结果区前部，沿用原灰色文字、按钮、边框和弹窗，无动效、宣传色或新主题。`home_theme.json`仅用既有生成器同步CSS导出。
 - 原生修改主页WXML/WXSS/渲染与投稿预填，local/native service只转接共享presenter；不扩大原生服务端开放路径、权限或生产写入能力。
-- 小程序共享基础五模块和原mirror pin保持。`prepare_miniapp.cjs --local-presenter-preview`显式使用本工作树未提交presenter；生成清单记录实际SHA及原固定来源SHA，不能将本地预览冒充原固定提交。后续授权提交/构包时必须重新固定presenter来源，不能带预览来源直接宣称发布冻结。
+- 小程序共享基础五模块固定来源保持。用户验收并授权提交后，presenter/主题mirror来源已固定到 `2ee5155a9409b09dd8c3960ca34085572a31393b`，原接口契约字节和全局主题tokens与旧pin相同；默认源码准备即可接入新提示。`--local-presenter-preview`仅保留为未来本地改文案时的显式覆盖选项，清单分别记录实际SHA和固定来源SHA，不作发布冻结来源。本轮只同步ignored本地源码，不构建发布包。
 - 主树和其他工作树现有运维/账号准备修改未暂存、覆盖或同步；没有导出Excel、更新维护台账或访问生产。
 
 ## 本地验收
@@ -44,7 +44,7 @@ python -B -X utf8 ../本地归档/submission-guidance-20261107/run_preview.py
 重新准备本地小程序（只写本工作树ignored生成目录）：
 
 ```powershell
-node tools/prepare_miniapp.cjs --local-presenter-preview --data-receipt ../本地归档/submission-guidance-20261107/LOCAL_DATA_RECEIPT.json
+node tools/prepare_miniapp.cjs --data-receipt ../本地归档/submission-guidance-20261107/LOCAL_DATA_RECEIPT.json
 node tools/setup_miniapp_project.cjs
 ```
 
@@ -60,3 +60,5 @@ node tools/setup_miniapp_project.cjs
 2026-11-07用户明确确认“本地验收通过，提交推送但先不要构包”。本轮按此授权仅提交推送功能分支，主树其他对话修改保持；不合main、不构包、不上线、不发布公告。用户本地验收通过不扩展为开发者工具编译、iOS/Android真机或生产验收。
 
 训练集方案继续暂缓，未创建训练集或调用模型。提交及远端核对回执保存在本地归档/submission-guidance-20261107。
+
+功能源码提交：`2ee5155a9409b09dd8c3960ca34085572a31393b`；后续固定来源/验收记录提交不改变上述功能源码。远端推送核对以本地归档中的PUSH_RECEIPT.json为准。
