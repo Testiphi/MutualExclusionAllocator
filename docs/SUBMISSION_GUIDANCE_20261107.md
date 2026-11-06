@@ -62,3 +62,11 @@ node tools/setup_miniapp_project.cjs
 训练集方案继续暂缓，未创建训练集或调用模型。提交及远端核对回执保存在本地归档/submission-guidance-20261107。
 
 功能源码提交：`2ee5155a9409b09dd8c3960ca34085572a31393b`；后续固定来源/验收记录提交不改变上述功能源码。远端推送核对以本地归档中的PUSH_RECEIPT.json为准。
+
+## 2026-11-07 main整合授权与验证
+
+用户进一步明确授权将本功能分支合入main并推送，继续不构包或上线。基线main/origin/main为19e5c18742e9fe26cd5b38c3ee6b4f3ceb86669a，功能分支为f6a9d7b9bfc0fbb0209d3bc188a730f6a2985588；只接收这两个功能提交，不顺带整合其他分支。
+
+先在独立工作树integration-submission-guidance-20261107快进整合，按默认固定来源准备本地小程序源码并验证。发现源码字节测试把固定Git blob与Windows CRLF检出混比，已改为逐字节核对固定Git blob和生成文件，并单独检查工作树内容仅换行差异。此修正只涉及测试，不改算法、运行逻辑、主题或文案。验收时的223项通过和14种浏览器场景沿用；本轮整合检查结果与远端SHA另记本地回执。
+
+主树未提交的CLOUD_HANDOFF/INDEX和原未跟踪文件、其他工作树的未提交内容与本机项目配置共46项，先记录SHA/mtime，再在更新main前后复核；不暂存、覆盖或搬移他人内容。准确本地回执目录：本地归档/submission-guidance-merge-main-20261107。没有构建发布包、生产操作、公告、清理或监控。

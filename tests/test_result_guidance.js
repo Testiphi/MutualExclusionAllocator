@@ -22,7 +22,11 @@ test('unknown candidate input never diagnoses missing data',()=>{
  assert.equal(guide([null,null],[]),null);assert.equal(guide([null,null],[{},candidate()]),null);
 });
 test('native local presenter uses the exact reviewed source and matches browser guidance on both servers',()=>{
- const manifest=require('../miniapp/shared/source.json');assert.equal((manifest.localPresenterPreview||manifest.mirror.files['home_presenter.js']).sha256,crypto.createHash('sha256').update(fs.readFileSync(path.resolve(__dirname,'../home_presenter.js'))).digest('hex'));
+ const manifest=require('../miniapp/shared/source.json'),checkout=fs.readFileSync(path.resolve(__dirname,'../home_presenter.js'));
+ const reviewed=manifest.localPresenterPreview?checkout:require('node:child_process').execFileSync('git',['show',manifest.mirror.source+':home_presenter.js'],{cwd:path.resolve(__dirname,'..')});
+ assert.equal((manifest.localPresenterPreview||manifest.mirror.files['home_presenter.js']).sha256,crypto.createHash('sha256').update(reviewed).digest('hex'));
+ assert.deepEqual(fs.readFileSync(path.resolve(__dirname,'../miniapp/shared/home_presenter.js')),reviewed);
+ assert.equal(checkout.toString('utf8').replace(/\r\n/g,'\n'),reviewed.toString('utf8').replace(/\r\n/g,'\n'));
  const {verifyLocalBundle}=require('../miniapp/adapters/snapshot'),snapshots=verifyLocalBundle(require('../miniapp/generated/local-bundle'));
  const {createWebHomeAdapter}=require('../miniapp/lib/home_presenter_adapter');
  for(const server of ['cn','global']){
