@@ -102,7 +102,11 @@
     <view class="result-heading"><text>方案</text><text class="badge">{{schemes.length}}</text></view>
     <button wx:if="{{activeScheme}}" id="scheme-trigger" class="scheme-trigger" bindtap="openScheme"><view class="select scheme-select">{{schemeOptions[schemeIndex]}}<text class="chevron">⌄</text></view></button>
     <view wx:if="{{!activeScheme}}" class="scheme-trigger scheme-empty"><view class="select scheme-select">请至少选择一张地图</view></view>
-    <view wx:if="{{!activeScheme}}" class="empty-result">{{emptyResultText}}</view>
+    <view wx:if="{{!activeScheme && !resultGuidance && !error && !busy}}" class="empty-result">{{emptyResultText}}</view>
+    <view wx:if="{{resultGuidance}}" class="result-guidance" aria-role="status">
+      <text>{{resultGuidance.message}}</text>
+      <button wx:if="{{resultGuidance.canSubmit}}" bindtap="contributeResult">{{resultGuidance.action}}</button>
+    </view>
     <view wx:if="{{activeScheme}}" class="result-grid">
      <view wx:for="{{activeScheme.rows}}" wx:for-item="row" wx:key="index" class="result-row">
       <view class="result-map">{{row.map}}</view><view class="result-big">{{row.big || '—'}}</view>

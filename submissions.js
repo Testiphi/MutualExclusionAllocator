@@ -117,6 +117,13 @@
         else{if(result.stars!==null)throw new Error('理论目标已变化，请从擂台表重新选择');result.stars=null;}
         return {...result,...(activeServer==='global'?{server:'global',oc:value.oc===true}:{}),time:'',notes:'',video_url:'',unlisted:false};
     }
+    function prefillMapTarget(value){
+        if(!value||value.server!==activeServer)throw new Error('投稿地图的服别已变化，请重新选择');
+        const result=Object.fromEntries(['big','small','zone','tier'].map(key=>[key,value[key]]));
+        const cap=catalog.capabilities||{zones:['五区','四区'],tiers:['理论','高手','普通','自动']};
+        if(!cap.zones.includes(result.zone)||!cap.tiers.includes(result.tier)||!catalog.tracks.some(t=>t.big===result.big&&t.small===result.small))throw new Error('投稿地图或档位已变化，请重新选择');
+        return {...result,...(activeServer==='global'?{server:'global',oc:false}:{}),car:'',stars:null,route:'',time:'',notes:'',video_url:'',unlisted:false};
+    }
     async function sendBatch(publish){
         const rows=[...$('draftRows').children],entries=rows.map(n=>n.readEntry());if(!entries.length)throw new Error('请先添加一条成绩');
         if(entries.some(e=>!e.time.trim()))throw new Error('请填写成绩。');
@@ -305,8 +312,12 @@
             unread=Unread.create({request,user});unread.track($('mineTab'),'submissions');unread.track($('reviewTab'),'review');await unread.refresh();
         }
         const rawPrefill=new URLSearchParams(location.search).get('prefill');
+        const rawMapTarget=new URLSearchParams(location.search).get('map_target');
         if(rawPrefill){
             try{const initial=prefillTarget(JSON.parse(rawPrefill));await switchView('new');$('draftRows').replaceChildren();newRow(initial);unsaved=false;}
+            catch(error){await switchView('new');$('message').textContent=error.message;}
+        }else if(rawMapTarget){
+            try{const initial=prefillMapTarget(JSON.parse(rawMapTarget));await switchView('new');$('draftRows').replaceChildren();newRow(initial);unsaved=false;}
             catch(error){await switchView('new');$('message').textContent=error.message;}
         }else await switchView(location.hash==='#new'?'new':location.hash==='#review'&&['admin','superadmin'].includes(user.role)?'review':'mine');
         if(/^#[a-f0-9]{32}$/.test(location.hash))await loadDetail(location.hash.slice(1));

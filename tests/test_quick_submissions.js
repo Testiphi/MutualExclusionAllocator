@@ -17,7 +17,7 @@ function fixture({failSubmit=false,files=[],server="cn"}={}){
  const document={createElement:t=>new Node(t),getElementById:id=>ids[id]||(ids[id]=new Node())};
  const catalog={capabilities:server==='global'?{zones:['五区'],tiers:['理论'],max_stars_only:true,oc:true}:undefined,tracks:[{big:'甲地图',small:'道路'}],routes:['跳图'],cars:[{name:'恶魔',title:'Car',zones:['五区','四区'],limits:{五区:[1,6],四区:[1,2]}}]};
  class Reader{readAsDataURL(){this.result='data:image/png;base64,AQ==';this.onload();}}
- const injection=`globalThis.quick={send:sendBatch,prefill:prefillTarget,form:scoreForm,setup(mock,cat){request=mock;catalog=cat;user={id:'player',role:'player'};switchView=async()=>{};loadDetail=async()=>{};}};`;
+ const injection=`globalThis.quick={send:sendBatch,prefill:prefillTarget,mapPrefill:prefillMapTarget,form:scoreForm,setup(mock,cat){request=mock;catalog=cat;user={id:'player',role:'player'};switchView=async()=>{};loadDetail=async()=>{};}};`;
  const context=vm.createContext({document,URLSearchParams,location:{search:server==="global"?"?server=global":""},FileReader:Reader,crypto:{randomUUID:()=>String(++serial).padStart(32,'0')},console});
  vm.runInContext(code.replace('void init().catch(e=>say(e.message));',injection),context);
  context.quick.setup(async(method,url,body)=>{calls.push({method,url,body});if(url==='/submissions')return {ids:['saved']};if(url.endsWith('/images'))return {id:'image',revision:body.revision+1};if(url.endsWith('/submit')){if(remaining-- >0)throw Error('网络失败，草稿已保存');return {status:'pending'};}throw Error('unexpected '+url);},catalog);
@@ -60,4 +60,12 @@ test('international save/submit retries keep the same server-bound draft',async(
  const f=fixture({server:'global',failSubmit:true});f.setEntry({...entry,server:'global',oc:false,tier:'理论',stars:null,notes:'隔离测试来源'});
  await assert.rejects(()=>f.api.send(true),/网络失败/);await f.api.send(true);
  const creations=f.calls.filter(c=>c.url==='/submissions');assert.equal(creations.length,1);assert.equal(creations[0].body.entries[0].server,'global');
+});
+
+
+test('map-only prefill validates current catalogue and discards car, score and evidence from the URL',()=>{
+ const f=fixture(),target={server:'cn',big:'甲地图',small:'道路',zone:'五区',tier:'高手',car:'恶魔',stars:6,time:'1',notes:'untrusted'};
+ const p=f.api.mapPrefill(target);assert.equal(p.big,'甲地图');assert.equal(p.small,'道路');assert.equal(p.car,'');assert.equal(p.stars,null);assert.equal(p.time,'');assert.equal(p.notes,'');
+ assert.throws(()=>f.api.mapPrefill({...target,small:'不存在'}),/地图或档位/);assert.throws(()=>f.api.mapPrefill({...target,server:'global'}),/服别/);
+ const g=fixture({server:'global'});assert.equal(g.api.mapPrefill({...target,server:'global',tier:'理论'}).server,'global');assert.throws(()=>g.api.mapPrefill({...target,server:'global',tier:'高手'}),/地图或档位/);
 });

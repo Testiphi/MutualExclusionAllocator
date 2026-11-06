@@ -19,6 +19,7 @@ function createLocalService(core, bundle) {
     garageView:(draft,query,cls,sort)=>home[draft.server].visible(draft,query,cls,sort),
     model: draft=>({...enrichModel(context(draft).getModel(draft),snapshots[draft.server],draft,core),knownCarIds:known[draft.server],topCars:home[draft.server].tops(draft),subtitle:home[draft.server].subtitle(draft)}),
     calculate: draft=>home[draft.server].calculate(draft),
+    resultGuidance:(draft,index)=>home[draft.server].guidance(draft,index),
     async recognize() { throw Error('原生识图接口尚未接入，请先手动选图'); },
     async resume() {}, cancel() {}
   };

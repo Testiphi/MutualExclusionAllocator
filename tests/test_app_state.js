@@ -81,6 +81,7 @@ test('真实页面清空选择后不会发布排队的旧结果', () => {
         const allocator={generateParetoSchemes:()=>[{assignment:['X'],vector:[0]}]};
         const mapSchemesToRows=s=>s,updateUIWithSchemes=s=>published.push(s);
         const renderTopCars=()=>{};
+        let resultGuidanceInput=null;const renderResultGuidance=()=>{};
         const computation=appState.createScheduler(f=>requestAnimationFrame(()=>setTimeout(f,0)));
         const computationError=e=>{throw e;};
         ${fn('computeAndDisplay')}

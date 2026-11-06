@@ -19,6 +19,15 @@ body {
     border-radius: 16px;
     padding: 20px 24px;
 }
+.result-guidance { display:flex; flex-wrap:wrap; align-items:center; gap:12px 16px; margin:16px 0; padding-top:14px; border-top:1px solid #30363d; color:#8b949e; font-size:14px; line-height:1.6; }
+.result-guidance[hidden], .result-guidance a[hidden] { display:none; }
+.result-guidance p { flex:1 1 260px; margin:0; }
+.result-guidance a { flex-shrink:0; }
+.result-guidance-picker { width:min(460px,calc(100vw - 32px)); max-height:80vh; overflow:auto; padding:20px; background:#161b22; color:#e6edf3; border:1px solid #30363d; border-radius:10px; }
+.result-guidance-picker::backdrop { background:#0009; }
+.result-guidance-picker h2 { margin:0 0 16px; font-size:18px; }
+.result-guidance-picker #resultGuidanceMaps { display:grid; gap:10px; margin-bottom:16px; }
+.result-guidance-picker a { justify-content:flex-start; }
 h1 {
     color: #e6edf3;
     font-size: 1.5rem;

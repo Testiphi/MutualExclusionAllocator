@@ -6,6 +6,29 @@ const homePresenter = (() => {
         '第六元素': '六子',
         '兔子': 'c2',
     };
+    const RESULT_COPY = Object.freeze({
+        select_maps: '请先选择地图',
+        select_cars: '请先选择车辆',
+        no_records: '找不到合适的方案？尝试投稿你自己的成绩来帮助我们提升！',
+        partial_missing: '找不到合适的方案？尝试投稿你自己的成绩来帮助我们提升！',
+        conflict: '找不到合适的方案？尝试投稿你自己的成绩来帮助我们提升！',
+    });
+    function resultGuidance({maps, ownedCars, candidates = [], scheme}) {
+        const valid = maps.flatMap((m, i) => m?.big && m?.small ? [{...m, originalIndex:m.originalIndex ?? i}] : []);
+        const owned = new Set(ownedCars);
+        const notice = (kind, missingMaps = [], targetMaps = missingMaps) => ({kind, message:RESULT_COPY[kind], canSubmit:!['select_maps','select_cars'].includes(kind), action:'投稿我的成绩', missingMaps, targetMaps});
+        if (!valid.length) return notice('select_maps');
+        if (!owned.size) return notice('select_cars');
+        const empty = valid.map((map, i) => ({map, i})).filter(({map}) => !scheme?.assignment?.[map.originalIndex]);
+        if (!empty.length) return null;
+        // Unknown/failed input is not proof of a data gap. Callers also hide this during errors/busy states.
+        if (candidates.length !== valid.length || candidates.some(c => !Array.isArray(c?.groups))) return null;
+        const missing = empty.filter(({i}) => !candidates[i].groups.some(group => group.some(car => owned.has(car)))).map(({map}) => map);
+        if (missing.length === valid.length) return notice('no_records', missing);
+        const targets=empty.map(({map})=>map);
+        if (missing.length) return notice('partial_missing', missing, targets);
+        return notice('conflict',[],targets);
+    }
     function filterBySearch(carList, query, {nickToName, aliases = NICKNAME_ALIASES}) {
         if (!query) return [...carList];
         const q = query.toLowerCase();
@@ -81,12 +104,15 @@ const homePresenter = (() => {
                 starsFor:car=>core.carStars(selection.carRules().rules[car],draft.zone,draft.stars?.[car],server),
                 scoreFor:car=>selection.effectiveTime({...input,...map,car})});});
             const result=context.calculate(draft);
+            const guidanceInput={maps:valid,ownedCars:owned,candidates};
+            const guidanceByScheme=result.schemes.map(scheme=>resultGuidance({...guidanceInput,scheme}));
             return {subtitle:subtitle(server,data,draft.zone,draft.tier) ?? '帕累托最优 · 擂台选车',visibleCars,references,
                 model,schemes:result.schemes.map((scheme,i)=>({...scheme,summary:schemeSummary(scheme,draft.maps,i)})),
+                guidanceByScheme,guidance:guidanceByScheme[0] ?? (result.schemes.length?null:resultGuidance(guidanceInput)),
                 emptyState:!valid.length?'请先选择地图':!result.schemes.length?'无可分配方案':null};
         }
         return {present};
     }
-    return {aliases:NICKNAME_ALIASES,initialTier:server=>server==='global'?'理论':'高手',filterBySearch,filterByClass,sortCarList,getTopCars,subtitle,schemeSummary,createHomePresenter};
+    return {aliases:NICKNAME_ALIASES,resultCopy:RESULT_COPY,resultGuidance,initialTier:server=>server==='global'?'理论':'高手',filterBySearch,filterByClass,sortCarList,getTopCars,subtitle,schemeSummary,createHomePresenter};
 })();
 if(typeof module!=='undefined'&&module.exports)module.exports=homePresenter;

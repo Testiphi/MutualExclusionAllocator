@@ -25,6 +25,13 @@ for(const name of [...mirror.files,mirror.contract]) {
   manifest.mirror.files[name]={sha256:crypto.createHash('sha256').update(bytes).digest('hex'),bytes:bytes.length};
 }
 const tokens=JSON.parse(fs.readFileSync(path.join(output,'home_theme.json'),'utf8')).tokens;
+// Opt-in local presentation preview. The immutable solver and mirror pins above remain unchanged.
+if(process.argv.includes('--local-presenter-preview')) {
+ const bytes=fs.readFileSync(path.join(root,'home_presenter.js'));
+ fs.writeFileSync(path.join(output,'home_presenter.js'),bytes);
+ manifest.localPresenterPreview={source:'uncommitted-local-worktree',file:'home_presenter.js',sha256:crypto.createHash('sha256').update(bytes).digest('hex'),bytes:bytes.length};
+ manifest.mirror.files['home_presenter.js']={...manifest.localPresenterPreview,pinnedSource:mirror.ref,pinnedSha256:manifest.mirror.files['home_presenter.js'].sha256};
+}
 const contractCode='module.exports = '+fs.readFileSync(path.join(output,path.basename(mirror.contract)),'utf8')+';\n';
 fs.writeFileSync(path.join(output,'feature_contract.js'),contractCode);
 manifest.mirror.contractModuleSha256=crypto.createHash('sha256').update(contractCode).digest('hex');

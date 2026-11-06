@@ -25,7 +25,7 @@ Page({
   },
   mountService(service) {
     this.baseService=service;
-    if(service.api){this.account=runtime.mount(wx,nativeConfig,service);this.unsubscribeAccount=this.account.subscribe(s=>{const id=s.actor?.id||'';this.setData({actor:s.actor});if(id!==this.lastAccountActor){this.lastAccountActor=id;this.setData({schemes:[],activeScheme:null,cars:[],selectedCount:0,cloudConflict:null,cloudEmpty:false,cloudLoaded:false});this.cloudReady=false;this.lastCloudProfile=null;if(this.homeVisible&&this.controller)void this.syncAccount();}});}
+    if(service.api){this.account=runtime.mount(wx,nativeConfig,service);this.unsubscribeAccount=this.account.subscribe(s=>{const id=s.actor?.id||'';this.setData({actor:s.actor});if(id!==this.lastAccountActor){this.lastAccountActor=id;this.setData({schemes:[],activeScheme:null,resultGuidance:null,cars:[],selectedCount:0,cloudConflict:null,cloudEmpty:false,cloudLoaded:false});this.cloudReady=false;this.lastCloudProfile=null;if(this.homeVisible&&this.controller)void this.syncAccount();}});}
     this.mountController(service);
     if(this.account)void runtime.usage()?.visit('home',this.state.draft.server,'open');
   },
@@ -54,7 +54,7 @@ Page({
   currentProfile(){const d=this.state.draft;return {cars:[...d.cars],stars:{...d.stars},...(d.server==='global'?{ocMap:{...d.oc}}:{})};},
   observeCloud(){if(this.cloudReady&&this.cloud&&!this.applyingCloud){const p=this.currentProfile(),key=JSON.stringify(p);if(key!==this.lastCloudProfile){this.lastCloudProfile=key;this.cloud.update(p);}}},
   async connectNative() {
-    this.setData({initializing:true,error:''});
+    this.setData({initializing:true,error:'',resultGuidance:null});
     try{const service=await createNativeService(wx,core,nativeConfig);if(!this.unloaded)this.mountService(service);else service.cancel();}
     catch(e){if(!this.unloaded)this.setData({error:e.message,nativeDiagnostic:e.nativeReason||'',connectionFailed:true});}
     finally{if(!this.unloaded)this.setData({initializing:false});}
@@ -91,6 +91,8 @@ Page({
         hasTime:r.time!=null,timeValue:r.time==null?'':r.time.toFixed(2),timeText:r.time==null?'':r.time.toFixed(2)+' 秒'}))
     })) : [];
     const schemeIndex=this.lastResult===s.result && this.data.schemeIndex<schemes.length?this.data.schemeIndex:0;
+    const hasMaps=d.maps.some(map=>map?.big&&map?.small);
+    const guidance=!s.error&&!s.busy&&(s.result||!hasMaps)&&this.service.resultGuidance ? this.service.resultGuidance(d,schemeIndex) : null;
     this.lastResult=s.result;
     this.closeDropdown();
     this.setData({ ready:true, server: d.server, mode: s.mode, error: s.error, busy: s.busy,
@@ -98,7 +100,7 @@ Page({
       selectedCount: m.cars.filter(c=>d.cars.includes(c.id)).length,serviceStatus:s.serviceStatus,sortLabel:({'alpha':'字母','score-desc':'分↓','score-asc':'分↑'})[this.data.sortMode],zones: m.zones.map(x => x === 'zone4' ? '四区' : '五区'),
       zoneIndex: m.zones.indexOf(d.zone), tiers: m.tiers, tierIndex: m.tiers.indexOf(d.tier),
       rows: d.maps.map((m,i)=>row(m,i)), cars, routes, slotRows: s.pending ? s.pending.map((m,i)=>row(m,i,true)) : [],
-      emptyResultText:d.maps.some(m=>m&&m.small)?'没有可用方案':'请先选择地图',
+      emptyResultText:d.maps.some(m=>m&&m.small)?'没有可用方案':'请先选择地图',resultGuidance:guidance,
       schemes,schemeIndex,schemeOptions:s.result?s.result.schemes.map((x,i)=>x.summary||('方案'+(i+1)+' · Σ='+x.prioritySum)):[],activeScheme:schemes[schemeIndex]||null });
   },
   async onShow() {this.homeVisible=true;if(this.account)try{await this.account.refresh();}catch(e){this.setData({cloudStatus:e.message});}if(this.controller){await this.syncAccount();this.controller.show();if(this.account)void runtime.usage()?.visit('home',this.state.draft.server,'resume');}},
@@ -156,7 +158,15 @@ Page({
   async switchServer(e) {this.cloudReady=false;this.controller.switchServer(e.currentTarget.dataset.server);await this.syncAccount();},
   selectZone(e) { const i=e.currentTarget&&e.currentTarget.dataset.index;this.controller.setMode(this.state.model.zones[Number(i==null?e.detail.value:i)],this.state.draft.tier); },
   selectTier(e) { const i=e.currentTarget&&e.currentTarget.dataset.index;this.controller.setMode(this.state.draft.zone,this.state.model.tiers[Number(i==null?e.detail.value:i)]); },
-  selectScheme(e) { const index=Number(e.detail.value);if(Number.isInteger(index)&&this.data.schemes[index])this.setData({schemeIndex:index,activeScheme:this.data.schemes[index]}); },
+  selectScheme(e) { const index=Number(e.detail.value);if(Number.isInteger(index)&&this.data.schemes[index]){this.setData({schemeIndex:index,activeScheme:this.data.schemes[index]});this.updateView();} },
+  contributeResult() {
+    if(!this.data.resultGuidance?.canSubmit||this.state.busy||this.state.error)return;
+    if(!this.account){wx.showModal({title:'投稿入口暂不可用',content:'现在还没连上投稿服务，稍后再来试试吧！',showCancel:false});return;}
+    const draft=this.state.draft,binding=JSON.stringify(draft),targets=this.data.resultGuidance.targetMaps;
+    const open=map=>{if(this.state.busy||this.state.error||JSON.stringify(this.state.draft)!==binding)return;getApp().submissionTarget=null;getApp().openSubmission=null;getApp().submissionMapTarget={server:draft.server,big:map.big,small:map.small,zone:draft.zone==='zone4'?'四区':'五区',tier:draft.tier};wx.navigateTo({url:'/pages/submissions/submissions?server='+draft.server});};
+    if(targets.length===1){open(targets[0]);return;}
+    wx.showActionSheet({itemList:targets.map(m=>`第${m.originalIndex+1}图 · ${m.big} / ${m.small}`),success:r=>{if(Number.isInteger(r.tapIndex)&&targets[r.tapIndex])open(targets[r.tapIndex]);}});
+  },
   selectMap(e) {
     const { index, field, pending } = e.currentTarget.dataset;
     const target = pending ? this.state.pending : this.state.draft.maps;

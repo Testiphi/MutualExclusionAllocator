@@ -97,7 +97,16 @@
             <div style="color:#8b949e;font-size:0.8rem;margin-bottom:8px;">特殊跑法</div>
             <div id="scToggleList" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
         </div>
+        <section id="resultGuidance" class="result-guidance" aria-live="polite" hidden>
+            <p id="resultGuidanceText"></p>
+            <a id="resultGuidanceLink" class="ui-button" href="/score-table">投稿我的成绩</a>
+        </section>
         <div class="result-grid" id="resultGrid"></div>
+        <dialog id="resultGuidancePicker" class="result-guidance-picker" aria-labelledby="resultGuidancePickerTitle">
+            <h2 id="resultGuidancePickerTitle">选择要投稿的地图</h2>
+            <div id="resultGuidanceMaps"></div>
+            <button id="resultGuidanceClose" type="button">取消</button>
+        </dialog>
     </div>
     <footer class="site-footer">
         <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer">粤ICP备2026156614号-1</a>
@@ -903,6 +912,34 @@
         panel.style.display = hasSc ? '' : 'none';
     }
 
+    let resultGuidanceInput = null;
+    let displayedGuidance = null;
+    function mapSubmissionHref(map) {
+        const target={server:APP_CONFIG.server,big:map.big,small:map.small,zone:currentZone==='zone4'?'四区':'五区',tier:currentTier};
+        return '/submissions?'+new URLSearchParams({server:APP_CONFIG.server,map_target:JSON.stringify(target)})+'#new';
+    }
+    function renderResultGuidance(scheme) {
+        const picker=document.getElementById('resultGuidancePicker');if(picker.open)picker.close();
+        const panel=document.getElementById('resultGuidance');
+        const guidance=resultGuidanceInput ? homePresenter.resultGuidance({...resultGuidanceInput,scheme}) : null;
+        displayedGuidance=guidance;
+        panel.hidden=!guidance;
+        if (!guidance) return;
+        panel.dataset.kind=guidance.kind;
+        document.getElementById('resultGuidanceText').textContent=guidance.message;
+        const link=document.getElementById('resultGuidanceLink');link.hidden=!guidance.canSubmit;
+        if(guidance.canSubmit){
+            link.href=mapSubmissionHref(guidance.targetMaps[0]);link.textContent=guidance.action;
+            if(guidance.targetMaps.length>1)link.setAttribute('aria-haspopup','dialog');else link.removeAttribute('aria-haspopup');
+        }
+    }
+    document.getElementById('resultGuidanceClose').onclick=()=>document.getElementById('resultGuidancePicker').close();
+    document.getElementById('resultGuidanceLink').onclick=event=>{
+        if(!displayedGuidance?.canSubmit||displayedGuidance.targetMaps.length<2||event.ctrlKey||event.metaKey||event.shiftKey||event.altKey)return;
+        event.preventDefault();const list=document.getElementById('resultGuidanceMaps');list.replaceChildren();
+        for(const map of displayedGuidance.targetMaps){const link=document.createElement('a');link.className='ui-button';link.href=mapSubmissionHref(map);link.textContent=`第${map.originalIndex+1}图 · ${map.big} / ${map.small}`;list.appendChild(link);}
+        document.getElementById('resultGuidancePicker').showModal();
+    };
     /** 渲染无可用方案时的空状态 */
     function renderEmptyResult() {
         document.getElementById('scPanel').style.display = 'none';
@@ -928,6 +965,7 @@
     function renderResultGrid(scheme) {
         if (!scheme) {
             renderEmptyResult();
+            renderResultGuidance(null);
             return;
         }
         renderScToggles();
@@ -968,6 +1006,7 @@
             }
         }
         resultGrid.innerHTML = html;
+        renderResultGuidance(scheme);
     }
 
     // 更新下拉菜单及显示
@@ -1009,6 +1048,7 @@
         requestAnimationFrame(() => setTimeout(callback, 0));
     });
     function computationError(error) {
+        resultGuidanceInput=null;renderResultGuidance(null);
         currentBestSchemes = [];
         schemeSelect.innerHTML = '';
         schemeSelect.disabled = true;
@@ -1032,7 +1072,8 @@
             schemeSelect.appendChild(opt);
             schemeSelect.disabled = true;
             schemeCountBadge.textContent = '0';
-            resultGrid.innerHTML = `<div style="grid-column:1/-1; text-align:center; color:#8f9bcb;">请先选择地图</div>`;
+            resultGrid.innerHTML = '';
+            resultGuidanceInput={maps:[],ownedCars:[]};renderResultGuidance(null);
             usageResult('empty');
             return;
         }
@@ -1048,9 +1089,9 @@
                     const schemes = allocator.generateParetoSchemes(candidates, ownedInZone, SCHEME_LIMIT, NO_CAR_PRIORITY);
                     return mapSchemesToRows(schemes, validMaps, ROWS);
                 },
-                publish: schemes=>{updateUIWithSchemes(schemes);usageResult(schemes.length?'success':'empty');},
+                publish: schemes=>{resultGuidanceInput={maps:validMaps,candidates,ownedCars:ownedInZone};updateUIWithSchemes(schemes);usageResult(schemes.length?'success':'empty');},
                 onError: error=>{computationError(error);usageResult('failed');},
-                onStart: () => loadingOverlay.classList.add('show'),
+                onStart: () => {resultGuidanceInput=null;renderResultGuidance(null);loadingOverlay.classList.add('show');},
                 onFinish: () => loadingOverlay.classList.remove('show'),
             });
         } catch (error) {
