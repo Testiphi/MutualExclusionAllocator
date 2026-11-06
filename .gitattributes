@@ -2,3 +2,4 @@ production/* text eol=lf
 cars.global.json text eol=lf
 gauntlet_data.global.json text eol=lf
 global-data-manifest.json text eol=lf
+home_theme.json text eol=lf

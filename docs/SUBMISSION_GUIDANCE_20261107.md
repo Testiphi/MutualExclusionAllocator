@@ -70,3 +70,5 @@ node tools/setup_miniapp_project.cjs
 先在独立工作树integration-submission-guidance-20261107快进整合，按默认固定来源准备本地小程序源码并验证。发现源码字节测试把固定Git blob与Windows CRLF检出混比，已改为逐字节核对固定Git blob和生成文件，并单独检查工作树内容仅换行差异。此修正只涉及测试，不改算法、运行逻辑、主题或文案。验收时的223项通过和14种浏览器场景沿用；本轮整合检查结果与远端SHA另记本地回执。
 
 主树未提交的CLOUD_HANDOFF/INDEX和原未跟踪文件、其他工作树的未提交内容与本机项目配置共46项，先记录SHA/mtime，再在更新main前后复核；不暂存、覆盖或搬移他人内容。准确本地回执目录：本地归档/submission-guidance-merge-main-20261107。没有构建发布包、生产操作、公告、清理或监控。
+
+独立检出的home_theme.json也因CRLF与生成器声明的UTF-8/LF字节协议不符，已通过.gitattributes固定该生成文件为LF。重新生成后逐字节等于已验收的Git blob，没有改变主题内容或固定来源。整合定向25项、启动冒烟和主题--check通过；不扩大为新一次平台/生产验收。
