@@ -1,0 +1,30 @@
+{
+  "date": "2026-11-04",
+  "scope": "read-only coordination; no additional upload, supplier call, task recovery, service change or cleanup authorized",
+  "client_commit_reported": "d557a26",
+  "client_project_identifier_reported": "6b16fa597b83a4092e85",
+  "client_attempt_time_cst_reported": "2026-11-04T18:52:59.371+08:00",
+  "window_cst": ["2026-11-04T18:50:59+08:00", "2026-11-04T18:55:00+08:00"],
+  "image": {"name_reported": "synthetic-five-maps.png", "bytes_reported": 87085, "sha256": "82dafe81e5f48f50fe4ab42eec79499627be61efcfaea3631964bc691a30c54f", "nonprivate": "client handoff reports no account/resource information"},
+  "client_evidence": {"wx_upload_file_invocations_reported": 1, "result": "WX_REQUEST_FAILED", "specific_original_transport_error": "not retained; cannot reconstruct", "job_poll_recover_cancel_reported": false, "five_map_confirmation": false, "one_shot_reservation_retained_reported": true, "upload_domain_added": "user confirmation; no platform-console operation performed by this chat"},
+  "server_read_only_evidence": {
+    "source": "user returned READ_ONLY_INCIDENT_STEP_DONE",
+    "nginx_disk_site_access_log_off": true,
+    "nginx_disk_ocr_proxy_access_log_off": true,
+    "selected_log_scan_complete": true,
+    "matching_log_events": 0,
+    "mini_error_log_lines_scanned": 3,
+    "request_body_received_bytes": "unknown; no matching evidence; combined response body byte counts must not be used as upload byte counts",
+    "queue_query_mode": "owner-run SQLite mode=ro/query_only with read transaction; no JobStore initialization or cleanup",
+    "queue_safety_schema": [1],
+    "retained_sha_matches_all_times": 0,
+    "matching_window_jobs": [],
+    "provider_request_id_or_billing_trace": "not durably recorded in this queue schema"
+  },
+  "conclusion": {"request_arrival": "not established", "historical_task_creation": "not established", "supplier_submission_and_outcome": "not established", "billing": "unknown", "ocr_success": false},
+  "limits": ["Access logging is off for upload routes", "Selected files/recognized log formats are not exhaustive proof of non-arrival", "Pre-admission failures may create no task", "Existing TTL cleanup may remove old tasks", "Client and supplier stages must not be inferred from lack of retained evidence"],
+  "next_read_only_coordination": ["Use failure-time saved metadata: origin/path without query, exact project identifier, AppID match boolean, uploadFile domain registration and validation switches", "Do not treat post-failure uploadDomainDeclared=false/maxUploads=0 as failure-time configuration evidence", "Supplier existing call/billing records may be inspected by user under existing permissions; aggregated daily totals are not per-image attribution", "Do not re-upload, change owner/key, resume old tasks or call provider to recreate diagnostics"],
+  "server_changes_or_extra_calls_this_step": false,
+  "secrets_raw_queries_owner_keys_or_private_images_in_receipt": false,
+  "git_push_this_incident": "not performed"
+}

@@ -1,3 +1,62 @@
+## 2026-11-07 最新交接：隔离双服云车库可写准备与现场回退通过，客户端 W1/W2 待接管；文档更新后暂停
+
+本段覆盖下方旧阶段“cloud_writes=false／真实账号只读未验收”等当前态描述，旧记录原样保留。最后服务器现场验证为 **2026-11-07 02:41:43 Asia/Shanghai（UTC 2026-11-06T18:41:43.152877+00:00）**，本次文档收尾没有再次连接服务器，不能将归档时刻当成新现场检查。用户先授权只读，随后明确授权代理执行本次必要写入与配置修改；代理通过用户已登录的阿里云 Workbench 浏览器终端操作，没有直接 SSH。网站侧准备完成，真实客户端保存/重载尚未执行。本轮文档更新不提交、不推送、不合并，完成后暂停，不继续服务器、客户端、监控或跨对话派工。
+
+### 固定来源、配置与可转交材料
+
+- 实际 origin：**https://account-test.racepick.cn**。沿用候选 `7c5f53fc366b7af555214846`，服务器清单内112文件完整性通过；原 ZIP SHA256 `6c0ff251985638c62a232689a9aa3a3fd568544f2b8ad812e567e342bcef2648`，11220353 bytes；CANDIDATE SHA256 `13545e697ca7dfcf0fb68f4f52e8b4003474c3accb4586419aaafd8fc096fe3b`。封存 `source_commit=null`，base `bfcf97e1511ee3d418a1f558c30a3ba0148d5286` 不是完整候选源码；不检出base冒充交付、不倒改元数据。没有修改应用代码、重建候选或修改Nginx。
+- 本次仅改变 `/etc/racepick-account-test/service.json` 的语义开关 `cloud_writes:false→true`，原子替换并保留UID995/GID986/0600；启用后配置SHA256 `b36e1842692f8f47ea9ecc1c95c02969742852cfa998750ae1038731096817f3`。同一state_root及GuestStore/native/业务Store保持，只有隔离服务短停/重启，其他服务PID保持。
+- 最后健康：`enabled=true/cloud_writes=true/mail_mode=file/image_policy=disabled/ocr_enabled=false/production_business=false`；A ready，B–E pending。business6/global_profile1/guest1/native_account1保持，coverage0/global_score0为A-only正常范围，不补迁移。固定五份JSON、两服snapshot及Global dataset详见[机器回交](MINI_ACCOUNT_PROFILE_WRITABLE_HANDOFF_20261107.json)，不取维护工作簿或正式活动成绩。服务仍未开机自启；证书自动续期/后续加载未在本轮验证。
+- [本轮机器回交](MINI_ACCOUNT_PROFILE_WRITABLE_HANDOFF_20261107.json)是浏览器终端结果的本地整理，不冒充服务器私有回执的逐字节下载副本。原件与可转交ZIP在外层 `offline-evaluation/mini-account-write-readiness-20261107-01/`；包名 `RacePick-Account-Profile-Writable-Handoff-20261107.zip`，**15139 bytes / SHA256 `ea5c04b0dfb75135b1e30c7eea14110933dc42c13cee600081508f2930b91b39`**。这是资料包，不是新应用候选；包含客户端说明、JSON校验清单及原v2准备ZIP。原v2准备包7223 bytes / SHA256 `8d56f31e4ed22cd643d3cac9b31b5d8c4ad116576ca811549c9e068ce431aac0` 已完整读取并核验；未带v2的历史材料保留。
+
+### 现场核验、状态保护、备份与失败证据
+
+- 真实Linux现场只读库核验：唯一player 1；业务sessions4、native sessions4、native operations2、guest sessions2；CN/Global profile行均0，三库schema匹配原隔离标记，当时无WAL/SHM/journal。这是当时服务器行计数，**不是本轮认证profile GET结果**；客户端写前仍须GET两服，不假定现在仍为空，不用两个null证明同步。未重建账号、重跑testuser19/初始化、迁移、删除标记或恢复旧库。
+- 仅短停 `racepick-account-test`，以UID995/GID986、独立断网子进程复用原 `backup_stopped/restore_stopped`；当前三库、标记、签名状态和快照共15文件，在原状态、新备份及全新独立恢复目录逐字节一致。备份 `/var/lib/racepick-account-test/backups/pre-profile-write-20261106T183622Z`，独立恢复 `/var/lib/racepick-account-test/restore-drills/pre-profile-write-20261106T183622Z`。从未用恢复副本覆盖当前库；initial15、pre/post-test-account19及所有旧备份、会话、operations继续保留。私有备份/outbox/签名key未下载或打包。
+- 私有现场证据目录 `/root/racepick-deploy/account-write-backup-20261107-__pgcufi`：原 `receipt.json`、`backup-private.log`、`writable-runtime-receipt.json` 保留；最终 `writable-runtime-receipt-v2.json` 与 `closeout-failure-diagnosis.json` 记录收尾及失败诊断，最终标记 `RPA_WRITABLE_CLOSEOUT_V2_OK`。回退工具 `disable-cloud-writes.py` 已实际执行并验证：只关闭cloud_writes、重启此隔离服务，保留账号/新增车库/operations及原state_root；之后重新启用。后续回退同样不能恢复旧库覆盖新增。
+- 一次收尾把会维护限流预算的匿名门禁读取误纳入“所有文件字节完全不变”断言，失败保护已自动关写。逐表只读比较确认：仅 `guests/guests.sqlite3` 的 `budgets` 表变化（观测行数5→1），账号库/原生库所有表、其他guest表、schema、标记、快照和签名文件均保持。修正保护判据后再次启用并收尾通过；没有清预算或恢复旧预算，行数变化不证明日额度恢复。失败命令/现场证据保留，不把初次收尾写成成功。浏览器新版输入超时与未提交半行命令也未冒充核验结果，旧版终端验证可控后才执行后续操作。
+- Nginx站点/代理/限流文件均匹配原step20渲染；最初本地指纹差异来自WindowsPath生成Linux include路径的分隔符，改本地比对后匹配，未覆盖现场文件。Nginx精确profile路由允许转发PUT，应用方法白名单和cloud_writes门禁负责权限。网页入口200，网页与原生双服未认证profile读取401；原生Origin/Cookie/OPTIONS403，排除feedback404，检查响应均no-store。保留精确Host/TLS、64KiB、5r/s burst10及Retry-After语义；未做PUT探测或限流饱和测试。
+
+### 精确路由、分层证据与客户端接管点
+
+- 原生：`GET/PUT /api/mini/account/v1/profile?server=cn|global`；恢复：`GET /api/mini/account/v1/operations/{original_key}?action=profile-save&server=cn|global`。仍为rpa1 Bearer + X-Account-ID；网页入口 `/` 与 `GET/PUT /api/me/profile?server=cn|global` 继续Cookie/Origin/CSRF/X-Account-ID/X-Profile-Save:explicit，身份不桥接。源码/fixture证明同Store接线，真实非空网页/原生同记录比较仍待W4。
+- 本轮Windows既有边界/服务fixture19/19通过；历史Linux候选离线fixture不重新冒充本轮测试。本轮真实Linux证据为来源/config/schema/状态核验、当前备份和独立恢复、开/关/重开及匿名门禁。**真实PUT=0、代理认证profile GET=0；真实保存/重载/409/原key恢复未验收**，回交样例仅契约/fixture。
+- 用户已确认完整镜像开发者工具和iPhone真实隔离player只读、双服读取、不自动导入、分服草稿/星级/OC/计算/页面往返通过，保存禁用。保留旧手机只读工程 buildId `4ce602ec7f6f5746ac25` / planId `mini-account-mirror-phone-20261107-01`。**“OC=true 用户确认检查通过”**；万达OC=true检查后误触关闭才使原JSON最终false，原证据未改，不据此宣称云保存通过。
+- 客户端由用户在新对话接管 `miniprogram-v1`；保留原AccountClient/CloudProfile/ProfileStore和198999a共享模块，新建独立写验收plan/输出/草稿作用域，不直接改旧只读工程，不只改allowCloudWrites。新plan须核固定来源、实际可写health、validator/request/save facade/UI及身份/服别隔离；保留旧工程、身份、游客与草稿，不自动导入、不自动登录/重试/保存。用户已获可直接复制的客户端接手提示词；本对话未改小程序或派任务。
+- 首轮仅W1/W2：先认证GET两服，若已有新记录停下核来源、不清库；W1分别由用户保存合法空CN/Global并各GET重载，区分null/已保存empty与独立revision；W2保存CN f5★5、Global ssc/万达且万达OC=true，再各GET重载。最多计划4次成功显式PUT、6次认证profile GET（含写前2次），不是重试预算；真实保存只由用户在新客户端点击。游客导入、W3冲突双份、W4网页/原生非空同记录比较另列，先开发者工具再手机。
+- 未知结果只查询原key/action/server；404不证明未执行、不换key重发。429遵守Retry-After、不假定预算恢复或自动重登；503/读取失败不当空库。退出/再认证/撤销专项、角色/邮件/注册/图片/统计/B–E、生产、微信后台、上传提审发布、开机自启/证书续期不随本轮扩展。此处暂停，不因归档继续执行。
+
+下方2026-11-06及更早记录均按其历史阶段阅读，未被删除或倒改。
+
+## 2026-11-06 实时交接：小程序A账号/双服云车库公网只读准备完成，真实身份与车库验收待客户端（批次20261105）
+
+所有服务器操作由用户逐步执行并回传，代理没有登录服务器。本批原始服务器回执保存在外层offline-evaluation/mini-account-isolation-20261105-01；step20未附完成时间戳，本文归档日不冒充现场观测时刻。用户要求已定范围内直接给操作、不再二次询问；文件上传只用服务器文件管理系统，ZIP优先、本地/服务器文件名相同，不使用本机PowerShell。本批无Git提交推送/合main，无新监控、公告、清理或跨对话派工。
+
+### 当前可用范围及来源
+
+- **实际origin：https://account-test.racepick.cn**。用户step20回传ACCOUNT_PUBLIC_HTTPS_A_READONLY_READY_20，回执 `/root/racepick-deploy/account-https-api-20-4ii2869y`。公网health200/ok、固定五JSON SHA/bytes、未认证A session401 SESSION_REQUIRED、双服profile401 ACCOUNT_SESSION_REQUIRED/no-store通过，原生Cookie/Origin/OPTIONS拒绝，注册/找回/B–E/统计等排除路径404。只修改该独立站点与新代理/新限流文件，Nginx备份及独立配置副本通过，所有原/新服务PID及原网站指针保持。
+- 固定交付 **7c5f53fc366b7af555214846**，原ZIP SHA256 `6c0ff251985638c62a232689a9aa3a3fd568544f2b8ad812e567e342bcef2648` /11220353bytes，CANDIDATE.json SHA `13545e697ca7dfcf0fb68f4f52e8b4003474c3accb4586419aaafd8fc096fe3b`。**source_commit=null**，base=bfcf97e1511ee3d418a1f558c30a3ba0148d5286仅历史基底，不是完整候选源码；不倒改封存来源。发布 `/opt/racepick-account-test/releases/7c5f53fc366b7af555214846`，五共享模块仍匹配198999a。
+- 实际配置 **enabled=true/cloud_writes=false/mail_mode=file/image_policy=disabled**。A ready，B–E pending；新服务只加载A，coverage_schema0/global_score_schema0不是缺迁移，不为补0复跑旧迁移。business6、Global profile1、guest1、native account1实际通过。固定snapshot CN593ecc7222ceea5856b2f576b4f5bca8 / Global e29f52e7f81c3e337985bf05dedb7e88仍是原固定五文件，不是正式活动成绩指针，不取维护工作簿。
+- native白名单：新origin POST guest session、GET snapshot，A GET/DELETE session、POST login/reauth、GET双服profile、GET原operations恢复。PUT框架存在但cloud_writes=false拒绝，只读阶段不发送。公网注册/验证/重发/重置/邀请、association别名、B–E、图片/OCR、统计和任意管理路径仍关闭。必要网页账号页与原生共用一个隔离Store，保持网页Cookie/Origin/CSRF、原生rpa1/X-Account-ID的身份分离，不建立永久微信绑定。
+
+### 隔离与备份证据
+
+专用Unix用户racepick-account-test UID995/GID986；数据 `/var/lib/racepick-account-test/state`、私有配置 `/etc/racepick-account-test`。实际systemd/mount namespace及内核限额：仅state为持久RW，配置/固定快照/标记/签名key readonly，正式业务/旧guest/安全配置不可见；memory.high256MiB/max512MiB/swap0/cpu50%/pids32。新服务仅回环8012，Nginx精确HTTPS路径代理，服务**未开机自启**。源旧微信应用的AppID/Secret只在服务器内私有复制，未入本地/Git/包/聊天，17B在真实UID/挂载+独立断网环境解析通过；不是微信鉴权验收。
+
+用户step19在服务器交互输入新测试密码，经原register/verify处理函数+file outbox本地消费邮件token，创建**唯一隔离player账号1个**，非生产账号、非真实邮箱收件验证。用户名留用户及服务器私有operator marker；不在本交接放邮箱、密码、token或备份。创建前后私有备份/独立恢复均通过：pre/post-test-account-19；初始initial15也保留。操作失败/未知不重复注册或邮件，不恢复空旧库覆盖新账号。step20后身份/车库/邮件/操作/schema行保持；双服profile0、无认证会话/微信身份，只有门禁限流预算可能增加。
+
+原网站7241、旧mini-test访客/OCR与guest/bridge35bd加原明确补件维持既有归属；本批没有打开旧业务/访客/队列库、重跑迁移或新增OCR/供应商调用，不清理旧包/备份/失败证据。旧iPhone基础OCR试次02用户验收是独立历史事实，不在本批重传。新origin不是替代旧OCR origin：必须新建该origin的真实父访客，不复用旧mini-test Bearer/code或破坏其transport/草稿。
+
+### 下一阶段边界
+
+[可转交小程序侧的说明](MINI_ACCOUNT_A_READONLY_HANDOFF_20261105.md)、[无凭据固定JSON](MINI_ACCOUNT_A_READONLY_HANDOFF_20261105.json)、[完整网络阶段回执](MINI_ACCOUNT_NETWORK_PREPARATION_RECEIPT_20261105.json)。小程序本机交接仍见miniprogram-v1/docs/HANDOFF_ACCOUNT_NETWORK.md（只读复核本机dd8731f，工作树无修改，本批未改客户端）。只把安全交接材料由用户转交，不自动派工。
+
+**尚未验收：真实微信交换、账号登录、认证双服GET、网页/原生真实记录同步、暂存/保存/重载/冲突/退出/身份变化、手机账号。** A ready和匿名401仅证明组件/门禁，不替代认证权限验收。新origin是否登记微信request合法域名待用户/小程序侧核实，网站侧未操作微信后台，不关闭校验绕过。接收后先核来源/组件，再新origin的新真实父访客→用户私下输入隔离邮箱/密码→仅登录/双服只读证明不导入。客户端cloudWrites及服务端cloud_writes保持false，不发PUT。未知结果保留原key/action/server，仅查询原操作，恢复404也不换key重放。只读证据后再明确写范围，最后手机步骤。固定AccountClient/198999a ProfileStore与完整镜像保持，不用探针替代产品。
+
+证书SAN仅account-test.racepick.cn，DER SHA `3dfc725867c9858943b69b63c31350f46b583b27ccc21740b5790366909d3d91`，有效期2026-11-05T03:35:07Z—2027-02-03T03:35:06Z（有效期字段不是执行结束时间）。自动续期及Nginx后续加载尚未验证，不声称长期生产运维验收。正式账号库接入/迁移/恢复、真实邮件、生产启用、小程序上传/体验版/审核/发布均不据本批扩权。
+
+下方旧“暂停/账号未接通/手机OCR待验收”等均按各自历史阶段阅读，不续跑旧部署。
+
 ## 2026-11-05 最新交接：iPhone基础OCR已验收，下一阶段仅A账号/双服云车库隔离联网准备；本对话文档推送后暂停
 
 用户最新指令：只把最新状态和账号/云车库准备范围更新到主repo本文件与INDEX，单独提交推送后暂停，由新对话接手；不继续开发，不操作服务器/微信后台，不发图或新增审核/邮件/账号请求。本轮仅只读查看仓库资料并更新这两份文档，未重新核生产进程/健康/备份调度；下述线上信息沿既有用户回执，不冒充2026-11-05实时服务器检查。未跟踪排查回执等资料保留，不自动纳入本次提交。下方2026-11-04“手机待验收”“原生关闭”等段落均按各自历史阶段阅读。
