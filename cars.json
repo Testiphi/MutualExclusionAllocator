@@ -812,7 +812,7 @@
         "四区"
       ],
       "star_rule": {
-        "min": 1,
+        "min": 4,
         "default": 6
       }
     },
