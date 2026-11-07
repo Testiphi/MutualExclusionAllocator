@@ -1,0 +1,8 @@
+{
+  "kind": "racepick-mini-guests-v1",
+  "state_dir": "/var/lib/racepick-account-test/state/guests",
+  "appid": "wx0000000000000000",
+  "app_secret_file": "/etc/racepick-account-test/app-secret",
+  "image_policy": "disabled",
+  "account_state_dir": "/var/lib/racepick-account-test/state/native"
+}

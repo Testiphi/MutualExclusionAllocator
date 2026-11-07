@@ -1,0 +1,8 @@
+{
+  "kind": "racepick-mini-guests-v1",
+  "state_dir": "/var/lib/racepick-mini-test/guests",
+  "appid": "SET_LOCALLY",
+  "app_secret_file": "/etc/racepick-mini-test/app-secret",
+  "image_policy": "disabled",
+  "bridge_socket": "/run/racepick-ocr-bridge/guest.sock"
+}

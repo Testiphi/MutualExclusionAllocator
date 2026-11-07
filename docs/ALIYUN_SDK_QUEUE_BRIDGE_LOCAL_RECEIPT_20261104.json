@@ -1,0 +1,175 @@
+{
+  "date": "2026-11-04",
+  "kind": "racepick-sdk-unix-bridge-local-v1",
+  "source_base": "0b97dae9e1003c1bc2c4c5b7a189b81cb4002112",
+  "committed": false,
+  "release_id": null,
+  "artifacts": {
+    "backend/image_safety_aliyun.py": {
+      "sha256": "8bc0fe0e32875680a2725f228482a3028d1bf0bfd6ca6479b428116d41f34220",
+      "bytes": 8962
+    },
+    "backend/image_safety_sdk.py": {
+      "sha256": "b1bc50cd373d573c4195e781f22cbfb723f4e77181613bc1a3650c71824f99c7",
+      "bytes": 9127
+    },
+    "backend/ocr_queue_bridge.py": {
+      "sha256": "23195253a33665d7c879fb4ff4785e292c85455bdbc820adb9018e48f8ee2799",
+      "bytes": 16205
+    },
+    "backend/map_recognition.py": {
+      "sha256": "665914be069def8f0c2621cb1bd9250d70d19ac19e0af0ec78de7f51e55a527b",
+      "bytes": 20674
+    },
+    "backend/test_image_safety_sdk.py": {
+      "sha256": "4b5d8c7e1a7cb56412c9d24bb566fe979f659496b800aafff0ceaa08c4b752da",
+      "bytes": 7316
+    },
+    "backend/test_ocr_queue_bridge.py": {
+      "sha256": "b229fada4cda9085e01c676b0223b8a0057fec4e68bc489cffb9f62c31ca5078",
+      "bytes": 8986
+    },
+    "backend/test_image_safety_aliyun.py": {
+      "sha256": "fcbd8cc6a083a0a713347cfdaa760270b024f9d2093861351f97b10171706957",
+      "bytes": 16382
+    },
+    "production/ocr-queue-bridge.config.example.json": {
+      "sha256": "d8a58f74747832af85f5e69e56b014ff277fe341816a89cf0667ab56b716295b",
+      "bytes": 394
+    },
+    "production/requirements-aliyun-sdk.in": {
+      "sha256": "491c3942d794eadd453ee458e9fb28c85e4d34d0d3433690ff11f8d62a68fdd8",
+      "bytes": 289
+    },
+    "production/aliyun-baseline.config.example.json": {
+      "sha256": "62be1568c4ba7bb4b1ce4d34ee7068429bbbe3c0cdf99ec22a75255223a80fe9",
+      "bytes": 370
+    },
+    "docs/ALIYUN_SDK_QUEUE_BRIDGE_LOCAL_20261104.md": {
+      "sha256": "5d6d45122e937683efa20dc34bfe6d7b5adc2ec2f5b49bbc71fad6c90e919e8b",
+      "bytes": 9253
+    }
+  },
+  "evidence_dir": "E:\\hzz\\work\\MutualExclusionAllocator\\offline-evaluation\\mini-ocr-sdk-bridge-20261104-01",
+  "evidence": {
+    "windows-new-tests.log": {
+      "sha256": "d28c7d749f5c8250f0caf7712f8fa4525b665a5b7c46e6e3eb69f1bf84fdd4f3",
+      "bytes": 991
+    },
+    "sdk-wire-final.log": {
+      "sha256": "83a0c2f8d29ae1111490a8bf35f29b12f02b1d260acccc7ddced92b5b1e136b5",
+      "bytes": 932
+    },
+    "windows-regressions.log": {
+      "sha256": "c7d0b71ce2abbf89811cd084a91fde6a8d414d42f6c9789654a596232a8ca23e",
+      "bytes": 426
+    },
+    "linux-attempt-02.log": {
+      "sha256": "47a3a158885255ea3ad0192b969e2c5af682fbcce7705d16e292ca1e0155c8b1",
+      "bytes": 8220
+    },
+    "linux-final.log": {
+      "sha256": "cde3f112e22fe4ec4dca02ccb8da6043ca66c26f7672f329ead565e54f73cd21",
+      "bytes": 8546
+    },
+    "sdk-windows-freeze.txt": {
+      "sha256": "84f68414e36fa6b72e73ea11d694f0e8c129558f781f90ac642cd509a591e97f",
+      "bytes": 779
+    },
+    "linux-fixture-rootfs.tar.gz": {
+      "sha256": "b6b64b3e5c872fce72bcb19cf69086d8c3cc584c23dc96e6a68214bac17ab1af",
+      "bytes": 21694537
+    },
+    "linux-fixture-inventory.txt": {
+      "sha256": "c534813aeb04bd1b666786124260f7ea345e28f80ed28b89cd75100d76d38ba4",
+      "bytes": 96637
+    },
+    "run_linux.py": {
+      "sha256": "d50020fbdc2e2925a7b43d0e7ae68af838e2c1f31b6ca3c01bdb5d99a8afb650",
+      "bytes": 1181
+    }
+  },
+  "tests": {
+    "windows_new_suite": {
+      "executed": 48,
+      "passed": 37,
+      "linux_only_skipped": 11,
+      "seconds": 5.614
+    },
+    "windows_sdk_wire_followup": {
+      "passed": 3,
+      "seconds": 1.243,
+      "additional_new_test": "actual SDK HTTP500 causes exactly one send"
+    },
+    "windows_existing_regressions": {
+      "executed": 53,
+      "passed": 53,
+      "seconds": 57.396
+    },
+    "linux": {
+      "executed": 46,
+      "passed": 46,
+      "skipped": 0,
+      "seconds": 7.507,
+      "python": "3.12.16",
+      "pillow": "11.2.1",
+      "platform": "Alpine3.22 in local WSL",
+      "namespace": [
+        "mount",
+        "network",
+        "PID"
+      ],
+      "uid": 10001,
+      "gid": 10001,
+      "root_readonly": true,
+      "writable_tmpfs_bytes": 100663296,
+      "process_address_space_limit_bytes": 536870912,
+      "business_paths_visible": false,
+      "model_loaded": false,
+      "real_unix_peer_credentials": true,
+      "official_sdk_linux_wire_tested": false,
+      "sdk_child_target": "synthetic fixtures only"
+    }
+  },
+  "operations": {
+    "real_keys_configured": false,
+    "supplier_image_upload_or_paid_api_calls": false,
+    "only_synthetic_images_sent_over_local_socket": true,
+    "production_server_commands": false,
+    "wechat_backend_changed": false,
+    "public_ocr_enabled": false,
+    "native_http_gateway_wired": false,
+    "second_ocr_model_or_worker_started": false,
+    "commit_push_merge": false,
+    "dependency_installation": "new isolated Windows venv and new disposable Linux root only",
+    "local_docker_start_attempt": "failed Inference manager; no reset/volume deletion/diagnostic upload",
+    "created_linux_root_archived_and_removed": true,
+    "original_docker_data_untouched": true
+  },
+  "protection": {
+    "15_runtime_workbook_paths_sha_size_mtime_unchanged": true,
+    "gateway_auth_worker_supervisor_6_code_paths_sha_unchanged": true,
+    "intentional_shared_code_change": "backend/map_recognition.py explicit safety schema, checking state, shared accounting and CAS completion"
+  },
+  "migration": {
+    "queue_safety_schema": "explicit opt-in only; never in normal startup/serve",
+    "business_schema_changes": false,
+    "production_migration_executed": false,
+    "old_website_JobStore_may_not_mix_for_capacity": true
+  },
+  "failures_and_limits": [
+    "Docker Desktop failed initialization, not reset or repaired",
+    "static musl Python could not load Pillow extensions",
+    "first Alpine namespace attempt ran out of temporary filesystem space; raw stdout not fully saved",
+    "isolated tmpfs final run passed",
+    "Ubuntu24.04 wheel lock and systemd/cgroup not verified",
+    "large-image concurrency peaks and long-term service capacity not verified",
+    "real SDK/RAM/provider accuracy/retention not verified"
+  ],
+  "remaining": [
+    "native HTTP gateway port integration with default-off policy",
+    "Ubuntu24.04 offline dependencies and verifiable package/compatibility report",
+    "operator confirmed runtime UID/GID/paths",
+    "separate authorization for actual keys/sample calls/server upgrade/schema/activation"
+  ]
+}

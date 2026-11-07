@@ -1,0 +1,32 @@
+[Unit]
+Description=RacePick isolated A account and dual-server garage acceptance
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=__SERVICE_USER__
+Group=__SERVICE_GROUP__
+WorkingDirectory=__CANDIDATE_ROOT__
+ExecStart=__CANDIDATE_ROOT__/.venv/bin/python -B -m backend.mini_account_service serve --config __PRIVATE_CONFIG__ --port __LOOPBACK_PORT__
+Restart=on-failure
+RestartSec=5
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+ReadWritePaths=__ISOLATED_STATE_ROOT__
+InaccessiblePaths=-/var/lib/racepick -/etc/racepick -/var/lib/racepick-mini-test -/etc/racepick-mini-test -/etc/racepick-ocr-safety
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+MemoryHigh=256M
+MemoryMax=512M
+MemorySwapMax=0
+CPUQuota=50%
+TasksMax=32
+LimitNOFILE=128
+KillMode=control-group
+TimeoutStopSec=15
+
+[Install]
+WantedBy=multi-user.target

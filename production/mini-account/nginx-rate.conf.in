@@ -1,0 +1,2 @@
+# Independent name: do not replace existing guest/OCR or website rate zones.
+limit_req_zone $binary_remote_addr zone=__ACCOUNT_RATE_ZONE__:1m rate=5r/s;

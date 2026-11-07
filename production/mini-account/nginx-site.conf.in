@@ -1,0 +1,23 @@
+# Review-only template: independent host/certificate/rate zone still require field approval.
+server {
+    listen 443 ssl;
+    server_name __ACCOUNT_HOST__;
+    ssl_certificate __CERTIFICATE_FULLCHAIN__;
+    ssl_certificate_key __CERTIFICATE_KEY__;
+    client_max_body_size 64k;
+    if ($host != "__ACCOUNT_HOST__") { return 444; }
+    location = / { include __ACCOUNT_PROXY_INCLUDE__; }
+    location = /_account-test/health { include __ACCOUNT_PROXY_INCLUDE__; }
+    location ~ "^/api/mini/(?:v1/(?:session|snapshot)|account/v1/(?:session|auth/(?:login|reauth)|profile|operations/[A-Za-z0-9_-]{16,80}))$" {
+        limit_req zone=__ACCOUNT_RATE_ZONE__ burst=10 nodelay;
+        include __ACCOUNT_PROXY_INCLUDE__;
+    }
+    location ~ ^/api/(?:auth/(?:me|login|logout)|me/profile)$ {
+        limit_req zone=__ACCOUNT_RATE_ZONE__ burst=10 nodelay;
+        include __ACCOUNT_PROXY_INCLUDE__;
+    }
+    location ~ ^/(?:styles\.css|config\.js|api\.js|app_state\.js|allocator\.js|race_scores\.js|selection_core\.js|home_presenter\.js|home_theme\.json|auth\.js|profile_store\.js|accounts\.css|ui\.css|theme\.css|notifications\.js|announcements\.js|cars\.json|gauntlet_data\.json|cars\.global\.json|gauntlet_data\.global\.json|global-data-manifest\.json)$ {
+        include __ACCOUNT_PROXY_INCLUDE__;
+    }
+    location / { return 404; }
+}

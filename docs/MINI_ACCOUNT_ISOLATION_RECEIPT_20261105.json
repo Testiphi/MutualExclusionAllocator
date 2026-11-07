@@ -1,0 +1,154 @@
+{
+  "date": "2026-11-05",
+  "timezone": "Asia/Shanghai",
+  "stage": "local-candidate-boundary-only",
+  "source_base_commit": "bfcf97e1511ee3d418a1f558c30a3ba0148d5286",
+  "candidate_commit": null,
+  "delivery_id": null,
+  "main_at_final_check": "19e5c18742e9fe26cd5b38c3ee6b4f3ceb86669a",
+  "origin_main_at_final_check": "19e5c18742e9fe26cd5b38c3ee6b4f3ceb86669a",
+  "client_local_head": "dd8731fa154d44da53bbdb955d23549e1354e3b8",
+  "client_remote_tracking_head": "635cacc50f72c89bc9fc5644166cd2744cd015a3",
+  "actual_existing_origin": "https://mini-test.racepick.cn",
+  "account_origin": null,
+  "account_public_available": false,
+  "new_origin_dns_tls_verified": false,
+  "online_evidence": "previous user receipts and dated unauthenticated 404; no new server or HTTP verification",
+  "defaults": {
+    "enabled": false,
+    "cloud_writes": false,
+    "a_only_mode_opt_in": true
+  },
+  "fixed_snapshot_source": "E:\\hzz\\work\\MutualExclusionAllocator\\offline-evaluation\\mini-ocr-gateway-release-20261104-01\\RacePick-MiniOCR-Baseline-20261104-delivery-v2\\snapshot",
+  "fixed_snapshot_files": {
+    "cars.global.json": {
+      "sha256": "6d35da66c9c0d2d7335b3e80d6a7351bbc494911a5b1d8dab0a0c2137cbc9759",
+      "bytes": 29852
+    },
+    "cars.json": {
+      "sha256": "ea42daedfdb73a4963e2e70c6cdf91deb29ae6bec5143b697e50d8c877961b17",
+      "bytes": 83653
+    },
+    "gauntlet_data.global.json": {
+      "sha256": "79958b507b814fb0823e03aa8f97843fafe9b61a558c428336a4879587a33bd2",
+      "bytes": 133918
+    },
+    "gauntlet_data.json": {
+      "sha256": "2e8bf6ba763a64f24cd1e93be0afbaca8c77e24efcb9a96812952de800b018b6",
+      "bytes": 225341
+    },
+    "global-data-manifest.json": {
+      "sha256": "7e38469bc6bd6de5498bc1e38c16898c0a34eddb86ead72d610e0e1883e6dbe6",
+      "bytes": 1866
+    }
+  },
+  "snapshot_versions": {
+    "cn": "593ecc7222ceea5856b2f576b4f5bca8",
+    "global": "e29f52e7f81c3e337985bf05dedb7e88"
+  },
+  "binding_source": "repo/docs/MINI_OCR_CN_BINDING_20261104.json",
+  "candidate_source_files": {
+    "backend/mini_accounts.py": {
+      "sha256": "0bbd266185e3515e9119911907f0b088e44feb707d5e59eb54213d023dd5f271",
+      "bytes": 22556
+    },
+    "backend/mini_account_boundary.py": {
+      "sha256": "6b61a7eb4416084f36d29433c05a2c357d77818ef8dd72b3c2c08c60425579e4",
+      "bytes": 4084
+    },
+    "backend/test_mini_account_boundary.py": {
+      "sha256": "8a63786a84a998738199ceece8c68a49420358616e5a55b1817c5a44b940eb72",
+      "bytes": 8671
+    },
+    "docs/MINI_ACCOUNT_ISOLATION_PREPARATION_20261105.md": {
+      "sha256": "4905fedb4d2b98ebb4139045a15fdd765c209de940baef9d8bf84ef45bb96cee",
+      "bytes": 8697
+    }
+  },
+  "test_command": "python -B -m unittest backend.test_mini_account_boundary backend.test_mini_accounts backend.test_global_profiles backend.test_mini_guest_service backend.test_mini_ocr_guest_service",
+  "tests": {
+    "executed": 58,
+    "passed": 49,
+    "skipped": 9,
+    "failures": 0,
+    "environment": "Windows Python 3.14, in-process TestClient, disposable state only",
+    "new_boundary_tests": 9,
+    "real_wechat": false,
+    "real_account_login": false,
+    "real_cloud_write": false,
+    "smtp": false,
+    "real_ocr_or_provider": false
+  },
+  "schema_evidence": {
+    "native_account": {
+      "expected": 1,
+      "source": "backend/mini_accounts.py, fixture tests"
+    },
+    "global_profile": {
+      "expected": 1,
+      "source": "backend/global_profiles.py, fixture tests"
+    },
+    "deployed_isolated_business_schema_verified": false
+  },
+  "remaining_local": [
+    "isolated HTTPS and file-outbox launcher",
+    "read-only schema/path ownership preflight",
+    "website route allowlist and shared-store startup",
+    "Linux runtime permission verification",
+    "fixed delivery and backup/restore compatibility drill"
+  ],
+  "field_operations_performed": false,
+  "submitted_or_pushed": false,
+  "protected": [
+    "production business/guest/OCR state",
+    "old tests and releases",
+    "workbooks and runtime maintenance data",
+    "five shared algorithms",
+    "untracked incident receipt"
+  ],
+  "non_secret_examples": [
+    {
+      "case": "unsaved-cn",
+      "status": 200,
+      "body": {
+        "server": "cn",
+        "storage": "account",
+        "remote_supported": true,
+        "revision": 0,
+        "profile": null
+      }
+    },
+    {
+      "case": "empty-saved-global",
+      "status": 200,
+      "body": {
+        "server": "global",
+        "storage": "account",
+        "remote_supported": true,
+        "revision": 1,
+        "profile": {
+          "cars": [],
+          "stars": {},
+          "ocMap": {}
+        }
+      }
+    },
+    {
+      "case": "wrong-password",
+      "status": 401,
+      "code": "CREDENTIALS_REJECTED",
+      "parent_guest_retained": true
+    },
+    {
+      "case": "writes-disabled",
+      "status": 503,
+      "code": "ACCOUNT_CLOUD_WRITE_DISABLED"
+    },
+    {
+      "case": "unknown-operation",
+      "status": 404,
+      "code": "OPERATION_NOT_FOUND",
+      "automatic_replay_allowed": false
+    }
+  ]
+}

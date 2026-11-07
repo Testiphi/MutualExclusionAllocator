@@ -1,0 +1,13 @@
+proxy_set_header Host __ACCOUNT_HOST__;
+proxy_set_header X-Forwarded-Proto https;
+proxy_set_header X-Real-IP $remote_addr;
+proxy_set_header X-Forwarded-For "";
+proxy_http_version 1.1;
+proxy_set_header Connection "";
+proxy_connect_timeout 2s;
+proxy_read_timeout 25s;
+proxy_pass http://127.0.0.1:__LOOPBACK_PORT__;
+access_log off;
+add_header Cache-Control no-store always;
+add_header X-Content-Type-Options nosniff always;
+add_header Referrer-Policy no-referrer always;

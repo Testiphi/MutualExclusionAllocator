@@ -70,10 +70,15 @@ class ProfileInput(BaseModel):
 
 
 class Store:
-    def __init__(self, directory):
+    def __init__(self, directory, initialize=True):
         self.directory = Path(directory)
-        self.directory.mkdir(parents=True, exist_ok=True)
+        self.initialize = initialize
         self.path = self.directory / 'accounts.sqlite3'
+        if not initialize:
+            if not self.directory.is_dir() or not self.path.is_file():
+                raise ValueError('Account state must be explicitly provisioned before startup')
+            return
+        self.directory.mkdir(parents=True, exist_ok=True)
         with self.connect() as db:
             db.executescript('''
             CREATE TABLE IF NOT EXISTS schema_version(version INTEGER PRIMARY KEY);
@@ -106,7 +111,8 @@ class Store:
 
     @contextmanager
     def connect(self):
-        db = sqlite3.connect(self.path, timeout=10)
+        db = sqlite3.connect(self.path if self.initialize else self.path.absolute().as_uri()+'?mode=rw',
+                             uri=not self.initialize, timeout=10)
         db.row_factory = sqlite3.Row
         db.execute('PRAGMA foreign_keys=ON')
         try:
@@ -126,7 +132,21 @@ class Store:
             db.execute('INSERT INTO attempts VALUES (?,1,?) ON CONFLICT(bucket) DO UPDATE SET count=count+1', (key, now+600))
 
 
-def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None, mail_config=None, preview_source=None, writeback_lab=None, production=False, score_version_lab=None, score_state=None, contributions=False, feedback=False, notifications=False, usage=False, coverage=False, map_recognition=None, mini_config=None):
+def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None, mail_config=None, preview_source=None, writeback_lab=None, production=False, score_version_lab=None, score_state=None, contributions=False, feedback=False, notifications=False, usage=False, coverage=False, map_recognition=None, mini_config=None, isolated_account_root=None):
+    isolated = isolated_account_root is not None
+    frozen = None
+    if isolated:
+        # An explicit, marked, new isolation root is the ONLY file-mail HTTPS exception.
+        # Validate before Store, mini config, credentials, or any migration can open state.
+        from backend.mini_account_isolation import preflight
+        from backend.mini_snapshot import load_snapshot
+        preflight(isolated_account_root, origin)
+        if (not production or Path(data_dir).absolute()!=Path(isolated_account_root).absolute()/'accounts'
+                or reference_dir is not None or any((preview_source,writeback_lab,score_version_lab,score_state,
+                    contributions,feedback,notifications,usage,coverage,map_recognition,mini_config))
+                or mail_config is None or mail_config.mode!='file' or mail_config.production):
+            raise ValueError('Isolated HTTPS accounts require file mail and no other business components')
+        frozen,_=load_snapshot(Path(isolated_account_root)/'snapshot')
     if mini_config is not None:
         from backend.mini_auth import load_config
         if isinstance(mini_config, (str, Path)):
@@ -161,7 +181,7 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
         if parsed.scheme!='https' or not parsed.hostname or parsed.hostname in ('127.0.0.1','localhost') or parsed.port not in (None,443) or parsed.path or parsed.query or parsed.fragment or parsed.username or parsed.password:
             raise ValueError('生产环境需要精确HTTPS域名来源')
         if score_version_lab is not None or writeback_lab is not None or preview_source is not None:raise ValueError('生产环境禁止启用预览及写回实验室')
-        if not data_dir or mail_config is None or not mail_config.production:raise ValueError('生产环境需独立数据目录和正式SMTP配置')
+        if not isolated and (not data_dir or mail_config is None or not mail_config.production):raise ValueError('生产环境需独立数据目录和正式SMTP配置')
     elif parsed.scheme != 'http' or parsed.hostname not in ('127.0.0.1', 'localhost') or parsed.path or parsed.query or parsed.fragment or parsed.username:
         raise ValueError('本地开发仅允许 localhost/127.0.0.1 HTTP origin')
     cookie_name = '__Host-racepick_session' if production else (COOKIE if parsed.port in (None,8000) else COOKIE+'_'+str(parsed.port))
@@ -180,7 +200,7 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
     versioned_scores=score_version_lab is not None or score_state is not None
     if coverage and not production and data_dir and (Path(data_dir)/"production.json").exists():raise ValueError("正式库禁止通过本地coverage入口迁移")
     fresh_accounts=not (Path(data_dir or ROOT / '.local-accounts')/'accounts.sqlite3').exists()
-    store = Store(data_dir or ROOT / '.local-accounts')
+    store = Store(data_dir or ROOT / '.local-accounts', initialize=not isolated)
     from backend.global_profiles import state as global_profile_state,migrate as migrate_global_profiles,GlobalProfileInput
     if fresh_accounts and not production:migrate_global_profiles(store)
     with store.connect() as db:global_profiles_ready=global_profile_state(db)['global_profile_schema']==1
@@ -265,7 +285,8 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
     from backend.mailing import MailConfig, MailService
     mail_service = MailService(store,origin,mail_config or MailConfig())
     app.state.mail_service = mail_service
-    catalog_root=recognition_service.reference if recognition_service and not production else (reference_dir() if versioned_scores else ROOT)
+    catalog_root=(Path(isolated_account_root)/'snapshot' if isolated else
+                  recognition_service.reference if recognition_service and not production else (reference_dir() if versioned_scores else ROOT))
     catalog = json.loads((catalog_root/'cars.json').read_text(encoding='utf-8'))
     known = {c['nickname'] for c in catalog['cars'] if c.get('nickname') and c.get('zones')}
 
@@ -364,8 +385,8 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
     def me(request:Request, response:Response):
         current=session(request,False)
         if not current:
-            return {'user':None,'csrf':new_session(response),'mail_mode':'production' if production else mail_service.config.mode,'admin_invites':True,'readonly_previews':preview_source is not None,'writeback_lab':writeback_lab is not None,'score_versions_lab':score_version_lab is not None,'score_versions':versioned_scores,'community_controls':True,'contributions':contributions,'feedback':feedback,'notifications':notifications,'usage':usage,'coverage':coverage}
-        return {'user':user(request) if current['user_id'] else None,'csrf':current['csrf'],'mail_mode':'production' if production else mail_service.config.mode,'admin_invites':True,'readonly_previews':preview_source is not None,'writeback_lab':writeback_lab is not None,'score_versions_lab':score_version_lab is not None,'score_versions':versioned_scores,'community_controls':True,'contributions':contributions,'feedback':feedback,'notifications':notifications,'usage':usage,'coverage':coverage}
+            return {'user':None,'csrf':new_session(response),'mail_mode':'production' if mail_service.config.production else mail_service.config.mode,'account_login_only':isolated,'admin_invites':not isolated,'readonly_previews':preview_source is not None,'writeback_lab':writeback_lab is not None,'score_versions_lab':score_version_lab is not None,'score_versions':versioned_scores,'community_controls':not isolated,'contributions':contributions,'feedback':feedback,'notifications':notifications,'usage':usage,'coverage':coverage}
+        return {'user':user(request) if current['user_id'] else None,'csrf':current['csrf'],'mail_mode':'production' if mail_service.config.production else mail_service.config.mode,'account_login_only':isolated,'admin_invites':not isolated,'readonly_previews':preview_source is not None,'writeback_lab':writeback_lab is not None,'score_versions_lab':score_version_lab is not None,'score_versions':versioned_scores,'community_controls':not isolated,'contributions':contributions,'feedback':feedback,'notifications':notifications,'usage':usage,'coverage':coverage}
 
     @app.post('/api/auth/register')
     def register(data:Registration, request:Request):
@@ -496,7 +517,9 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
         if server not in ('cn','global'):raise HTTPException(422,'服别无效')
         if server=='global':
             from backend.global_profiles import put
-            if hasattr(app.state,'global_score_versions'):
+            if frozen is not None:
+                _,raw=frozen.global_score_versions.current();catalog=json.loads(raw['cars.global.json']);scores=json.loads(raw['gauntlet_data.global.json'])
+            elif hasattr(app.state,'global_score_versions'):
                 _,raw=app.state.global_score_versions.current();catalog=json.loads(raw['cars.global.json']);scores=json.loads(raw['gauntlet_data.global.json'])
             else:
                 catalog=json.loads((ROOT/'cars.global.json').read_bytes());scores=json.loads((ROOT/'gauntlet_data.global.json').read_bytes())
@@ -550,6 +573,7 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
     def health():
         with store.connect() as db:db.execute('SELECT 1').fetchone()
         result={'status':'ok','mode':'production' if production else 'local','schema':6}
+        if isolated:result.update(mode='isolated-account-test',production_business=False)
         if recognition_service:result['map_recognition']={'enabled':True,'worker':recognition_service.health()}
         result['community_schema']=1
         result['contribution_schema']=1 if contributions else 0
@@ -613,6 +637,8 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
     def asset(name:str):
         if production and name in ('data_previews.js','data_previews.css','writeback_lab.js'):raise HTTPException(404)
         if name not in assets: raise HTTPException(404)
+        if isolated and name in ('cars.json','gauntlet_data.json','cars.global.json','gauntlet_data.global.json','global-data-manifest.json'):
+            return FileResponse(Path(isolated_account_root)/'snapshot'/name,headers={'Cache-Control':'no-store'})
         if recognition_service and not production and name in ('cars.json','gauntlet_data.json','cars.global.json','gauntlet_data.global.json','global-data-manifest.json'):
             return FileResponse(recognition_service.reference/name,headers={'Cache-Control':'no-store'})
         if hasattr(app.state,'global_score_versions') and name in ('cars.global.json','gauntlet_data.global.json','global-data-manifest.json'):

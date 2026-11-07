@@ -1,0 +1,173 @@
+{
+  "date": "2026-11-04",
+  "kind": "racepick-aliyun-baseline-local-preparation-v1",
+  "scope": "local adapter/configuration/simulated tests only",
+  "source_base": "0b97dae9e1003c1bc2c4c5b7a189b81cb4002112",
+  "new_commit": null,
+  "release_id": null,
+  "provider_selection": {
+    "provider": "aliyun",
+    "service": "baselineCheck",
+    "pay_as_you_go_enabled": "user-reported",
+    "real_call_authorized": false
+  },
+  "implementation": {
+    "provider_workflow": "simulated DescribeUploadToken / temporary OSS upload / ImageModeration",
+    "real_network_sdk_transport_implemented": false,
+    "accepted_modes": [
+      "disabled",
+      "simulation"
+    ],
+    "template_mode": "disabled",
+    "credentials_read": false,
+    "existing_JobStore_reused_in_owned_temporary_fixture": true,
+    "second_queue_or_model": false,
+    "public_gateway_or_policy_changed": false,
+    "local_receipts_not_new_http_contract": true
+  },
+  "tests": [
+    {
+      "command": "python -B -m unittest backend.test_image_safety_aliyun",
+      "platform": "Windows Python3.14",
+      "passed": 23,
+      "executed": 23,
+      "seconds": 1.135,
+      "real_supplier_calls": 0
+    },
+    {
+      "command": "python -B -m unittest backend.test_mini_guest_service backend.test_mini_api backend.test_mini_production backend.test_map_recognition",
+      "platform": "Windows Python3.14",
+      "passed": 48,
+      "executed": 48,
+      "seconds": 23.991,
+      "real_platform_calls": 0
+    }
+  ],
+  "verification": {
+    "new_python_ast_and_json_parsed": true,
+    "local_document_links_checked": true,
+    "previous_gateway_queue_worker_code_sha_unchanged": true,
+    "protected_runtime_workbook_15_paths_sha_size_mtime_unchanged": true
+  },
+  "protected_inputs": {
+    "repo\\cars.json": {
+      "sha256": "ea42daedfdb73a4963e2e70c6cdf91deb29ae6bec5143b697e50d8c877961b17",
+      "bytes": 83653,
+      "mtime_ns": 1793686114164336300
+    },
+    "repo\\gauntlet_data.json": {
+      "sha256": "2e8bf6ba763a64f24cd1e93be0afbaca8c77e24efcb9a96812952de800b018b6",
+      "bytes": 225341,
+      "mtime_ns": 1793686114176792200
+    },
+    "repo\\cars.global.json": {
+      "sha256": "6d35da66c9c0d2d7335b3e80d6a7351bbc494911a5b1d8dab0a0c2137cbc9759",
+      "bytes": 29852,
+      "mtime_ns": 1793686114604933100
+    },
+    "repo\\gauntlet_data.global.json": {
+      "sha256": "79958b507b814fb0823e03aa8f97843fafe9b61a558c428336a4879587a33bd2",
+      "bytes": 133918,
+      "mtime_ns": 1793686114608927600
+    },
+    "repo\\global-data-manifest.json": {
+      "sha256": "7e38469bc6bd6de5498bc1e38c16898c0a34eddb86ead72d610e0e1883e6dbe6",
+      "bytes": 1866,
+      "mtime_ns": 1793686114613209700
+    },
+    "repo\\gauntlet_data.xlsx": {
+      "sha256": "74e3d1e694ff463f4c0b148024c059435dfd2fb41fa1071f9ab66218862b2d4e",
+      "bytes": 123740,
+      "mtime_ns": 1793686089689475000
+    },
+    "repo\\gauntlet_data.global.xlsx": {
+      "sha256": "6efb52d9dc56f103870ee1894072950cfa0025b543d79c4ccac954db2c9d3a2c",
+      "bytes": 40749,
+      "mtime_ns": 1793686094235302800
+    },
+    "repo\\gauntlet_data_shared.xlsx": {
+      "sha256": "f8a1360231154ecfc0f56e8801eedc85b90fe25c7c0741ff42a3d18b6e337976",
+      "bytes": 142004,
+      "mtime_ns": 1793686092275550600
+    },
+    "map-layout-parser\\cars.json": {
+      "sha256": "69c9da789f5ad8682a12f05adb21ed3767647f5067fe59c5d281510ee32702ec",
+      "bytes": 83612,
+      "mtime_ns": 1793613795692977200
+    },
+    "map-layout-parser\\gauntlet_data.json": {
+      "sha256": "57964666c7d9669eb70d5c5a94d29a1b6362b33962d5e55d66c7a14de3fd22c2",
+      "bytes": 224850,
+      "mtime_ns": 1793613795693525500
+    },
+    "map-layout-parser\\cars.global.json": {
+      "sha256": "bbaf35c754d1162f6bbb5c196ca9bec50aa2a3d40dd00b9ae779dbf6bfdbc567",
+      "bytes": 29264,
+      "mtime_ns": 1793613795694552900
+    },
+    "map-layout-parser\\gauntlet_data.global.json": {
+      "sha256": "5cc7a48e655a3a53dfcc346165f10aa97479707de36d375e7b8a58e8a7e9ca39",
+      "bytes": 133767,
+      "mtime_ns": 1793613795694552900
+    },
+    "map-layout-parser\\global-data-manifest.json": {
+      "sha256": "0322ec22e68a79626c4bcb201aeb52c772b21b14d52be1a2c14b9e94934cc0b5",
+      "bytes": 1866,
+      "mtime_ns": 1793613795695550100
+    },
+    "map-layout-parser\\gauntlet_data.xlsx": {
+      "sha256": "62cd5c19a11614b9ad6ab6cdb350ef1137bd84e6c8d10072fcaf93933e5af5d2",
+      "bytes": 123526,
+      "mtime_ns": 1793383660409615900
+    },
+    "map-layout-parser\\gauntlet_data.global.xlsx": {
+      "sha256": "e166872aa592fa89766cba98fabf9b9ae8a6389dba0cbaf7c20d5d25a509d4b0",
+      "bytes": 40508,
+      "mtime_ns": 1793383660394130200
+    }
+  },
+  "artifacts": {
+    "backend/image_safety_aliyun.py": {
+      "sha256": "912f40cb81be05ca36412e3fdf52712cf1108b73074cfc0f622180f579bf537e",
+      "bytes": 8965
+    },
+    "backend/image_safety_local.py": {
+      "sha256": "5638918e6722d44d560aed73720c0156b3dfcd0a11ea43454f004803fea894ba",
+      "bytes": 6083
+    },
+    "backend/test_image_safety_aliyun.py": {
+      "sha256": "b25f2797b269fd5dfc2cefa78bfac2e9ec806628234ed8d8b169690cdac58420",
+      "bytes": 16377
+    },
+    "production/aliyun-baseline.config.example.json": {
+      "sha256": "62be1568c4ba7bb4b1ce4d34ee7068429bbbe3c0cdf99ec22a75255223a80fe9",
+      "bytes": 370
+    },
+    "production/aliyun-baseline.ram-policy.example.json": {
+      "sha256": "2a47a53f58ede5086ff4ca6f853efb2dce2ad8b8e825ec3e27b10c760c4e6322",
+      "bytes": 218
+    },
+    "docs/ALIYUN_BASELINE_LOCAL_PREPARATION_20261104.md": {
+      "sha256": "9e4c7df06df51e9454ab374420d7fd76c9590d260fa90bee1a0dfdaaa4f8925f",
+      "bytes": 7329
+    }
+  },
+  "remaining": [
+    "real SDK transport and pinned dependencies under future authorization",
+    "secure credential loading and real RAM verification",
+    "shared production admission capacity/socket bridge and pending cancellation/kill-switch",
+    "Linux isolation and peak-resource validation",
+    "authorized sample calls and privacy/retention final wording",
+    "server preparation and public OCR activation separately authorized"
+  ],
+  "operations": {
+    "images_sent": false,
+    "supplier_paid_calls": false,
+    "server_commands": false,
+    "wechat_backend_changes": false,
+    "public_ocr_enabled": false,
+    "mini_upload_review_release": false,
+    "commit_push_merge": false,
+    "cleanup_or_monitoring": false
+  }
+}

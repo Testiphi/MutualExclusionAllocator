@@ -1,0 +1,10 @@
+{
+  "kind": "racepick-ocr-queue-bridge-v1",
+  "enabled": false,
+  "socket_path": "/run/racepick-ocr-bridge/guest.sock",
+  "socket_gid": null,
+  "allowed_uid": null,
+  "queue_config": "/var/lib/racepick/map-recognition/config.json",
+  "snapshot_dir": "/opt/racepick-mini-test/releases/REPLACE_WITH_VERIFIED_RELEASE/snapshot",
+  "safety_config": "/etc/racepick-ocr-safety/aliyun-baseline.json"
+}

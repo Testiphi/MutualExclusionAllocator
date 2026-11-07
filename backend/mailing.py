@@ -7,6 +7,7 @@ from email.utils import format_datetime, make_msgid
 import getpass
 import hashlib
 import json
+import os
 import re
 import secrets
 import smtplib
@@ -164,9 +165,10 @@ class MailService:
         try:
             if self.config.mode == 'file':
                 directory = self.store.directory/'outbox'
-                directory.mkdir(exist_ok=True)
-                (directory/f'{time.time_ns()}-{payload["id"]}.json').write_text(
-                    json.dumps(payload,ensure_ascii=False,indent=2),encoding='utf-8')
+                directory.mkdir(mode=0o700,exist_ok=True)
+                target=directory/f'{time.time_ns()}-{payload["id"]}.json'
+                with open(target,'x',encoding='utf-8',opener=lambda path,flags:os.open(path,flags,0o600)) as output:
+                    output.write(json.dumps(payload,ensure_ascii=False,indent=2))
                 status = 'file'
             else:
                 send_smtp(self.config,payload)

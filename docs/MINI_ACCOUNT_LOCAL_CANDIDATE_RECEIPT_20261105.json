@@ -1,0 +1,158 @@
+{
+  "date": "2026-11-05",
+  "timezone": "Asia/Shanghai",
+  "stage": "local-offline-candidate-complete; field acceptance pending",
+  "delivery_id": "7c5f53fc366b7af555214846",
+  "source_commit": null,
+  "source_base_commit": "bfcf97e1511ee3d418a1f558c30a3ba0148d5286",
+  "archive": "E:\\hzz\\work\\MutualExclusionAllocator\\offline-evaluation\\mini-account-isolation-20261105-01\\candidate-04.zip",
+  "archive_sha256": "6c0ff251985638c62a232689a9aa3a3fd568544f2b8ad812e567e342bcef2648",
+  "archive_bytes": 11220353,
+  "candidate_manifest_sha256": "13545e697ca7dfcf0fb68f4f52e8b4003474c3accb4586419aaafd8fc096fe3b",
+  "archive_crc_verified": true,
+  "candidate_files": 113,
+  "candidate_all_file_hashes_verified": true,
+  "default_switches": {
+    "enabled": false,
+    "cloud_writes": false
+  },
+  "origin": null,
+  "new_origin_dns_tls_verified": false,
+  "known_previous_guest_origin": "https://mini-test.racepick.cn",
+  "known_previous_account_gate": "dated 404 only; no new HTTP verification",
+  "snapshot_binding_source": "repo/docs/MINI_OCR_CN_BINDING_20261104.json",
+  "snapshot_versions": {
+    "cn": "593ecc7222ceea5856b2f576b4f5bca8",
+    "global": "e29f52e7f81c3e337985bf05dedb7e88"
+  },
+  "five_shared_modules": {
+    "allocator.js": {
+      "git_blob": "e98138275f455ad8cd454dc51e920a9e4a1ff375",
+      "matches_198999a": true,
+      "sha256": "e6646666d0b6441f5cdd8e88de245769c01fad975657108b76a446b1fb1bca99"
+    },
+    "race_scores.js": {
+      "git_blob": "47683086631fc5bf2279ee58aa981f4d1a06bf87",
+      "matches_198999a": true,
+      "sha256": "734c75bb359dafa42e69587ebedce40fc31cd2fd4c0cc140ee2342b9a6c0faeb"
+    },
+    "app_state.js": {
+      "git_blob": "4a58636e0a1356a1ece05dda15d092443383c20f",
+      "matches_198999a": true,
+      "sha256": "aacc346d1e4ae5abc055863a37ed4511a6f9e9dc52a30b9f942e095a569a8a50"
+    },
+    "profile_store.js": {
+      "git_blob": "8c72c514e47113a55df69a0203a08f18f4bf0492",
+      "matches_198999a": true,
+      "sha256": "e5aa31714bc4e1b9eb4a75ead2230772a567a8cb76b58816d4befc5ec7489e15"
+    },
+    "selection_core.js": {
+      "git_blob": "1e28db505030cc0a919d8db1464a8bc26ee0c895",
+      "matches_198999a": true,
+      "sha256": "2b5ef32de1b112312c7101ce54a3d8eaca4d2247465a48323529f1a1253910fe"
+    }
+  },
+  "windows": {
+    "python_target": "3.14",
+    "account_suite": {
+      "executed": 60,
+      "passed": 60,
+      "skipped": 0,
+      "command": "python -B -m unittest -f backend.test_mini_account_service backend.test_mini_account_boundary backend.test_mini_accounts backend.test_global_profiles backend.test_accounts backend.test_mailing"
+    },
+    "production_compatibility_fixture": {
+      "executed": 8,
+      "passed": 8,
+      "command": "python -B -m unittest -f backend.test_production",
+      "smtp_mocked": true
+    },
+    "frontend": {
+      "executed": 27,
+      "passed": 27,
+      "command": "node --test tests/test_profile_store.js tests/test_global_frontend.js"
+    },
+    "packaged_candidate_validator": {
+      "passed": true,
+      "delivery_id": "7c5f53fc366b7af555214846",
+      "code_loaded_from_candidate": true
+    }
+  },
+  "linux": {
+    "runtime": "CPython3.12.16 x86_64, Ubuntu userspace in WSL private chroot",
+    "independent_tmpfs_root": true,
+    "network_namespace": "no external route",
+    "mount_and_pid_namespaces": true,
+    "runtime_dependencies": 18,
+    "validation_extra_dependencies": 3,
+    "require_hashes": true,
+    "no_index": true,
+    "offline_runtime_install_passed": true,
+    "offline_validation_install_passed": true,
+    "pip_check_passed_twice": true,
+    "packaged_candidate_validator_passed": true,
+    "delivery_id": "7c5f53fc366b7af555214846",
+    "effective_uid": 0,
+    "real_service_uid_verified": false,
+    "systemd_runtime_verified": false,
+    "nginx_tls_verified": false,
+    "log": "E:\\hzz\\work\\MutualExclusionAllocator\\offline-evaluation\\mini-account-isolation-20261105-01\\linux-tmpfs-validation.log",
+    "log_sha256": "193c5a26325a19f9ac17d33d5062b34b045ff3ec3dd889d0feb8d9096afa7417",
+    "script": "E:\\hzz\\work\\MutualExclusionAllocator\\offline-evaluation\\mini-account-isolation-20261105-01\\validate-linux-tmpfs.sh",
+    "script_sha256": "a138ba81c732b466a7c684b6e57177c8bff2423125d49f3bb390464666426c9b"
+  },
+  "recovery_evidence": {
+    "new_empty_schema_only_provision": true,
+    "startup_database_bytes_unchanged": true,
+    "old_or_changed_schema_rejected_without_migration": true,
+    "live_backup_rejected_by_lock": true,
+    "three_databases_keys_and_outbox_copied_together": true,
+    "populated_independent_restore_passed": true,
+    "active_root_overwrite_rejected": true,
+    "backup_contains_secrets_and_is_not_publishable": true
+  },
+  "verified_behavior": [
+    "default disabled reads no state or platform credentials",
+    "same website/native CN and Global store",
+    "login and GET do not import",
+    "Global OC and independent revisions",
+    "null differs from valid empty garage",
+    "profile conflicts preserve current and submitted",
+    "cross-server key rejected",
+    "wrong-password preserves parent guest",
+    "original-key login and reauth recovery",
+    "logout does not resurrect identity",
+    "role/parent revocation",
+    "HTTPS exact host, trusted loopback proxy and IP",
+    "native Cookie/Origin/OPTIONS and JSON size rejection",
+    "public registration/mail/B-E/OCR/admin/statistics routes closed"
+  ],
+  "field_operations_performed": false,
+  "real_account_login_or_cloud_write": false,
+  "real_platform_calls": false,
+  "external_email_or_ocr_calls": false,
+  "production_or_old_queue_migration": false,
+  "submitted_pushed_or_merged": false,
+  "environment_incident": {
+    "first_linux_copy_failed": "No space left on device",
+    "subsequent_wsl_observation": "distribution disk mounted read-only as fallback",
+    "root_cause_proven": false,
+    "wsl_repaired_reset_or_cleaned": false,
+    "failed_new_scratch_retained": "/tmp/racepick-account-20261105-HlfFGF",
+    "successful_validation_used_separate_ephemeral_tmpfs": true
+  },
+  "superseded_preserved": [
+    "candidate-01 partial build (missing tools/__init__.py assumption)",
+    "candidate-02 before strict getpass warning handling",
+    "candidate-03 before random-only validator fixture password"
+  ],
+  "pending_field": [
+    "independent origin/DNS/TLS and private platform configuration",
+    "dedicated UID/GID/loopback port and directory ownership",
+    "actual systemd resource and inaccessible-path enforcement",
+    "actual Nginx TLS/no-store/routes",
+    "user-authorized new isolated account preparation",
+    "real WeChat parent-to-account separation",
+    "user-input credentials and dual-server read-only acceptance",
+    "separate scope for explicit cloud writes and phone acceptance"
+  ]
+}

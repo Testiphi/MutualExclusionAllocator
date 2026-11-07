@@ -142,6 +142,8 @@ class AccountStore:
 def make_native_account(config, source):
     app=FastAPI(docs_url=None,redoc_url=None,openapi_url=None,redirect_slashes=False)
     accounts,guests,web=config['account_store'],config['store'],source.native_accounts
+    a_only=config.get('account_a_only') is True
+    app.state.native_a_only=a_only
     from backend import mini_features
     guest_actions={'register','login','resend-verification','forgot-password','verify-email','reset-password'}
 
@@ -156,7 +158,7 @@ def make_native_account(config, source):
                 'profiles':{'cn':'account','global':'account' if getattr(source,'global_profiles',False) else 'unavailable'},
                 'authentication':{'mail_mode':'production' if source.mail_service.config.production else source.mail_service.config.mode,
                                   'mail_token_ttl_seconds':1800,'persistent_wechat_binding':False,'reauth_max_age_seconds':600},
-                'native_batches':dict.fromkeys(('A','B','C','D','E'),'ready'),'feature_writes':{'fixture_only':True,'enabled':mini_features.writes_enabled(config,source)}}
+                'native_batches':{'A':'ready',**dict.fromkeys(('B','C','D','E'),'pending' if a_only else 'ready')},'feature_writes':{'fixture_only':True,'enabled':not a_only and mini_features.writes_enabled(config,source)}}
 
     def session_result(request,sid):
         row=accounts.authenticate('Bearer '+accounts.token(sid),guests);actor=actor_for(request,row)
@@ -164,7 +166,7 @@ def make_native_account(config, source):
                 'actor':actor,'expires_at':row['expires'],'authenticated_at':row['authenticated_at'],
                 'features':features(),'association':{'kind':'session_only','persistent_binding':False,
                     'guest_identity':guests.authenticate('Bearer '+guests.token(row['guest_sid']))['identity']},
-                'high_privilege_writes_ready':mini_features.writes_enabled(config,source) and actor['role'] in ('admin','superadmin') and time.time()-row['authenticated_at']<=600}
+                'high_privilege_writes_ready':not a_only and mini_features.writes_enabled(config,source) and actor['role'] in ('admin','superadmin') and time.time()-row['authenticated_at']<=600}
 
     def expected_actor(request):
         if request.headers.get('x-account-id')!=request.state.actor['id']:
@@ -320,7 +322,7 @@ def make_native_account(config, source):
         status,value=await run_in_threadpool(accounts.operation,'account:'+row['sid'],key,'profile-save:'+selected,{'server':selected,**body},invoke)
         return JSONResponse(value,status_code=status)
 
-    app.state.native_features=mini_features.install(app,config,source)
+    app.state.native_features=({'routes':[]} if a_only else mini_features.install(app,config,source))
     return app
 
 

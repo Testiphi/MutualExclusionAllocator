@@ -1,0 +1,12 @@
+{
+  "kind": "racepick-aliyun-baseline-preparation-v1",
+  "mode": "disabled",
+  "region": "cn-shanghai",
+  "service": "baselineCheck",
+  "credentials_file": "/etc/racepick-ocr-safety/aliyun-baseline-credentials.json",
+  "connect_timeout_seconds": 5,
+  "read_timeout_seconds": 15,
+  "total_timeout_seconds": 60,
+  "automatic_retries": 0,
+  "allow_risk_levels": ["none"]
+}

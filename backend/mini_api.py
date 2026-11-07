@@ -112,32 +112,12 @@ def parameters(request, names):
     return values
 
 
-def native_result(raw, catalog):
-    if raw is None:
-        return None
-    value = json.loads(raw)
-    if value.get('schema_version') != 1 or value.get('server') != 'cn' or value.get('catalog_version') != catalog['version']:
-        fail(503, 'RESULT_INVALID', '识别结果绑定无效')
-    slots = value.get('slots')
-    if not isinstance(slots, list) or len(slots) != 5:
-        fail(503, 'RESULT_INVALID', '识别结果槽位无效')
-    clean = []
-    for i, slot in enumerate(slots, 1):
-        if slot.get('slot') != i or slot.get('state') not in ('matched', 'ambiguous', 'unresolved'):
-            fail(503, 'RESULT_INVALID', '识别结果槽位无效')
-        matched = slot['state'] == 'matched'
-        if matched and {'big': slot.get('big'), 'small': slot.get('small')} not in catalog['maps']:
-            fail(503, 'RESULT_INVALID', '识别结果地图不在目录')
-        clean.append({'slot': i, 'state': slot['state'], 'big': slot.get('big') if matched else None,
-                      'small': slot.get('small') if matched else None})
-    # Do not return observed text/boxes/diagnostics containing unrelated OCR text.
-    return {'schema_version': 1, 'server': 'cn', 'catalog_version': catalog['version'],
-            'status': value.get('status'), 'slots': clean, 'needs_user_confirmation': True}
-
+from backend.mini_result import native_result
 
 def make_native(config, source, service):
     app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None, redirect_slashes=False)
     store, verifier = config['store'], config['verifier']
+    remote=getattr(service,'is_bridge',False)
     # Releases without the optional OCR component must still boot with native disabled
     # or with guest/snapshot-only native support. Keep image rules in their owning module.
     if service is not None:
@@ -155,22 +135,23 @@ def make_native(config, source, service):
         except (OSError, ValueError, sqlite3.Error):
             fail(503, 'SNAPSHOT_UNAVAILABLE', '当前服别活动快照暂不可用', 5)
 
-    def catalog():
-        if config['image_policy'] != 'private_unmoderated' or service is None:
+    def catalog(require_upload=True):
+        policy_ok=(config['image_policy']=='aliyun_baseline' if remote else config['image_policy']=='private_unmoderated')
+        if not policy_ok or service is None:
             fail(503, 'RECOGNITION_DISABLED', '原生识图尚未启用，手动选图仍可使用')
         info, contents = snapshot('cn')
-        current = service.catalog('cn')
+        current = service.catalog('cn') if require_upload or not remote else service.fixed_catalog
         raw = contents['gauntlet_data.json']
         expected = digest((info['id']+':').encode()+raw) if getattr(service, 'production', False) else digest(raw)
         if current['version'] != expected:
             fail(409, 'CATALOG_CHANGED', '识图目录与活动快照不同，请刷新')
         return current
 
-    def cn_binding(request, with_key=False):
+    async def cn_binding(request, with_key=False, require_upload=False):
         params = parameters(request, ['server', 'catalog_version'] + (['request_key'] if with_key else []))
         if params['server'] != 'cn':
             fail(403, 'RECOGNITION_SERVER_DISABLED', '国际服识图尚未开放')
-        current = catalog()
+        current = await run_in_threadpool(catalog,require_upload) if remote else catalog(require_upload)
         if params['catalog_version'] != current['version']:
             fail(409, 'CATALOG_CHANGED', '地图目录版本已变化，请刷新；不要自动重传')
         return params, current
@@ -178,6 +159,7 @@ def make_native(config, source, service):
     def lookup(owner, job_id):
         if not re.fullmatch('[a-f0-9]{32}', job_id):
             fail(404, 'JOB_NOT_FOUND', '任务不存在')
+        if remote:return service.get(owner,job_id)
         service.store.cleanup()
         with service.store.connect() as db:
             row = db.execute('SELECT * FROM jobs WHERE id=?', (job_id,)).fetchone()
@@ -189,7 +171,17 @@ def make_native(config, source, service):
             fail(410, 'JOB_EXPIRED', '图片与识别结果已到期；不要自动重传')
         return dict(row)
 
+    async def owned(owner,job_id):
+        return await run_in_threadpool(lookup,owner,job_id) if remote else lookup(owner,job_id)
+
     def response_for(row, current):
+        if remote:
+            if (not isinstance(row,dict) or row.get('server')!='cn' or row.get('catalog_version')!=current['version']
+                    or row.get('state') not in ('queued','running','succeeded','failed','cancelled')
+                    or type(row.get('expires_at')) is not int or not re.fullmatch('[a-f0-9]{32}',row.get('id',''))):
+                fail(503,'RESULT_INVALID','队列响应绑定无效')
+            result=native_result(json.dumps(row['result']) if row.get('result') is not None else None,current)
+            return {k:row.get(k) for k in ('id','server','catalog_version','state','error','expires_at','error_code')}|{'result':result}
         if row['version'] != current['version']:
             fail(409, 'CATALOG_CHANGED', '任务目录版本已变化')
         return {'id': row['id'], 'server': 'cn', 'catalog_version': row['version'], 'state': row['state'],
@@ -259,13 +251,16 @@ def make_native(config, source, service):
         info, contents = snapshot(server)
         names = ('cars.json', 'gauntlet_data.json') if server == 'cn' else ('cars.global.json', 'gauntlet_data.global.json', 'global-data-manifest.json')
         version = None
-        if server == 'cn' and service is not None and config['image_policy'] == 'private_unmoderated':
-            current = catalog()
+        if server == 'cn' and service is not None and config['image_policy'] in ('private_unmoderated','aliyun_baseline'):
+            try:current = await run_in_threadpool(catalog) if remote else catalog()
+            except MiniError:
+                if not remote:raise
+                current=None
             raw = contents['gauntlet_data.json']
             expected = digest((info['id']+':').encode()+raw) if getattr(service, 'production', False) else digest(raw)
-            if current['version'] != expected:
+            if current is not None and current['version'] != expected:
                 fail(409, 'CATALOG_CHANGED', '读取期间活动目录变化，请重试')
-            version = current['version']
+            version = current['version'] if current is not None else None
         return {'schema_version': 1, 'server': server, 'version': info['id'], 'catalog_version': version,
                 'identity': request.state.guest['identity'],
                 'capabilities': {'zones': ['zone5'] if server == 'global' else ['zone5', 'zone4'],
@@ -277,21 +272,24 @@ def make_native(config, source, service):
     async def read_catalog(request: Request):
         if parameters(request, ['server'])['server'] != 'cn':
             fail(403, 'RECOGNITION_SERVER_DISABLED', '国际服识图尚未开放')
-        current = catalog()
+        current = await run_in_threadpool(catalog) if remote else catalog()
         return {**current, 'catalog_version': current['version'], 'identity': request.state.guest['identity'],
                 'max_bytes': MAX_BYTES, 'max_pixels': MAX_PIXELS, 'max_envelope_bytes': MAX_ENVELOPE,
                 'worker': service.health(), 'retention_seconds': TTL, 'metadata_grace_seconds': 600,
-                'content_safety': 'not_integrated'}
+                'content_safety': 'required_approval' if remote else 'not_integrated'}
 
     @app.get(PREFIX+'/map-recognition/jobs/by-request')
     async def recover(request: Request):
-        params, current = cn_binding(request, True)
+        params, current = await cn_binding(request, True)
         owner, key = request.state.guest['owner'], params['request_key']
-        service.store.cleanup()
-        with service.store.connect() as db:
-            row = db.execute('SELECT * FROM jobs WHERE owner=? AND request_key=?', (owner, key)).fetchone()
-        if row:
-            return {'recovery': 'found', **response_for(lookup(owner, row['id']), current)}
+        if remote:
+            recovered=await run_in_threadpool(service.recover,owner,key)
+            if recovered.get('recovery')=='found':return {'recovery':'found',**response_for(recovered,current)}
+        else:
+            service.store.cleanup()
+            with service.store.connect() as db:
+                row = db.execute('SELECT * FROM jobs WHERE owner=? AND request_key=?', (owner, key)).fetchone()
+            if row:return {'recovery': 'found', **response_for(lookup(owner, row['id']), current)}
         with store.connect() as db:
             row = db.execute('SELECT version,state,updated FROM uploads WHERE owner=? AND request_key=?', (owner, key)).fetchone()
         if row and row[0] != current['version']:
@@ -304,9 +302,9 @@ def make_native(config, source, service):
 
     @app.post(PREFIX+'/map-recognition/jobs', status_code=202)
     async def upload(request: Request):
-        params, current = cn_binding(request, True)
+        params, current = await cn_binding(request, True, require_upload=True)
         owner, key = request.state.guest['owner'], params['request_key']
-        service.store.cleanup()
+        if not remote:service.store.cleanup()
         lease = secrets.token_hex(16)
         with store.connect() as db:
             db.execute('BEGIN IMMEDIATE')
@@ -323,21 +321,25 @@ def make_native(config, source, service):
             db.execute('INSERT INTO uploads VALUES (?,?,?,?,?,?) ON CONFLICT(owner,request_key) DO UPDATE SET state=excluded.state,lease=excluded.lease,updated=excluded.updated',
                        (owner, key, current['version'], 'reading', lease, time.time()))
         try:
-            with service.store.connect() as db:
-                existing = db.execute('SELECT id FROM jobs WHERE owner=? AND request_key=?', (owner, key)).fetchone()
-                if not existing:
-                    if service.health() not in ('ready', 'working'):
-                        fail(503, 'OCR_UNAVAILABLE', '识别服务暂不可用', 5)
-                    if db.execute("SELECT count(*) FROM jobs WHERE state IN ('queued','running')").fetchone()[0] >= 8:
-                        fail(429, 'OCR_LIMITED', '识别队列已满', 5)
-                    if db.execute("SELECT count(*) FROM jobs WHERE owner=? AND state IN ('queued','running')", (owner,)).fetchone()[0] >= 2:
-                        fail(429, 'OCR_LIMITED', '已有识别正在进行', 5)
-                    if db.execute('SELECT count(*) FROM jobs WHERE owner=? AND created>?', (owner, time.time()-600)).fetchone()[0] >= 20:
-                        fail(429, 'OCR_LIMITED', '截图提交过于频繁', 5)
-                    if getattr(service, 'production', False):
-                        client = digest(('ocr-client:'+request.scope['mini_ip']).encode())
-                        if db.execute('SELECT count(*) FROM jobs WHERE client=? AND created>?', (client, time.time()-600)).fetchone()[0] >= 20:
-                            fail(429, 'OCR_LIMITED', '当前网络截图提交过于频繁', 5)
+            if remote:
+                preflight=await run_in_threadpool(service.preflight,owner,key,request.scope['mini_ip'])
+                existing=preflight['existing']
+            else:
+                with service.store.connect() as db:
+                    existing = db.execute('SELECT id FROM jobs WHERE owner=? AND request_key=?', (owner, key)).fetchone()
+                    if not existing:
+                        if service.health() not in ('ready', 'working'):
+                            fail(503, 'OCR_UNAVAILABLE', '识别服务暂不可用', 5)
+                        if db.execute("SELECT count(*) FROM jobs WHERE state IN ('queued','running')").fetchone()[0] >= 8:
+                            fail(429, 'OCR_LIMITED', '识别队列已满', 5)
+                        if db.execute("SELECT count(*) FROM jobs WHERE owner=? AND state IN ('queued','running')", (owner,)).fetchone()[0] >= 2:
+                            fail(429, 'OCR_LIMITED', '已有识别正在进行', 5)
+                        if db.execute('SELECT count(*) FROM jobs WHERE owner=? AND created>?', (owner, time.time()-600)).fetchone()[0] >= 20:
+                            fail(429, 'OCR_LIMITED', '截图提交过于频繁', 5)
+                        if getattr(service, 'production', False):
+                            client = digest(('ocr-client:'+request.scope['mini_ip']).encode())
+                            if db.execute('SELECT count(*) FROM jobs WHERE client=? AND created>?', (client, time.time()-600)).fetchone()[0] >= 20:
+                                fail(429, 'OCR_LIMITED', '当前网络截图提交过于频繁', 5)
             if not existing:
                 store.budget('upload-owner:'+owner, 20, 600)
                 store.budget('upload-ip:'+request.state.mini_client, 20, 600)
@@ -345,17 +347,21 @@ def make_native(config, source, service):
             image, mime = multipart_image(raw, request.headers.get('content-type', ''), MAX_BYTES)
             await run_in_threadpool(validate_image, image, mime)
             # Recheck after reading/decoding; old tasks never cross a publication boundary.
-            if catalog()['version'] != current['version']:
+            latest=await run_in_threadpool(catalog) if remote else catalog()
+            if latest['version'] != current['version']:
                 fail(409, 'CATALOG_CHANGED', '读取期间目录版本变化')
             with store.connect() as db:
                 claim = db.execute('SELECT lease FROM uploads WHERE owner=? AND request_key=?', (owner, key)).fetchone()
             if not claim or claim[0] != lease:
                 fail(409, 'UPLOAD_REPLACED', '上传读取已失效，请查询原编号')
             options = {'catalog': current, 'client': digest(('ocr-client:'+request.scope['mini_ip']).encode())} if getattr(service, 'production', False) else {}
-            job_id = service.store.create(owner, key, 'cn', current['version'], image, mime, **options)
+            if remote:
+                remote_row=await run_in_threadpool(service.submit,owner,key,request.scope['mini_ip'],image,mime)
+                job_id=remote_row['id']
+            else:job_id = service.store.create(owner, key, 'cn', current['version'], image, mime, **options)
             with store.connect() as db:
                 db.execute("UPDATE uploads SET state='committed',updated=? WHERE owner=? AND request_key=? AND lease=?", (time.time(), owner, key, lease))
-            return response_for(lookup(owner, job_id), current)
+            return response_for(await owned(owner, job_id), current)
         finally:
             # A disconnect is recoverable with the same key; committed jobs are found in the shared queue first.
             with store.connect() as db:
@@ -363,18 +369,19 @@ def make_native(config, source, service):
 
     @app.get(PREFIX+'/map-recognition/jobs/{job_id}')
     async def query(job_id: str, request: Request):
-        _, current = cn_binding(request)
+        _, current = await cn_binding(request)
         service.health()
-        return response_for(lookup(request.state.guest['owner'], job_id), current)
+        return response_for(await owned(request.state.guest['owner'], job_id), current)
 
     @app.delete(PREFIX+'/map-recognition/jobs/{job_id}')
     async def cancel(job_id: str, request: Request):
-        _, current = cn_binding(request)
+        _, current = await cn_binding(request)
         owner = request.state.guest['owner']
-        row = lookup(owner, job_id)
+        row = await owned(owner, job_id)
         response_for(row, current)
-        service.store.cancel(owner, job_id, 'cn')
-        return response_for(lookup(owner, job_id), current)
+        if remote:await run_in_threadpool(service.cancel,owner,job_id)
+        else:service.store.cancel(owner, job_id, 'cn')
+        return response_for(await owned(owner, job_id), current)
 
     return app
 

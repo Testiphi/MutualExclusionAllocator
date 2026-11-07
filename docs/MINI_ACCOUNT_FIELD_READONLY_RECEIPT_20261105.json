@@ -1,0 +1,22 @@
+{
+  "observed_at": "2026-11-05T09:02:31.066091+08:00",
+  "source": "user-executed server read-only command",
+  "evidence_file": "E:\\hzz\\work\\MutualExclusionAllocator\\offline-evaluation\\mini-account-isolation-20261105-01\\field-readonly-01.json",
+  "evidence_sha256": "8a1cafa4d43fc80b5dd39104174e3ac5aecc9aeff0abd61a0d584d09a67a39ac",
+  "website_process_cwd_matches_7241": true,
+  "all_existing_services_active_running": true,
+  "new_service_load_state": "not-found",
+  "new_user_exists": false,
+  "existing_tls_verified": {
+    "racepick.cn": true,
+    "mini-test.racepick.cn": true
+  },
+  "candidate_port_8012_listening_at_observation": false,
+  "candidate_port_reserved_or_bind_tested": false,
+  "new_origin_selected_or_verified": false,
+  "service_unit_or_config_contents_read": false,
+  "http_business_or_database_health_verified": false,
+  "candidate_deployed_or_activated": false,
+  "server_writes_performed_by_this_step": false,
+  "missing_mini_ocr_current_link": "Not an observed fault: active guest/bridge use fixed release WorkingDirectory; no link repair required."
+}

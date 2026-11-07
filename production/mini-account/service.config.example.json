@@ -1,0 +1,8 @@
+{
+  "kind": "racepick-mini-account-service-v1",
+  "origin": "https://account-test.invalid",
+  "state_root": "/var/lib/racepick-account-test/state",
+  "mini_config": "/etc/racepick-account-test/mini.json",
+  "enabled": false,
+  "cloud_writes": false
+}

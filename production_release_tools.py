@@ -36,7 +36,7 @@ MIRROR_FILES=('backend/mini_features.py','MINI_FEATURES_COMMON_20261103.md','MIN
 HOME_FILES=('home_presenter.js','home_theme.json','HOME_PRESENTER_CONTRACT_20261103.md')
 MAINTENANCE_FILES=('backend/maintenance_release.py','production_release_tools.py','MAINTENANCE_RELEASE_20261103.md')
 COMPONENT_GROUPS=COMPONENT_GROUPS+(MINI_FILES,MINI_ACCOUNT_FILES,GLOBAL_PROFILE_FILES,MIRROR_FILES,HOME_FILES,MAINTENANCE_FILES)
-APP_FILES=BASE_FILES+SCOPED_FILES+COVERAGE_FILES+THEME_FILES+SCORE_FILES+COMMUNITY_FILES+CONTRIBUTION_FILES+FEEDBACK_FILES+GLOBAL_FILES+NOTIFICATION_FILES+USAGE_FILES+SELECTION_FILES+MINI_FILES+MINI_ACCOUNT_FILES+GLOBAL_PROFILE_FILES+MIRROR_FILES+HOME_FILES+MAINTENANCE_FILES
+APP_FILES=BASE_FILES+SCOPED_FILES+COVERAGE_FILES+THEME_FILES+SCORE_FILES+COMMUNITY_FILES+CONTRIBUTION_FILES+FEEDBACK_FILES+GLOBAL_FILES+NOTIFICATION_FILES+USAGE_FILES+SELECTION_FILES+MINI_FILES+MINI_ACCOUNT_FILES+GLOBAL_PROFILE_FILES+MIRROR_FILES+HOME_FILES+MAINTENANCE_FILES+('backend/mini_result.py',)
 OCR_CODE_FILES=('backend/map_layout.py','backend/map_recognition.py','backend/map_ocr_engine.py','backend/map_ocr_worker.py',
  'backend/map_ocr_production.py','backend/map_ocr_supervisor.py','map_recognition.js','map_recognition.css',
  'production/ocr-models.json','production/ocr-assets.json','production/ocr-selfcheck.py','production/racepick-map-ocr.service',
@@ -75,6 +75,8 @@ def digest(raw):return hashlib.sha256(raw).hexdigest()
 def allowed(name):return name in APP_FILES or name in OCR_FILES or bool(re.fullmatch(r'wheels/[A-Za-z0-9_.+\-]+\.whl',name))
 
 def verify_selection(contents):
+ if b'from backend.mini_result import native_result' in contents.get('backend/mini_api.py',b'') and 'backend/mini_result.py' not in contents:
+  raise ValueError('发布包缺少原生结果校验组件')
  if b'from backend import mini_features' in contents.get('backend/mini_accounts.py',b'') and not set(MIRROR_FILES)<=set(contents):raise ValueError('发布包缺少原生B-E组件')
  if b'home_presenter.js' in contents['index.html'] and not set(HOME_FILES)<=set(contents):raise ValueError('发布包缺少主页presenter组件')
  if 'home_theme.json' in contents:
@@ -164,6 +166,15 @@ def stage(bundle,base):
 def check_score_compatibility(target,info,data_dir):
  import sqlite3
  from contextlib import closing
+ queue_db=Path(data_dir).resolve()/'map-recognition'/'recognition.sqlite3'
+ if queue_db.is_file():
+  with closing(sqlite3.connect(queue_db.as_uri()+'?mode=ro',uri=True)) as queue:
+   tables={row[0] for row in queue.execute("SELECT name FROM sqlite_master WHERE type='table'")}
+   if 'safety_schema' in tables or 'safety_checks' in tables:
+    rows=queue.execute('SELECT version FROM safety_schema').fetchall() if 'safety_schema' in tables else []
+    cap=Path(target)/'production/score-capability.json'
+    if rows!=[(1,)] or 'safety_checks' not in tables or 'production/score-capability.json' not in info['files'] or not cap.is_file() or json.loads(cap.read_text()).get('ocr_queue_safety_schema')!=1:
+     raise ValueError('识图安全队列已准备或状态异常，禁止切回不计算checking容量的旧应用')
  account_db=Path(data_dir).resolve()/'accounts.sqlite3'
  if (Path(data_dir).resolve()/'usage.sqlite3').exists():
   cap=Path(target)/'production/score-capability.json'

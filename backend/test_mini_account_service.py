@@ -1,0 +1,220 @@
+"""Disposable in-process isolated HTTPS fixtures. No real account/platform/OCR calls."""
+from contextlib import closing
+import hashlib
+import json
+from pathlib import Path
+import secrets
+import tempfile
+import unittest
+from unittest.mock import patch
+from urllib.parse import parse_qs,urlsplit
+
+from fastapi.testclient import TestClient
+from backend.app import ROOT, create_app, Store
+from backend.mailing import MailConfig
+from backend.mini_account_isolation import provision, preflight, readonly, service_lock, backup_stopped, restore_stopped, prepare_account_stopped
+from backend.mini_account_service import make_app, KIND
+from backend.mini_auth import WechatVerifier
+
+A='/api/mini/account/v1'
+ORIGIN='https://account-isolation.example.test'
+PROXY={'X-Forwarded-Proto':'https','X-Real-IP':'192.0.2.8'}
+PASSWORD='fixture-isolation-password-only'
+SNAPSHOT=ROOT.parent/'offline-evaluation/mini-ocr-gateway-release-20261104-01/RacePick-MiniOCR-Baseline-20261104-delivery-v2/snapshot'
+BINDING=ROOT.parent/'repo/docs/MINI_OCR_CN_BINDING_20261104.json'
+
+
+class AccountServiceTests(unittest.TestCase):
+    def setUp(self):
+        self.tmp=tempfile.TemporaryDirectory();self.addCleanup(self.tmp.cleanup)
+        self.parent=Path(self.tmp.name).resolve();self.root=self.parent/'state'
+        provision(self.root,SNAPSHOT,ORIGIN,BINDING)
+        self.secret=self.parent/'platform-secret';self.secret.write_text('fixture-secret-only');self.secret.chmod(0o600)
+        self.mini=self.parent/'mini.json'
+        self.write(self.mini,{'kind':'racepick-mini-guests-v1','state_dir':str(self.root/'guests'),
+            'appid':'wx'+'0'*16,'app_secret_file':str(self.secret),'image_policy':'disabled','account_state_dir':str(self.root/'native')})
+        self.config=self.parent/'service.json'
+        self.declaration={'kind':KIND,'origin':ORIGIN,'state_root':str(self.root),
+                          'mini_config':str(self.mini),'enabled':True,'cloud_writes':False}
+        self.write(self.config,self.declaration)
+        self.platform=patch.object(WechatVerifier,'__call__',return_value='owned-fixture-platform-subject')
+        self.platform.start();self.addCleanup(self.platform.stop)
+
+    def write(self,path,data):
+        path.write_text(json.dumps(data),encoding='utf-8');path.chmod(0o600)
+
+    def client(self,writes=False):
+        self.write(self.config,{**self.declaration,'cloud_writes':writes})
+        app=make_app(self.config)
+        client=TestClient(app,base_url=ORIGIN,client=('127.0.0.1',12000));client.__enter__()
+        self.addCleanup(client.__exit__,None,None,None)
+        return app,client
+
+    def prepare_fixture(self,app):
+        # Explicit local fixture setup via ORIGINAL handlers, never public registration.
+        with TestClient(app.web,base_url=ORIGIN,client=('127.0.0.1',12000)) as internal:
+            session=internal.get('/api/auth/me',headers=PROXY).json()
+            headers={**PROXY,'Origin':ORIGIN,'X-CSRF-Token':session['csrf']}
+            r=internal.post('/api/auth/register',headers=headers,json={'email':'isolated@example.test','password':PASSWORD})
+            self.assertEqual(r.status_code,200,r.text)
+            mail=json.loads(next((self.root/'accounts/outbox').glob('*.json')).read_bytes())
+            token=parse_qs(urlsplit(mail['url']).fragment)['token'][0]
+            self.assertEqual(internal.post('/api/auth/verify-email',headers=headers,json={'token':token}).status_code,200)
+
+    def guest_login(self,client):
+        r=client.post('/api/mini/v1/session',headers=PROXY,json={'code':'fixture-code',
+            'client_schema':1,'request_key':secrets.token_hex(16)})
+        self.assertEqual(r.status_code,200,r.text)
+        guest={**PROXY,'Authorization':'Bearer '+r.json()['token']}
+        r=client.post(A+'/auth/login',headers=guest,json={'schema':1,'request_key':secrets.token_hex(16),
+            'email':'isolated@example.test','password':PASSWORD})
+        self.assertEqual(r.status_code,200,r.text)
+        return guest,{**PROXY,'Authorization':'Bearer '+r.json()['token'],'X-Account-ID':r.json()['actor']['id']}
+
+    def test_disabled_opens_no_state_or_credentials(self):
+        self.write(self.config,{**self.declaration,'enabled':False,'state_root':str(self.parent/'absent')})
+        with patch('backend.mini_account_service.preflight',side_effect=AssertionError('no state reads')):
+            with TestClient(make_app(self.config),base_url=ORIGIN) as client:
+                self.assertEqual(client.get(A+'/session').status_code,404)
+                self.assertEqual(client.get('/').status_code,404)
+
+    def test_preflight_and_startup_do_not_change_database_bytes(self):
+        names=('accounts/accounts.sqlite3','guests/guests.sqlite3','native/native-accounts.sqlite3')
+        before={n:hashlib.sha256((self.root/n).read_bytes()).hexdigest() for n in names}
+        preflight(self.root,ORIGIN)
+        app,client=self.client()
+        self.assertIsNotNone(app.native)
+        self.assertEqual(before,{n:hashlib.sha256((self.root/n).read_bytes()).hexdigest() for n in names})
+        self.assertEqual(client.get('/',headers=PROXY).status_code,200)
+        with closing(readonly(self.root/names[0])) as db:
+            self.assertEqual(db.execute('SELECT count(*) FROM users').fetchone()[0],0)
+
+    def test_old_schema_rejected_without_migration(self):
+        import sqlite3
+        path=self.root/'accounts/accounts.sqlite3'
+        with closing(sqlite3.connect(path)) as db:
+            with db:db.execute('DROP TABLE profiles_global')
+        before=path.read_bytes()
+        with self.assertRaises(ValueError):preflight(self.root)
+        with self.assertRaises(ValueError):create_app(self.root/'accounts',ORIGIN,production=True,
+            mail_config=MailConfig(),isolated_account_root=self.root)
+        self.assertEqual(before,path.read_bytes())
+
+    def test_wrong_origin_snapshot_or_mixed_paths_rejected(self):
+        with self.assertRaises(ValueError):preflight(self.root,'https://other.example.test')
+        with self.assertRaises(ValueError):provision(self.root,SNAPSHOT,ORIGIN,BINDING)
+        target=self.root/'snapshot/cars.json';target.write_bytes(target.read_bytes()+b' ')
+        with self.assertRaises(ValueError):preflight(self.root)
+
+    def test_startup_rejects_cross_state_before_credentials(self):
+        raw=json.loads(self.mini.read_bytes());raw['state_dir']=str(self.parent/'old-guests');self.write(self.mini,raw)
+        app=make_app(self.config)
+        with patch('backend.mini_auth.load_config',side_effect=AssertionError('must reject before credentials')):
+            with self.assertRaises(ValueError):app.start()
+
+    def test_readonly_profile_and_all_public_registration_mail_admin_closed(self):
+        app,client=self.client();self.prepare_fixture(app)
+        guest,auth=self.guest_login(client)
+        for server in ('cn','global'):
+            r=client.get(A+'/profile?server='+server,headers=auth)
+            self.assertEqual(r.status_code,200,r.text);self.assertIsNone(r.json()['profile'])
+            self.assertEqual(client.put(A+'/profile?server='+server,headers=auth,json={}).status_code,503)
+        for path in ('/api/auth/register','/api/auth/verify-email','/api/auth/resend-verification',
+                     '/api/auth/forgot-password','/api/auth/reset-password','/api/admin/accounts',
+                     A+'/auth/register','/api/mini/v1/map-recognition/jobs','/api/usage/events'):
+            self.assertEqual(client.post(path,headers=guest,json={}).status_code,404)
+        self.assertEqual(client.get('/api/health',headers=PROXY).status_code,404)
+        me=client.get('/api/auth/me',headers=PROXY).json()
+        self.assertEqual(me['mail_mode'],'file');self.assertTrue(me['account_login_only'])
+        self.assertFalse(me['community_controls'])
+
+    def test_website_native_same_cn_global_record_conflicts_and_no_implicit_import(self):
+        app,client=self.client(True);self.prepare_fixture(app);guest,auth=self.guest_login(client)
+        browser=TestClient(app,base_url=ORIGIN,client=('127.0.0.1',12001));self.addCleanup(browser.close)
+        me=browser.get('/api/auth/me',headers=PROXY).json()
+        r=browser.post('/api/auth/login',headers={**PROXY,'Origin':ORIGIN,'X-CSRF-Token':me['csrf']},
+            json={'email':'isolated@example.test','password':PASSWORD})
+        self.assertEqual(r.status_code,200,r.text)
+        web={**PROXY,'Origin':ORIGIN,'X-CSRF-Token':r.json()['csrf'],'X-Account-ID':r.json()['user']['id'],'X-Profile-Save':'explicit'}
+        cookie=r.headers['set-cookie']
+        self.assertIn('Secure',cookie);self.assertIn('HttpOnly',cookie);self.assertIn('SameSite=strict',cookie)
+        cn=json.loads((self.root/'snapshot/cars.json').read_bytes())
+        cn_car=next(c['nickname'] for c in cn['cars'] if c.get('nickname') and c.get('zones'))
+        scores=json.loads((self.root/'snapshot/gauntlet_data.global.json').read_bytes())
+        oc=next(e['cars'][0]['name'] for t in scores['tracks'] for e in t['五区']['理论'] if e['cars'][0].get('oc') is True)
+        for server,car in (('cn',cn_car),('global',oc)):
+            native_url=A+'/profile?server='+server;web_url='/api/me/profile?server='+server
+            first=browser.get(web_url,headers=web).json()
+            self.assertIsNone(first['profile']);self.assertEqual(first['revision'],0)
+            body={'revision':0,'cars':[car],'stars':{car:6}}
+            if server=='global':body['ocMap']={car:True}
+            self.assertEqual(browser.put(web_url,headers=web,json=body).status_code,200)
+            native=client.get(native_url,headers=auth).json()
+            self.assertEqual(native['revision'],1)
+            self.assertEqual(native['profile'],{k:v for k,v in body.items() if k!='revision'})
+            key=secrets.token_hex(16)
+            empty={'schema':1,'request_key':key,'explicit_save':True,'intent':'save','revision':1,'cars':[],'stars':{}}
+            if server=='global':empty['ocMap']={}
+            self.assertEqual(client.put(native_url,headers=auth,json=empty).status_code,200)
+            loaded=browser.get(web_url,headers=web).json()
+            self.assertEqual(loaded['revision'],2);self.assertEqual(loaded['profile']['cars'],[])
+            conflict=client.put(native_url,headers=auth,json={**empty,'request_key':secrets.token_hex(16)})
+            self.assertEqual(conflict.status_code,409)
+            self.assertEqual(conflict.json()['current']['revision'],2)
+            self.assertEqual(conflict.json()['submitted']['revision'],1)
+            other='cn' if server=='global' else 'global'
+            self.assertEqual(client.get(A+'/operations/'+key+'?action=profile-save&server='+other,headers=auth).status_code,409)
+        # Browser Cookie cannot act as native identity; native Bearer cannot act as website Cookie.
+        self.assertEqual(browser.get(A+'/session',headers=PROXY).status_code,403)
+        self.assertIsNone(client.get('/api/auth/me',headers=auth).json()['user'])
+
+    def test_snapshot_bytes_and_https_proxy_boundary(self):
+        app,client=self.client()
+        self.assertEqual(client.get('/').status_code,400)
+        self.assertEqual(client.get('/',headers={**PROXY,'Host':'evil.example.test'}).status_code,400)
+        self.assertEqual(client.get('/',headers={**PROXY,'X-Real-IP':'invalid'}).status_code,400)
+        with TestClient(app.web,base_url=ORIGIN,client=('192.0.2.10',12002)) as direct:
+            self.assertEqual(direct.get('/',headers=PROXY).status_code,400)
+        for name in ('cars.json','gauntlet_data.json','cars.global.json','gauntlet_data.global.json','global-data-manifest.json'):
+            r=client.get('/'+name,headers=PROXY)
+            self.assertEqual(r.status_code,200,r.text[:80])
+            self.assertEqual(r.content,(SNAPSHOT/name).read_bytes())
+        health=client.get('/_account-test/health',headers=PROXY)
+        self.assertEqual(health.status_code,200,health.text)
+        self.assertFalse(health.json()['production_business']);self.assertFalse(health.json()['ocr_enabled'])
+        self.assertEqual(health.json()['coverage_schema'],0)
+        self.assertEqual(health.json()['global_score_schema'],0)
+
+    def test_exclusive_service_and_independent_backup_restore(self):
+        with service_lock(self.root):
+            with self.assertRaises(ValueError):backup_stopped(self.root,self.parent/'backup-live')
+        result=backup_stopped(self.root,self.parent/'backup')
+        self.assertTrue(result['independent_target'])
+        restore_stopped(self.parent/'backup',self.parent/'restored')
+        self.assertEqual(preflight(self.parent/'restored')['schemas'],preflight(self.root)['schemas'])
+        with self.assertRaises(ValueError):restore_stopped(self.parent/'backup',self.root)
+        with self.assertRaises(ValueError):create_app(self.root/'accounts',ORIGIN,production=True,mail_config=MailConfig())
+
+    def test_offline_prepare_new_account_once_and_populated_restore(self):
+        result=prepare_account_stopped(self.root,'isolated@example.test',PASSWORD)
+        self.assertTrue(result['verified']);self.assertFalse(result['external_mail_sent'])
+        with self.assertRaises(ValueError):prepare_account_stopped(self.root,'isolated@example.test',PASSWORD)
+        app,client=self.client(True);_,auth=self.guest_login(client)
+        body={'schema':1,'request_key':'isolated-backup-save-key','explicit_save':True,'intent':'save',
+              'revision':0,'cars':[],'stars':{},'ocMap':{}}
+        self.assertEqual(client.put(A+'/profile?server=global',headers=auth,json=body).status_code,200)
+        with self.assertRaises(ValueError):backup_stopped(self.root,self.parent/'live-backup')
+        app.stop()
+        backup_stopped(self.root,self.parent/'populated-backup')
+        restore_stopped(self.parent/'populated-backup',self.parent/'populated-restored')
+        restored=self.parent/'populated-restored'
+        preflight(restored)
+        for relative in ('accounts/accounts.sqlite3','guests/guests.sqlite3','native/native-accounts.sqlite3',
+                         'guests/token.key','native/token.key'):
+            self.assertEqual((self.root/relative).read_bytes(),(restored/relative).read_bytes())
+        with closing(readonly(restored/'accounts/accounts.sqlite3')) as db:
+            self.assertEqual(db.execute('SELECT verified FROM users').fetchone()[0],1)
+            self.assertEqual(db.execute('SELECT revision FROM profiles_global').fetchone()[0],1)
+
+
+if __name__=='__main__':unittest.main()

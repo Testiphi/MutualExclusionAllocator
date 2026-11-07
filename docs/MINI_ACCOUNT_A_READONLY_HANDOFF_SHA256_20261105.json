@@ -1,0 +1,14 @@
+{
+  "batch": "20261105",
+  "prepared_at_client_date": "2026-11-06",
+  "files": {
+    "MINI_ACCOUNT_A_READONLY_HANDOFF_20261105.md": {
+      "sha256": "f52247aa2d6abc59e44e1cf8f9114f849b6384389085fbb109a5cf86322eeb6c",
+      "bytes": 10513
+    },
+    "MINI_ACCOUNT_A_READONLY_HANDOFF_20261105.json": {
+      "sha256": "d188b80acc5648d06146e8baf6d49fc3c8de8e4bd26b6cfe8769511ba88b3103",
+      "bytes": 13501
+    }
+  }
+}

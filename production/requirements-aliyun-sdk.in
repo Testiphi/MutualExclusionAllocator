@@ -1,0 +1,7 @@
+# Optional safety SDKs only. Not merged into the website/worker runtime lock.
+# Tested in the isolated Windows preparation environment; Linux wheel lock remains pending.
+alibabacloud-green20220302==3.6.9
+alibabacloud-tea-openapi==0.4.6
+darabonba-core==1.0.10
+oss2==2.19.1
+requests==2.34.2

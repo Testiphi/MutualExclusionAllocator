@@ -1,0 +1,36 @@
+[Unit]
+Description=RacePick shared OCR queue and baseline safety bridge
+After=network-online.target racepick-map-ocr.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=racepick
+Group=__SOCKET_GROUP__
+WorkingDirectory=__DELIVERY_ROOT__/bridge
+ExecStart=__DELIVERY_ROOT__/bridge/.venv/bin/python -B -m backend.ocr_queue_bridge serve --config /etc/racepick-ocr-safety/bridge.json --allow-live-calls
+Restart=on-failure
+RestartSec=5
+RuntimeDirectory=racepick-ocr-bridge
+RuntimeDirectoryMode=0750
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+TemporaryFileSystem=/var/lib/racepick:ro
+BindPaths=/var/lib/racepick/map-recognition
+ReadWritePaths=/var/lib/racepick/map-recognition
+InaccessiblePaths=/etc/racepick /etc/racepick-mini-test /var/lib/racepick-mini-test
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+MemoryHigh=256M
+MemoryMax=512M
+MemorySwapMax=0
+CPUQuota=100%
+TasksMax=32
+LimitNOFILE=128
+KillMode=control-group
+TimeoutStopSec=70
+
+[Install]
+WantedBy=multi-user.target

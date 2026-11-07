@@ -1,0 +1,100 @@
+{
+  "schema": "racepick.mini-guest-network-preparation.v1",
+  "date": "2026-11-04",
+  "timezone": "Asia/Shanghai",
+  "status": "dns_http_acme_and_certificate_verified_https_api_and_service_not_activated",
+  "evidence": "User executed all server/DNS operations and returned output; agent did not execute production commands",
+  "authorization": "DNS record creation followed by explicit backup/new HTTP ACME site/nginx test+reload/independent certificate issuance authorization; HTTPS API proxy and guest service startup remain excluded",
+  "delivery_id": "9d856fba3f6b825b255bc17e",
+  "code_commit": "0b97dae9e1003c1bc2c4c5b7a189b81cb4002112",
+  "dns": {
+    "requested_record": {
+      "type": "CNAME",
+      "name": "mini-test",
+      "value": "racepick.cn"
+    },
+    "user_reported_added": true,
+    "verified_at": "2026-11-03T23:39:54+08:00",
+    "addresses": {
+      "racepick.cn": [
+        "8.138.47.110"
+      ],
+      "mini-test.racepick.cn": [
+        "8.138.47.110"
+      ]
+    },
+    "record_type_independently_requeried": false
+  },
+  "nginx_backup": {
+    "path": "/root/racepick-deploy/mini-guest-stage1-20261103-9d856fba/nginx-before-acme",
+    "baseline_entries": 22,
+    "baseline_sha256": "b8862c8f11ddd5742a73cb47346928c24b131d35aae1bd918a621e666d0bc830",
+    "observed_at": "2026-11-03T23:49:54+08:00",
+    "original_files_symlinks_main_certificate_and_main_renewal_unchanged_after_issuance": true
+  },
+  "http_site": {
+    "available": "/etc/nginx/sites-available/racepick-mini-test-http.conf",
+    "enabled": "/etc/nginx/sites-enabled/racepick-mini-test-http.conf",
+    "webroot": "/var/www/racepick-mini-test-acme",
+    "source": "Verified delivery production/mini-guest/nginx-http.conf",
+    "nginx_test": "passed",
+    "reload": "success per returned execution and subsequent domain probe",
+    "only_acme_path_served": true,
+    "test_api_http_status": 404,
+    "probe_url": "http://mini-test.racepick.cn/.well-known/acme-challenge/racepick-preflight-4f61c492d068cfc0",
+    "probe_sha256": "51c53b2b002ab9c76771d9e92e8787cb8d11bedf2dd9f6a01c490310dcd5f088",
+    "probe_http_status": 200,
+    "probe_redirected": false,
+    "probe_file_retained": true
+  },
+  "certificate": {
+    "domain": "mini-test.racepick.cn",
+    "issuer": "C = US, O = Let's Encrypt, CN = YE2",
+    "subject_alt_names": [
+      "mini-test.racepick.cn"
+    ],
+    "not_before_utc": "2026-11-03T15:03:47Z",
+    "not_after_utc": "2027-02-01T15:03:46Z",
+    "date_note": "Certificate validity fields, not exact issuance command time",
+    "file_hostname_and_trust_chain_verification": "openssl verify OK using system CApath",
+    "verified_at": "2026-11-04T00:11:18+08:00",
+    "directory": "/etc/letsencrypt/live/mini-test.racepick.cn",
+    "method": "certonly --webroot; selected existing ACME account; non-interactive; directory hooks disabled; no automatic installer",
+    "private_key_content_read_or_shared": false,
+    "renewal": {
+      "authenticator": "webroot",
+      "webroot_path": "/var/www/racepick-mini-test-acme",
+      "server": "https://acme-v02.api.letsencrypt.org/directory",
+      "timer": "snap.certbot.renew.timer",
+      "service": "snap.certbot.renew.service",
+      "next": "2026-11-04T06:00:00+08:00",
+      "last_timer_observation": "2026-11-03T15:12:12+08:00",
+      "last_does_not_prove_this_new_certificate_renewed": true,
+      "automatic_renewal_and_nginx_reload_for_new_certificate_verified": false
+    }
+  },
+  "main_site": {
+    "http_health": "ok/production",
+    "ocr": "ready",
+    "cn_version": "c815b612a17433f403ae2965000fd74b",
+    "global_version": "435d5b40fd1aa4a01753a395f28d1f89",
+    "nginx_accounts_ocr_and_backup_timer": "active at last returned check",
+    "original_site_or_ocr_service_restarted": false
+  },
+  "current_limits": {
+    "https_api_proxy_installed": false,
+    "guest_service_started": false,
+    "real_wechat_credentials_configured": false,
+    "real_wechat_exchange_verified": false,
+    "image_policy": "disabled",
+    "accounts_business_ocr": "not enabled"
+  },
+  "remaining": [
+    "Explicit authorization for new HTTPS routes, fresh actual guest state/private real-platform configuration and independent service installation/start",
+    "Use rendered immutable release paths in unit; do not install symlink-snapshot example unchanged",
+    "Validate actual SNI/CA-trusted HTTPS/no redirects/Host and proxy/rate/body boundaries",
+    "Verify real wx.login and raw snapshots through developer-tool SDK, then phone; never print code/token/OpenID/session_key",
+    "Verify resident sandbox/cgroup limits and certificate renewal loading behavior"
+  ],
+  "git_status": "Local evidence only; no further commit/push/merge authorized in this network preparation phase"
+}

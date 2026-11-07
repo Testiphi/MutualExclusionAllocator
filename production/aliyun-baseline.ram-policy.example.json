@@ -1,0 +1,13 @@
+{
+  "Version": "1",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "yundun-greenweb:DescribeUploadToken",
+        "yundun-greenweb:ImageModeration"
+      ],
+      "Resource": "*"
+    }
+  ]
+}

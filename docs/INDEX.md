@@ -32,6 +32,13 @@
 
 2026-11-04 最新阶段：第一阶段真实访客/固定快照已由用户回交开发者工具和“诊断版2手机”通过；OCR仅网站侧方案准备，提供方未选、公网OCR关闭。详见[CLOUD_HANDOFF最新记录](CLOUD_HANDOFF.md)。本地设计、协议草案、响应示意和回执保存在网站功能工作树 `map-layout-parser/docs/MINI_OCR_STAGE2_*_20261104.*`，未提交、未实现新桥/安全审核、未形成可部署包。
 
+2026-11-06 当前账号A只读交接（批次20261105）：[小程序交接说明](MINI_ACCOUNT_A_READONLY_HANDOFF_20261105.md)、[固定来源/五文件SHA/分层证据JSON](MINI_ACCOUNT_A_READONLY_HANDOFF_20261105.json)。公网origin https://account-test.racepick.cn 已通过实际健康、固定数据和匿名安全门禁；enabled=true/cloud_writes=false，仅隔离库1个file验证player，未做真实微信交换、账号登录或认证双服读取。新origin微信request合法域名待核；旧mini-test/OCR保持独立，不复用旧访客。下阶段先客户端来源/新父访客/用户输入隔离凭据/双服只读，禁止PUT；不开机自启，自动证书续期加载未验收。未提交推送，不自动派其他对话。下方准备/暂停段落按历史阅读。
+
+# 文档索引
+
+2026-11-05 A账号/双服云车库本地候选：[范围与运行方案](MINI_ACCOUNT_LOCAL_CANDIDATE_20261105.md)、[固定候选回执](MINI_ACCOUNT_LOCAL_CANDIDATE_RECEIPT_20261105.json)。候选7c5f53fc366b7af555214846默认enabled=false/cloud_writes=false，未提交推送、未部署。Windows账号60项、生产边界模拟8项、前端27项通过；独立断网Linux内存根离线安装/pip check及打包副本共库/恢复模拟通过，不等于真实UID/systemd/Nginx/TLS/微信账号验收。新origin待定，现有mini-test及原OCR/队列未操作；正式线上现状仍以主repo/docs/CLOUD_HANDOFF.md及用户现场回执为准，下方旧阶段按历史阅读。
+
+
 2026-10-31 小程序开发注意：[UGC声明、审核缺口与验收要求](MINIPROGRAM_COMPATIBILITY_20261030.md)。已记录成绩投稿、公开昵称、识图图片、反馈等入口；内容安全API/昵称审核等尚未完成，不能用OCR或成绩业务审批冒充内容安全审核。本次仅固定文档，未改功能/数据/发布包；后续开发须按首版实际范围落实并验收。
 
 2026-10-31 构包完成：[地图识别发布回执](MAP_OCR_RELEASE_RECEIPT_20261031.json)、[交接提示](MAP_OCR_CLOUD_HANDOFF_20261031.md)。发布c06cc48b，功能源码f44e3c2/数据9e7d21f，最终Linux包验证通过，未推送功能、未合并main、未上线；生产只读核验/真实systemd/容量/TLS/手机微信待云端逐步处理。用户已验收整合页面，成绩表“新功能”保留。
