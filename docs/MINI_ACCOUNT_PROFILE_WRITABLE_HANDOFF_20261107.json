@@ -1,0 +1,322 @@
+{
+  "kind": "racepick-mini-account-profile-writable-handoff-v1",
+  "date": "2026-11-07",
+  "timezone": "Asia/Shanghai",
+  "status": "isolated service write switch enabled; client explicit save/reload acceptance pending",
+  "observed_utc": "2026-11-06T18:41:43.152877+00:00",
+  "observed_local": "2026-11-07 02:41:43 Asia/Shanghai",
+  "evidence_source": "Agent operated the user-authenticated Aliyun Workbench browser terminal; results visually verified. This local handoff is a consolidated observation, not a downloaded byte copy of the private server receipt.",
+  "origin": "https://account-test.racepick.cn",
+  "source": {
+    "delivery_id": "7c5f53fc366b7af555214846",
+    "source_commit": null,
+    "source_base_commit": "bfcf97e1511ee3d418a1f558c30a3ba0148d5286",
+    "source_base_commit_is_not_full_candidate_source": true,
+    "archive_sha256": "6c0ff251985638c62a232689a9aa3a3fd568544f2b8ad812e567e342bcef2648",
+    "archive_bytes": 11220353,
+    "candidate_manifest_sha256": "13545e697ca7dfcf0fb68f4f52e8b4003474c3accb4586419aaafd8fc096fe3b",
+    "five_shared_modules_match_198999a": true
+  },
+  "fixed_runtime": {
+    "snapshot_versions": {
+      "cn": "593ecc7222ceea5856b2f576b4f5bca8",
+      "global": "e29f52e7f81c3e337985bf05dedb7e88"
+    },
+    "files": {
+      "cars.global.json": {
+        "bytes": 29852,
+        "sha256": "6d35da66c9c0d2d7335b3e80d6a7351bbc494911a5b1d8dab0a0c2137cbc9759"
+      },
+      "cars.json": {
+        "bytes": 83653,
+        "sha256": "ea42daedfdb73a4963e2e70c6cdf91deb29ae6bec5143b697e50d8c877961b17"
+      },
+      "gauntlet_data.global.json": {
+        "bytes": 133918,
+        "sha256": "79958b507b814fb0823e03aa8f97843fafe9b61a558c428336a4879587a33bd2"
+      },
+      "gauntlet_data.json": {
+        "bytes": 225341,
+        "sha256": "2e8bf6ba763a64f24cd1e93be0afbaca8c77e24efcb9a96812952de800b018b6"
+      },
+      "global-data-manifest.json": {
+        "bytes": 1866,
+        "sha256": "7e38469bc6bd6de5498bc1e38c16898c0a34eddb86ead72d610e0e1883e6dbe6"
+      }
+    },
+    "global_dataset": "9b83ddd062a4d4b0c15d51dc0eed323aabb8e599e3e9544bc91714b70a7a4259",
+    "source": "MINI_OCR_CN_BINDING_20261104.json fixed bytes; not maintenance worksheets or production active score pointers"
+  },
+  "runtime": {
+    "enabled": true,
+    "cloud_writes": true,
+    "mail_mode": "file",
+    "image_policy": "disabled",
+    "ocr_enabled": false,
+    "production_business": false,
+    "native_batches": {
+      "A": "ready",
+      "B": "pending",
+      "C": "pending",
+      "D": "pending",
+      "E": "pending"
+    },
+    "schemas": {
+      "business": 6,
+      "global_profile": 1,
+      "guest": 1,
+      "native_account": 1,
+      "coverage": 0,
+      "global_score": 0
+    },
+    "fixed_delivery": true,
+    "enabled_for_boot": false
+  },
+  "source_verification": {
+    "candidate_manifest_sha256": "13545e697ca7dfcf0fb68f4f52e8b4003474c3accb4586419aaafd8fc096fe3b",
+    "candidate_manifest_files_verified_live": 112,
+    "local_archive_sha_bytes_and_crc_verified": true,
+    "source_commit_null_preserved": true,
+    "application_code_changed": false,
+    "candidate_rebuilt": false
+  },
+  "configuration": {
+    "path": "/etc/racepick-account-test/service.json",
+    "semantic_delta": {
+      "cloud_writes": {
+        "from": false,
+        "to": true
+      }
+    },
+    "after_sha256": "b36e1842692f8f47ea9ecc1c95c02969742852cfa998750ae1038731096817f3",
+    "atomic_replace": true,
+    "owner_uid": 995,
+    "owner_gid": 986,
+    "mode": "0600",
+    "same_state_root": true,
+    "same_guest_native_bindings": true,
+    "nginx_changed": false
+  },
+  "nginx_verified": {
+    "site_sha256": "4537962908ecb9d4f33b6cb478e12b11b06bfbb6948fca8791cd1de085c86e6b",
+    "site_bytes": 3224,
+    "proxy_sha256": "5f51be45a7bac5695e4c95df23e2fa6ca93e33d1bb98799b6befbe55e76f0502",
+    "proxy_bytes": 672,
+    "rate_sha256": "7bb8be8680b32243547ca41b0c13e1b124c1187a310c6b5dddd3a3d9082da2f6",
+    "rate_bytes": 162,
+    "matches_step20_render": true,
+    "native_profile_path_forwarded": true,
+    "nginx_limit_except_or_request_method_gate_present": false,
+    "application_method_allowlist_and_cloud_writes_gate_own_permission": true,
+    "exact_host_https": true,
+    "json_max_bytes": 65536,
+    "dedicated_api_rate": "5r/s burst10",
+    "retry_after_seconds": 60
+  },
+  "routes": {
+    "health": "GET /_account-test/health",
+    "web_entry": "GET /",
+    "web_profile": "GET/PUT /api/me/profile?server=cn|global",
+    "native_profile": "GET/PUT /api/mini/account/v1/profile?server=cn|global",
+    "native_recovery": "GET /api/mini/account/v1/operations/{original_key}?action=profile-save&server=cn|global",
+    "native_login_recovery": "GET /api/mini/account/v1/operations/{original_key}?action=login|reauth"
+  },
+  "authentication": {
+    "native": "rpa1 Bearer + X-Account-ID; exact native server query; reject Cookie/Origin/OPTIONS",
+    "web": "existing Cookie/Origin/CSRF + X-Account-ID + X-Profile-Save:explicit; original web payload",
+    "identity_bridge": false,
+    "website_native_same_store": "sealed source/local fixture and live existing bindings verified; nonempty same-record cross-client comparison pending W4"
+  },
+  "live_gates": {
+    "web_entry": 200,
+    "web_cn_profile_unauthenticated": 401,
+    "web_global_profile_unauthenticated": 401,
+    "native_cn_profile_unauthenticated": 401,
+    "native_global_profile_unauthenticated": 401,
+    "native_origin": 403,
+    "native_cookie": 403,
+    "native_options": 403,
+    "excluded_native_feedback": 404,
+    "all_checked_responses_no_store": true
+  },
+  "current_state_readonly_inventory": {
+    "users": 1,
+    "role_counts": {
+      "player": 1
+    },
+    "business_sessions": 4,
+    "native_sessions": 4,
+    "native_operations": 2,
+    "guest_sessions": 2,
+    "cn_profile_rows": 0,
+    "global_profile_rows": 0,
+    "cn_revision_rows": [],
+    "global_revision_rows": [],
+    "schemas_match_original_isolation_marker": true,
+    "wal_shm_journal_names": [],
+    "note": "Server row inventory; not an authenticated client profile GET. Client must reread both servers before W1 and stop on unexpected records."
+  },
+  "preservation": {
+    "original_account_guest_native_business_store_retained": true,
+    "all_original_backups_and_restore_drills_retained": true,
+    "account_and_native_rows_and_all_guest_rows_except_budgets_unchanged": true,
+    "schema_markers_signing_keys_snapshots_unchanged": true,
+    "other_service_pids_unchanged": true,
+    "production_and_old_ocr_not_operated": true,
+    "new_account_or_initialization_or_migration": false,
+    "only_observed_mutation_beyond_config": "Anonymous native gate reads maintained guests.budgets (observed row count 5 to 1); not budget reset or proof of recovered quota."
+  },
+  "backup_restore": {
+    "evidence": "real Linux server, original stopped-owner tools, network-isolated child UID995/GID986",
+    "files_verified": 15,
+    "backup": "/var/lib/racepick-account-test/backups/pre-profile-write-20261106T183622Z",
+    "restore": "/var/lib/racepick-account-test/restore-drills/pre-profile-write-20261106T183622Z",
+    "all_three_copies_byte_identical_at_backup": true,
+    "active_state_replaced": false,
+    "private_copies_not_in_local_delivery": true
+  },
+  "rollback": {
+    "script": "/root/racepick-deploy/account-write-backup-20261107-__pgcufi/disable-cloud-writes.py",
+    "executed_successfully": true,
+    "reenabled_after_test": true,
+    "scope": "Only cloud_writes=false plus isolated service restart; preserve all data/profile/session/operations and same state_root; never restore an old DB over new records",
+    "original_failure_retained": true,
+    "failure": "First closeout wrongly required guest DB byte equality after gate reads. It automatically disabled cloud_writes. Read-only table comparison proved only guests.budgets changed. Final closeout protects every other table, schema and non-DB state."
+  },
+  "server_evidence": {
+    "directory": "/root/racepick-deploy/account-write-backup-20261107-__pgcufi",
+    "initial_receipt": "/root/racepick-deploy/account-write-backup-20261107-__pgcufi/writable-runtime-receipt.json",
+    "final_receipt": "/root/racepick-deploy/account-write-backup-20261107-__pgcufi/writable-runtime-receipt-v2.json",
+    "failure_diagnosis": "/root/racepick-deploy/account-write-backup-20261107-__pgcufi/closeout-failure-diagnosis.json",
+    "final_marker": "RPA_WRITABLE_CLOSEOUT_V2_OK"
+  },
+  "acceptance": {
+    "real_put_sent": 0,
+    "authenticated_profile_gets_sent_by_this_task": 0,
+    "real_save_reload_conflict_verified": false,
+    "readonly_phone_build_id": "4ce602ec7f6f5746ac25",
+    "readonly_phone_plan_id": "mini-account-mirror-phone-20261107-01",
+    "oc_true_check": "OC=true 用户确认检查通过",
+    "raw_phone_json_false_preserved": true
+  },
+  "first_batch": {
+    "executed": false,
+    "liveWriteAuthorizationConfirmed": false,
+    "newIndependentPlanRequired": true,
+    "clientAllowCloudWrites": false,
+    "stages": [
+      "W1 explicit valid-empty CN and Global then GET reload",
+      "W2 user-selected actual CN and Global drafts then GET reload"
+    ],
+    "maxPlannedSuccessfulExplicitPuts": 4,
+    "maxPlannedAuthenticatedProfileGets": 6,
+    "automaticRetryAllowed": false,
+    "userSelectedDraftTargets": {
+      "cn": {
+        "cars": [
+          "f5"
+        ],
+        "stars": {
+          "f5": 5
+        }
+      },
+      "global": {
+        "cars": [
+          "ssc",
+          "万达"
+        ],
+        "stars": {},
+        "ocMap": {
+          "万达": true
+        }
+      }
+    },
+    "authorization_note": "Server configuration changes were authorized and performed; client plan save authorization remains a separate user-controlled phase."
+  },
+  "nonsecret_samples": {
+    "evidence_level": "fixed contract + existing local fixtures, NOT real server save/conflict/recovery outcomes",
+    "success_cn": {
+      "status": 200,
+      "body": {
+        "server": "cn",
+        "revision": 1
+      }
+    },
+    "reload_cn_saved_empty": {
+      "status": 200,
+      "body": {
+        "server": "cn",
+        "storage": "account",
+        "remote_supported": true,
+        "revision": 1,
+        "profile": {
+          "cars": [],
+          "stars": {}
+        }
+      }
+    },
+    "conflict": {
+      "status": 409,
+      "body": {
+        "schema_version": 1,
+        "server": "cn",
+        "code": "PROFILE_CONFLICT",
+        "current": {
+          "revision": 2,
+          "profile": {
+            "cars": [],
+            "stars": {}
+          }
+        },
+        "submitted": {
+          "revision": 1,
+          "profile": {
+            "cars": [],
+            "stars": {}
+          }
+        }
+      }
+    },
+    "original_key_recovery": {
+      "request": "GET /api/mini/account/v1/operations/{original_key}?action=profile-save&server=cn",
+      "identity": "same original account Bearer + X-Account-ID",
+      "completed_save_example": {
+        "status": 200,
+        "body": {
+          "server": "cn",
+          "revision": 1
+        }
+      },
+      "unknown_rules": "Keep original key/action/server; query only. 404 does not prove no execution. Never rekey or replay automatically."
+    }
+  },
+  "evidence_levels": {
+    "this_turn_local": "19 existing boundary/service tests passed; Windows temporary fixtures with platform mocked",
+    "historical_linux": "sealed candidate offline fixture evidence in 20261105 handoff; not rerun here",
+    "this_turn_live_linux": "source/config/schema/state inventory, stopped backup/independent restore, switch enable/disable/reenable, TLS health, anonymous gates and protection checks",
+    "still_pending": "Real client explicit saves/reloads W1/W2; W3 conflict and W4 nonempty same-record comparison later"
+  },
+  "client_handoff": {
+    "new_independent_plan_required": true,
+    "preserve_old_readonly_projects_identity_drafts_and_guest_store": true,
+    "not_only_allowCloudWrites_change": true,
+    "bind_actual_enabled_health_to_fixed_source_and_config_receipt": true,
+    "no_auto_import": true,
+    "user_clicks_only": true,
+    "before_first_save": "Authenticated GET CN+Global; stop on unexpected profile/revision and investigate source; never clear DB",
+    "stopping_rules": "503/read failure not empty. 429 obey Retry-After; no automatic login or assumptions about daily quota. Unknown write: query only original operation."
+  },
+  "out_of_scope": [
+    "production accounts or DB",
+    "schema migration or restoring old DB",
+    "OCR/images/mail/register/reset/invitations",
+    "B-E/stats",
+    "logout/reauth/revocation/role specialties",
+    "boot or certificate renewal changes",
+    "push/merge/publish/WeChat console/automatic tasks to other chats"
+  ],
+  "original_v2_handoff": {
+    "sha256": "8d56f31e4ed22cd643d3cac9b31b5d8c4ad116576ca811549c9e068ce431aac0",
+    "bytes": 7223
+  }
+}

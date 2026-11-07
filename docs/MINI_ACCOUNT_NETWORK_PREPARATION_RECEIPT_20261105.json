@@ -1,0 +1,572 @@
+{
+  "date": "2026-11-05",
+  "timezone": "Asia/Shanghai",
+  "source": "user executed each server step and returned results; agent did not log into server",
+  "origin": "https://account-test.racepick.cn",
+  "phase": "public HTTPS A readonly ready; one isolated file-verified player; no real WeChat/account/cloud acceptance",
+  "certificate": {
+    "source": "user-executed verified attempt-12 script return",
+    "step": "ACCOUNT_CERTIFICATE_PREPARED_12",
+    "directory": "/root/racepick-deploy/account-http-20261105-9due4ypr",
+    "host": "account-test.racepick.cn",
+    "certificate_file_trust_and_hostname_verified": true,
+    "certificate_sha256": "3dfc725867c9858943b69b63c31350f46b583b27ccc21740b5790366909d3d91",
+    "issuer": "C = US, O = Let's Encrypt, CN = YE2",
+    "san": [
+      "account-test.racepick.cn"
+    ],
+    "not_before_utc": "2026-11-05T03:35:07Z",
+    "not_after_utc": "2027-02-03T03:35:06Z",
+    "date_note": "Certificate validity fields, not exact receipt end time",
+    "existing_renewals_and_public_certificates_preserved": true,
+    "nginx_configuration_and_service_pids_preserved": true,
+    "https_proxy_installed": false,
+    "account_service_started": false,
+    "automatic_renewal_and_reload_verified": false
+  },
+  "https": {
+    "source": "user-executed verified HTTPS step13 return",
+    "step": "ACCOUNT_HTTPS_CLOSED_READY_13",
+    "directory": "/root/racepick-deploy/account-http-20261105-9due4ypr/https-13-qhb69ne2",
+    "host": "account-test.racepick.cn",
+    "https_tls_ca_and_hostname_verified": true,
+    "certificate_sha256": "3dfc725867c9858943b69b63c31350f46b583b27ccc21740b5790366909d3d91",
+    "tls_version": "TLSv1.3",
+    "https_account_gate": 404,
+    "cache_control": "no-store",
+    "http_acme_probe": 200,
+    "old_nginx_entries_preserved_except_own_site": true,
+    "backup_and_independent_config_copy_verified": true,
+    "original_service_pids_preserved": true,
+    "business_proxy_enabled": false,
+    "account_service_started": false,
+    "automatic_renewal_and_reload_verified": false
+  },
+  "account_api_enabled": true,
+  "account_service_installed_or_started": true,
+  "new_test_account_created": true,
+  "isolated_business_database_initialized": true,
+  "real_wechat_account_chain_verified": false,
+  "real_cloud_garage_read_or_write": false,
+  "real_mail_sent": false,
+  "new_ocr_or_provider_call": false,
+  "candidate_delivery_id": "7c5f53fc366b7af555214846",
+  "candidate_source_commit": null,
+  "candidate_archive_sha256": "6c0ff251985638c62a232689a9aa3a3fd568544f2b8ad812e567e342bcef2648",
+  "next_prepared_step": "client reception: new-origin source/request-domain check and fresh independent real WeChat guest, user-entered isolated credentials, dual-server readonly only; no save",
+  "uploads": "Use server file manager, ZIP preferred; local filename equals server filename; no local PowerShell upload",
+  "authorization_workflow": "User requests direct next-step instructions within agreed scope, no repeated approval questions; user executes and returns each step",
+  "preservation": "All earlier failed uploads, ACME reservations/logs, nginx backups, original certificates/services/business and guest/OCR state retained",
+  "pending": [
+    "dedicated owner and isolated private paths",
+    "explicit fresh empty-state provision and independent restore",
+    "private platform config",
+    "actual systemd permissions/resource check",
+    "A-only HTTPS routing",
+    "user-entered isolated account and initial dual-server read-only acceptance",
+    "separate explicit-save acceptance",
+    "renewal and nginx certificate reload verification"
+  ],
+  "staging": {
+    "source": "user-executed verified stage14 return",
+    "step": "ACCOUNT_CANDIDATE_STAGED_CLOSED_14",
+    "directory": "/root/racepick-deploy/account-stage-14-6mms3tqe",
+    "release": "/opt/racepick-account-test/releases/7c5f53fc366b7af555214846",
+    "delivery_id": "7c5f53fc366b7af555214846",
+    "archive_sha256": "6c0ff251985638c62a232689a9aa3a3fd568544f2b8ad812e567e342bcef2648",
+    "source_commit": null,
+    "source_base_commit": "bfcf97e1511ee3d418a1f558c30a3ba0148d5286",
+    "manifest_and_113_zip_files_verified": true,
+    "offline_runtime_install_passed": true,
+    "pip_check_passed": true,
+    "disabled_check": {
+      "delivery_id": "7c5f53fc366b7af555214846",
+      "status": 404,
+      "no_store": true,
+      "api_initialized": false,
+      "credentials_loaded": false,
+      "database_opened": false,
+      "ocr_model_loaded": false
+    },
+    "original_service_pids_and_website_pointer_preserved": true,
+    "dedicated_user_created": false,
+    "isolated_state_initialized": false,
+    "platform_credentials_prepared": false,
+    "systemd_unit_installed": false,
+    "account_service_started": false,
+    "nginx_modified": false,
+    "business_proxy_enabled": false
+  },
+  "state_preparation": {
+    "source": "user-executed verified state15v2 return",
+    "step": "ACCOUNT_EMPTY_ISOLATED_STATE_READY_15",
+    "directory": "/root/racepick-deploy/account-state-15-9b7dmlm9",
+    "delivery_id": "7c5f53fc366b7af555214846",
+    "unix_user": "racepick-account-test",
+    "uid": 995,
+    "gid": 986,
+    "effective_uid": 995,
+    "effective_gid": 986,
+    "existing_unix_account_entries_preserved": true,
+    "private_unix_backup": "/root/racepick-deploy/account-state-15-9b7dmlm9/unix-owner-before",
+    "state_root": "/var/lib/racepick-account-test/state",
+    "service_config": "/etc/racepick-account-test/service.json",
+    "schemas": {
+      "business": 6,
+      "community": 1,
+      "global_profile": 1,
+      "guest": 1,
+      "native_account": 1
+    },
+    "empty_counts": {
+      "accounts/accounts.sqlite3": {
+        "users": 0,
+        "sessions": 0,
+        "profiles": 0,
+        "profiles_global": 0,
+        "auth_tokens": 0,
+        "mail_deliveries": 0
+      },
+      "guests/guests.sqlite3": {
+        "sessions": 0,
+        "codes": 0,
+        "uploads": 0
+      },
+      "native/native-accounts.sqlite3": {
+        "sessions": 0,
+        "operations": 0,
+        "events": 0
+      }
+    },
+    "backup": "/var/lib/racepick-account-test/backups/initial-15",
+    "restore": "/var/lib/racepick-account-test/restore-drills/initial-15",
+    "private_initial_backup_files_verified": 14,
+    "independent_initial_restore_passed": true,
+    "backup_contains_signing_keys_not_publishable": true,
+    "protected_original_directories_denied": {
+      "/var/lib/racepick": true,
+      "/etc/racepick": true,
+      "/var/lib/racepick-mini-test": true,
+      "/etc/racepick-mini-test": true,
+      "/etc/racepick-ocr-safety": true
+    },
+    "release_not_writable_by_runtime_owner": true,
+    "enabled": false,
+    "cloud_writes": false,
+    "disabled_api_initialized": false,
+    "platform_credentials_loaded": false,
+    "new_test_account_created": false,
+    "original_service_pids_website_pointer_and_configs_preserved": true,
+    "systemd_unit_installed": false,
+    "account_service_started": false,
+    "business_proxy_enabled": false,
+    "real_wechat_or_mail_or_cloud_call": false
+  },
+  "closed_systemd": {
+    "source": "user-executed verified service16v2 return",
+    "step": "ACCOUNT_SYSTEMD_CLOSED_READY_16",
+    "directory": "/root/racepick-deploy/account-service-16-h1bzovie",
+    "delivery_id": "7c5f53fc366b7af555214846",
+    "unit": "racepick-account-test.service",
+    "unit_sha256": "2afed7d4c4ba6d07432eba055dfe7d9db19192f1e48567bd95d9388b18b9d9d2",
+    "properties": {
+      "MainPID": "229631",
+      "ControlGroup": "/system.slice/racepick-account-test.service",
+      "CPUQuotaPerSecUSec": "500ms",
+      "MemoryHigh": "268435456",
+      "MemoryMax": "536870912",
+      "MemorySwapMax": "0",
+      "TasksMax": "32",
+      "WorkingDirectory": "/opt/racepick-account-test/releases/7c5f53fc366b7af555214846",
+      "User": "racepick-account-test",
+      "Group": "racepick-account-test",
+      "ReadWritePaths": "/var/lib/racepick-account-test/state",
+      "ReadOnlyPaths": "/etc/racepick-account-test /var/lib/racepick-account-test/state/snapshot /var/lib/racepick-account-test/state/isolation.json /var/lib/racepick-account-test/state/guests/state.json /var/lib/racepick-account-test/state/guests/token.key /var/lib/racepick-account-test/state/native/state.json /var/lib/racepick-account-test/state/native/token.key",
+      "InaccessiblePaths": "-/var/lib/racepick -/etc/racepick -/var/lib/racepick-mini-test -/etc/racepick-mini-test -/etc/racepick-ocr-safety",
+      "PrivateTmp": "yes",
+      "ProtectHome": "yes",
+      "ProtectSystem": "strict",
+      "NoNewPrivileges": "yes",
+      "LoadState": "loaded",
+      "ActiveState": "active",
+      "SubState": "running",
+      "UnitFileState": "disabled"
+    },
+    "actual_mount_namespace_check": {
+      "uid": 995,
+      "gid": 986,
+      "protected_original_dirs_denied": {
+        "/var/lib/racepick": true,
+        "/etc/racepick": true,
+        "/var/lib/racepick-mini-test": true,
+        "/etc/racepick-mini-test": true,
+        "/etc/racepick-ocr-safety": true
+      },
+      "readonly_bindings_enforced": {
+        "/etc/racepick-account-test": true,
+        "/var/lib/racepick-account-test/state/snapshot": true,
+        "/var/lib/racepick-account-test/state/isolation.json": true,
+        "/var/lib/racepick-account-test/state/guests/state.json": true,
+        "/var/lib/racepick-account-test/state/guests/token.key": true,
+        "/var/lib/racepick-account-test/state/native/state.json": true,
+        "/var/lib/racepick-account-test/state/native/token.key": true
+      },
+      "isolated_state_writable": true,
+      "platform_configuration_absent": true
+    },
+    "kernel_cgroup_limits": {
+      "memory.high": "268435456",
+      "memory.max": "536870912",
+      "memory.swap.max": "0",
+      "cpu.max": "50000 100000",
+      "pids.max": "32"
+    },
+    "loopback_closed_gate": 404,
+    "loopback_cache_control": "no-store",
+    "isolated_state_bytes_unchanged": true,
+    "original_service_pids_website_pointer_and_https_config_preserved": true,
+    "enabled": false,
+    "cloud_writes": false,
+    "enabled_for_boot": false,
+    "public_business_proxy_enabled": false,
+    "platform_credentials_loaded": false,
+    "real_login_or_mail_or_cloud_or_ocr_call": false
+  },
+  "private_config_attempt": {
+    "source": "user-executed verified platform17 return",
+    "step": "ACCOUNT_PRIVATE_CONFIG_PREPARATION_FAILED_17",
+    "error_type": "RuntimeError",
+    "failed_phase": "offline-private-parse",
+    "directory": "/root/racepick-deploy/account-platform-17-x8kyzxyc",
+    "private_copy_phase_reached": true,
+    "private_files_retained": true,
+    "service_enabled_flag_was_not_modified": true,
+    "cause_not_yet_classified": true,
+    "do_not_recopy_or_overwrite": true,
+    "next": "sanitized read-only traceback frames, error types and file permission metadata"
+  },
+  "private_config_diagnosis": {
+    "source": "user-executed sanitized log/metadata diagnosis",
+    "step": "ACCOUNT_PRIVATE_PARSE_DIAGNOSIS_17A",
+    "error_classes": [
+      "ModuleNotFoundError"
+    ],
+    "frames": [
+      {
+        "file": "<string>",
+        "line": 4,
+        "function": "<module>"
+      }
+    ],
+    "backend_module_missing": true,
+    "unshare_nsenter_setpriv_or_permission_error_signals": false,
+    "private_file_metadata": {
+      "service.json": {
+        "exists": true,
+        "symlink": false,
+        "uid": 995,
+        "gid": 986,
+        "mode": "0o600",
+        "links": 1
+      },
+      "mini.json": {
+        "exists": true,
+        "symlink": false,
+        "uid": 995,
+        "gid": 986,
+        "mode": "0o600",
+        "links": 1
+      },
+      "app-secret": {
+        "exists": true,
+        "symlink": false,
+        "uid": 995,
+        "gid": 986,
+        "mode": "0o600",
+        "links": 1
+      }
+    },
+    "enabled": false,
+    "cloud_writes": false,
+    "service": {
+      "MainPID": "229631",
+      "ActiveState": "active",
+      "SubState": "running"
+    },
+    "cause": "offline probe module search path lacks sealed release; not a missing deployed package or credential permission failure",
+    "next": "17B explicit release sys.path in network-isolated parser only; do not recopy or overwrite private files"
+  },
+  "private_config_checked": {
+    "source": "user-executed verified17B return",
+    "step": "ACCOUNT_PRIVATE_PLATFORM_CONFIG_CHECKED_17B",
+    "directory": "/root/racepick-deploy/account-platform-check-17b-_fscsem3",
+    "delivery_id": "7c5f53fc366b7af555214846",
+    "previous_failed_directory": "/root/racepick-deploy/account-platform-17-x8kyzxyc",
+    "checker_module_path_fixed_only": true,
+    "credentials_recopied_or_overwritten": false,
+    "same_appid_and_secret_as_current_guest_configuration": true,
+    "private_source_and_target_bytes_and_metadata_unchanged_during_check": true,
+    "offline_check": {
+      "offline_parser_loaded_credentials": true,
+      "offline_check_network_namespace_isolated": true,
+      "actual_service_mount_namespace_used": true,
+      "uid": 995,
+      "gid": 986,
+      "private_files_readable_but_not_writable_inside_service_mount": true,
+      "old_guest_private_directory_denied": true,
+      "new_guest_and_native_state_bound": true,
+      "fixture": false,
+      "image_policy": "disabled",
+      "enabled": false,
+      "cloud_writes": false,
+      "platform_exchange_performed": false,
+      "api_initialized": false,
+      "ocr_model_loaded": false
+    },
+    "isolated_state_bytes_unchanged": true,
+    "service_pids_match_pre_step17_logs": true,
+    "website_pointer_and_https_config_preserved": true,
+    "service_platform_credentials_loaded": false,
+    "service_restart_performed": false,
+    "enabled": false,
+    "cloud_writes": false,
+    "business_proxy_enabled": false,
+    "real_wechat_account_login_mail_cloud_or_ocr_call": false
+  },
+  "loopback_readonly": {
+    "source": "user-executed verified loopback18v2 return",
+    "step": "ACCOUNT_LOOPBACK_A_READONLY_READY_18",
+    "directory": "/root/racepick-deploy/account-loopback-18-uhxu5wsh",
+    "delivery_id": "7c5f53fc366b7af555214846",
+    "old_pid": 229631,
+    "new_pid": 231745,
+    "enabled": true,
+    "cloud_writes": false,
+    "enabled_for_boot": false,
+    "offline_component_preflight": {
+      "full_a_component_constructed_and_stopped": true,
+      "network_isolated": true,
+      "global_profile_schema_ready": true,
+      "native_b_e_not_installed": true,
+      "platform_exchange_performed": false,
+      "mail_or_login_or_profile_save_performed": false,
+      "ocr_model_loaded": false
+    },
+    "loopback_health": {
+      "kind": "racepick-mini-account-service-v1",
+      "status": "ok",
+      "mode": "isolated-account-test",
+      "enabled": true,
+      "cloud_writes": false,
+      "mail_mode": "file",
+      "native_batches": {
+        "A": "ready",
+        "B": "pending",
+        "C": "pending",
+        "D": "pending",
+        "E": "pending"
+      },
+      "schemas": {
+        "business": 6,
+        "global_profile": 1,
+        "guest": 1,
+        "native_account": 1
+      },
+      "coverage_schema": 0,
+      "global_score_schema": 0,
+      "ocr_enabled": false,
+      "production_business": false,
+      "snapshot_versions": {
+        "cn": "593ecc7222ceea5856b2f576b4f5bca8",
+        "global": "e29f52e7f81c3e337985bf05dedb7e88"
+      },
+      "delivery_id": "7c5f53fc366b7af555214846",
+      "source_commit": null,
+      "fixed_delivery": true
+    },
+    "fixed_runtime_files_verified": {
+      "cars.global.json": {
+        "bytes": 29852,
+        "sha256": "6d35da66c9c0d2d7335b3e80d6a7351bbc494911a5b1d8dab0a0c2137cbc9759"
+      },
+      "cars.json": {
+        "bytes": 83653,
+        "sha256": "ea42daedfdb73a4963e2e70c6cdf91deb29ae6bec5143b697e50d8c877961b17"
+      },
+      "gauntlet_data.global.json": {
+        "bytes": 133918,
+        "sha256": "79958b507b814fb0823e03aa8f97843fafe9b61a558c428336a4879587a33bd2"
+      },
+      "gauntlet_data.json": {
+        "bytes": 225341,
+        "sha256": "2e8bf6ba763a64f24cd1e93be0afbaca8c77e24efcb9a96812952de800b018b6"
+      },
+      "global-data-manifest.json": {
+        "bytes": 1866,
+        "sha256": "7e38469bc6bd6de5498bc1e38c16898c0a34eddb86ead72d610e0e1883e6dbe6"
+      }
+    },
+    "unauthenticated_gates": {
+      "/api/mini/account/v1/session": {
+        "status": 401,
+        "code": "SESSION_REQUIRED",
+        "cache_control": "no-store"
+      },
+      "/api/mini/account/v1/profile?server=cn": {
+        "status": 401,
+        "code": "ACCOUNT_SESSION_REQUIRED",
+        "cache_control": "no-store"
+      },
+      "/api/mini/account/v1/profile?server=global": {
+        "status": 401,
+        "code": "ACCOUNT_SESSION_REQUIRED",
+        "cache_control": "no-store"
+      }
+    },
+    "initial15_backup_and_restore_matched_before_enable": true,
+    "identity_profile_mail_operation_and_schema_rows_unchanged": true,
+    "only_guest_rate_budget_rows_may_change_from_gate_checks": true,
+    "snapshots_signing_keys_and_state_markers_unchanged": true,
+    "original_service_pids_website_pointer_and_https_config_preserved": true,
+    "public_business_proxy_enabled": false,
+    "wechat_exchange_verified": false,
+    "real_account_login_cloud_save_mail_or_ocr_call": false
+  },
+  "account_api_exposure": "loopback only",
+  "public_account_api_enabled": true,
+  "test_account_preparation": {
+    "source": "user-executed verified interactive testuser19 return",
+    "step": "ACCOUNT_ISOLATED_TEST_USER_READY_19",
+    "directory": "/root/racepick-deploy/account-testuser-19-8nyf6fym",
+    "delivery_id": "7c5f53fc366b7af555214846",
+    "created": true,
+    "verified": true,
+    "mail_mode": "file",
+    "external_mail_sent": false,
+    "production_account": false,
+    "network_isolated": true,
+    "effective_uid": 995,
+    "effective_gid": 986,
+    "role": "player",
+    "users": 1,
+    "authenticated_sessions": 0,
+    "cn_profiles": 0,
+    "global_profiles": 0,
+    "unused_email_tokens": 0,
+    "file_verification_deliveries": 1,
+    "native_or_wechat_identity_created": false,
+    "pre_account_backup_and_restore_verified": true,
+    "post_account_backup_and_restore_verified": true,
+    "private_backups": [
+      "/var/lib/racepick-account-test/backups/pre-test-account-19",
+      "/var/lib/racepick-account-test/restore-drills/pre-test-account-19",
+      "/var/lib/racepick-account-test/backups/post-test-account-19",
+      "/var/lib/racepick-account-test/restore-drills/post-test-account-19"
+    ],
+    "backup_and_outbox_private_do_not_upload": true,
+    "verification_scope": "local file outbox token consumed, not real mailbox delivery",
+    "account_email_kept_in_private_operator_marker": "/var/lib/racepick-account-test/test-account-preparation-19.reserved",
+    "password_or_mail_token_in_argv_env_log_or_receipt": false,
+    "original_service_pids_website_pointer_and_https_config_preserved": true,
+    "enabled": true,
+    "cloud_writes": false,
+    "public_business_proxy_enabled": false,
+    "real_wechat_or_account_login_or_profile_save_or_ocr_call": false
+  },
+  "public_readonly": {
+    "source": "user-executed verified https-api20 return",
+    "step": "ACCOUNT_PUBLIC_HTTPS_A_READONLY_READY_20",
+    "directory": "/root/racepick-deploy/account-https-api-20-4ii2869y",
+    "origin": "https://account-test.racepick.cn",
+    "delivery_id": "7c5f53fc366b7af555214846",
+    "source_commit": null,
+    "public_health": {
+      "kind": "racepick-mini-account-service-v1",
+      "status": "ok",
+      "mode": "isolated-account-test",
+      "enabled": true,
+      "cloud_writes": false,
+      "mail_mode": "file",
+      "native_batches": {
+        "A": "ready",
+        "B": "pending",
+        "C": "pending",
+        "D": "pending",
+        "E": "pending"
+      },
+      "schemas": {
+        "business": 6,
+        "global_profile": 1,
+        "guest": 1,
+        "native_account": 1
+      },
+      "coverage_schema": 0,
+      "global_score_schema": 0,
+      "ocr_enabled": false,
+      "production_business": false,
+      "snapshot_versions": {
+        "cn": "593ecc7222ceea5856b2f576b4f5bca8",
+        "global": "e29f52e7f81c3e337985bf05dedb7e88"
+      },
+      "delivery_id": "7c5f53fc366b7af555214846",
+      "source_commit": null,
+      "fixed_delivery": true
+    },
+    "unauthenticated_gates": {
+      "/api/mini/account/v1/session": {
+        "status": 401,
+        "code": "SESSION_REQUIRED",
+        "cache_control": "no-store"
+      },
+      "/api/mini/account/v1/profile?server=cn": {
+        "status": 401,
+        "code": "ACCOUNT_SESSION_REQUIRED",
+        "cache_control": "no-store"
+      },
+      "/api/mini/account/v1/profile?server=global": {
+        "status": 401,
+        "code": "ACCOUNT_SESSION_REQUIRED",
+        "cache_control": "no-store"
+      }
+    },
+    "native_cookie_origin_options_rejected": true,
+    "excluded_route_gates": {
+      "/api/mini/account/v1/auth/register": 404,
+      "/api/auth/forgot-password": 404,
+      "/api/mini/account/v1/feedback": 404,
+      "/api/usage/events": 404
+    },
+    "five_fixed_runtime_files_verified": {
+      "cars.global.json": {
+        "bytes": 29852,
+        "sha256": "6d35da66c9c0d2d7335b3e80d6a7351bbc494911a5b1d8dab0a0c2137cbc9759"
+      },
+      "cars.json": {
+        "bytes": 83653,
+        "sha256": "ea42daedfdb73a4963e2e70c6cdf91deb29ae6bec5143b697e50d8c877961b17"
+      },
+      "gauntlet_data.global.json": {
+        "bytes": 133918,
+        "sha256": "79958b507b814fb0823e03aa8f97843fafe9b61a558c428336a4879587a33bd2"
+      },
+      "gauntlet_data.json": {
+        "bytes": 225341,
+        "sha256": "2e8bf6ba763a64f24cd1e93be0afbaca8c77e24efcb9a96812952de800b018b6"
+      },
+      "global-data-manifest.json": {
+        "bytes": 1866,
+        "sha256": "7e38469bc6bd6de5498bc1e38c16898c0a34eddb86ead72d610e0e1883e6dbe6"
+      }
+    },
+    "only_own_site_new_proxy_and_new_rate_files_changed": true,
+    "nginx_backup_and_independent_copy_verified": true,
+    "all_original_and_new_service_pids_and_website_pointer_preserved": true,
+    "identity_profile_mail_operation_schema_rows_unchanged": true,
+    "guest_rate_budget_rows_may_change": true,
+    "cloud_writes": false,
+    "enabled_for_boot": false,
+    "public_business_proxy_enabled": true,
+    "real_wechat_exchange_verified": false,
+    "real_account_login_or_cloud_save_or_mail_or_ocr_call": false
+  }
+}

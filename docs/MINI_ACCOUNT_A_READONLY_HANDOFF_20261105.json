@@ -1,0 +1,370 @@
+{
+  "kind": "racepick-mini-account-a-readonly-handoff-v1",
+  "date": "2026-11-05",
+  "timezone": "Asia/Shanghai",
+  "origin": "https://account-test.racepick.cn",
+  "account_prefix": "/api/mini/account/v1",
+  "guest_prefix": "/api/mini/v1",
+  "contracts": [
+    "MINI_ACCOUNT_CONTRACT_A_20261103.md",
+    "GLOBAL_PROFILE_CLOUD_20261103.md"
+  ],
+  "source": {
+    "delivery_id": "7c5f53fc366b7af555214846",
+    "source_commit": null,
+    "source_base_commit": "bfcf97e1511ee3d418a1f558c30a3ba0148d5286",
+    "source_base_commit_is_not_full_candidate_source": true,
+    "archive_sha256": "6c0ff251985638c62a232689a9aa3a3fd568544f2b8ad812e567e342bcef2648",
+    "archive_bytes": 11220353,
+    "candidate_manifest_sha256": "13545e697ca7dfcf0fb68f4f52e8b4003474c3accb4586419aaafd8fc096fe3b",
+    "five_shared_modules_match_198999a": true
+  },
+  "isolation": {
+    "production_business": false,
+    "fresh_guest_state": true,
+    "fresh_native_account_state": true,
+    "fresh_business_database": true,
+    "website_native_use_one_business_store": true,
+    "production_or_old_test_accounts_or_guest_state_imported": false,
+    "persistent_wechat_account_binding": false,
+    "cookies_origin_csrf_bridged_to_native": false,
+    "new_guest_required_at_this_origin": true,
+    "old_mini_test_guest_token_or_login_code_must_not_be_reused": true,
+    "old_mini_test_ocr_origin_changed": false,
+    "new_ocr_model_or_queue_started": false
+  },
+  "runtime": {
+    "enabled": true,
+    "cloud_writes": false,
+    "mail_mode": "file",
+    "image_policy": "disabled",
+    "ocr_enabled": false,
+    "native_batches": {
+      "A": "ready",
+      "B": "pending",
+      "C": "pending",
+      "D": "pending",
+      "E": "pending"
+    },
+    "schemas": {
+      "business": 6,
+      "global_profile": 1,
+      "guest": 1,
+      "native_account": 1
+    },
+    "profiles": {
+      "cn": "account",
+      "global": "account"
+    },
+    "profiles_capability_evidence": "fixed features implementation plus real global-profile schema1/component initialization; authenticated reads still pending",
+    "coverage_schema": 0,
+    "global_score_schema": 0,
+    "zero_score_components_note": "Only A is loaded; fixed JSON snapshots are not active score pointers. Do not run coverage/global-score migrations to fill these zeroes.",
+    "enabled_for_boot": false
+  },
+  "fixed_runtime": {
+    "snapshot_versions": {
+      "cn": "593ecc7222ceea5856b2f576b4f5bca8",
+      "global": "e29f52e7f81c3e337985bf05dedb7e88"
+    },
+    "files": {
+      "cars.global.json": {
+        "bytes": 29852,
+        "sha256": "6d35da66c9c0d2d7335b3e80d6a7351bbc494911a5b1d8dab0a0c2137cbc9759"
+      },
+      "cars.json": {
+        "bytes": 83653,
+        "sha256": "ea42daedfdb73a4963e2e70c6cdf91deb29ae6bec5143b697e50d8c877961b17"
+      },
+      "gauntlet_data.global.json": {
+        "bytes": 133918,
+        "sha256": "79958b507b814fb0823e03aa8f97843fafe9b61a558c428336a4879587a33bd2"
+      },
+      "gauntlet_data.json": {
+        "bytes": 225341,
+        "sha256": "2e8bf6ba763a64f24cd1e93be0afbaca8c77e24efcb9a96812952de800b018b6"
+      },
+      "global-data-manifest.json": {
+        "bytes": 1866,
+        "sha256": "7e38469bc6bd6de5498bc1e38c16898c0a34eddb86ead72d610e0e1883e6dbe6"
+      }
+    },
+    "global_dataset": "9b83ddd062a4d4b0c15d51dc0eed323aabb8e599e3e9544bc91714b70a7a4259",
+    "source": "MINI_OCR_CN_BINDING_20261104.json fixed bytes; not maintenance worksheets or production active score pointers"
+  },
+  "native_routes": [
+    {
+      "method": "POST",
+      "path": "/api/mini/v1/session",
+      "scope": "fresh real-platform guest exchange only; not performed by server checks"
+    },
+    {
+      "method": "GET",
+      "path": "/api/mini/v1/snapshot?server=cn|global",
+      "scope": "guest Bearer"
+    },
+    {
+      "method": "GET",
+      "path": "/api/mini/account/v1/session",
+      "scope": "guest or account Bearer"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/mini/account/v1/session",
+      "scope": "current account Bearer"
+    },
+    {
+      "method": "POST",
+      "path": "/api/mini/account/v1/auth/login",
+      "scope": "guest Bearer and user-entered isolated credentials"
+    },
+    {
+      "method": "POST",
+      "path": "/api/mini/account/v1/auth/reauth",
+      "scope": "account Bearer plus X-Account-ID"
+    },
+    {
+      "method": "GET",
+      "path": "/api/mini/account/v1/profile?server=cn|global",
+      "scope": "account Bearer plus X-Account-ID"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/mini/account/v1/profile?server=cn|global",
+      "scope": "currently closed by cloud_writes=false; do not send during readonly stage"
+    },
+    {
+      "method": "GET",
+      "path": "/api/mini/account/v1/operations/{original_key}?action=login|reauth",
+      "scope": "original parent guest Bearer"
+    },
+    {
+      "method": "GET",
+      "path": "/api/mini/account/v1/operations/{original_key}?action=profile-save&server=cn|global",
+      "scope": "account Bearer plus X-Account-ID; query original operation only"
+    }
+  ],
+  "closed": [
+    "public register/verify/resend/forgot/reset/invitations",
+    "DELETE association alias in this minimal preparation",
+    "B-E",
+    "images/evidence/OCR",
+    "statistics",
+    "arbitrary website/admin routes",
+    "all cloud profile writes"
+  ],
+  "server_rules": {
+    "native_cookie_origin_options": "reject",
+    "https_exact_host_trusted_proxy_real_ip": true,
+    "cache_control": "no-store",
+    "json_max_bytes": 65536,
+    "dedicated_nginx_rate": "5 requests/second, burst10 on allowed APIs; static files outside this bucket",
+    "application_issuance_login_budgets": "unchanged existing GuestStore/account handlers",
+    "nginx_rate_limit_response": {
+      "status": 429,
+      "code": "ACCOUNT_RATE_LIMITED",
+      "retry_after_seconds": 60
+    },
+    "nginx_size_response": {
+      "status": 413,
+      "code": "BODY_TOO_LARGE"
+    },
+    "rate_saturation_field_test_performed": false
+  },
+  "account_session": {
+    "session_kind": "racepick_account",
+    "token_type": "Bearer",
+    "token_prefix": "rpa1.",
+    "x_account_id_required_for_private_routes": true,
+    "max_ttl_seconds": 3600,
+    "expires_no_later_than_parent_guest": true,
+    "roles_revocation_reauth_authority": "server, checked per request",
+    "association": "session_only",
+    "reauth_recovery_uses_original_parent_guest": true,
+    "logout_or_replaced_session_cannot_be_revived_by_late_recovery": true
+  },
+  "isolated_test_account": {
+    "prepared": true,
+    "count": 1,
+    "role": "player",
+    "verified_by": "local file outbox token consumed, not real email delivery",
+    "credentials_included": false,
+    "user_must_enter_own_prepared_credentials": true,
+    "authenticated_sessions_after_preparation": 0,
+    "cn_profile_rows": 0,
+    "global_profile_rows": 0,
+    "real_login_verified": false
+  },
+  "observed_public_samples": {
+    "health": {
+      "kind": "racepick-mini-account-service-v1",
+      "status": "ok",
+      "mode": "isolated-account-test",
+      "enabled": true,
+      "cloud_writes": false,
+      "mail_mode": "file",
+      "native_batches": {
+        "A": "ready",
+        "B": "pending",
+        "C": "pending",
+        "D": "pending",
+        "E": "pending"
+      },
+      "schemas": {
+        "business": 6,
+        "global_profile": 1,
+        "guest": 1,
+        "native_account": 1
+      },
+      "coverage_schema": 0,
+      "global_score_schema": 0,
+      "ocr_enabled": false,
+      "production_business": false,
+      "snapshot_versions": {
+        "cn": "593ecc7222ceea5856b2f576b4f5bca8",
+        "global": "e29f52e7f81c3e337985bf05dedb7e88"
+      },
+      "delivery_id": "7c5f53fc366b7af555214846",
+      "source_commit": null,
+      "fixed_delivery": true
+    },
+    "unauthenticated_gates": {
+      "/api/mini/account/v1/session": {
+        "status": 401,
+        "code": "SESSION_REQUIRED",
+        "cache_control": "no-store"
+      },
+      "/api/mini/account/v1/profile?server=cn": {
+        "status": 401,
+        "code": "ACCOUNT_SESSION_REQUIRED",
+        "cache_control": "no-store"
+      },
+      "/api/mini/account/v1/profile?server=global": {
+        "status": 401,
+        "code": "ACCOUNT_SESSION_REQUIRED",
+        "cache_control": "no-store"
+      }
+    },
+    "native_cookie_origin_options_rejected": true,
+    "excluded_GET_gates": {
+      "/api/mini/account/v1/auth/register": 404,
+      "/api/auth/forgot-password": 404,
+      "/api/mini/account/v1/feedback": 404,
+      "/api/usage/events": 404
+    }
+  },
+  "contract_fixture_samples_not_field_authenticated_results": {
+    "unsaved_cn": {
+      "status": 200,
+      "body": {
+        "server": "cn",
+        "storage": "account",
+        "remote_supported": true,
+        "revision": 0,
+        "profile": null
+      }
+    },
+    "unsaved_global": {
+      "status": 200,
+      "body": {
+        "server": "global",
+        "storage": "account",
+        "remote_supported": true,
+        "revision": 0,
+        "profile": null
+      }
+    },
+    "valid_saved_empty_cn_profile": {
+      "cars": [],
+      "stars": {}
+    },
+    "valid_saved_empty_global_profile": {
+      "cars": [],
+      "stars": {},
+      "ocMap": {}
+    },
+    "cloud_write_disabled": {
+      "status": 503,
+      "code": "ACCOUNT_CLOUD_WRITE_DISABLED"
+    },
+    "wrong_password": {
+      "status": 401,
+      "code": "CREDENTIALS_REJECTED",
+      "parent_guest_retained": true
+    },
+    "profile_conflict": {
+      "status": 409,
+      "code": "PROFILE_CONFLICT",
+      "both_current_and_submitted_kept": true
+    },
+    "operation_missing": {
+      "status": 404,
+      "code": "OPERATION_NOT_FOUND",
+      "does_not_prove_not_executed": true,
+      "automatic_replay_allowed": false
+    }
+  },
+  "layered_evidence": {
+    "windows_account_suite": {
+      "executed": 60,
+      "passed": 60,
+      "real_platform": false
+    },
+    "windows_production_compatibility": {
+      "executed": 8,
+      "passed": 8,
+      "smtp_mocked": true
+    },
+    "frontend_profile_and_global": {
+      "executed": 27,
+      "passed": 27
+    },
+    "linux_offline_candidate": {
+      "passed": true,
+      "runtime_dependencies": 18,
+      "validation_extra_dependencies": 3,
+      "require_hashes_no_index": true,
+      "pip_check_twice": true,
+      "platform_mocked": true
+    },
+    "server_runtime": {
+      "source_and_offline_install": true,
+      "actual_nonroot_identity_and_mount_namespace": true,
+      "actual_kernel_resource_limits": true,
+      "private_config_network_isolated_parse": true,
+      "full_a_component_network_isolated_construct_stop": true,
+      "public_tls_and_readonly_health": true,
+      "public_fixed_files": true,
+      "public_unauthenticated_gates_and_native_header_rejection": true,
+      "new_account_and_pre_post_independent_restore": true,
+      "real_wechat_exchange": false,
+      "real_account_login": false,
+      "authenticated_cn_global_read": false,
+      "real_website_native_same_record_sync": false,
+      "explicit_cloud_save_reload_conflict_logout_identity_change": false,
+      "phone_account_acceptance": false,
+      "real_email_delivery": false
+    }
+  },
+  "client_reception_order": [
+    "Keep probe cloudWrites=false; verify the fixed source/health/data binding before any credential action.",
+    "Check legal request-domain readiness for this new origin without disabling validation; its WeChat backend status is unverified here.",
+    "Use a new independent account-probe guest transport and fresh wx.login exchange at this origin. Do not alter or clear old mini-test OCR transport/session/drafts.",
+    "Have the user enter the prepared isolated email/password privately; login once with a retained original key; validate token kind/role/expiry and real parent association.",
+    "Read CN and Global profiles only; verify login/GET did not import and that both null and valid-empty semantics are respected. Do not send PUT.",
+    "On unknown result retain original key/action/server and query only it;404 is not permission to reissue. Keep plaintext passwords/mail tokens out of persistence and reports.",
+    "Only after readonly evidence, define a separate explicit-save scope for draft/save/reload/conflict/logout/identity changes; server cloud_writes is still false.",
+    "Give phone steps only after developer-tools/real-account readonly stages. Keep the final full mirror AccountClient/198999a ProfileStore; probe is acceptance tooling, not the product replacement."
+  ],
+  "pending_operations": {
+    "new_origin_legal_request_domain_verified": null,
+    "wechat_backend_operated_by_this_task": false,
+    "service_boot_enable": false,
+    "automatic_certificate_renewal_and_nginx_reload_verified": false,
+    "production_account_migration_or_enable_authorized": false,
+    "mini_upload_review_publish_done": false
+  },
+  "disclosure": "No actual AppID/AppSecret, password, bearer, login code, session_key, OpenID, mail token, production account data or private backup is included.",
+  "prepared_at_client_date": "2026-11-06",
+  "date_note": "date is the20261105 delivery batch label; user step20 receipt has no completion timestamp"
+}
