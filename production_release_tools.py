@@ -37,6 +37,9 @@ HOME_FILES=('home_presenter.js','home_theme.json','HOME_PRESENTER_CONTRACT_20261
 MAINTENANCE_FILES=('backend/maintenance_release.py','production_release_tools.py','MAINTENANCE_RELEASE_20261103.md')
 COMPONENT_GROUPS=COMPONENT_GROUPS+(MINI_FILES,MINI_ACCOUNT_FILES,GLOBAL_PROFILE_FILES,MIRROR_FILES,HOME_FILES,MAINTENANCE_FILES)
 APP_FILES=BASE_FILES+SCOPED_FILES+COVERAGE_FILES+THEME_FILES+SCORE_FILES+COMMUNITY_FILES+CONTRIBUTION_FILES+FEEDBACK_FILES+GLOBAL_FILES+NOTIFICATION_FILES+USAGE_FILES+SELECTION_FILES+MINI_FILES+MINI_ACCOUNT_FILES+GLOBAL_PROFILE_FILES+MIRROR_FILES+HOME_FILES+MAINTENANCE_FILES+('backend/mini_result.py',)
+ISOLATED_ACCOUNT_FILES=('backend/mini_account_boundary.py','backend/mini_account_isolation.py','backend/mini_account_service.py','backend/mini_snapshot.py')
+APP_FILES+=ISOLATED_ACCOUNT_FILES
+COMPONENT_GROUPS+=(ISOLATED_ACCOUNT_FILES,)
 OCR_CODE_FILES=('backend/map_layout.py','backend/map_recognition.py','backend/map_ocr_engine.py','backend/map_ocr_worker.py',
  'backend/map_ocr_production.py','backend/map_ocr_supervisor.py','map_recognition.js','map_recognition.css',
  'production/ocr-models.json','production/ocr-assets.json','production/ocr-selfcheck.py','production/racepick-map-ocr.service',
