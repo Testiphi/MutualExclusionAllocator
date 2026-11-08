@@ -144,6 +144,7 @@ def make_native_account(config, source):
     accounts,guests,web=config['account_store'],config['store'],source.native_accounts
     a_only=config.get('account_a_only') is True
     formal=config.get('formal_account') is True
+    player_registration=not formal and config.get('isolated_player_registration') is True
     app.state.native_a_only=a_only
     from backend import mini_features
     guest_actions={'register','login','resend-verification','forgot-password','verify-email','reset-password'}
@@ -171,7 +172,8 @@ def make_native_account(config, source):
         return {'website':{name:bool(getattr(source,name,False)) for name in ('coverage','contributions','feedback','notifications')},
                 'profiles':{'cn':'account','global':'account' if getattr(source,'global_profiles',False) else 'unavailable'},
                 'authentication':{'mail_mode':'production' if source.mail_service.config.production else source.mail_service.config.mode,
-                                  'mail_token_ttl_seconds':1800,'persistent_wechat_binding':False,'reauth_max_age_seconds':600},
+                                  'mail_token_ttl_seconds':1800,'persistent_wechat_binding':False,'reauth_max_age_seconds':600,
+                                  'isolated_player_registration':player_registration},
                 'native_batches':{'A':'ready',**dict.fromkeys(('B','C','D','E'),'pending' if a_only else 'ready')},'feature_writes':{'fixture_only':True,'enabled':not a_only and mini_features.writes_enabled(config,source)}}
 
     def session_result(request,sid):
@@ -236,10 +238,15 @@ def make_native_account(config, source):
 
     def execute(request,action,body):
         payload={k:v for k,v in body.items() if k not in ('schema','request_key')}
+        if player_registration and action in ('register','resend-verification'):
+            fields={'email','password'} if action=='register' else {'email'}
+            if set(payload)!=fields:fail(400,'INVALID_ACCOUNT_BODY','隔离注册仅接受普通玩家字段')
         if action=='reauth':
             if set(payload)!={'password'}:fail(400,'INVALID_ACCOUNT_BODY','再认证只接受password')
             model=validated('login',{'email':request.state.actor['email'],'password':payload['password']})
         else:model=validated(action,payload)
+        if player_registration and action in ('register','resend-verification') and not model.email.endswith('.test'):
+            fail(400,'INVALID_ACCOUNT_BODY','隔离收件箱仅接受 .test 邮箱')
         def invoke():
             try:
                 row=getattr(request.state,'account',None)
@@ -296,6 +303,8 @@ def make_native_account(config, source):
         if row['state']!='done':fail(409,'OPERATION_UNCERTAIN','操作进行中或结果不确定，请核对',2)
         result=json.loads(row['result'])
         if row['status']==200 and 'account_sid' in result:result=session_result(request,result['account_sid'])
+        if player_registration and action in ('register','resend-verification','verify-email') and 400<=row['status']<500:
+            result={**result,'operation_resolved':True}
         return JSONResponse(result,status_code=row['status'])
 
     def server(request):

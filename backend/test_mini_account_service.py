@@ -43,12 +43,83 @@ class AccountServiceTests(unittest.TestCase):
     def write(self,path,data):
         path.write_text(json.dumps(data),encoding='utf-8');path.chmod(0o600)
 
-    def client(self,writes=False):
-        self.write(self.config,{**self.declaration,'cloud_writes':writes})
+    def client(self,writes=False,registration=False):
+        self.write(self.config,{**self.declaration,'cloud_writes':writes,'registration':registration})
         app=make_app(self.config)
         client=TestClient(app,base_url=ORIGIN,client=('127.0.0.1',12000));client.__enter__()
         self.addCleanup(client.__exit__,None,None,None)
         return app,client
+
+    def test_isolated_registration_lifecycle_and_website_identity(self):
+        app,client=self.client(registration=True)
+        self.assertTrue(client.get('/_account-test/health',headers=PROXY).json()['registration'])
+        guest_result=client.post('/api/mini/v1/session',headers=PROXY,json={'code':'fixture-code',
+            'client_schema':1,'request_key':secrets.token_hex(16)})
+        self.assertEqual(guest_result.status_code,200)
+        guest={**PROXY,'Authorization':'Bearer '+guest_result.json()['token']}
+        email='new-player@example.test';creds={'email':email,'password':PASSWORD}
+        def post(action,body,key=None):
+            return client.post(A+'/auth/'+action,headers=guest,
+                json={'schema':1,'request_key':key or secrets.token_hex(16),**body})
+        def recover(action,key):
+            return client.get(A+'/operations/'+key,params={'action':action},headers=guest)
+        def mail():
+            return list((self.root/'accounts/outbox').glob('*.json'))
+        def token(file):
+            return parse_qs(urlsplit(json.loads(file.read_bytes())['url']).fragment)['token'][0]
+        key=secrets.token_hex(16)
+        self.assertEqual(post('register',{**creds,'email':'player@example.com'}).status_code,400)
+        self.assertEqual(post('register',{**creds,'invite_code':''}).status_code,400)
+        self.assertEqual(post('register',creds,key).status_code,200)
+        self.assertEqual(recover('register',key).status_code,200)
+        self.assertEqual(post('register',{**creds,'email':email.upper()}).status_code,200)
+        old_files=set(mail());self.assertEqual(len(old_files),1)
+        self.assertEqual(post('login',creds).json()['code'],'EMAIL_NOT_VERIFIED')
+        self.assertEqual(post('resend-verification',{'email':email}).status_code,429)
+        expired=token(next(iter(old_files)));rejected=secrets.token_hex(16)
+        with app.web.state.store.connect() as db:
+            db.execute('UPDATE auth_tokens SET expires_at=0')
+            db.execute('UPDATE mail_deliveries SET created_at=created_at-61')
+        self.assertEqual(post('verify-email',{'token':expired},rejected).status_code,400)
+        self.assertTrue(recover('verify-email',rejected).json()['operation_resolved'])
+        missing=recover('verify-email',secrets.token_hex(16))
+        self.assertEqual(missing.status_code,404)
+        self.assertNotIn('operation_resolved',missing.json())
+        # Make the unused original link live again so the next check proves
+        # resend revocation independently of the expiry check above.
+        with app.web.state.store.connect() as db:
+            db.execute("UPDATE auth_tokens SET expires_at=strftime('%s','now')+600")
+        resend=secrets.token_hex(16)
+        self.assertEqual(post('resend-verification',{'email':email},resend).status_code,200)
+        self.assertEqual(recover('resend-verification',resend).status_code,200)
+        new_files=set(mail())-old_files;self.assertEqual(len(new_files),1)
+        self.assertEqual(post('verify-email',{'token':expired}).status_code,400)
+        valid=token(next(iter(new_files)));verify=secrets.token_hex(16)
+        self.assertEqual(post('verify-email',{'token':valid},verify).status_code,200)
+        self.assertEqual(recover('verify-email',verify).status_code,200)
+        self.assertEqual(post('verify-email',{'token':valid}).status_code,400)
+        self.assertEqual(post('reset-password',{'token':valid,'password':PASSWORD}).status_code,404)
+        self.assertEqual(client.post('/api/auth/register',headers=PROXY,json=creds).status_code,404)
+        native=post('login',creds)
+        self.assertEqual(native.status_code,200)
+        actor=native.json()['actor']
+        self.assertEqual(actor['role'],'player');self.assertTrue(actor['verified'])
+        session=client.get('/api/auth/me',headers=PROXY).json()
+        web=client.post('/api/auth/login',headers={**PROXY,'Origin':ORIGIN,'X-CSRF-Token':session['csrf']},json=creds)
+        self.assertEqual(web.status_code,200)
+        self.assertEqual(web.json()['user'],actor)
+        client.cookies.clear()
+        auth={**PROXY,'Authorization':'Bearer '+native.json()['token'],'X-Account-ID':actor['id']}
+        for server in ('cn','global'):
+            profile=client.get(A+'/profile',params={'server':server},headers=auth)
+            self.assertEqual(profile.status_code,200)
+            self.assertEqual(profile.json()['revision'],0)
+            self.assertIsNone(profile.json()['profile'])
+        self.assertEqual(client.put(A+'/profile?server=cn',headers=auth,json={}).status_code,503)
+
+    def test_registration_cannot_start_alongside_cloud_writes(self):
+        self.write(self.config,{**self.declaration,'registration':True,'cloud_writes':True})
+        with self.assertRaises(ValueError):make_app(self.config)
 
     def prepare_fixture(self,app):
         # Explicit local fixture setup via ORIGINAL handlers, never public registration.

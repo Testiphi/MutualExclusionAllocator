@@ -28,12 +28,14 @@ class MailConfig:
     password: str = field(default='', repr=False)
     production: bool = False
     daily_limit: int = 20
+    isolated_file_limits: bool = False
 
     def __post_init__(self):
         if self.mode not in ('file', 'smtp'):
             raise ValueError('邮件模式仅允许file或smtp')
         if not 1 <= self.daily_limit <= 10000:raise ValueError('发信限额无效')
         if self.production and self.mode!='smtp':raise ValueError('生产环境必须使用SMTP')
+        if self.isolated_file_limits and self.mode!='file':raise ValueError('隔离限额仅适用于文件收件箱')
         if self.mode == 'smtp':
             if not self.production and not re.fullmatch(r'[A-Za-z0-9.!#$%&\'*+/=?^_`{|}~-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}', self.allowed_recipient):
                 raise ValueError('SMTP测试需要明确指定一个允许收信的邮箱')
@@ -139,10 +141,10 @@ class MailService:
         from fastapi import HTTPException
         self.check_recipient(email)
         now = int(time.time())
-        if self.config.mode == 'smtp':
-            if db.execute("SELECT 1 FROM mail_deliveries WHERE user_id=? AND purpose=? AND mode='smtp' AND created_at>?",(uid,purpose,now-60)).fetchone():
+        if self.config.mode == 'smtp' or self.config.isolated_file_limits:
+            if db.execute("SELECT 1 FROM mail_deliveries WHERE user_id=? AND purpose=? AND mode=? AND created_at>?",(uid,purpose,self.config.mode,now-60)).fetchone():
                 raise HTTPException(429, '同类邮件请等待60秒后再申请，先检查邮箱及垃圾邮件')
-            if db.execute("SELECT count(*) FROM mail_deliveries WHERE mode='smtp' AND created_at>?",(now-86400,)).fetchone()[0] >= self.config.daily_limit:
+            if db.execute("SELECT count(*) FROM mail_deliveries WHERE mode=? AND created_at>?",(self.config.mode,now-86400,)).fetchone()[0] >= self.config.daily_limit:
                 raise HTTPException(429, '24小时发信总额度已用完，请稍后再试')
         if self.config.production and db.execute('SELECT count(*) FROM mail_deliveries WHERE user_id=? AND created_at>?',(uid,now-86400)).fetchone()[0]>=6:
             raise HTTPException(429,'此账号24小时内发信次数已达上限')

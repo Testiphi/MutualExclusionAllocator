@@ -6,17 +6,22 @@ from urllib.parse import parse_qsl
 from backend.mini_api import ACCOUNT_PREFIX as A, PREFIX as G, MiniGateway, error_response
 from backend.mini_auth import MiniError
 
+REGISTRATION_ACTIONS = frozenset({'register', 'verify-email', 'resend-verification'})
+
 
 @dataclass(frozen=True)
 class AccountBoundaryOptions:
     enabled: bool = False
     cloud_writes: bool = False
+    registration: bool = False
 
     def __post_init__(self):
         if type(self.enabled) is not bool or type(self.cloud_writes) is not bool:
             raise ValueError('Account switches must be explicit booleans')
         if self.cloud_writes and not self.enabled:
             raise ValueError('Cloud writes require an enabled account component')
+        if type(self.registration) is not bool or (self.registration and (not self.enabled or self.cloud_writes)):
+            raise ValueError('Registration acceptance requires an enabled read-only account service')
 
 
 class AccountBoundary:
@@ -57,12 +62,16 @@ class AccountBoundary:
                 ('GET', A+'/session'), ('DELETE', A+'/session'),
                 ('POST', A+'/auth/login'), ('POST', A+'/auth/reauth'),
                 ('GET', A+'/profile'), ('PUT', A+'/profile')}
+            if self.options.registration and method == 'POST':
+                allowed = allowed or path in {A+'/auth/'+action for action in REGISTRATION_ACTIONS}
             if method == 'GET' and re.fullmatch(re.escape(A)+r'/operations/[A-Za-z0-9_-]{16,80}', path):
                 pairs = parse_qsl(scope.get('query_string', b'').decode('latin1'), keep_blank_values=True)
                 query = dict(pairs)
                 allowed = (pairs in [[('action', 'login')], [('action', 'reauth')]] or
                            len(pairs) == 2 and set(query) == {'action', 'server'} and
                            query['action'] == 'profile-save' and query['server'] in ('cn', 'global'))
+                if self.options.registration and len(pairs) == 1 and pairs[0][0] == 'action':
+                    allowed = allowed or pairs[0][1] in REGISTRATION_ACTIONS
             if not allowed:
                 error = MiniError(404, 'ACCOUNT_ROUTE_PENDING', 'Route is outside this A preparation scope')
             elif method == 'PUT' and not self.options.cloud_writes:

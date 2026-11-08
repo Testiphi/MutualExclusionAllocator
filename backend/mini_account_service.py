@@ -35,10 +35,11 @@ def provenance():
 
 def settings(path):
     data=json.loads(private(path).read_bytes())
-    if set(data)!={'kind','origin','state_root','mini_config','enabled','cloud_writes'} or data['kind']!=KIND:
+    required={'kind','origin','state_root','mini_config','enabled','cloud_writes'}
+    if not required<=set(data)<=required|{'registration'} or data['kind']!=KIND:
         raise ValueError('Strict account service declaration required')
     validate_origin(data['origin'])
-    AccountBoundaryOptions(data['enabled'],data['cloud_writes'])
+    AccountBoundaryOptions(data['enabled'],data['cloud_writes'],data.get('registration',False))
     if not isinstance(data['state_root'],str) or not Path(data['state_root']).is_absolute():
         raise ValueError('Explicit absolute isolated state root required')
     if not isinstance(data['mini_config'],str) or not Path(data['mini_config']).is_absolute():
@@ -56,7 +57,7 @@ class IsolatedAccountService:
     """Acquire exclusive state ownership at ASGI startup before opening any API state."""
     def __init__(self,declaration):
         self.config=declaration
-        self.options=AccountBoundaryOptions(declaration['enabled'],declaration['cloud_writes'])
+        self.options=AccountBoundaryOptions(declaration['enabled'],declaration['cloud_writes'],declaration.get('registration',False))
         self.lease=None;self.web=None;self.native=None;self.started=False
 
     def start(self):
@@ -82,9 +83,11 @@ class IsolatedAccountService:
             from backend.mini_auth import load_config
             mini=load_config(mini_path)
             mini['account_a_only']=True
+            mini['isolated_player_registration']=self.options.registration
             from backend.app import create_app
             from backend.mailing import MailConfig
-            self.web=create_app(root/'accounts',config['origin'],production=True,mail_config=MailConfig(),isolated_account_root=root)
+            self.web=create_app(root/'accounts',config['origin'],production=True,
+                mail_config=MailConfig(isolated_file_limits=self.options.registration),isolated_account_root=root)
             snapshot,_=load_snapshot(root/'snapshot')
             self.source=SimpleNamespace(**self.web.state._state,
                 score_versions=snapshot.score_versions,global_score_versions=snapshot.global_score_versions)
@@ -93,6 +96,7 @@ class IsolatedAccountService:
             def health():
                 return {'kind':KIND,'status':'ok','mode':'isolated-account-test',
                     'enabled':True,'cloud_writes':self.options.cloud_writes,'mail_mode':'file',
+                    'registration':self.options.registration,
                     'native_batches':{'A':'ready',**dict.fromkeys(('B','C','D','E'),'pending')},
                     'schemas':{'business':6,'global_profile':1,'guest':1,'native_account':1},
                     'coverage_schema':0,'global_score_schema':0,'ocr_enabled':False,'production_business':False,
