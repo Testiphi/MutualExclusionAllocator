@@ -83,19 +83,46 @@
         const unlisted=field(fields,'车辆、地图或跑法尚未收录（填写详细说明）','unlisted','checkbox');unlisted.checked=!!initial.unlisted;unlisted.parentElement.className='check wide';
         function maps(){const previous=small.value;small.replaceChildren();option(small,'','请选择');catalog.tracks.filter(t=>t.big===big.value).forEach(t=>option(small,t.small,t.small));small.value=previous;}
         function cars(){suggestions.replaceChildren();catalog.cars.filter(c=>c.zones.includes(zone.value)).forEach(c=>option(suggestions,c.name,c.title));}
-        function starOptions(current){const c=catalog.cars.find(c=>c.name===car.value||c.title===car.value);stars.replaceChildren();option(stars,'','请选择 / 无星级条目');const bounds=c?.limits[zone.value]||[1,6];for(let i=bounds[0];i<=bounds[1];i++)option(stars,String(i),String(i)+'星');if(current&&!Array.from(stars.options).some(o=>o.value===current))option(stars,current,current+'星（不符合当前规则）');stars.value=current||'';if(activeServer==='global'&&catalog.capabilities?.max_stars_only){stars.value='';stars.disabled=true;}}
+        const starHint=el('small',undefined,'muted');stars.parentElement.append(starHint);
+        function starOptions(current){
+            const maxOnly=activeServer==='global'&&catalog.capabilities?.max_stars_only;
+            const theory=activeServer==='cn'&&tier.value==='理论';
+            const expert=tier.value==='高手';
+            stars.replaceChildren();
+            option(stars,'',maxOnly?'满星（国际服）':expert?'请选择实际星级':'无星级');
+            if(!theory&&!maxOnly){
+                const c=catalog.cars.find(c=>c.name===car.value||c.title===car.value);
+                const [low,high]=c?.limits[zone.value]||[1,6];
+                for(let i=low;i<=high;i++)option(stars,String(i),String(i)+'星');
+            }
+            if(current&&!maxOnly&&!Array.from(stars.options).some(o=>o.value===current)){
+                option(stars,current,current+'星（不符合当前规则）');
+            }
+            stars.value=maxOnly?'':current||'';
+            stars.disabled=!!(maxOnly||(theory&&!current));
+            stars.required=expert&&!unlisted.checked;
+            starHint.textContent=theory?(current?'当前星级已保留。请明确选择高手档，或将星级改为「无星级」后提交理论。':'国服理论为无星级条目。'):expert?'高手成绩须明确选择实际星级。':'';
+        }
         maps();small.value=initial.small||'';cars();starOptions(initial.stars===null||initial.stars===undefined?'':String(initial.stars));
         big.onchange=maps;zone.onchange=()=>{cars();starOptions(stars.value);};car.onchange=()=>starOptions(stars.value);
+        tier.onchange=()=>starOptions(stars.value);
+        stars.onchange=()=>starOptions(stars.value);
+        unlisted.onchange=()=>starOptions(stars.value);
         if(activeServer==='global')node.append(el('p','当前仅开放五区满星理论；理论成绩需提供来源说明、图片或链接中的至少一项。','muted'));
         if(!compact)node.append(el('p','普通/自动档采纳后仅形成可用性归档建议，投稿成绩仍保留，不自动改写其他档位。','muted'));
         if(compact){
             const files=withImages?field(optionalFields,'证据图片（可选，最多3张，每张2MB）','images','file'):null;if(files){files.accept='image/png,image/jpeg,image/webp';files.multiple=true;node.readFiles=()=>Array.from(files.files||[]);}
-            function describe(){targetSummary.textContent=(big.value&&small.value&&car.value?`${zone.value} / ${tier.value} · ${big.value} / ${small.value} · ${car.value}${stars.value?' ★'+stars.value:''} · ${route.value||'普通跑法'}`:'选择投稿目标')+'（可修改）';}
+            function describe(){targetSummary.textContent=`${zone.value} / ${tier.value} · ${big.value&&small.value?big.value+' / '+small.value:'待选地图'} · ${car.value||'待选车辆'} · ${stars.value?'★'+stars.value:activeServer==='global'?'满星':tier.value==='高手'?'待选星级':'无星级'} · ${route.value||'普通跑法'}（可修改）`;}
             fields.addEventListener('input',describe);fields.addEventListener('change',describe);describe();targetDetails.open=!initial.big||!initial.small||!initial.car;
             extras.open=!!initial.notes||!!initial.video_url;
         }
         const read=()=>({...((activeServer==='global')?{server:'global',oc:!!oc?.checked}:{}),big:big.value,small:small.value,zone:zone.value,tier:tier.value,car:car.value.trim(),stars:activeServer==='global'&&catalog.capabilities?.max_stars_only?null:stars.value?Number(stars.value):null,route:route.value,time:time.value.trim(),notes:notes.value.trim(),video_url:url.value.trim(),unlisted:unlisted.checked});
         return {node,read,optional:extras};
+    }
+    function validateStarTarget(entry,requireStars){
+        if(entry.unlisted)return;
+        if(entry.server!=='global'&&entry.tier==='理论'&&entry.stars!==null)throw new Error('国服理论不能带显式星级。请选择高手档，或明确选择「无星级」。');
+        if(requireStars&&entry.tier==='高手'&&entry.stars===null)throw new Error('请明确选择高手成绩的实际星级。');
     }
     function summary(value){if(!value)return '未采纳';if(value.unlisted)return '未收录资料建议\n'+value.notes;return `${value.server==='global'?'国际服':'国服'}${value.oc?' · OC':''} · ${value.zone} / ${value.tier}\n${value.big} · ${value.small}\n${value.car} ${value.stars===null?'无星级':'★'+value.stars} / ${value.route||'普通跑法'}\n成绩：${value.time} 秒\n${value.notes||''}`;}
     function column(title,text){const node=el('div',undefined,'summary');node.append(el('strong',title),el('span',text));return node;}
@@ -127,6 +154,7 @@
     async function sendBatch(publish){
         const rows=[...$('draftRows').children],entries=rows.map(n=>n.readEntry());if(!entries.length)throw new Error('请先添加一条成绩');
         if(entries.some(e=>!e.time.trim()))throw new Error('请填写成绩。');
+        entries.forEach(entry=>validateStarTarget(entry,publish));
         const files=rows.map(n=>n.readFiles?n.readFiles():[]);
         for(const pictures of files){if(pictures.length>3||pictures.some(f=>f.size>2*1024*1024||!['image/png','image/jpeg','image/webp'].includes(f.type)))throw new Error('图片最多3张，每张2MB以内，支持PNG/JPEG/WebP');}
         const text=JSON.stringify({entries,files:files.map(group=>group.map(f=>[f.name,f.size,f.lastModified,f.type]))});
@@ -213,7 +241,10 @@
             }));images.append(card);}root.append(images);
         if(item.owner_id===user.id&&['draft','needs_info'].includes(item.status))renderEdit(root,item);
         if(['admin','superadmin'].includes(user.role)&&item.status==='pending'&&!(item.contribution_info?.eligible&&item.owner_id===user.id))renderReview(root,item);
-        if(item.application)root.append(el('p',`${item.application_scope==='production'?'正式成绩':'测试库'}应用状态：${item.application.state==='applied'?'已应用':'已回滚'} · 批次 ${item.application.batch_id}；审核历史保留，如需修改请新建投稿。`));
+        if(item.application){
+            const next=item.review_issue?'历史档位存在歧义。保留批次和回执，已写入数据须另行核对并审批定点纠错。':'审核历史保留，如需修改请新建投稿。';
+            root.append(el('p',`${item.application_scope==='production'?'正式成绩':'测试库'}应用状态：${item.application.state==='applied'?'已应用':'已回滚'} · 批次 ${item.application.batch_id}；${next}`));
+        }
         if(!item.application&&['admin','superadmin'].includes(user.role)&&['accepted','ignored'].includes(item.status)){
             const label=el('label','重新审核原因'),reason=el('textarea');reason.maxLength=2000;label.append(reason);root.append(label,button('重新打开审核',async()=>{
                 if(!reason.value.trim()){say('请填写重新审核原因。',reason);return;}
@@ -271,19 +302,36 @@
             return result;
         }
         const result=el('div',undefined,'summary');result.textContent='先预览拟采纳内容，再确认采纳。';root.append(result);
+        const tierWarning=el('p',undefined,'warning');tierWarning.setAttribute('role','status');root.append(tierWarning);
+        const tierLabel=el('label',undefined,'check'),tierConfirm=el('input'),tierLabelText=el('span');
+        tierConfirm.type='checkbox';tierLabel.append(tierConfirm,tierLabelText);tierLabel.hidden=true;root.append(tierLabel);
+        function showTierChange(target){
+            tierWarning.hidden=item.payload.tier===target;
+            tierWarning.textContent=`原投稿档位：${item.payload.tier} → 拟采纳档位：${target}。换档需要明确确认并填写原因。`;
+        }
+        showTierChange(item.payload.tier);
         const slowerLabel=el('label','我已核对并确认采纳这个更慢的成绩','check'),slower=el('input');slower.type='checkbox';slowerLabel.prepend(slower);slowerLabel.hidden=true;root.append(slowerLabel);
         const accept=button('确认采纳',async()=>{
             if(!preview){say('请先预览拟采纳内容');return;}
+            if(preview.tier_change&&(!tierConfirm.checked||!reason.value.trim())){say('请明确确认拟采纳档位，并填写换档原因。');return;}
             if(preview.comparison.kind==='slower'&&!slower.checked){say('请逐条勾选确认较慢成绩');return;}
             const ratings=rating('accept');
             if(!await ask('采纳以下内容，仅保存审核决定，尚不写入正式库：\n'+summary(preview.candidate)))return;
-            await request('POST',`/admin/submissions/${item.id}/review`,{revision:item.revision,action:'accept',entry:preview.candidate,basis:preview.basis,reason:reason.value.trim(),slower_confirmed:slower.checked,...ratings});
+            await request('POST',`/admin/submissions/${item.id}/review`,{revision:item.revision,action:'accept',entry:preview.candidate,basis:preview.basis,reason:reason.value.trim(),tier_change_confirmed:tierConfirm.checked,slower_confirmed:slower.checked,...ratings});
             await refreshItem(item.id);say('已采纳，等待后续应用到正式数据。');
         });accept.disabled=true;
-        form.node.addEventListener('input',()=>{preview=null;accept.disabled=true;slower.checked=false;unsaved=true;result.textContent='拟采纳内容已变化，请重新预览。';});
+        function invalidatePreview(){
+            preview=null;accept.disabled=true;slower.checked=false;slowerLabel.hidden=true;tierConfirm.checked=false;tierLabel.hidden=true;unsaved=true;
+            showTierChange(form.read().tier);result.textContent='拟采纳内容已变化，请重新预览。';
+        }
+        form.node.addEventListener('input',invalidatePreview);
+        form.node.addEventListener('change',invalidatePreview);
         reason.addEventListener('input',()=>{unsaved=true;});score.addEventListener('change',()=>{unsaved=true;});
         const buttons=el('div',undefined,'actions');buttons.append(button('预览拟采纳内容',async()=>{
-            preview=await request('POST',`/admin/submissions/${item.id}/preview`,{revision:item.revision,entry:form.read()});
+            const entry=form.read();validateStarTarget(entry,true);
+            preview=await request('POST',`/admin/submissions/${item.id}/preview`,{revision:item.revision,entry});
+            showTierChange(preview.candidate.tier);tierLabel.hidden=!preview.tier_change;tierConfirm.checked=false;
+            tierLabelText.textContent=preview.tier_change?`我确认将原投稿的${preview.tier_change.from}改为${preview.tier_change.to}采纳`:'';
             result.textContent=summary(preview.candidate)+'\n\n'+compareText(preview.comparison);slowerLabel.hidden=preview.comparison.kind!=='slower';slower.checked=false;
             accept.disabled=preview.comparison.kind==='rule_needed';
             say('预览已更新。修改后采纳或更慢成绩需要审核原因。');

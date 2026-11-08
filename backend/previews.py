@@ -14,7 +14,7 @@ from pydantic import BaseModel, ConfigDict, Field, StrictInt
 from apply_changes import apply_changes
 from format_json import format_data
 from validate_data import validate_data
-from backend.submissions import Score, normalize
+from backend.submissions import Score, cn_theory_star_issue, normalize
 
 ROOT=Path(__file__).resolve().parents[1]
 ENGINE_FILES=('apply_changes.py','format_json.py','data_tools.py','validate_data.py','backend/previews.py','backend/submissions.py','backend/score_scopes.py')
@@ -112,6 +112,7 @@ def build_preview(rows,data,cars,source):
         try:
             if payload is None:raise ValueError('缺少拟采纳内容')
             if payload.get('server','cn')!='cn':raise ValueError('国际服投稿不能进入国服成绩应用批次')
+            if issue:=cn_theory_star_issue(payload):raise ValueError('请在投稿审核中重新审核此条。'+issue)
             candidate=normalize(Score(**payload),data,cars)
             if candidate['unlisted']:raise ValueError('未收录资料需要先维护规则，不能形成数据改动')
             if candidate['car']!=payload['car']:raise ValueError('车辆身份已变化，请重新审核，不能自动迁移到新昵称')
@@ -239,7 +240,11 @@ def install(app,store,root,user,source_dir=None):
             if hasattr(app.state,'writeback'): pending+=" AND NOT EXISTS(SELECT 1 FROM write_receipts WHERE submission_id=submissions.id)"
             total=db.execute('SELECT count(*) FROM submissions WHERE '+pending).fetchone()[0]
             rows=db.execute('SELECT id,revision,accepted_payload,review_score,decision_reason FROM submissions WHERE '+pending+' ORDER BY updated_at DESC,id DESC LIMIT 50 OFFSET ?',(offset,)).fetchall()
-        return {'total':total,'items':[{**dict(r),'accepted_payload':json.loads(r['accepted_payload']) if r['accepted_payload'] else None} for r in rows]}
+        items=[]
+        for row in rows:
+            payload=json.loads(row['accepted_payload']) if row['accepted_payload'] else None
+            items.append({**dict(row),'accepted_payload':payload,'review_issue':cn_theory_star_issue(payload)})
+        return {'total':total,'items':items}
 
     @app.get('/api/admin/previews')
     def listing(request:Request):

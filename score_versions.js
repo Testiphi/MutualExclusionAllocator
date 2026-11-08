@@ -12,11 +12,13 @@
  async function run(fn){if(busy)return;busy=true;$('main').inert=true;$('busy').hidden=false;try{await fn();}catch(e){notice(e.message);}finally{busy=false;$('main').inert=false;$('busy').hidden=true;}}
  function button(text,fn){const b=el('button',text);b.onclick=()=>run(fn);return b;}
  function check(text){const wrap=el('label'),input=el('input');input.type='checkbox';wrap.append(input,document.createTextNode(text));return {wrap,input};}
- function target(p){return `${p.server==='global'?'国际服':'国服'} · ${p.oc?'OC · ':''}${p.zone}/${p.tier} · ${p.big}/${p.small} · ${p.car}★${p.stars??'满星'} · ${p.sc?p.sc_type:p.route||'普通跑法'}`;}
+ function target(p){const stars=p.stars==null?(p.server==='global'?'满星':'无星级'):'★'+p.stars;return `${p.server==='global'?'国际服':'国服'} · ${p.oc?'OC · ':''}${p.zone}/${p.tier} · ${p.big}/${p.small} · ${p.car} ${stars} · ${p.sc?p.sc_type:p.route||'普通跑法'}`;}
  function change(i){return `${target(i.target)}：${i.old??'不存在'} → ${i.new??'不存在'}`;}
  async function refresh(){const data=await api('GET','/admin/score-versions');production=!!data.production;enabled=data.write_enabled!==false;states.applied=production?'已发布到正式成绩':'已发布到测试数据';$('prepare').disabled=!enabled;$('source').textContent=`当前数据版本：${data.current.id} · ${production?(enabled?'生产写回已开启':'生产只读验证，写回关闭'):'独立测试目录：'+data.lab}`;
   $('picks').replaceChildren();picks.clear();retry=null;
-  for(const item of data.items){const c=check(`${target(item.accepted_payload)} · ${item.accepted_payload.time}秒`);c.input.onchange=()=>{if(c.input.checked)picks.set(item.id,{id:item.id,revision:item.revision});else picks.delete(item.id);retry=null;};$('picks').append(c.wrap);}
+  for(const item of data.items){const c=check(`${target(item.accepted_payload)} · ${item.accepted_payload.time}秒`);c.input.onchange=()=>{if(c.input.checked)picks.set(item.id,{id:item.id,revision:item.revision});else picks.delete(item.id);retry=null;};$('picks').append(c.wrap);
+   if(item.review_issue){c.input.disabled=true;const warning=el('p',item.review_issue+' '),link=el('a','打开投稿重新审核');link.href='/submissions#'+item.id;warning.append(link);$('picks').append(warning);}
+  }
   if(!data.items.length)$('picks').append(el('p','暂无待应用的已采纳投稿。已应用/回滚的历史不会重新排队。'));
   $('batches').replaceChildren();for(const item of data.batches){const o=el('option',`${item.id.slice(0,8)} · ${states[item.state]||item.state}`);o.value=item.id;$('batches').append(o);}if(current)$('batches').value=current.id;
  }

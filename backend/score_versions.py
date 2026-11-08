@@ -9,6 +9,7 @@ from pydantic import BaseModel, ConfigDict, Field, StrictBool
 from argon2 import PasswordHasher
 from argon2.exceptions import VerificationError, InvalidHashError
 from backend.previews import ROOT, Pick, build_preview, load_source, LOADED_ENGINE, engine_hashes
+from backend.submissions import cn_theory_star_issue
 from backend.score_repository import Versions, validate_lab, validate_production_root, encode, digest, write_new, FILES, sync_dir, approved_catalog
 from backend.manage import copy_database
 
@@ -114,7 +115,10 @@ class ScoreWriter:
             rows=self.selected(db,body.items);base=self.current_id(db);info,contents=self.versions.read(base)
             data,cars,source=load_source(self.versions.root/base);source['version']=base
             result,preview=build_preview(rows,data,cars,source)
-            if result['state']!='ready' or not result['changes']['changes']:reject('没有有效改动或存在冲突')
+            if result['state']!='ready':
+                conflicts=[f"{i['submission_id']}：{i['error']}" for i in result['items'] if i['kind']=='conflict']
+                reject('；'.join((result['errors']+conflicts)[:5]) or '存在冲突，请重新预览')
+            if not result['changes']['changes']:reject('没有有效改动')
             bid=secrets.token_hex(16)
             target=self.versions.create({'gauntlet_data.json':preview.encode(),'cars.json':contents['cars.json']},base,'apply',bid)
             m={'id':bid,'actor':actor,'created_at':int(time.time()),'base':base,'target':target,'result':result,'engine':LOADED_ENGINE,'extra':LOADED_EXTRA,'events':[]}
@@ -292,7 +296,11 @@ def install(app,writer,root,user,session):
             pending=db.execute("SELECT id,revision,accepted_payload FROM submissions WHERE status='accepted' AND NOT EXISTS(SELECT 1 FROM write_receipts WHERE submission_id=submissions.id) AND COALESCE(json_extract(accepted_payload,'$.server'),'cn')=? ORDER BY updated_at DESC,id LIMIT 100",(server,)).fetchall()
             batches=db.execute(f'SELECT id,state,manifest FROM {writer.batches_table} ORDER BY rowid DESC LIMIT 50').fetchall()
             enabled=writer.enabled(db)
-        return {'server':server,'current':info,'production':writer.production,'write_enabled':enabled,'lab':'' if writer.production else str(writer.lab),'items':[{**dict(r),'accepted_payload':json.loads(r['accepted_payload'])} for r in pending],
+        items=[]
+        for row in pending:
+            payload=json.loads(row['accepted_payload'])
+            items.append({**dict(row),'accepted_payload':payload,'review_issue':cn_theory_star_issue(payload)})
+        return {'server':server,'current':info,'production':writer.production,'write_enabled':enabled,'lab':'' if writer.production else str(writer.lab),'items':items,
                 'batches':[{'id':r['id'],'state':r['state'],'created_at':json.loads(r['manifest'])['created_at']} for r in batches]}
     @app.post('/api/admin/score-versions/reauth')
     def reauth(body:Reauth,request:Request,server:str='cn'):return writer_for(server).reauthenticate(*owner(request),body.password)

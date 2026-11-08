@@ -73,12 +73,23 @@ class PreviewTests(unittest.TestCase):
         self.assertEqual(normal['new'],'✓');self.assertEqual(len(normal['mirror_contributors']),1)
         self.assertNotIn('time',normal['after_entry'])
     def test_placeholder_and_auto_availability(self):
-        self.data['tracks'][0]['五区']['理论'].append({'cars':[{'name':'恶魔','stars':5}]})
+        self.data['tracks'][0]['四区']['理论'].append({'cars':[{'name':'恶魔'}]})
         (self.source/'gauntlet_data.json').write_text(json.dumps(self.data),encoding='utf-8')
-        _,result=self.make([self.accepted(tier='理论'),self.accepted(tier='自动')])
+        _,result=self.make([self.accepted(zone='四区',tier='理论',stars=None),self.accepted(tier='自动')])
         self.assertEqual(result['summary']['placeholder'],1);self.assertEqual(result['summary']['new'],1)
         auto=next(e for e in result['actual_changes'] if e['target']['tier']=='自动')
         self.assertEqual(auto['new'],'✓');self.assertNotIn('time',auto['after_entry'])
+
+    def test_legacy_starred_theory_is_blocked_with_re_review_instructions(self):
+        pick=self.accepted(tier='理论')
+        candidates=self.client.get('/api/admin/accepted-submissions').json()
+        self.assertIn('不能带显式星级',candidates['items'][0]['review_issue'])
+        bid,result=self.make([pick])
+        self.assertEqual(result['state'],'blocked')
+        self.assertIn('重新审核',result['items'][0]['error'])
+        self.assertEqual(result['changes']['changes'],[])
+        for kind in ('changes','preview'):
+            self.assertEqual(self.client.get(f'/api/admin/previews/{bid}/download?kind={kind}').status_code,409)
     def test_bad_rules_and_duplicate_targets_block_whole_preview(self):
         bid,result=self.make([self.accepted(zone='四区',stars=6)])
         self.assertEqual(result['state'],'blocked');self.assertEqual(result['summary']['conflicts'],1)

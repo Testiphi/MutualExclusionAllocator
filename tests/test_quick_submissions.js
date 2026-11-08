@@ -44,8 +44,22 @@ test('prefill accepts only catalogue-bound national metadata and never imports U
 test('known targets are collapsed, only time is required, and optional fields remain available',()=>{
  const f=fixture();const form=f.api.form({...entry,time:'',notes:'',video_url:''},'成绩1',true,true);const nodes=walk(form.node);
  const target=nodes.find(n=>n.tag==='details'&&!n.className);assert.equal(target.open,false);assert.match(target.textContent,/甲地图 \/ 道路/);
- const required=nodes.filter(n=>n.required);assert.equal(required.length,1);assert.equal(required[0].dataset.field,'time');assert.equal(form.optional.open,false);assert.ok(nodes.some(n=>n.dataset.field==='images'));
+ const required=nodes.filter(n=>n.required);assert.deepEqual(required.map(n=>n.dataset.field).sort(),['stars','time']);assert.equal(form.optional.open,false);assert.ok(nodes.some(n=>n.dataset.field==='images'));
  const editor=f.api.form(entry,'编辑',true);assert.equal(walk(editor.node).filter(n=>n.dataset.field==='images').length,0);assert.equal(editor.read().notes,entry.notes);
+});
+
+test('national prefill preserves expert stars and route; a theory switch requires an explicit resolution',async()=>{
+ const f=fixture(),prefill=f.api.prefill({...entry,server:'cn',route:'跳图'});
+ assert.equal(prefill.tier,'高手');assert.equal(prefill.stars,5);assert.equal(prefill.route,'跳图');
+ assert.throws(()=>f.api.prefill({...entry,server:'cn',tier:'理论'}),/理论目标/);
+ const form=f.api.form({...prefill,time:'24.30'},'编辑',true),nodes=walk(form.node);
+ const tier=nodes.find(n=>n.dataset.field==='tier'),stars=nodes.find(n=>n.dataset.field==='stars');
+ tier.value='理论';tier.onchange();
+ assert.equal(form.read().stars,5);assert.equal(stars.disabled,false);assert.equal(form.read().route,'跳图');
+ f.setEntry(form.read());await assert.rejects(()=>f.api.send(true),/明确选择/);assert.equal(f.calls.length,0);
+ stars.value='';stars.onchange();assert.equal(form.read().stars,null);assert.equal(stars.disabled,true);
+ tier.value='高手';tier.onchange();assert.equal(stars.disabled,false);assert.equal(stars.required,true);
+ f.setEntry(form.read());await assert.rejects(()=>f.api.send(true),/实际星级/);
 });
 
 
