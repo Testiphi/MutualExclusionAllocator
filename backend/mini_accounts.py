@@ -143,9 +143,23 @@ def make_native_account(config, source):
     app=FastAPI(docs_url=None,redoc_url=None,openapi_url=None,redirect_slashes=False)
     accounts,guests,web=config['account_store'],config['store'],source.native_accounts
     a_only=config.get('account_a_only') is True
+    formal=config.get('formal_account') is True
     app.state.native_a_only=a_only
     from backend import mini_features
     guest_actions={'register','login','resend-verification','forgot-password','verify-email','reset-password'}
+
+    def formal_route(request):
+        method, path = request.method, request.url.path
+        allowed = (method, path) in {
+            ('GET', PREFIX+'/session'), ('POST', PREFIX+'/auth/login'),
+            ('GET', PREFIX+'/profile'), ('PUT', PREFIX+'/profile'),
+        }
+        if method == 'GET' and re.fullmatch(re.escape(PREFIX)+r'/operations/[A-Za-z0-9_-]{16,80}', path):
+            allowed = request.query_params.get('action') in ('login', 'profile-save')
+        if not allowed:
+            fail(404,'ACCOUNT_ROUTE_PENDING','正式账号入口未开放该操作')
+        if method == 'PUT' and not config.get('formal_profile_writes'):
+            fail(503,'ACCOUNT_CLOUD_WRITE_DISABLED','正式云车库暂时只读')
 
     def actor_for(request,row):
         actor=web.user(web.request(request,row['anchor'],row['user_id']))
@@ -176,6 +190,7 @@ def make_native_account(config, source):
     async def auth(request,call_next):
         try:
             if request.headers.get('origin') or request.headers.get('cookie') or request.method=='OPTIONS':fail(403,'NATIVE_ONLY','原生账号入口不使用网页Cookie或Origin')
+            if formal:formal_route(request)
             guests.budget('account-ip:'+guests.hashed(request.scope['mini_ip']),120,60)
             path=request.url.path
             action=path.rsplit('/',1)[-1]

@@ -573,6 +573,9 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
     def health():
         with store.connect() as db:db.execute('SELECT 1').fetchone()
         result={'status':'ok','mode':'production' if production else 'local','schema':6}
+        if mini_config and mini_config.get('formal_account'):
+            result['mini_account']={'mode':'formal-a','enabled':True,
+                                    'cloud_writes':mini_config['formal_profile_writes']}
         if isolated:result.update(mode='isolated-account-test',production_business=False)
         if recognition_service:result['map_recognition']={'enabled':True,'worker':recognition_service.health()}
         result['community_schema']=1

@@ -49,6 +49,24 @@ def initialize(config):
     if os.name=='posix':
         for p in path.iterdir():p.chmod(0o600)
 
+def formal_mini_config(config_path, writes_flag):
+    if writes_flag not in ('0', '1'):
+        raise ValueError('RACEPICK_NATIVE_PROFILE_WRITES must be 0 or 1')
+    if not config_path:
+        if writes_flag == '1':
+            raise ValueError('Native writes require a configured formal account entry')
+        return None
+    from backend.mini_auth import load_config
+    native = load_config(config_path)
+    if 'account_store' not in native:
+        if writes_flag == '1':
+            raise ValueError('Native writes require an independent account state directory')
+        return native
+    if native['image_policy'] != 'disabled':
+        raise ValueError('Formal account origin requires a separate approved OCR gateway')
+    return {**native, 'account_a_only': True, 'formal_account': True, 'formal_profile_writes': writes_flag == '1'}
+
+
 def make_app(config,password):
     path=require_database(config)
     score_state=path/'score-state' if (path/'score-state').exists() else None
@@ -62,7 +80,12 @@ def make_app(config,password):
         from backend.coverage import state as coverage_state
         coverage_ready=coverage_state(db)['coverage_schema'] in (1,2)
     ocr_config=os.environ.get('RACEPICK_MAP_RECOGNITION_CONFIG') or None
-    return create_app(path,config['origin'],score_state=score_state,contributions=contribution_ready,coverage=coverage_ready,feedback=feedback_ready,notifications=notifications_ready,usage=(path/'usage.sqlite3').exists(),mail_config=MailConfig('smtp','',password,production=True,daily_limit=config['mail_daily_limit']),production=True,map_recognition=ocr_config,mini_config=os.environ.get('RACEPICK_MINI_CONFIG') or None)
+    mini_config = formal_mini_config(os.environ.get('RACEPICK_MINI_CONFIG'), os.environ.get('RACEPICK_NATIVE_PROFILE_WRITES', '0'))
+    if mini_config and mini_config.get('formal_account'):
+        for state in (mini_config['store'].root, mini_config['account_store'].root):
+            if state.is_relative_to(path) or path.is_relative_to(state):
+                raise ValueError('Native state must be separate from the website data directory')
+    return create_app(path,config['origin'],score_state=score_state,contributions=contribution_ready,coverage=coverage_ready,feedback=feedback_ready,notifications=notifications_ready,usage=(path/'usage.sqlite3').exists(),mail_config=MailConfig('smtp','',password,production=True,daily_limit=config['mail_daily_limit']),production=True,map_recognition=ocr_config,mini_config=mini_config)
 
 @contextmanager
 def service_lock(path):
