@@ -12,6 +12,8 @@ from backend.app import create_app
 from backend.roles import set_role
 from backend.score_repository import provision,validate_lab,Versions,FILES
 from backend.score_versions import Confirm
+from backend.previews import flatten, key
+from backend.submissions import identity
 
 class ScoreVersionTests(unittest.TestCase):
     new_client=accounts.AccountsTests.new_client
@@ -21,6 +23,14 @@ class ScoreVersionTests(unittest.TestCase):
     def setUp(self):
         self.temp=tempfile.TemporaryDirectory();self.seed=Path(self.temp.name)
         self.data={'_version':1,'tracks':[{'大地图':'测试地图','小地图':'测试赛道','五区':{'理论':[],'高手':[{'cars':[{'name':'恶魔','stars':6}],'time':25.0}],'普通':[{'cars':[{'name':'恶魔','stars':6}]}],'自动':[]},'四区':{'理论':[],'高手':[],'普通':[],'自动':[]}}]}
+        self.data['tracks'].append({
+            '大地图':'古老斗技场','小地图':'十字路口',
+            '五区':{'理论':[],'高手':[],'普通':[],'自动':[]},
+            '四区':{
+                '理论':[{'cars':[{'name':'爱音'}],'time':23.1,'sc':True,'sc_type':'跳图'}],
+                '高手':[{'cars':[{'name':'爱音','stars':4}],'time':23.9,'sc':True,'sc_type':'跳图'},
+                      {'cars':[{'name':'爱音','stars':3}],'time':27.2}],
+                '普通':[{'cars':[{'name':'爱音','stars':3}]}],'自动':[]}})
         (self.seed/'gauntlet_data.json').write_text(json.dumps(self.data,ensure_ascii=False),encoding='utf-8')
         shutil.copyfile(Path(__file__).parents[1]/'cars.json',self.seed/'cars.json')
         self.original={n:hashlib.sha256((self.seed/n).read_bytes()).hexdigest() for n in FILES}
@@ -105,6 +115,54 @@ class ScoreVersionTests(unittest.TestCase):
         self.accepted(5);m,_=self.plan([self.accepted(6,'26')])
         self.assertEqual(m['result']['summary']['ordinary_mirrors'],0)
         self.assertEqual(len(m['result']['actual_changes']),1)
+
+    def test_cn_expert_special_submission_writes_exactly_one_key_and_receipt(self):
+        entry={'big':'古老斗技场','small':'十字路口','zone':'四区','tier':'高手',
+               'car':'爱音','stars':3,'route':'跳图','time':'24.30','notes':'隔离测试'}
+        player=self.new_client();self.addCleanup(player.close);self.signup('expert@example.com',player)
+        r=player.post('/api/submissions',json={'request_key':secrets.token_hex(16),'entries':[entry]})
+        self.assertEqual(r.status_code,200,r.text);sid=r.json()['ids'][0]
+        r=player.post(f'/api/submissions/{sid}/submit',json={'revision':1})
+        self.assertEqual(r.status_code,200,r.text)
+        p=self.client.post(f'/api/admin/submissions/{sid}/preview',json={'revision':2,'entry':entry})
+        self.assertEqual(p.status_code,200,p.text);p=p.json()
+        self.assertIsNone(p['tier_change'])
+        r=self.client.post(f'/api/admin/submissions/{sid}/review',json={
+            'revision':2,'action':'accept','entry':p['candidate'],'basis':p['basis']})
+        self.assertEqual(r.status_code,200,r.text)
+        detail=self.client.get(f'/api/submissions/{sid}').json()
+        self.assertEqual(detail['payload'],p['candidate'])
+        self.assertEqual(detail['accepted_payload'],p['candidate'])
+        self.assertEqual(json.loads(detail['target_key']),['古老斗技场','十字路口','四区','高手','爱音',3,'跳图'])
+        self.assertEqual(detail['target_key'],identity(p['candidate']))
+        m,_=self.plan([{'id':sid,'revision':3}])
+        expected=('古老斗技场','十字路口','四区','高手','爱音',3,True,'跳图')
+        self.assertEqual(m['result']['summary']['ordinary_mirrors'],0)
+        self.assertEqual([key(c) for c in m['result']['changes']['changes']],[expected])
+        self.assertEqual([key(c['target']) for c in m['result']['actual_changes']],[expected])
+        self.assertEqual(key(m['result']['items'][0]['target']),expected)
+        r=self.execute(m);self.assertEqual(r.status_code,200,r.text)
+        snap=self.client.get('/api/scores/snapshot').json()
+        self.assertEqual(snap['version'],m['target'])
+        before=flatten(self.data);after=flatten(snap['data'])
+        self.assertEqual(after.pop(expected),{'cars':[{'name':'爱音','stars':3}],'time':24.3,'sc':True,'sc_type':'跳图'})
+        self.assertEqual(after,before)
+        with self.app.state.store.connect() as db:
+            receipt=db.execute('SELECT * FROM write_receipts WHERE submission_id=?',(sid,)).fetchone()
+        self.assertEqual((receipt['batch_id'],receipt['state']),(m['id'],'applied'))
+        saved=self.writer.detail(receipt['batch_id'])
+        self.assertEqual((saved['base'],saved['target']),(self.base,snap['version']))
+        self.assertEqual(key(saved['result']['items'][0]['target']),expected)
+        self.assertEqual(saved['result']['items'][0]['accepted_payload'].get('server','cn'),'cn')
+        self.assertFalse(saved['result']['items'][0]['accepted_payload'].get('oc',False))
+
+    def test_legacy_starred_theory_cannot_prepare_score_write(self):
+        pick=self.accepted(tier='理论')
+        r=self.client.post('/api/admin/score-versions',json={'request_key':secrets.token_hex(16),'items':[pick]})
+        self.assertEqual(r.status_code,409);self.assertIn('重新审核',r.json()['detail'])
+        self.assertEqual(self.writer.current()[0]['id'],self.base)
+        with self.app.state.store.connect() as db:
+            self.assertIsNone(db.execute('SELECT * FROM write_receipts WHERE submission_id=?',(pick['id'],)).fetchone())
     def test_crash_before_commit_aborts_without_changing_pointer(self):
         m,_=self.plan();writer=self.writer
         def crash(phase):

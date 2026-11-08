@@ -101,6 +101,7 @@ class Review(Revision):
     reason: str = Field(default='',max_length=2000)
     basis: dict[str,str] = Field(default_factory=dict,max_length=2)
     slower_confirmed: StrictBool = False
+    tier_change_confirmed: StrictBool = False
     review_score: StrictInt | None = Field(default=None,ge=0,le=5)
     quality: dict | None = None
 
@@ -125,9 +126,17 @@ def score_payload(entry):
     return value
 
 
+def cn_theory_star_issue(value):
+    if (value and value.get('server','cn')=='cn' and not value.get('unlisted')
+            and value.get('tier')=='理论' and value.get('stars') is not None):
+        return '国服理论档不能带显式星级。请按证据明确选择高手档并保留实际星级，或明确选择无星级理论。'
+    return None
+
+
 def normalize(entry, data, cars, strict=True):
     value = score_payload(entry)
     value = {k:v.strip() if isinstance(v,str) else v for k,v in value.items()}
+    if issue:=cn_theory_star_issue(value):raise HTTPException(422,issue)
     if entry.server=='global':
         cap=require_scope('global',cars,value['zone'],value['tier'])
         if value['oc'] and (not cap.get('oc') or value['route']):raise HTTPException(422,'当前国际服OC仅支持普通跑法')
@@ -326,6 +335,7 @@ def install(app,store,root,user,reference_root=None,production=False):
             row=get_row(db,sid,owner); result=dict(row)
             result['payload']=json.loads(row['payload'])
             result['accepted_payload']=json.loads(row['accepted_payload']) if row['accepted_payload'] else None
+            result['review_issue']=cn_theory_star_issue(result['accepted_payload'] or result['payload'])
             result['baseline']=json.loads(row['baseline']) if row['baseline'] else None
             result['images']=[{'id':r['id'],'digest':r['digest'],'url':f'/api/submissions/{sid}/images/{r["id"]}'} for r in db.execute('SELECT id,digest FROM submission_images WHERE submission_id=? AND active=1 ORDER BY created_at',(sid,))]
             result['events']=[{**dict(r),'snapshot':json.loads(r['snapshot'])} for r in db.execute('SELECT revision,actor_id,action,snapshot,created_at FROM submission_events WHERE submission_id=? ORDER BY revision',(sid,))]
@@ -391,7 +401,9 @@ def install(app,store,root,user,reference_root=None,production=False):
             same_server(row,body.entry)
         data,cars,basis=source(body.entry.server); candidate=normalize(body.entry,data,cars)
         compare=comparison(candidate,data)
-        return {'candidate':candidate,'comparison':compare,'basis':basis,'revision':body.revision}
+        original_tier=json.loads(row['payload'])['tier']
+        return {'candidate':candidate,'comparison':compare,'basis':basis,'revision':body.revision,
+                'tier_change':{'from':original_tier,'to':candidate['tier']} if original_tier!=candidate['tier'] else None}
 
     @app.post('/api/admin/submissions/{sid}/review')
     def review(sid:str,body:Review,request:Request):
@@ -429,9 +441,12 @@ def install(app,store,root,user,reference_root=None,production=False):
                 if body.basis!=basis: raise HTTPException(409,'参考数据或车辆规则已变化，请重新预览并确认')
                 candidate=normalize(body.entry,data,cars)
                 if candidate['unlisted']: raise HTTPException(422,'未收录建议需先维护规则；本轮不可直接采纳入库')
+                original=json.loads(row['payload'])
+                if candidate['tier']!=original['tier'] and (not body.tier_change_confirmed or not reason):
+                    raise HTTPException(422,f"档位从{original['tier']}变为{candidate['tier']}，请明确确认目标档位并填写审核原因")
                 compare=comparison(candidate,data)
                 if compare['kind']=='slower' and not body.slower_confirmed: raise HTTPException(422,'较慢成绩需要逐条明确确认')
-                if (candidate!=json.loads(row['payload']) or compare['kind']=='slower') and not reason:
+                if (candidate!=original or compare['kind']=='slower') and not reason:
                     raise HTTPException(422,'修改后采纳或较慢成绩必须填写审核原因')
                 # Another accepted proposal for the same target must not silently coexist.
                 pending_filter=" AND NOT EXISTS(SELECT 1 FROM write_receipts WHERE submission_id=submissions.id)" if hasattr(app.state,'writeback') else ""

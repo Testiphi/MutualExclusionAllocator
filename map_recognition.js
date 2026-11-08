@@ -23,8 +23,11 @@
         const server=root.APP_CONFIG?.server||root.RACEPICK_SERVER||'cn';
         let csrf='',catalog=null,file=null,attempt=null,generation=0,busy=false,objectURL=null;
         const dialog=document.createElement('section');dialog.id='mapRecognitionWorkspace';dialog.className='map-recognition-dialog mr-inline';host.className='map-recognition-host';
-        dialog.innerHTML=`<div class="mr-heading"><div><h2>地图识别</h2><p class="mr-purpose">仅支持能清晰看到五张地图中文名称的游戏截图，自动识别地图并填充。不支持拍屏照片。</p></div></div>
-          <label class="mr-upload" id="mrDropZone" for="mrFile"><svg class="mr-upload-icon" viewBox="0 0 48 48" fill="none" aria-hidden="true"><path d="M24 31V8m0 0-8 8m8-8 8 8M10 28v10a3 3 0 0 0 3 3h22a3 3 0 0 0 3-3V28" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg><strong id="mrDropTitle">拖入或选择已有截图</strong><input id="mrFile" type="file" aria-label="选择已有游戏截图" accept=".png,.jpg,.jpeg,.webp"></label>
+        dialog.innerHTML=`<div class="mr-entry">
+          <div class="mr-heading"><div><h2>地图识别</h2><p class="mr-purpose">选择能看清五张地图中文名称的游戏截图。不支持拍屏照片。</p><p class="mr-purpose">识别后可核对结果并填入地图。</p></div></div>
+          <label class="mr-upload" id="mrDropZone" for="mrFile"><strong id="mrDropTitle">将截图拖到这里</strong><span class="mr-drop-hint">或点击选择文件</span><strong class="mr-drop-active">松开以识别截图</strong><strong class="mr-compact-title">截图文字提取</strong><input id="mrFile" type="file" aria-label="选择已有游戏截图进行地图识别" aria-describedby="mrCompactPurpose" accept=".png,.jpg,.jpeg,.webp"></label>
+          <p class="mr-compact-purpose" id="mrCompactPurpose">从相册选择文字清晰的截图，提取五个名称以辅助填写。</p>
+          </div>
           <div class="mr-file-name" id="mrFileName"></div><img id="mrPreview" class="mr-preview" alt="本次选择的截图" hidden>
           <div class="mr-controls" id="mrControls" hidden><button type="button" id="mrStart" hidden>重新识别</button><button type="button" id="mrRetry" hidden>重试</button><button type="button" id="mrCancel" hidden>取消识别</button></div>
           <p id="mrStatus" class="mr-status" role="status" aria-live="polite" hidden></p>
@@ -90,7 +93,7 @@
             const ticket=generation+1;await resetJob();if(ticket!==generation||!dialog.isConnected)return false;file=value;
             if(objectURL){URL.revokeObjectURL(objectURL);objectURL=null;}
             $('mrPreview').hidden=!file;$('mrFileName').textContent=file?file.name:'';
-            $('mrDropZone').classList.toggle('mr-upload-selected',!!file);$('mrDropTitle').textContent=file?'更换截图':'拖入或选择已有截图';
+            $('mrDropZone').classList.toggle('mr-upload-selected',!!file);$('mrDropTitle').textContent=file?'更换截图':'将截图拖到这里';
             if(file){objectURL=URL.createObjectURL(file);$('mrPreview').src=objectURL;say('');applied.textContent='';}
             setBusy(false);return true;
         }
@@ -159,20 +162,22 @@
         }
         $('mrFile').onchange=()=>{const files=Array.from($('mrFile').files);$('mrFile').value='';if(files.length)void acceptFiles(files);};
         let dragDepth=0;
+        const compactUpload=root.matchMedia('(max-width: 640px) and (orientation: portrait)');
         function clearDrag(){dragDepth=0;$('mrDropZone').classList.remove('mr-drag-over');}
-        $('mrDropZone').addEventListener('dragenter',event=>{event.preventDefault();event.stopPropagation();dragDepth++;if(!busy)$('mrDropZone').classList.add('mr-drag-over');});
-        $('mrDropZone').addEventListener('dragover',event=>{event.preventDefault();event.stopPropagation();if(event.dataTransfer)event.dataTransfer.dropEffect=busy?'none':'copy';});
+        $('mrDropZone').addEventListener('dragenter',event=>{event.preventDefault();event.stopPropagation();if(compactUpload.matches)return;dragDepth++;if(!busy&&Array.from(event.dataTransfer?.types||[]).includes('Files'))$('mrDropZone').classList.add('mr-drag-over');});
+        $('mrDropZone').addEventListener('dragover',event=>{event.preventDefault();event.stopPropagation();if(event.dataTransfer)event.dataTransfer.dropEffect=busy||compactUpload.matches?'none':'copy';});
         $('mrDropZone').addEventListener('dragleave',event=>{event.preventDefault();event.stopPropagation();dragDepth--;if(dragDepth<=0)clearDrag();});
-        $('mrDropZone').addEventListener('drop',event=>{event.preventDefault();event.stopPropagation();clearDrag();if(event.dataTransfer)void acceptFiles(event.dataTransfer.files);});
+        $('mrDropZone').addEventListener('drop',event=>{event.preventDefault();event.stopPropagation();clearDrag();if(!compactUpload.matches&&event.dataTransfer)void acceptFiles(event.dataTransfer.files);});
+        const dropHint=()=>compactUpload.matches?'请点击「截图文字提取」选择截图。':'请将截图拖入虚线区域。';
         // An image dropped elsewhere in the open workspace must not navigate
         // the tab away from the user's existing garage/selection.
         dialog.addEventListener('dragover',event=>{event.preventDefault();if(event.dataTransfer)event.dataTransfer.dropEffect='none';});
-        dialog.addEventListener('drop',event=>{event.preventDefault();clearDrag();say('请将截图拖入上方虚线区域。');});
+        dialog.addEventListener('drop',event=>{event.preventDefault();clearDrag();say(dropHint());});
         document.addEventListener('dragover',event=>{if(dialog.isConnected&&Array.from(event.dataTransfer?.types||[]).includes('Files'))event.preventDefault();});
-        document.addEventListener('drop',event=>{if(dialog.isConnected){event.preventDefault();clearDrag();if(!$('mrDropZone').contains(event.target))say('请将截图拖入上方虚线区域。');}});
+        document.addEventListener('drop',event=>{if(dialog.isConnected){event.preventDefault();clearDrag();if(!$('mrDropZone').contains(event.target))say(dropHint());}});
         $('mrStart').onclick=()=>start();$('mrRetry').onclick=()=>start(true);
         $('mrCancel').onclick=async()=>{const ticket=generation+1;await resetJob();if(ticket===generation&&dialog.isConnected)say('已取消识别，当前选图未改变。');};
-        async function close(){clearDrag();const disposal=resetJob();file=null;$('mrFile').value='';$('mrFileName').textContent='';$('mrPreview').hidden=true;$('mrDropZone').classList.remove('mr-upload-selected');$('mrDropTitle').textContent='拖入或选择已有截图';if(objectURL)URL.revokeObjectURL(objectURL);objectURL=null;say('');applied.textContent='';setBusy(false);await disposal;}
+        async function close(){clearDrag();const disposal=resetJob();file=null;$('mrFile').value='';$('mrFileName').textContent='';$('mrPreview').hidden=true;$('mrDropZone').classList.remove('mr-upload-selected');$('mrDropTitle').textContent='将截图拖到这里';if(objectURL)URL.revokeObjectURL(objectURL);objectURL=null;say('');applied.textContent='';setBusy(false);await disposal;}
         $('mrDiscard').onclick=close;
         $('mrApply').onclick=async()=>{
             const item=attempt;if(!item||busy)return;

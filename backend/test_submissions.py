@@ -184,13 +184,17 @@ class SubmissionsTests(unittest.TestCase):
     def test_four_tier_reclassification_preserves_raw_time_and_routes(self):
         for tier in ['理论','普通','自动']:
             sid=self.create();self.submit(sid)
-            candidate=dict(self.entry,tier=tier)
+            candidate=dict(self.entry,tier=tier,stars=None if tier=='理论' else self.entry['stars'])
             preview=self.preview(sid,candidate).json()
+            self.assertEqual(preview['tier_change'],{'from':'高手','to':tier})
             if tier in ['普通','自动']:
                 self.assertTrue(preview['comparison']['kind'].startswith('availability'))
                 self.assertEqual(preview['comparison']['new'],'✓')
                 self.assertIsNone(preview['comparison']['delta'])
-            response=self.decision(sid,entry=candidate,reason='管理员调整归档',review_score=4)
+            self.assertEqual(self.decision(sid,entry=candidate,reason='管理员调整归档').status_code,422)
+            self.assertEqual(self.decision(sid,entry=candidate,tier_change_confirmed=True).status_code,422)
+            response=self.decision(sid,entry=candidate,reason='管理员调整归档',review_score=4,
+                                   tier_change_confirmed=True,slower_confirmed=True)
             self.assertEqual(response.status_code,200,response.text)
             detail=self.detail(sid).json()
             self.assertEqual(detail['payload']['tier'],'高手')
@@ -199,6 +203,29 @@ class SubmissionsTests(unittest.TestCase):
         sid=self.create(dict(self.entry,tier='普通',route='滑栏杆'))
         self.assertEqual(self.submit(sid).status_code,422)
         self.assertEqual({p.name:hashlib.sha256(p.read_bytes()).hexdigest() for p in self.ref.iterdir()},self.original)
+
+    def test_cn_theory_star_is_rejected_in_draft_submit_and_review(self):
+        invalid=dict(self.entry,tier='理论')
+        r=self.client.post('/api/submissions',json={'request_key':secrets.token_hex(16),'entries':[invalid]})
+        self.assertEqual(r.status_code,422);self.assertIn('不能带显式星级',r.json()['detail'])
+        sid=self.create()
+        r=self.client.put('/api/submissions/'+sid,json={'revision':1,'entry':invalid})
+        self.assertEqual(r.status_code,422)
+        with self.app.state.store.connect() as db:
+            db.execute('UPDATE submissions SET payload=? WHERE id=?',(json.dumps(invalid),sid))
+        self.assertEqual(self.submit(sid).status_code,422)
+        with self.app.state.store.connect() as db:
+            db.execute("UPDATE submissions SET status='pending' WHERE id=?",(sid,))
+        self.assertEqual(self.preview(sid,invalid).status_code,422)
+        p=self.preview(sid,self.entry).json()
+        r=self.admin.post(f'/api/admin/submissions/{sid}/review',json={
+            'revision':1,'action':'accept','entry':invalid,'basis':p['basis'],'reason':'测试','tier_change_confirmed':True})
+        self.assertEqual(r.status_code,422)
+        r=self.decision(sid,entry=self.entry,reason='复核实际星级',tier_change_confirmed=True)
+        self.assertEqual(r.status_code,200,r.text)
+        self.assertEqual(self.detail(sid).json()['payload']['tier'],'理论')
+        missing=self.create(dict(self.entry,stars=None))
+        self.assertEqual(self.submit(missing).status_code,422)
 
     def test_two_admin_windows_cannot_accept_same_target_concurrently(self):
         a=self.create();b=self.create();self.submit(a);self.submit(b)

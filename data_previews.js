@@ -17,7 +17,7 @@
     async function request(method,path,body){return (await fetchResponse(method,path,body)).json();}
     async function run(fn){if(busy)return;busy=true;$('previewMain').inert=true;$('previewBusy').hidden=false;try{await fn();}catch(e){notice(e.message);}finally{busy=false;$('previewMain').inert=false;$('previewBusy').hidden=true;}}
     function button(text,fn){const b=el('button',text);b.type='button';b.onclick=()=>run(fn);return b;}
-    function target(p){return p?`${p.zone}/${p.tier} · ${p.big}/${p.small}\n${p.car} ${p.stars===null?'无星级':'★'+p.stars} · ${p.sc?p.sc_type:p.route||'普通跑法'}`:'目标无效';}
+    function target(p){return p?`国服 · ${p.zone}/${p.tier} · ${p.big}/${p.small}\n${p.car} ${p.stars==null?'无星级':'★'+p.stars} · ${p.sc?p.sc_type:p.route||'普通跑法'}`:'目标无效';}
     function value(v){return v===null||v===undefined?'—':String(v);}
     function table(headers){const wrap=el('div');wrap.className='table-wrap';const t=el('table');t.className='preview-table';const head=el('thead'),tr=el('tr');headers.forEach(h=>tr.append(el('th',h)));head.append(tr);const body=el('tbody');t.append(head,body);wrap.append(t);return {wrap,body};}
     function row(body,values){const tr=el('tr');for(const v of values){const td=el('td');if(v instanceof Node)td.append(v);else td.textContent=value(v);tr.append(td);}body.append(tr);return tr;}
@@ -30,8 +30,9 @@
         const t=table(['选择','拟采纳目标','拟采纳值','评分 / 原因','审核版本']);
         for(const item of data.items){const c=el('input');c.type='checkbox';c.checked=picks.has(item.id);c.setAttribute('aria-label','选择 '+item.id.slice(0,8));c.onchange=()=>{if(c.checked){if(picks.size>=50){c.checked=false;notice('每批最多50条');return;}picks.set(item.id,{id:item.id,revision:item.revision});}else picks.delete(item.id);retryRequest=null;picked();};
             const p=item.accepted_payload,desc=el('span',target(p));desc.className='preview-target';
+            if(item.review_issue){picks.delete(item.id);c.checked=false;c.disabled=true;const link=el('a','打开投稿重新审核');link.href='/submissions#'+item.id;desc.append(el('p',item.review_issue,'preview-warning'),link);}
             row(t.body,[c,desc,p?(['普通','自动'].includes(p.tier)?'✓（投稿成绩保留）':p.time):'缺少内容',`${item.review_score===null?'未评分':item.review_score+'/5'}\n${item.decision_reason||''}`,`${item.id.slice(0,8)} / v${item.revision}`]);}
-        $('candidateTable').replaceChildren(t.wrap);$('candidateCount').textContent=`共${data.total}条，当前${data.items.length}条`;
+        $('candidateTable').replaceChildren(t.wrap);$('candidateCount').textContent=`共${data.total}条，当前${data.items.length}条`;picked();
         $('candidatePrevious').disabled=offset===0;$('candidateNext').disabled=offset+50>=data.total;
     }
     async function history(){const data=await request('GET','/admin/previews');const select=$('previewHistory');select.replaceChildren();const first=el('option','请选择历史预览');first.value='';select.append(first);
