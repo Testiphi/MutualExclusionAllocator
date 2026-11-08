@@ -2,6 +2,7 @@
 from contextlib import closing
 import hashlib
 import json
+import os
 from pathlib import Path
 import secrets
 import tempfile
@@ -20,8 +21,8 @@ A='/api/mini/account/v1'
 ORIGIN='https://account-isolation.example.test'
 PROXY={'X-Forwarded-Proto':'https','X-Real-IP':'192.0.2.8'}
 PASSWORD='fixture-isolation-password-only'
-SNAPSHOT=ROOT.parent/'offline-evaluation/mini-ocr-gateway-release-20261104-01/RacePick-MiniOCR-Baseline-20261104-delivery-v2/snapshot'
-BINDING=ROOT.parent/'repo/docs/MINI_OCR_CN_BINDING_20261104.json'
+SNAPSHOT=Path(os.environ.get('RACEPICK_TEST_SNAPSHOT_ROOT',ROOT.parent/'offline-evaluation/mini-ocr-gateway-release-20261104-01/RacePick-MiniOCR-Baseline-20261104-delivery-v2/snapshot'))
+BINDING=ROOT/'docs/MINI_OCR_CN_BINDING_20261104.json'
 
 
 class AccountServiceTests(unittest.TestCase):
