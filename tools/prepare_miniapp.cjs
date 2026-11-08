@@ -10,6 +10,8 @@ const sharedOnly=process.argv[2]==='--shared-only';
 if(sharedOnly&&process.argv.length!==3)throw Error('--shared-only 不能与运行配置参数并用');
 const nativeArgs=process.argv.slice(2).filter(arg=>arg!=='--local-presenter-preview');
 const native=require('./native_profile.cjs').nativeFlags(sharedOnly?[]:nativeArgs);
+const accountIndex=process.argv.indexOf('--account-profile');
+const accountProfile=require('../miniapp/services/account_connection').validateAccountProfile(accountIndex<0?{enabled:false}:JSON.parse(fs.readFileSync(path.resolve(process.argv[accountIndex+1]),'utf8')));
 const config = require('../miniapp/shared-source.json');
 const files = config.files;
 const output = path.join(root, 'miniapp/shared');
@@ -52,8 +54,6 @@ manifest.derived={'web_home.js':{source_file:'index.html',source_sha256:crypto.c
 fs.writeFileSync(path.join(output, 'source.json'), JSON.stringify(manifest, null, 2) + '\n');
 console.log(JSON.stringify(manifest, null, 2));
 if(sharedOnly)return;
-const accountIndex=process.argv.indexOf('--account-profile');
-const accountProfile=require('../miniapp/services/account_connection').validateAccountProfile(accountIndex<0?{enabled:false}:JSON.parse(fs.readFileSync(path.resolve(process.argv[accountIndex+1]),'utf8')));
 let dataBinding=null;
 const receiptIndex = process.argv.indexOf('--data-receipt');
 const generated = path.join(root,'miniapp/generated'); fs.mkdirSync(generated,{recursive:true});
@@ -75,6 +75,6 @@ if (receiptIndex !== -1) {
 fs.writeFileSync(path.join(generated,'native-config.js'),'module.exports = '+JSON.stringify(native)+';\n');
 
 fs.writeFileSync(path.join(generated,'account-config.js'),'module.exports = '+JSON.stringify(accountProfile)+';\n');
-const clientFiles=cp.execFileSync('git',['ls-files','-z','miniapp'],{cwd:root,encoding:'utf8'}).split('\0').filter(n=>/\.(js|wxml|wxss)$/.test(n));
+const clientFiles=cp.execFileSync('git',['ls-files','-z','miniapp'],{cwd:root,encoding:'utf8'}).split('\0').filter(n=>/\.(js|json|wxml|wxss)$/.test(n));
 const clientHashes=Object.fromEntries(clientFiles.map(n=>[n,crypto.createHash('sha256').update(fs.readFileSync(path.join(root,n))).digest('hex')]));
 fs.writeFileSync(path.join(generated,'build-info.js'),'module.exports = '+JSON.stringify({buildId:crypto.createHash('sha256').update(JSON.stringify(manifest)+JSON.stringify(native)+JSON.stringify(accountProfile)+JSON.stringify(dataBinding)+JSON.stringify(clientHashes)).digest('hex').slice(0,20)})+';\n');
