@@ -114,6 +114,25 @@ class MapLayoutTests(unittest.TestCase):
         words=challenge();words[1]['text']='花都疾驰'
         self.assertNotEqual(self.parse(words,(1567,1080))['status'],'complete')
 
+    def test_challenge_and_defense_support_each_expanded_slot(self):
+        left=[148,287,426,565]
+        right=[1039,1179,1319,1459]
+        for title,layout in [('挑战','challenge'),('防御','defense_cards')]:
+            for index,center in enumerate([521,660,800,939,1079]):
+                big,small=PAIRS[index]
+                headers=([row(big+' '+small,center,284,166,28)],
+                         [row(big,center-44,284,76,28),row(small,center+44,284,76,28)])
+                side_words=[row(title,116,107),row('KIMERA',center-363,342),row('CC850',center+372,362)]
+                for (side_big,side_small),cx in zip(PAIRS[:index]+PAIRS[index+1:],left[:index]+right[index:]):
+                    side_words += [row(side_big,cx,357,78,29),row(side_small,cx,378,65,22)]
+                for header in headers:
+                    with self.subTest(title=title,slot=index+1,split=len(header)==2):
+                        result=self.parse(side_words+header,(1567,1080))
+                        self.assert_complete(result)
+                        self.assertEqual(result['layout'],layout)
+                        self.assertEqual(result['diagnostics']['expanded_slot'],index+1)
+                self.assertNotEqual(self.parse(side_words,(1567,1080))['status'],'complete')
+
     def test_current_order_comes_from_positions_not_catalog_order(self):
         order=[PAIRS[4],PAIRS[1],PAIRS[3],PAIRS[0],PAIRS[2]]
         self.assert_complete(self.parse(qualifier(pairs=order)),order)
