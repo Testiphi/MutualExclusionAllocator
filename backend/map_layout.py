@@ -125,8 +125,8 @@ def _slot_for(cx, cells, width):
     return hits[0] if len(hits) == 1 else None
 
 
-def _expanded_index(cx, width, challenge=False):
-    offset = (.975-.045-4*.089)/2 if challenge else .156
+def _expanded_index(cx, width, centered_header=False):
+    offset = (.975-.045-4*.089)/2 if centered_header else .156
     expected = [(.045+offset+(i-1)*.089)*width for i in range(1,6)]
     hits = [i+1 for i,x in enumerate(expected) if abs(cx-x) <= .033*width]
     return hits[0] if len(hits) == 1 else None
@@ -158,7 +158,7 @@ def _inline(text, pairs):
     return ranked[0]
 
 
-def _challenge_header(rows, pairs, width, height):
+def _horizontal_map_header(rows, pairs, width, height):
     band=[r for r in rows if TEXT_MIN <= r['confidence'] and .22*height <= r['cy'] <= .31*height]
     candidates=[]
     for row in band:
@@ -179,7 +179,7 @@ def _challenge_header(rows, pairs, width, height):
                 candidates.append(((left+right)/2,match,[a,b]))
     located=[]
     for cx,match,parts in candidates:
-        index=_expanded_index(cx,width,challenge=True)
+        index=_expanded_index(cx,width,centered_header=True)
         if index:
             located.append((index,match,parts))
     if len(located)!=1:
@@ -309,14 +309,15 @@ def parse_map_layout(image_size, ocr, catalog, *, server='cn', catalog_version=N
         if expanded is None:
             out['reason']='expanded_anchor_off_grid';return out
         out['diagnostics']['anchor']={'kind':'large_map_heading','box':anchor['box'],'slot':expanded}
-    elif layout=='challenge':
-        header=_challenge_header(rows,pairs,width,height)
-        if header is None:
+    elif layout in ('challenge','defense_cards'):
+        header=_horizontal_map_header(rows,pairs,width,height)
+        if header:
+            expanded=header[0]
+            named=[r for r in rows if r['confidence']>=TEXT_MIN and .30*height <= r['cy'] <= .40*height]
+            out['diagnostics']['anchor']={'kind':'horizontal_map_header','boxes':[r['box'] for r in header[2]],'slot':expanded}
+        elif layout=='challenge':
             out['reason']='challenge_header_missing_or_ambiguous';return out
-        expanded=header[0]
-        named=[r for r in rows if r['confidence']>=TEXT_MIN and .30*height <= r['cy'] <= .40*height]
-        out['diagnostics']['anchor']={'kind':'horizontal_map_header','boxes':[r['box'] for r in header[2]],'slot':expanded}
-    else:
+    if expanded is None:
         named=[r for r in rows if r['confidence']>=TEXT_MIN and .23*height <= r['cy'] <= .39*height]
     cells=_cells(width,expanded)
     out['diagnostics']['cells']=[[round(l,2),round(r,2)] for l,r in cells]
@@ -332,7 +333,7 @@ def parse_map_layout(image_size, ocr, catalog, *, server='cn', catalog_version=N
         # discard a new/garbled third name just because it is outside catalog.
         # The qualifier expanded map name occupies the left title lane; car
         # branding and selection prompts elsewhere in that wide cell do not.
-        if slot and (layout!='challenge' or slot!=expanded):
+        if slot and (header is None or slot!=expanded):
             if layout=='qualifier' and slot==expanded and abs(row['cx']-anchor['cx'])>.06*width:
                 continue
             relevant.append(row)
