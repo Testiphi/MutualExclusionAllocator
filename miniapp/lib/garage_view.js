@@ -16,4 +16,7 @@ function visibleCars(cars,query,carClass,sortMode) {
     return a.id.localeCompare(b.id,'zh');
   });
 }
-module.exports={enrichModel,visibleCars};
+function garageClasses(server) {
+  return server==='global' ? ['','S','A','B','C','D'] : ['','R','S','A','B','C','D'];
+}
+module.exports={enrichModel,visibleCars,garageClasses};

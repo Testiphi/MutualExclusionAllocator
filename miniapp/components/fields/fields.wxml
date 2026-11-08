@@ -1,0 +1,1 @@
+<view wx:for="{{items}}" wx:key="label" class="fact"><view class="label">{{item.label}}</view><text class="value" selectable="{{true}}">{{item.value}}</text></view>

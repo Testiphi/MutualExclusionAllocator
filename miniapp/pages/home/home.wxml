@@ -2,12 +2,9 @@
  <view class="shell">
   <view class="home-heading"><view class="brand">Race<text class="brand-pick">Pick</text></view><view class="heading-title">擂台选车助手</view></view>
   <view class="subtitle">{{subtitle}}</view>
-  <view wx:if="{{ready}}" class="site-links">
-   <button data-page="coverage" bindtap="navigate">擂台成绩表 <text class="new-badge">新功能</text></button>
-   <button data-page="account" bindtap="navigate">{{actor ? '个人中心' : '登录 / 注册'}}</button>
-   <button data-page="submissions" bindtap="navigate">成绩投稿</button><button data-page="community" bindtap="navigate">贡献榜 / 公告 / 反馈</button>
-   <button wx:if="{{actor.role === 'admin' || actor.role === 'superadmin'}}" data-page="workbench" bindtap="navigate">管理工作台</button>
-  </view>
+  <view wx:if="{{planId}}" class="notice">{{conflictAcceptance ? 'W3冲突验收准备' : formalWriteCandidate ? '正式云保存验收工程' : writeAcceptance ? 'W1/W2写验收工程' : readbackAcceptance ? '已保存车库只读复核' : '只读验收工程'}}：{{buildId}}<button bindtap="copyAcceptanceReport">复制验收报告</button></view>
+  <view wx:if="{{ready && !accountRestricted}}" class="coverage-entry"><view><view class="coverage-entry-title">擂台成绩表 <text class="coverage-entry-new">新功能</text></view><view class="coverage-entry-description">查看各图参考成绩，补充缺失记录</view></view><button class="coverage-entry-link" data-page="coverage" bindtap="navigate">查看成绩表 →</button></view>
+  <view wx:if="{{ready}}" class="account-panel"><view class="account-heading">{{actor ? (homeNickname || '已登录') + ' · ' + (actor.role === 'superadmin' ? '超级管理员' : actor.role === 'admin' ? '管理员' : '玩家') : '游客 · 资料保存在本机'}}</view><view wx:if="{{!actor}}" class="account-actions"><button disabled="{{!accountAvailable}}" class="account-primary" data-page="account" data-mode="login" bindtap="navigate">登录</button><button wx:if="{{registrationAvailable}}" data-page="account" data-mode="register" bindtap="navigate">注册</button></view><view class="account-navigation"><button wx:if="{{actor}}" data-page="account" bindtap="navigate">个人中心<text wx:if="{{unreadCounts.feedback}}" class="unread-dot"></text></button><button wx:if="{{!accountRestricted}}" data-hub="contributions" bindtap="openHub">数据贡献<text wx:if="{{unreadCounts.submissions}}" class="unread-dot"></text></button><button wx:if="{{!accountRestricted && (actor.role === 'admin' || actor.role === 'superadmin')}}" data-hub="management" bindtap="openHub">管理工作台<text wx:if="{{unreadCounts.review || unreadCounts.feedback_admin}}" class="unread-dot"></text></button><button wx:if="{{!accountRestricted}}" data-page="community" data-tab="announcements" bindtap="navigate">更新公告</button></view></view>
   <view wx:if="{{mode === 'mock'}}" class="notice">本地联调 · 模拟目录与结果，非真实计算 / OCR</view>
   <view wx:if="{{mode === 'local'}}" class="notice">本地计算 · 数据未冻结 · 识图尚未接入</view>
   <view wx:if="{{mode === 'native-fixture'}}" class="notice">本地接口联调 · fixture身份，非真实微信鉴权</view>
@@ -31,8 +28,8 @@
    </view>
    <view class="card ocr-workspace">
     <view class="recognition-entry">
-     <button wx:if="{{server === 'cn'}}" disabled="{{busy}}" bindtap="chooseImage">{{image ? '更换截图' : '地图识别'}}</button>
-     <text class="ocr-purpose">{{server === 'cn' ? '仅从相册选择能清晰看到五图中文名称的游戏截图，不支持拍屏照片。' : '国际服暂未开放识图'}}</text>
+     <button wx:if="{{server === 'cn'}}" disabled="{{busy}}" bindtap="chooseImage">{{image ? '更换截图' : '截图文字提取'}}</button>
+     <text class="ocr-purpose">{{server === 'cn' ? '从相册选择文字清晰的截图，提取五个名称以辅助填写。' : '国际服支持手动填写'}}</text>
     </view>
     <view wx:if="{{image}}" class="recognition">
      <image src="{{image}}" mode="widthFix" class="preview" />
@@ -69,10 +66,10 @@
    <view class="card garage">
     <button class="garage-heading" bindtap="toggleGarage"><view>我的车库 · 已选 {{selectedCount}} 辆</view><text class="muted">{{garageOpen ? '收起 ▴' : '展开 ▾'}}</text></button>
     <view wx:if="{{garageOpen}}">
-    <view wx:if="{{actor}}" class="cloud-profile"><view>{{cloudStatus}}</view><button wx:if="{{!cloudLoaded}}" bindtap="syncAccount">重试读取账号车库</button><button bindtap="importGarage">导入本机游客车库</button><button bindtap="recoverCloud">核对上次保存</button><view wx:if="{{cloudEmpty}}">账号尚未保存此服车库，可直接选车或导入本机。</view>
-     <view wx:if="{{cloudConflict}}"><view>本地 {{cloudConflict.local.cars.length}} 辆 · 云端 {{cloudConflict.remote.cars.length}} 辆</view><view>两份车库均已保留，请明确选择。</view><button bindtap="restore">加载云端版本</button><button bindtap="overwriteCloud">保存本地版本</button></view>
+    <view wx:if="{{actor}}" class="cloud-profile"><view>{{cloudStatus}}</view><button wx:if="{{!cloudLoaded}}" bindtap="syncAccount">重试读取账号车库</button><button wx:if="{{!writeAcceptance && !readbackAcceptance && !conflictAcceptance && !formalWriteCandidate}}" bindtap="importGarage">导入本机游客车库</button><button wx:if="{{allowCloudWrites}}" bindtap="recoverCloud">核对上次保存</button><button wx:if="{{writeAcceptance || conflictAcceptance}}" disabled="{{cloudSaving}}" bindtap="reloadCloud">认证GET重载当前服</button><view wx:if="{{cloudEmpty}}">账号尚未保存此服车库（null）。</view>
+     <view wx:if="{{cloudConflict}}"><view>本地 {{cloudConflict.local ? cloudConflict.local.cars.length : 0}} 辆 · 云端 {{cloudConflict.remote ? cloudConflict.remote.cars.length : 0}} 辆</view><view>两份车库均已保留，请明确选择。</view><view wx:if="{{cloudConflict.localText}}">本次提交 revision {{cloudConflict.localRevision}}：{{cloudConflict.localText}}</view><view wx:if="{{cloudConflict.remoteText}}">当前云端 revision {{cloudConflict.remoteRevision}}：{{cloudConflict.remoteText}}</view><button bindtap="restore">加载云端版本</button><button wx:if="{{allowCloudWrites && !writeAcceptance && !conflictAcceptance}}" bindtap="overwriteCloud">保存本地版本</button></view>
     </view>
-    <view class="actions"><button bindtap="save">保存车库</button><button bindtap="restore">恢复已保存</button><text wx:if="{{dirty}}" class="save-status">尚未保存</text></view>
+    <view class="actions"><button disabled="{{cloudSaving || (conflictAcceptance && cloudConflict) || (actor && (!allowCloudWrites || !cloudLoaded))}}" bindtap="save">保存车库</button><button bindtap="restore">恢复已保存</button><text wx:if="{{actor ? cloudDirty : dirty}}" class="save-status">尚未保存</text></view>
 
      <view class="actions garage-tools"><button data-action="select-all" bindtap="selectAll">全部点亮</button><button data-action="clear-all" bindtap="clearAll">全部清空</button><button data-action="sort" bindtap="cycleSort">{{sortLabel}}</button></view>
      <view wx:if="{{zoneHint}}" class="zone-hint">星级代表加速所改装的星级，仅作为参考</view>
@@ -122,4 +119,5 @@
    <button wx:for="{{dropdown.options}}" wx:key="value" id="dropdown-option-{{item.value}}" class="dropdown-option {{item.selected ? 'is-selected' : ''}} {{item.disabled ? 'is-unavailable' : ''}}" disabled="{{item.disabled}}" data-value="{{item.value}}" bindtap="chooseDropdown"><text>{{item.label}}</text><text wx:if="{{item.selected}}" class="dropdown-check">✓</text></button>
   </scroll-view>
  </view>
+ <view wx:if="{{homeHub}}" class="hub-backdrop" catchtap="closeHub" catchtouchmove="blockDropdownScroll"><view class="hub-dialog" catchtap="blockDropdownScroll"><view class="hub-heading"><text>{{homeHub === 'management' ? '管理工作台' : '数据贡献'}}</text><button bindtap="closeHub">×</button></view><view class="hub-help">{{homeHub === 'management' ? '按权限显示审核、发布与账号管理功能。' : '提交数据、查看审核进度与贡献排名。'}}</view><scroll-view scroll-y="{{true}}" class="hub-links"><view wx:if="{{homeHub === 'contributions'}}"><button wx:if="{{!actor}}" data-page="account" bindtap="navigate">登录后提交成绩</button><button wx:if="{{actor}}" data-page="submissions" data-compose="1" bindtap="navigate">提交成绩<view>补充成绩、来源和证据</view></button><button wx:if="{{actor}}" data-page="submissions" bindtap="navigate">我的投稿<view>查看审核结果，继续补充资料</view></button><button data-page="coverage" bindtap="navigate">擂台成绩表<view>查看成绩覆盖与补充缺口</view></button><button data-page="community" data-tab="leaderboard" bindtap="navigate">贡献排行榜<view>查看本月榜与总榜</view></button><button wx:if="{{actor}}" data-page="community" data-tab="mine" bindtap="navigate">我的贡献<view>查看得分明细和调整记录</view></button></view><view wx:else=""><button data-page="workbench" data-tab="review" bindtap="navigate">投稿审核<view>审核玩家投稿，填写反馈与质量评分</view></button><view wx:if="{{actor.role === 'superadmin'}}"><button data-page="workbench" data-tab="versions" bindtap="navigate">成绩版本测试台<view>核对完整变更、逐项确认与回滚</view></button><button data-page="workbench" data-tab="feedback" bindtap="navigate">用户反馈<view>查看问题反馈并回复用户</view></button><button data-page="workbench" data-tab="accounts" bindtap="navigate">账号与公告管理</button><button data-page="workbench" data-tab="invitations" bindtap="navigate">管理员与邀请码</button><button data-page="workbench" data-tab="usage" bindtap="navigate">使用统计</button></view></view></scroll-view></view></view>
 </view>

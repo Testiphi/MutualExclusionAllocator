@@ -99,6 +99,22 @@ test('international recognition is unavailable and media adapter only opens albu
   await assert.rejects(createMedia({chooseMedia:x=>x.success({tempFiles:[{tempFilePath:'x',size:8388609}]})}).choose(),/8MiB/);
   assert.equal(await createMedia({chooseMedia:x=>x.fail({errMsg:'chooseMedia:fail cancel'})}).choose(),null);
 });
+test('native image selection releases the screenshot only after explicit upload confirmation', async () => {
+  for(const confirm of [false,true]){
+    let choice;
+    const media=createMedia({
+      chooseMedia:o=>o.success({tempFiles:[{tempFilePath:'tmp/image',size:100}]}),
+      showModal:o=>{choice=o;}
+    },{confirmUpload:true});
+    let settled=false;
+    const selected=media.choose().then(value=>{settled=true;return value;});
+    await Promise.resolve();
+    assert.equal(settled,false);
+    assert.match(choice.content,/阿里云内容安全/);
+    choice.success({confirm});
+    assert.deepEqual(await selected,confirm?{path:'tmp/image',size:100}:null);
+  }
+});
 test('album return survives expected background/foreground transition; later edits cancel old selection', async () => {
   const d=deferred(); let state;
   const c=createController({service:createMock(),storage:{read:()=>null,write(){}},media:{choose:()=>d.promise},render:s=>{state=s;}});
@@ -191,4 +207,25 @@ test('actual native page JS handlers drive five manual maps and garage, then ren
   assert.equal(page.data.rows.filter(x=>x.small).length,5); assert.equal(page.data.schemes.length,1);
   assert.equal(page.data.schemes[0].totalText,'—'); assert.equal(page.data.mode,'mock');
   page.onUnload();
+});
+
+test('foreground account readback preserves consented image and starts OCR once', async () => {
+  const selected=deferred(); let state, starts=0;
+  const service={...createMock(),autoRecognize:true,recognize:async image=>{
+    starts++; assert.equal(image.path,'tmp/consented');
+    return {server:'cn',version:image.version,slots:Array(5).fill(null)};
+  }};
+  const c=createController({service,storage:{read:()=>null,write(){}},media:{choose:()=>selected.promise},render:s=>{state=s;}});
+  c.setProfile({cars:['\u8054\u8c03\u8f66A'],stars:{}});
+  const choosing=c.chooseImage();
+  c.hide();
+  c.setProfile({cars:['\u8054\u8c03\u8f66A'],stars:{}});
+  selected.resolve({path:'tmp/consented',size:32});
+  await choosing;
+  assert.equal(starts,0);
+  assert.equal(state.image,'tmp/consented');
+  await c.show();
+  assert.equal(starts,1);
+  await c.show();
+  assert.equal(starts,1);
 });

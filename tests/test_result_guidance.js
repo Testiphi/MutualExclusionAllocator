@@ -39,7 +39,7 @@ test('native local presenter uses the exact reviewed source and matches browser 
 test('native submit action preserves current server/map and respects busy/error and unavailable transport',()=>{
  const file=path.resolve(__dirname,'../miniapp/pages/home/home.js');let page;const navigations=[],notices=[],app={};
  vm.runInNewContext(fs.readFileSync(file,'utf8'),{require:require('node:module').createRequire(file),Page:p=>page=p,getApp:()=>app,wx:{navigateTo:p=>navigations.push(p.url),showModal:p=>notices.push(p),showActionSheet:p=>p.success({tapIndex:1})},console,setTimeout,clearTimeout});
- const state={draft:{server:'global',zone:'zone5',tier:'理论'},busy:false,error:''};const scope={data:{resultGuidance:guide([null,null],[candidate(),candidate()])},state,account:{}};
+ const state={draft:{server:'global',zone:'zone5',tier:'理论'},busy:false,error:''};const scope={data:{resultGuidance:guide([null,null],[candidate(),candidate()])},state,account:{generation:()=>0}};
  page.contributeResult.call(scope);assert.match(navigations[0],/server=global/);assert.equal(app.submissionMapTarget.big,'乙');assert.equal(app.submissionMapTarget.server,'global');assert.match(navigations[0],/submissions/);
  state.busy=true;page.contributeResult.call(scope);assert.equal(navigations.length,1);state.busy=false;scope.account=null;page.contributeResult.call(scope);assert.equal(notices.length,1);
 });
@@ -54,11 +54,11 @@ test('native map-only prefill leaves car/stars/time empty and rejects stale cata
 });
 
 for(const changedActor of [false,true])test(`native saved draft ${changedActor?'cannot cross an account change during confirmation':'survives cancelling a map-prefill request'}`,async()=>{
- const file=path.resolve(__dirname,'../miniapp/pages/submissions/submissions.js');let page,actor='before',writes=0;
+ const file=path.resolve(__dirname,'../miniapp/pages/submissions/submissions.js');let page,actor='before',generation=0,writes=0;
  const saved={schema:1,server:'cn',entries:[{big:'原图',time:'20'}]},app={submissionMapTarget:{server:'cn',big:'甲',small:'甲路',zone:'五区',tier:'高手'}};
- const wx={getStorageSync:()=>saved,setStorageSync:()=>writes++,showModal:p=>{if(changedActor)actor='after';p.success({confirm:changedActor});}};
+ const wx={getStorageSync:()=>saved,setStorageSync:()=>writes++,showModal:p=>{if(changedActor){actor='after';generation++;}p.success({confirm:changedActor});}};
  vm.runInNewContext(fs.readFileSync(file,'utf8'),{require:require('node:module').createRequire(file),Page:p=>page=p,getApp:()=>app,wx,console});
- const scope={data:{server:'cn',busy:false,entries:[]},client:{state:()=>({actor:{id:actor}}),call:async()=>({tracks:[{big:'甲',small:'甲路'}],reference_label:'fixture'})},draftKey:()=>actor,rows(){},list:async()=>{},setData(v){Object.assign(this.data,v);},mapTarget:page.mapTarget};
+ const scope={data:{server:'cn',busy:false,entries:[]},pendingMapTarget:app.submissionMapTarget,client:{generation:()=>generation,state:()=>({actor:{id:actor}}),call:async()=>({capabilities:{zones:['五区'],tiers:['高手']},tracks:[{big:'甲',small:'甲路'}],reference_label:'fixture'})},draftKey:()=>actor,rows(){},list:async()=>{},setData(v){Object.assign(this.data,v);},mapTarget:page.mapTarget};
  await page.boot.call(scope);assert.equal(writes,0);assert.equal(saved.entries[0].time,'20');
- if(changedActor){assert.match(scope.data.error,/账号已变化/);assert.equal(scope.data.entries.length,0);}else assert.equal(scope.data.entries[0].big,'原图');
+ if(changedActor){assert.match(scope.data.error,/账号或服别已变化/);assert.equal(scope.data.entries.length,0);}else assert.equal(scope.data.entries[0].big,'原图');
 });

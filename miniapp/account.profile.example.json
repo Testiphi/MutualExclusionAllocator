@@ -1,0 +1,9 @@
+{
+  "schema": 1,
+  "planId": "mini-account-probe-local01",
+  "origin": "https://mini-test.racepick.cn",
+  "enabled": false,
+  "isolatedServiceDeclared": false,
+  "accountRoutesDeclared": false,
+  "allowCloudWrites": false
+}

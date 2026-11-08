@@ -1,19 +1,26 @@
 'use strict';
 const {createTransport,responseJSON}=require('../adapters/transport');
 const {requestId}=require('../adapters/id');
+const {sha256,utf8}=require('../adapters/hash');
 const contract=require('../shared/feature_contract');
 const prefix='/api/mini/account/v1';
 const copy=x=>JSON.parse(JSON.stringify(x));
 function createAccountClient(wx,config,guest) {
  const transport=createTransport(wx,{enabled:true,baseURL:config.origin,allowLocal:config.kind==='fixture',namespace:'account'});
  const anonymousTransport=createTransport(wx,{enabled:true,baseURL:config.origin,allowLocal:config.kind==='fixture',namespace:'account'});
- let current=null,generation=0,availability=null,contractFlight=null;const listeners=new Set(),operations=new Map(),pendingWrites=new Map(),privateFiles=new Set();
+ let current=null,generation=0,availability=null,contractFlight=null,pendingAuth=null;const listeners=new Set(),operations=new Map(),pendingWrites=new Map(),privateFiles=new Set();
  function emit(){for(const fn of listeners)fn(state());}
  function state(){return current?copy({actor:current.actor,features:current.features,expires_at:current.expires_at,authenticated_at:current.authenticated_at}):{actor:null,features:null};}
- function clear(){generation++;current=null;transport.clearSession();operations.clear();pendingWrites.clear();for(const f of privateFiles)wx.getFileSystemManager().unlink({filePath:f,complete:()=>{}});privateFiles.clear();emit();}
+ function clear(){generation++;current=null;availability=null;contractFlight=null;pendingAuth=null;transport.clearSession();operations.clear();pendingWrites.clear();for(const f of privateFiles)wx.getFileSystemManager().unlink({filePath:f,complete:()=>{}});privateFiles.clear();emit();}
  function actor(){if(!current||current.expires_at*1000<=Date.now()){if(current)clear();throw Object.assign(Error('请先登录RacePick账号'),{status:401});}return current.actor;}
- function install(value){if(value.session_kind!=='racepick_account'||!/^rpa1\./.test(value.token)||!value.actor||!value.actor.id)throw Error('账号会话响应无效');clear();current=value;transport.setToken(value.token);emit();return state();}
- const uncertain=e=>!e.status||e.status>=500||e.code==='OPERATION_UNCERTAIN';
+ function validateSession(value,tokenRequired){const now=Date.now(),parent=guest.session?.current();
+  const issuedAt=value?.authenticated_at;
+  const issuedMs=config.kind==='platform'&&Number.isInteger(issuedAt)?issuedAt*1000:null;
+  // The server caps lifetime from issuance, which can be slightly ahead of the device clock.
+  const maxExpiry=(issuedMs!==null&&issuedMs<=now+30000?Math.max(now,issuedMs):now)+3600000;
+  if(!value||value.session_kind!=='racepick_account'||(tokenRequired&&(typeof value.token!=='string'||!/^rpa1\.[A-Za-z0-9._-]+$/.test(value.token)))||!value.actor||typeof value.actor.id!=='string'||!value.actor.id||/[\r\n]/.test(value.actor.id)||!['player','admin','superadmin'].includes(value.actor.role)||!Number.isInteger(value.expires_at)||value.expires_at*1000<=now||value.expires_at*1000>maxExpiry)throw Error('账号会话响应无效');if(config.kind==='platform'&&(value.schema_version!==1||value.token_type!=='Bearer'||!parent?.identity||!value.association||value.association.kind!=='session_only'||value.association.persistent_binding!==false||value.association.guest_identity!==parent.identity||value.expires_at*1000>parent.expiresAt))throw Error('账号会话与父访客绑定不符');}
+ function install(value,ticket){sameActor(ticket);validateSession(value,true);clear();current=value;transport.setToken(value.token);emit();return state();}
+ const uncertain=e=>!e.status||e.status>=500||e.code==='OPERATION_UNCERTAIN'||e.diagnostic?.kind==='response_decode';
  function sameActor(ticket){if(ticket!==generation)throw Error('账号已变化，已取消旧操作');}
  function blockPending(path){if(pendingWrites.has(path))throw Object.assign(Error('上次操作结果尚未确定，请先查询原操作'),{operationKey:pendingWrites.get(path)});}
  async function direct(path,{method='GET',data,account=true,anonymous=false,header={}}={}) {
@@ -29,7 +36,7 @@ function createAccountClient(wx,config,guest) {
  async function call(path,{method='GET',data,key,header={}}={}){
   const ticket=generation;
   const {pattern,op}=route(path,method);access(op);
-  if(!availability&&current){if(!contractFlight)contractFlight=direct('/contract',{account:true}).then(r=>{availability=r;}).finally(()=>{contractFlight=null;});await contractFlight;}
+  if(!availability&&current){if(!contractFlight){const work=direct('/contract',{account:true}).then(r=>{sameActor(ticket);availability=r;}).finally(()=>{if(contractFlight===work)contractFlight=null;});contractFlight=work;}await contractFlight;}
   sameActor(ticket);
   const publicRead=op['x-access']==='public',account=!!current||!publicRead;
   if(availability){const entry=availability['x-native-policy']?.routes?.find(r=>r.path===pattern&&r.method===method);if(entry&&entry.available===false)throw Object.assign(Error('服务器尚未启用此功能'),{status:503});}
@@ -41,16 +48,19 @@ function createAccountClient(wx,config,guest) {
   catch(e){if(mutation&&ticket===generation){operations.set(key,{path,method,actor:current?.actor.id});if(uncertain(e))pendingWrites.set(method+':'+path,key);e.operationKey=key;}throw e;}
  }
  return {
-  state,clear,subscribe:fn=>{listeners.add(fn);return()=>listeners.delete(fn);},generation:()=>generation,
-  async refresh(){if(!current)return state();const value=await direct('/session');current={...current,...value};emit();return state();},
+  sessionProof(group){const a=actor();if(!/^w[34]-[a-zA-Z0-9_-]{6,80}$/.test(group))throw Error('Invalid session proof scope');const parent=guest.identity?.()||guest.session?.current()?.identity;if(!parent)throw Error('Missing parent session');const tag=(kind,v)=>sha256(utf8(config.origin+'|'+group+'|'+kind+'|'+v));return {group,role:a.role,expiresAt:current.expires_at,actorTag:tag('actor',a.id),parentTag:tag('parent',parent),sessionTag:tag('native',current.token)};},
+  state,clear,pendingAuth:()=>pendingAuth&&{...pendingAuth},subscribe:fn=>{listeners.add(fn);return()=>listeners.delete(fn);},generation:()=>generation,
+  async refresh(){if(!current)return state();const ticket=generation,value=await direct('/session');try{validateSession(value,false);if(value.actor.id!==current.actor.id)throw Error('账号会话身份不符');}catch(e){if(ticket===generation)clear();throw Object.assign(Error('账号会话校验未通过，原草稿已保留'),{code:'ACCOUNT_SESSION_RESPONSE_INVALID',status:401});}current={...current,...value};emit();return state();},
   async auth(action,fields,key){if(!['register','login','resend-verification','forgot-password','verify-email','reset-password','redeem-invitation','reauth'].includes(action))throw Error('无效账号操作');
+   if(pendingAuth)throw Object.assign(Error('上次账号操作结果未确定，请先查询原操作'),{code:'AUTH_RECOVERY_REQUIRED',operationKey:pendingAuth.key,operationAction:pendingAuth.action});
+   const allowed={register:['email','password','invite_code'],login:['email','password'],'resend-verification':['email'],'forgot-password':['email'],'verify-email':['token'],'reset-password':['token','password'],'redeem-invitation':['invite_code'],reauth:['password']};if(!fields||typeof fields!=='object'||Object.keys(fields).some(k=>!allowed[action].includes(k)))throw Error('账号请求字段不符合固定协议');
    const ticket=generation;key=key||await requestId(wx);sameActor(ticket);const account=['reauth','redeem-invitation'].includes(action),data={schema:1,request_key:key,...fields};
-   try{const value=await direct('/auth/'+action,{method:'POST',data,account});if(['login','reauth'].includes(action))return install(value);if(action==='redeem-invitation')clear();return value;}
-   catch(e){if(e.status===401&&ticket===generation)clear();e.operationKey=key;throw e;}
+   try{const value=await direct('/auth/'+action,{method:'POST',data,account});sameActor(ticket);if(['login','reauth'].includes(action))return install(value,ticket);if(action==='redeem-invitation')clear();return value;}
+   catch(e){if(e.status===401&&ticket===generation)clear();else if(ticket===generation&&uncertain(e))pendingAuth={key,action};e.operationKey=key;e.operationAction=action;throw e;}
   },
-  async recoverAuth(key,action,server){const account=['profile-save','redeem-invitation'].includes(action);const value=await direct('/operations/'+encodeURIComponent(key)+'?action='+action+(server?'&server='+server:''),{account});if(['login','reauth'].includes(action))return install(value);return value;},
+  async recoverAuth(key,action,server){if(pendingAuth&&action!=='profile-save'&&(pendingAuth.key!==key||pendingAuth.action!==action))throw Error('只能查询原账号操作');const ticket=generation,account=['profile-save','redeem-invitation'].includes(action);let value;try{value=await direct('/operations/'+encodeURIComponent(key)+'?action='+action+(server?'&server='+server:''),{account});}catch(e){if(ticket===generation&&pendingAuth?.key===key&&pendingAuth.action===action&&e.body?.operation_resolved===true)pendingAuth=null;throw e;}sameActor(ticket);if(['login','reauth'].includes(action))return install(value,ticket);if(pendingAuth?.key===key&&pendingAuth.action===action)pendingAuth=null;return value;},
   async logout(){const ticket=generation;try{await direct('/session',{method:'DELETE'});}catch(e){if(e.status!==401)throw e;}finally{if(ticket===generation)clear();}},
-  async contract(){availability=await direct('/contract',{account:true});return availability;},call,
+  async contract(){const ticket=generation,value=await direct('/contract',{account:true});sameActor(ticket);availability=value;return availability;},call,
   async recover(key){const operation=operations.get(key);if(!operation)throw Error('当前会话没有此待核对操作');const r=await direct('/feature-operations/'+encodeURIComponent(key));pendingWrites.delete((operation.method||'POST')+':'+operation.path);operations.delete(key);return r;},
   async profile(server){return direct('/profile?server='+server);},
   async saveProfile(server,profile,revision,{intent='save',key}={}) {const ticket=generation;key=key||await requestId(wx);sameActor(ticket);try{return await direct('/profile?server='+server,{method:'PUT',data:{schema:1,request_key:key,explicit_save:true,intent,...(intent==='import_guest'?{confirm_guest_import:true}:{}),revision,cars:profile.cars,stars:profile.stars,...(server==='global'?{ocMap:profile.ocMap||{}}:{})}});}catch(e){e.operationKey=key;throw e;}},

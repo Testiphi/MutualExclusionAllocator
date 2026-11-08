@@ -1,1 +1,6 @@
-{"navigationBarTitleText":""}
+{
+  "navigationBarTitleText": "",
+  "usingComponents": {
+    "rp-select": "/components/select/select"
+  }
+}

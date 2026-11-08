@@ -8,6 +8,7 @@ function createController({ service, storage, media, render, autoCompute=false,s
   let draft = blank('cn'), saved = null, model, epoch = 0, mediaEpoch = 0, visible = true;
   let error = '', busy = false, result = null, pending = null, image = null, dirty = false;
   let blocked = false;
+  let startRecognitionOnShow = false;
   let workingBlocked=false;
   let profileBase=null;
   const profile=value=>JSON.stringify({cars:[...(value.cars||[])].sort(),stars:Object.entries(value.stars||{}).sort(),oc:Object.entries(value.oc||{}).sort()});
@@ -36,7 +37,7 @@ function createController({ service, storage, media, render, autoCompute=false,s
       mode: service.mode, storageBlocked: blocked,serviceStatus:service.status?service.status():null });
   }
   function invalidate(preserveMedia = false,preserveTask = false,preserveResult = false) {
-    if (!preserveMedia) mediaEpoch++;
+    if (!preserveMedia) { mediaEpoch++; startRecognitionOnShow = false; }
     epoch++; busy = false;if(!preserveResult)result = null; pending = null;
     if(preserveTask&&service.suspend)service.suspend();else service.cancel();
   }
@@ -83,7 +84,10 @@ function createController({ service, storage, media, render, autoCompute=false,s
     try {
       const value = await media.choose();
       if (ticket !== mediaEpoch || !value) return;
-      image = value; publish();if(service.autoRecognize&&visible)void recognize();
+      image = value;
+      startRecognitionOnShow = !visible;
+      publish();
+      if(service.autoRecognize&&visible)void recognize();
     } catch (e) { if (ticket === mediaEpoch) { error = e.message; publish(); } }
   }
   function acceptRecognition(value) {
@@ -104,9 +108,13 @@ function createController({ service, storage, media, render, autoCompute=false,s
   }
   load('cn'); publish();queueCompute();
   return {
-    setProfile(value) {change(()=>{draft.cars=[...(value?.cars||[])];draft.stars={...(value?.stars||{})};draft.oc={...(value?.ocMap||{})};});},
+    setProfile(value) {
+      const next={cars:[...(value?.cars||[])],stars:{...(value?.stars||{})},oc:{...(value?.ocMap||{})}};
+      if(profile(next)===profile(draft))return;
+      change(()=>Object.assign(draft,next));
+    },
     save, compute, chooseImage, recognize,retryRecognition:()=>recognize(true),
-    async reconnect() {if(!service.reconnect)return;invalidate();error='';busy=true;publish();const ticket=epoch;try{await service.reconnect();if(ticket===epoch)refresh();}catch(e){if(ticket===epoch)error=e.message;}finally{if(ticket===epoch){busy=false;publish();}}},
+    async reconnect() {if(!service.reconnect||busy)return;invalidate(true,true,true);error='';busy=true;publish();const ticket=epoch;try{const value=await service.reconnect();if(ticket===epoch&&visible){refresh();if(value&&draft.server==='cn')acceptRecognition(value);}}catch(e){if(ticket===epoch)error=e.message;}finally{if(ticket===epoch){busy=false;publish();}}},
     setMode(zone, tier) { change(() => { draft.zone = zone; draft.tier = tier; }); },
     setMap(index, map) {
       if (!Number.isInteger(index) || index < 0 || index > 4) return;
@@ -154,7 +162,8 @@ function createController({ service, storage, media, render, autoCompute=false,s
     hide() { visible = false; invalidate(true,true,true); stageWorking(); },
     async show() {
       visible = true; const ticket = ++epoch;
-      try { const value=await service.resume(); if (ticket === epoch) { refresh();if(value&&draft.server==='cn')acceptRecognition(value);publish();if(!value)queueCompute(); } }
+      try { const value=await service.resume(); if (ticket === epoch) { refresh();if(value&&draft.server==='cn')acceptRecognition(value);publish();if(startRecognitionOnShow&&service.autoRecognize)void recognize();
+        else if(!value)queueCompute(); } }
       catch (e) { if (ticket === epoch) { error = e.message;refresh();publish(); } }
     },
     destroy() { visible = false; invalidate(); image = null; }

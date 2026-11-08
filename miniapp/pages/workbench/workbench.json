@@ -1,1 +1,7 @@
-{"navigationBarTitleText":""}
+{
+  "navigationBarTitleText": "",
+  "usingComponents": {
+    "rp-select": "/components/select/select",
+    "rp-fields": "/components/fields/fields"
+  }
+}

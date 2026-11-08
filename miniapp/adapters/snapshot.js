@@ -39,7 +39,7 @@ function verifyNativeSnapshot(value,server,identity) {
     const m=parsed['global-data-manifest.json'],keys=['server_id','schema_version','dataset_version','catalog_payload_sha256','scores_payload_sha256','manifest_file'];
     if(!m._meta||m._meta.server_id!=='global'||m._meta.schema_version!==1||m._meta.manifest_file!=='global-data-manifest.json'||value.catalog_version!==null||caps.map_recognition!==false||caps.zones.join()!=='zone5'||caps.tiers.join()!=='理论')throw Error('国际服快照能力不符');
     for(const name of names.slice(0,2)){const f=m.files&&m.files[name],raw=value.files[name];if(!parsed[name]._meta||keys.some(k=>m._meta[k]===undefined||parsed[name]._meta[k]!==m._meta[k])||!f||f.sha256!==raw.sha256||f.bytes!==raw.bytes||f.payload_sha256!==(name===names[0]?m._meta.catalog_payload_sha256:m._meta.scores_payload_sha256))throw Error('国际服原子版本不符');}
-  } else if(caps.zones.join()!=='zone5,zone4'||caps.tiers.join()!=='理论,高手,普通,自动'||typeof caps.map_recognition!=='boolean'||(caps.map_recognition&&!/^[a-f0-9]{64}$/.test(value.catalog_version)))throw Error('国服快照能力不符');
+  } else if(caps.zones.join()!=='zone5,zone4'||caps.tiers.join()!=='理论,高手,普通,自动'||typeof caps.map_recognition!=='boolean'||(caps.map_recognition&&!/^[a-f0-9]{64}$/.test(value.catalog_version))||(!caps.map_recognition&&value.catalog_version!==null))throw Error('国服快照能力不符');
   return {server,version:value.version,cars,data,catalogVersion:value.catalog_version,identity,capabilities:caps,envelope:value};
 }
 module.exports = { verifyLocalBundle,verifyNativeSnapshot };

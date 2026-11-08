@@ -53,7 +53,10 @@ function createRecognitionJobs({api,createKey,currentBinding,now=Date.now,wait=m
       if(typeof job.expires_at!=='number'||!Number.isFinite(job.expires_at))throw error('识别任务到期信息无效','protocol');
       if(job.expires_at*1000<=now())throw error('图片与识别结果已到期，请重新选择截图','expired');
       if(job.state==='succeeded'){const value=result(a,job);phase='finished';return value;}
-      if(job.state==='failed')throw error('识别失败，请检查截图后重试','failed');
+      if(job.state==='failed'){
+        if(['IMAGE_SAFETY_REJECTED','IMAGE_SAFETY_UNAVAILABLE','IMAGE_SAFETY_TIMEOUT'].includes(job.error_code))throw Object.assign(error('图片安全处理未通过，请继续手动选图','failed'),{safetyCode:job.error_code});
+        throw error('识别失败，请检查截图后重试','failed');
+      }
       if(job.state==='cancelled')throw error('识别任务已取消','cancelled');
       if(job.state==='expired')throw error('图片与识别结果已到期','expired');
       if(!['queued','running'].includes(job.state))throw error('未知识别任务状态','protocol');
@@ -69,7 +72,7 @@ function createRecognitionJobs({api,createKey,currentBinding,now=Date.now,wait=m
         phase=upload?'uploading':'recovering';
         if(!upload&&!recover)throw error('上传响应未确认，需恢复原请求','uncertain');
         if(recover&&typeof api.recover!=='function')throw error('等待服务端提供原上传请求恢复能力，请勿重复上传','uncertain');
-        const input={path:a.path,size:a.size,request_key:a.key,...payload(a),isCurrent:()=>a===attempt&&ticket===generation};
+        const input={path:a.path,size:a.size,expected_sha256:a.expected_sha256,request_key:a.key,...payload(a),isCurrent:()=>a===attempt&&ticket===generation};
         const value=await (upload?api.upload(input):api.recover(input));
         envelope(a,value);a.id=value.id;
         if(a!==attempt||ticket!==generation){if(a.cancelled)dispose(a);throw error('本次识别已停止','stopped');}
@@ -86,14 +89,15 @@ function createRecognitionJobs({api,createKey,currentBinding,now=Date.now,wait=m
     }
   }
   return {
-    async start({path,size}) {
+    async start({path,size,expected_sha256}) {
       if(attempt)throw error('请先取消当前任务，或继续查询原任务','active');
       if(typeof path!=='string'||!path||!Number.isFinite(size)||size<=0||size>8*1024*1024)throw error('请选择8MiB以内的一张截图','image');
+      if(expected_sha256!==undefined&&!/^[a-f0-9]{64}$/.test(expected_sha256))throw error('样图校验信息无效','image');
       const binding=bind(),ticket=generation,key=await createKey();
       if(ticket!==generation)throw error('本次识别已停止','stopped');
       if(typeof key!=='string'||!/^[a-zA-Z0-9_-]{16,80}$/.test(key))throw error('请求ID无效','key');
       if(attempt)throw error('已有识别任务正在进行','active');
-      attempt={path,size,binding,key,id:null,cancelled:false};return run(attempt,{upload:true});
+      attempt={path,size,expected_sha256,binding,key,id:null,cancelled:false};return run(attempt,{upload:true});
     },
     resume() {
       if(!attempt)return Promise.reject(error('没有可恢复的识别任务','missing'));

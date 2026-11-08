@@ -2,14 +2,17 @@
 const {createTransport,responseJSON}=require('./transport');
 const {createSession}=require('./session');
 const {sha256}=require('./hash');
+const {validateNativeConfig}=require('./native_config');
 function createNativeApi(wx,config,{wait=ms=>new Promise(r=>setTimeout(r,ms)),now=Date.now}={}) {
+  config=validateNativeConfig(config);
   if(!config||!config.enabled)throw Error('原生接口未配置');
   const fixture=config.kind==='fixture';
   if(fixture&&((wx.getSystemInfoSync().platform!=='devtools')||!/^http:\/\/127\.0\.0\.1:\d+$/.test(config.origin)))throw Error('fixture仅供本机开发者工具使用');
   const transport=createTransport(wx,{enabled:true,baseURL:config.origin,allowLocal:fixture});
-  const guestAccount=createTransport(wx,{enabled:true,baseURL:config.origin,allowLocal:fixture,namespace:'account'});
+  const guestAccount=createTransport(wx,{enabled:true,baseURL:config.origin,allowLocal:fixture,namespace:'account',clearOnUnauthorized:false});
   const prefix='/api/mini/v1',fingerprints=new Map(),metrics={uploads:0,queries:0,recoveries:0};
-  const json=async(path,options)=>{try{return responseJSON(await transport.request(prefix+path,options).promise);}catch(e){if(e.status===401&&session.current().identity)session.invalidate();throw e;}};
+  const request=async(path,options)=>{try{return await transport.request(prefix+path,options).promise;}catch(e){if(e.status===401&&session.current().identity)session.invalidate();throw e;}};
+  const json=async(path,options)=>responseJSON(await request(path,options));
   const session=createSession(wx,{now,autoRenew:false,setToken:t=>{transport.setToken(t);guestAccount.setToken(t);},clearToken:()=>{transport.clearSession();guestAccount.clearSession();},
     credentials:fixture?async()=>({code:config.fixtureCode,request_key:config.fixtureKey}):undefined,
     exchange:async input=>{
@@ -17,6 +20,14 @@ function createNativeApi(wx,config,{wait=ms=>new Promise(r=>setTimeout(r,ms)),no
       if(s.schema_version!==1||s.token_type!=='Bearer'||typeof s.identity!=='string'||!s.identity||!Number.isFinite(s.expires_at))throw Error('访客会话响应无效');
       return {token:s.token,identity:s.identity,expiresAt:s.expires_at*1000};
     }});
+  async function reconnectSession(){
+    const state=session.current();
+    if(state.retryAt>now())return session.ensure();
+    if(fixture&&(state.requiresNewCode||(state.identity&&state.expiresAt<=now()+30000)))throw Object.assign(Error('本地fixture凭据已到期或失效，请新建独立联调环境'),{status:401,code:'FIXTURE_CREDENTIALS_EXHAUSTED'});
+    // Unknown/lost response: recover the same code/key. Explicit restart only after a known terminal result.
+    if(state.requiresNewCode||(state.identity&&state.expiresAt<=now()+30000))session.invalidate();
+    await session.ensure();
+  }
   function auth(identity) {
     const s=session.current();
     if(!s.identity||s.expiresAt<=now())throw Object.assign(Error('访客会话已失效，请重新连接'),{status:401});
@@ -33,14 +44,15 @@ function createNativeApi(wx,config,{wait=ms=>new Promise(r=>setTimeout(r,ms)),no
     const view=new Uint8Array(bytes);
     if(view.byteLength!==p.size||p.size>8388608)throw Error('截图大小已变化，请重新选择');
     const hash=sha256(view),previous=fingerprints.get(p.request_key);
+    if(p.expected_sha256&&hash!==p.expected_sha256)throw Object.assign(Error('图片不在本次授权样图范围'),{code:'protocol'});
     if(previous&&previous!==hash)throw Object.assign(Error('原截图已变化，不能重用上传请求'),{code:'protocol'});
     fingerprints.set(p.request_key,hash);current(p);
     metrics.uploads++;
     try{return responseJSON(await transport.upload(prefix+'/map-recognition/jobs'+query(p)+'&request_key='+encodeURIComponent(p.request_key),{filePath:p.path,name:'image',formData:{}}).promise);}catch(e){if(e.status===401)session.invalidate();throw e;}
   }
   return {
-    session,fixture,identity:()=>auth(),metrics:()=>({...metrics}),
-    async accountRequest(path,options){auth();return responseJSON(await guestAccount.request('/api/mini/account/v1'+path,options).promise);},
+    session,fixture,origin:config.origin,reconnectSession,identity:()=>auth(),metrics:()=>({...metrics}),
+    async accountRequest(path,options){auth();try{return responseJSON(await guestAccount.request('/api/mini/account/v1'+path,options).promise);}catch(e){if(e.status===401&&['SESSION_REQUIRED','SESSION_INVALID','SESSION_EXPIRED'].includes(e.code))session.invalidate();throw e;}},
     snapshot:server=>{auth();return json('/snapshot?server='+encodeURIComponent(server));},
     catalog:()=>{auth();return json('/map-recognition/catalog?server=cn');},
     jobs:{upload,
@@ -51,7 +63,7 @@ function createNativeApi(wx,config,{wait=ms=>new Promise(r=>setTimeout(r,ms)),no
         const deadline=now()+35000;
         while(true) {
           current(p);
-          const response=await transport.request(prefix+'/map-recognition/jobs/by-request'+query(p)+'&request_key='+encodeURIComponent(p.request_key)).promise;
+          const response=await request('/map-recognition/jobs/by-request'+query(p)+'&request_key='+encodeURIComponent(p.request_key));
           const r=responseJSON(response);current(p);
           if(r.recovery==='found')return r;
           if(r.recovery==='reading'&&r.retry_same_key===false) {
