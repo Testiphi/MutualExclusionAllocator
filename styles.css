@@ -595,6 +595,70 @@ select:disabled {
 .sc-control .sc-select[hidden] { display:none; }
 .sc-control .sc-toggle:focus-visible, .sc-control .sc-select:focus-visible { outline:2px solid #79b8ff; outline-offset:3px; }
 .garage-actions #garageSaveStatus { flex: 0 0 100%; min-width: 0; line-height: 1.6; text-align: right; }
+@media (max-width: 640px) and (orientation: portrait) {
+    #mapRowsContainer { gap: 6px; margin-bottom: 16px; }
+    #mapRowsContainer .map-row { gap: 6px; padding: 4px 6px; align-items: start; }
+    #mapRowsContainer .map-index { width: 18px; line-height: 44px; }
+    #mapRowsContainer .map-select-group {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+        gap: 4px 6px;
+        min-width: 0;
+    }
+    #mapRowsContainer .select-wrapper { min-width: 0; }
+    #mapRowsContainer label {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
+    }
+    #mapRowsContainer select {
+        min-height: 44px;
+        padding: 6px 18px 6px 6px;
+        font-size: 1rem;
+        text-overflow: ellipsis;
+        background-position: right 4px center;
+        background-size: 12px;
+    }
+    #mapRowsContainer .track-top-cars { grid-column: 1 / -1; }
+
+    .result-panel {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr);
+        align-items: center;
+        gap: 8px;
+    }
+    .result-panel > :not(.result-title, .scheme-selector) { grid-column: 1 / -1; }
+    .result-panel .result-title, .result-panel .scheme-selector { margin: 0; }
+    .result-panel .scheme-selector { min-width: 0; }
+    .result-panel .scheme-selector select { text-overflow: ellipsis; }
+    #resultGrid { grid-template-columns: minmax(0, 1fr); gap: 6px; }
+    #resultGrid .result-item {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+        grid-template-areas:
+            "map car score"
+            "big car score";
+        align-items: center;
+        gap: 2px 6px;
+        padding: 6px 8px;
+        text-align: left;
+    }
+    #resultGrid .result-map { grid-area: map; margin: 0; overflow-wrap: anywhere; }
+    #resultGrid .result-bigmap { grid-area: big; margin: 0; overflow-wrap: anywhere; }
+    #resultGrid .result-car { grid-area: car; font-size: 0.9rem; overflow-wrap: anywhere; }
+    #resultGrid .result-car.empty { text-align: center; }
+    #resultGrid .result-stars { margin-left: 4px; white-space: nowrap; }
+    #resultGrid .result-score {
+        grid-area: score;
+        margin: 0;
+        font-size: 1rem;
+        text-align: right;
+        white-space: nowrap;
+    }
+}
 @media (max-width: 640px) {
     .garage-body > .garage-actions { justify-content: flex-start; }
     .garage-action-group { flex: 1 1 100%; }

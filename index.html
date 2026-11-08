@@ -443,12 +443,12 @@
                 <div class="map-index">${i+1}</div>
                 <div class="map-select-group">
                     <div class="select-wrapper">
-                        <label>大地图</label>
-                        <select class="big-map-select" data-index="${i}"></select>
+                        <label for="bigMap${i}">大地图</label>
+                        <select id="bigMap${i}" class="big-map-select" data-index="${i}"></select>
                     </div>
                     <div class="select-wrapper">
-                        <label>小地图</label>
-                        <select class="small-map-select" data-index="${i}" disabled></select>
+                        <label for="smallMap${i}">小地图</label>
+                        <select id="smallMap${i}" class="small-map-select" data-index="${i}" disabled></select>
                     </div>
                     <details class="track-top-cars" hidden>
                         <summary>查看本图前三可用车</summary>
