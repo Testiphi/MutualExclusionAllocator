@@ -56,6 +56,13 @@
         $('confirmYes').onclick=()=>finish(true);$('confirmCancel').onclick=()=>finish(false);
         dialog.oncancel=e=>{e.preventDefault();finish(false);};dialog.showModal();$('confirmCancel').focus();
     });}
+    $('homeLink').onclick=async event=>{
+        if(event.button!==0||event.metaKey||event.ctrlKey||event.shiftKey||event.altKey)return;
+        event.preventDefault();
+        if(unsaved&&!await ask('离开前尚有未保存的输入。确认放弃并返回选车助手？'))return;
+        unsaved=false;
+        location.assign($('homeLink').href);
+    };
     function option(select,value,text){const n=el('option',text);n.value=value;select.append(n);}
     function field(container,label,name,type='text'){
         const wrapper=el('label',label),input=el(type==='select'?'select':type==='textarea'?'textarea':'input');
