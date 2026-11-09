@@ -22,6 +22,63 @@ function createAccountClient(wx,config,guest) {
  function install(value,ticket){sameActor(ticket);validateSession(value,true);clear();current=value;transport.setToken(value.token);emit();return state();}
  const uncertain=e=>!e.status||e.status>=500||e.code==='OPERATION_UNCERTAIN'||e.diagnostic?.kind==='response_decode';
  function sameActor(ticket){if(ticket!==generation)throw Error('账号已变化，已取消旧操作');}
+ const wechatActions=['wechat-bind','wechat-unbind'];
+ function wechatBinding(){
+  const value=current?.features?.wechat_binding_v1;
+  return config.wechatBinding===true&&value?.enabled===true&&typeof value.bound==='boolean'
+   ? {bound:value.bound}:null;
+ }
+ function applyWechatResult(value,action,ticket,id){
+  sameActor(ticket);
+  if(value?.actor_id!==id||value.bound!==(action==='wechat-bind')||!wechatBinding()){
+   throw Object.assign(Error('微信绑定回执未通过校验，请查询原操作'),{code:'OPERATION_UNCERTAIN'});
+  }
+  current.features={...current.features,wechat_binding_v1:{enabled:true,bound:value.bound}};
+  emit();
+  return {bound:value.bound};
+ }
+ let wechatFlight=false,authFlight=false;
+ async function changeWechatBinding(action,password){
+  const binding=wechatBinding();
+  if(!binding||!wechatActions.includes(action))throw Error('当前服务未开放微信绑定管理');
+  if(pendingAuth||wechatFlight||authFlight)throw Error('请先完成当前账号操作');
+  if(binding.bound===(action==='wechat-bind'))throw Error('微信绑定状态已变化，请重新查看');
+  if(typeof password!=='string'||!password||password.length>128)throw Error('请输入当前账号密码');
+  const ticket=generation,id=actor().id;
+  wechatFlight=true;
+  try{
+   const key=await requestId(wx);
+   sameActor(ticket);
+   const code=action==='wechat-bind'?await new Promise((resolve,reject)=>wx.login({
+    timeout:10000,
+    success(result){if(typeof result?.code==='string'&&result.code)resolve(result.code);else reject(Error('未取得微信身份，请重新操作'));},
+    fail(){reject(Error('微信身份验证未完成'));}
+   })):null;
+   sameActor(ticket);
+   try{
+    const value=await direct('/auth/'+action,{method:'POST',data:{schema:1,request_key:key,password,...(code?{code}:{})}});
+    return applyWechatResult(value,action,ticket,id);
+   }catch(e){
+    if(ticket===generation&&uncertain(e))pendingAuth={key,action};
+    throw e;
+   }
+  }finally{wechatFlight=false;}
+ }
+ async function recoverWechatBinding(key,action){
+  if(wechatFlight||!wechatBinding()||pendingAuth?.key!==key||pendingAuth.action!==action)
+   throw Error('只能查询当前会话的原微信绑定操作');
+  const ticket=generation,id=actor().id;
+  wechatFlight=true;
+  try{
+   const value=await direct('/operations/'+encodeURIComponent(key)+'?action='+action);
+   const result=applyWechatResult(value,action,ticket,id);
+   pendingAuth=null;
+   return result;
+  }catch(e){
+   if(ticket===generation&&e.body?.operation_resolved===true)pendingAuth=null;
+   throw e;
+  }finally{wechatFlight=false;}
+ }
  function blockPending(path){if(pendingWrites.has(path))throw Object.assign(Error('上次操作结果尚未确定，请先查询原操作'),{operationKey:pendingWrites.get(path)});}
  async function direct(path,{method='GET',data,account=true,anonymous=false,header={}}={}) {
   const ticket=generation,id=account?actor().id:null;
@@ -49,16 +106,19 @@ function createAccountClient(wx,config,guest) {
  }
  return {
   sessionProof(group){const a=actor();if(!/^w[34]-[a-zA-Z0-9_-]{6,80}$/.test(group))throw Error('Invalid session proof scope');const parent=guest.identity?.()||guest.session?.current()?.identity;if(!parent)throw Error('Missing parent session');const tag=(kind,v)=>sha256(utf8(config.origin+'|'+group+'|'+kind+'|'+v));return {group,role:a.role,expiresAt:current.expires_at,actorTag:tag('actor',a.id),parentTag:tag('parent',parent),sessionTag:tag('native',current.token)};},
-  state,clear,pendingAuth:()=>pendingAuth&&{...pendingAuth},subscribe:fn=>{listeners.add(fn);return()=>listeners.delete(fn);},generation:()=>generation,
+  state,clear,wechatBinding,changeWechatBinding,pendingAuth:()=>pendingAuth&&{...pendingAuth},subscribe:fn=>{listeners.add(fn);return()=>listeners.delete(fn);},generation:()=>generation,
   async refresh(){if(!current)return state();const ticket=generation,value=await direct('/session');try{validateSession(value,false);if(value.actor.id!==current.actor.id)throw Error('账号会话身份不符');}catch(e){if(ticket===generation)clear();throw Object.assign(Error('账号会话校验未通过，原草稿已保留'),{code:'ACCOUNT_SESSION_RESPONSE_INVALID',status:401});}current={...current,...value};emit();return state();},
   async auth(action,fields,key){if(!['register','login','resend-verification','forgot-password','verify-email','reset-password','redeem-invitation','reauth'].includes(action))throw Error('无效账号操作');
+   if(wechatFlight||authFlight)throw Error('请先完成当前账号操作');
    if(pendingAuth)throw Object.assign(Error('上次账号操作结果未确定，请先查询原操作'),{code:'AUTH_RECOVERY_REQUIRED',operationKey:pendingAuth.key,operationAction:pendingAuth.action});
    const allowed={register:['email','password','invite_code'],login:['email','password'],'resend-verification':['email'],'forgot-password':['email'],'verify-email':['token'],'reset-password':['token','password'],'redeem-invitation':['invite_code'],reauth:['password']};if(!fields||typeof fields!=='object'||Object.keys(fields).some(k=>!allowed[action].includes(k)))throw Error('账号请求字段不符合固定协议');
-   const ticket=generation;key=key||await requestId(wx);sameActor(ticket);const account=['reauth','redeem-invitation'].includes(action),data={schema:1,request_key:key,...fields};
+   const ticket=generation;authFlight=true;
+   try{key=key||await requestId(wx);sameActor(ticket);const account=['reauth','redeem-invitation'].includes(action),data={schema:1,request_key:key,...fields};
    try{const value=await direct('/auth/'+action,{method:'POST',data,account});sameActor(ticket);if(['login','reauth'].includes(action))return install(value,ticket);if(action==='redeem-invitation')clear();return value;}
    catch(e){if(e.status===401&&ticket===generation)clear();else if(ticket===generation&&uncertain(e))pendingAuth={key,action};e.operationKey=key;e.operationAction=action;throw e;}
+   }finally{authFlight=false;}
   },
-  async recoverAuth(key,action,server){if(pendingAuth&&action!=='profile-save'&&(pendingAuth.key!==key||pendingAuth.action!==action))throw Error('只能查询原账号操作');const ticket=generation,account=['profile-save','redeem-invitation'].includes(action);let value;try{value=await direct('/operations/'+encodeURIComponent(key)+'?action='+action+(server?'&server='+server:''),{account});}catch(e){if(ticket===generation&&pendingAuth?.key===key&&pendingAuth.action===action&&e.body?.operation_resolved===true)pendingAuth=null;throw e;}sameActor(ticket);if(['login','reauth'].includes(action))return install(value,ticket);if(pendingAuth?.key===key&&pendingAuth.action===action)pendingAuth=null;return value;},
+  async recoverAuth(key,action,server){if(wechatActions.includes(action))return recoverWechatBinding(key,action);if(pendingAuth&&action!=='profile-save'&&(pendingAuth.key!==key||pendingAuth.action!==action))throw Error('只能查询原账号操作');const ticket=generation,account=['profile-save','redeem-invitation'].includes(action);let value;try{value=await direct('/operations/'+encodeURIComponent(key)+'?action='+action+(server?'&server='+server:''),{account});}catch(e){if(ticket===generation&&pendingAuth?.key===key&&pendingAuth.action===action&&e.body?.operation_resolved===true)pendingAuth=null;throw e;}sameActor(ticket);if(['login','reauth'].includes(action))return install(value,ticket);if(pendingAuth?.key===key&&pendingAuth.action===action)pendingAuth=null;return value;},
   async logout(){const ticket=generation;try{await direct('/session',{method:'DELETE'});}catch(e){if(e.status!==401)throw e;}finally{if(ticket===generation)clear();}},
   async contract(){const ticket=generation,value=await direct('/contract',{account:true});sameActor(ticket);availability=value;return availability;},call,
   async recover(key){const operation=operations.get(key);if(!operation)throw Error('当前会话没有此待核对操作');const r=await direct('/feature-operations/'+encodeURIComponent(key));pendingWrites.delete((operation.method||'POST')+':'+operation.path);operations.delete(key);return r;},

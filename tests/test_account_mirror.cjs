@@ -62,3 +62,47 @@ test('platform account response must bind to parent guest with a valid lifetime'
 test('account page cannot discard a pending operation by switching forms',()=>{
  const fs=require('node:fs'),path=require('node:path'),{createRequire}=require('node:module'),file=path.resolve(__dirname,'../miniapp/pages/account/account.js');let def;new Function('Page','require',fs.readFileSync(file,'utf8'))(p=>def=p,createRequire(file));const page={...def,data:{mode:'login',busy:false},pending:{key:'local-pending-key',action:'login'},setData(v){Object.assign(this.data,v);}};page.changeMode({detail:{value:'register'}});assert.equal(page.data.mode,'login');assert.equal(page.pending.action,'login');assert.equal(page.data.recoverable,true);
 });
+
+test('WeChat binding is opt-in and recovers a lost response without sending credentials again',async()=>{
+ const f=lab();
+ let wxLogins=0;
+ f.wx.login=options=>{wxLogins++;options.success({code:'fixture-new-code'});};
+ const session=f.session();
+ session.features.wechat_binding_v1={enabled:true,bound:false};
+ const guest={accountRequest:async()=>session};
+ const config={origin:'http://127.0.0.1:8052',kind:'fixture'};
+ const disabled=createAccountClient(f.wx,config,guest);
+ await disabled.auth('login',{email:'one',password:'fixture-password'});
+ assert.equal(disabled.wechatBinding(),null);
+ await assert.rejects(disabled.changeWechatBinding('wechat-bind','fixture-password'),/未开放/);
+ assert.equal(wxLogins,0);
+
+ const client=createAccountClient(f.wx,{...config,wechatBinding:true},guest);
+ await client.auth('login',{email:'one',password:'fixture-password'});
+ const generation=client.generation();
+ f.handler=async request=>{
+  if(request.url.endsWith('/auth/wechat-bind'))throw Object.assign(Error('unknown result'),{status:503});
+  if(request.url.includes('/operations/'))return {actor_id:'one',bound:true};
+  if(request.url.endsWith('/auth/wechat-unbind'))return {actor_id:'one',bound:false};
+  throw Error('unexpected route');
+ };
+ await assert.rejects(client.changeWechatBinding('wechat-bind','fixture-password'));
+ const {key,action}=client.pendingAuth();
+ await assert.rejects(client.changeWechatBinding('wechat-bind','fixture-password'),/当前账号操作/);
+ await assert.rejects(client.recoverAuth('different-operation-key',action),/原微信绑定操作/);
+ assert.deepEqual(await client.recoverAuth(key,action),{bound:true});
+ assert.deepEqual(await client.changeWechatBinding('wechat-unbind','fixture-password'),{bound:false});
+ assert.equal(wxLogins,1);
+ assert.equal(client.state().actor.id,'one');
+ assert.equal(client.generation(),generation);
+ assert.equal(client.pendingAuth(),null);
+ assert.equal(f.values.size,0);
+ assert.equal(f.requests.length,3);
+ const [bind,recover,unbind]=f.requests;
+ assert.equal(bind.data.request_key,key);
+ assert.equal(bind.data.code,'fixture-new-code');
+ assert.equal(bind.header['X-Account-ID'],'one');
+ assert.equal(recover.url.endsWith('/operations/'+key+'?action=wechat-bind'),true);
+ assert.equal(recover.data,undefined);
+ assert.equal(unbind.data.code,undefined);
+});
