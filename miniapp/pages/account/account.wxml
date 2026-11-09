@@ -1,6 +1,6 @@
 <view class="mirror-page"><view class="panel mirror-surface">
  <view class="page-title">{{actor ? '个人中心' : title + ' RacePick'}}</view>
- <view wx:if="{{actor}}" class="panel"><view class="heading">{{actor.email}}</view><view class="meta">{{actor.role === 'superadmin' ? '超级管理员' : actor.role === 'admin' ? '管理员' : '玩家'}} · {{actor.verified ? '邮箱已验证' : '邮箱待验证'}}</view><view class="actions"><button bindtap="back">返回主页车库</button><button wx:if="{{!restricted}}" data-page="submissions" bindtap="navigate">投稿 / 我的记录</button><button wx:if="{{!restricted}}" data-page="community" bindtap="navigate">贡献 / 消息 / 反馈</button><button wx:if="{{!restricted}}" class="danger" bindtap="logout">退出当前账号</button></view></view>
+ <view wx:if="{{actor}}" class="panel"><view class="heading">{{actor.email}}</view><view class="meta">{{actor.role === 'superadmin' ? '超级管理员' : actor.role === 'admin' ? '管理员' : '玩家'}} · {{actor.verified ? '邮箱已验证' : '邮箱待验证'}}</view><view class="actions"><button bindtap="back">返回主页车库</button><button wx:if="{{!restricted}}" data-page="submissions" bindtap="navigate">投稿 / 我的记录</button><button wx:if="{{!restricted}}" data-page="community" bindtap="navigate">贡献 / 消息 / 反馈</button><button wx:if="{{!restricted || bindingAcceptance}}" class="danger" bindtap="logout">退出当前账号</button></view></view>
  <view wx:if="{{actor && wechatBinding}}" class="panel">
   <view class="heading">微信绑定</view>
   <view class="meta">{{wechatBinding.bound ? '已绑定微信' : '尚未绑定微信'}}</view>

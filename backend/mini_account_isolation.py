@@ -92,7 +92,7 @@ def preflight(root, origin=None):
             'mail_mode':'file','production_business':False,'schema_migrations_run':False}
 
 
-def provision(root, snapshot_dir, origin, binding_file):
+def provision(root, snapshot_dir, origin, binding_file, *, wechat_binding=False):
     """Only create a NEW target; accept exactly the explicitly supplied fixed binding."""
     root = root_path(root)
     validate_origin(origin)
@@ -115,6 +115,9 @@ def provision(root, snapshot_dir, origin, binding_file):
     (root/'accounts').mkdir(mode=0o700)
     store = Store(root/'accounts')
     migrate(store)  # Explicit provisioning of an empty new business DB only.
+    if wechat_binding:
+        from backend.mini_wechat_binding import provision as provision_binding
+        provision_binding(store)
     store.path.chmod(0o600)
     (root/'accounts/service.lock').write_bytes(b'0')
     (root/'accounts/service.lock').chmod(0o600)

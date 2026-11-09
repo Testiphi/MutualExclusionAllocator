@@ -1,5 +1,7 @@
 """Disposable in-process isolated HTTPS fixtures. No real account/platform/OCR calls."""
 from contextlib import closing
+from concurrent.futures import ThreadPoolExecutor
+import threading
 import hashlib
 import json
 import os
@@ -15,7 +17,7 @@ from backend.app import ROOT, create_app, Store
 from backend.mailing import MailConfig
 from backend.mini_account_isolation import provision, preflight, readonly, service_lock, backup_stopped, restore_stopped, prepare_account_stopped
 from backend.mini_account_service import make_app, KIND
-from backend.mini_auth import WechatVerifier
+from backend.mini_auth import MiniError, WechatVerifier
 
 A='/api/mini/account/v1'
 ORIGIN='https://account-isolation.example.test'
@@ -29,7 +31,7 @@ class AccountServiceTests(unittest.TestCase):
     def setUp(self):
         self.tmp=tempfile.TemporaryDirectory();self.addCleanup(self.tmp.cleanup)
         self.parent=Path(self.tmp.name).resolve();self.root=self.parent/'state'
-        provision(self.root,SNAPSHOT,ORIGIN,BINDING)
+        provision(self.root,SNAPSHOT,ORIGIN,BINDING,wechat_binding=self._testMethodName.startswith("test_wechat_binding"))
         self.secret=self.parent/'platform-secret';self.secret.write_text('fixture-secret-only');self.secret.chmod(0o600)
         self.mini=self.parent/'mini.json'
         self.write(self.mini,{'kind':'racepick-mini-guests-v1','state_dir':str(self.root/'guests'),
@@ -44,8 +46,8 @@ class AccountServiceTests(unittest.TestCase):
     def write(self,path,data):
         path.write_text(json.dumps(data),encoding='utf-8');path.chmod(0o600)
 
-    def client(self,writes=False,registration=False):
-        self.write(self.config,{**self.declaration,'cloud_writes':writes,'registration':registration})
+    def client(self,writes=False,registration=False,wechat_binding=False):
+        self.write(self.config,{**self.declaration,'cloud_writes':writes,'registration':registration,'wechat_binding':wechat_binding})
         app=make_app(self.config)
         client=TestClient(app,base_url=ORIGIN,client=('127.0.0.1',12000));client.__enter__()
         self.addCleanup(client.__exit__,None,None,None)
@@ -133,15 +135,95 @@ class AccountServiceTests(unittest.TestCase):
             token=parse_qs(urlsplit(mail['url']).fragment)['token'][0]
             self.assertEqual(internal.post('/api/auth/verify-email',headers=headers,json={'token':token}).status_code,200)
 
-    def guest_login(self,client):
-        r=client.post('/api/mini/v1/session',headers=PROXY,json={'code':'fixture-code',
+    def guest_login(self,client,email='isolated@example.test',code='fixture-code'):
+        r=client.post('/api/mini/v1/session',headers=PROXY,json={'code':code,
             'client_schema':1,'request_key':secrets.token_hex(16)})
         self.assertEqual(r.status_code,200,r.text)
         guest={**PROXY,'Authorization':'Bearer '+r.json()['token']}
         r=client.post(A+'/auth/login',headers=guest,json={'schema':1,'request_key':secrets.token_hex(16),
-            'email':'isolated@example.test','password':PASSWORD})
+            'email':email,'password':PASSWORD})
         self.assertEqual(r.status_code,200,r.text)
         return guest,{**PROXY,'Authorization':'Bearer '+r.json()['token'],'X-Account-ID':r.json()['actor']['id']}
+
+    def test_wechat_binding_lifecycle_and_concurrent_ownership(self):
+        emails=['binding-one@example.test','binding-two@example.test']
+        for email in emails:
+            prepare_account_stopped(self.root,email,PASSWORD)
+        app,client=self.client(wechat_binding=True)
+        self.assertTrue(client.get('/_account-test/health',headers=PROXY).json()['wechat_binding'])
+        auth=[self.guest_login(client,email,'guest-'+str(i))[1] for i,email in enumerate(emails)]
+        ids=[header['X-Account-ID'] for header in auth]
+        with app.web.state.store.connect() as db:
+            for uid in ids:
+                db.execute('INSERT INTO profiles VALUES (?,?,?,?,?)',(uid,'["f5"]','{"f5":5}',3,1))
+                db.execute('INSERT INTO profiles_global VALUES (?,?,?,?,?,?)',
+                           (uid,'["ssc"]','{"ssc":6}','{"ssc":true}',4,1))
+
+        def profiles(header):
+            return [client.get(A+'/profile',params={'server':s},headers=header).json() for s in ('cn','global')]
+
+        baseline=[profiles(header) for header in auth]
+        self.assertEqual([[row['revision'] for row in p] for p in baseline],[[3,4],[3,4]])
+
+        def change(header,action='wechat-bind',key=None,password=PASSWORD,code='new-code'):
+            payload={'schema':1,'request_key':key or secrets.token_hex(16),'password':password}
+            if action=='wechat-bind':payload['code']=code
+            return client.post(A+'/auth/'+action,headers=header,json=payload)
+
+        self.assertEqual(change(auth[0],password='incorrect').json()['code'],'ACCOUNT_PASSWORD_INVALID')
+        barrier=threading.Barrier(2)
+        def concurrent_exchange(code):
+            barrier.wait(timeout=8)
+            return 'owned-fixture-platform-subject'
+        keys=[secrets.token_hex(16),secrets.token_hex(16)]
+        with patch.object(WechatVerifier,'__call__',side_effect=concurrent_exchange):
+            with ThreadPoolExecutor(max_workers=2) as pool:
+                results=list(pool.map(lambda i:change(auth[i],key=keys[i],code='bind-'+str(i)),range(2)))
+        self.assertEqual(sorted(r.status_code for r in results),[200,409])
+        winner=next(i for i,r in enumerate(results) if r.status_code==200)
+        loser=1-winner
+        self.assertEqual(results[loser].json()['code'],'WECHAT_ALREADY_IN_USE')
+        expected={'actor_id':ids[winner],'bound':True}
+        self.assertEqual(results[winner].json(),expected)
+        replay=client.get(A+'/operations/'+keys[winner],params={'action':'wechat-bind'},headers=auth[winner])
+        self.assertEqual(replay.json(),expected)
+        cross=client.get(A+'/operations/'+keys[winner],params={'action':'wechat-bind'},headers=auth[loser])
+        self.assertEqual(cross.status_code,404)
+        self.assertEqual(change(auth[winner]).json()['code'],'WECHAT_ALREADY_BOUND')
+        self.assertTrue(client.get(A+'/session',headers=auth[winner]).json()['features']['wechat_binding_v1']['bound'])
+        self.assertEqual(profiles(auth[winner]),baseline[winner])
+        self.assertEqual(change(auth[winner],action='wechat-unbind').json(),{'actor_id':ids[winner],'bound':False})
+        self.assertEqual(change(auth[winner],action='wechat-unbind').json()['code'],'WECHAT_NOT_BOUND')
+        self.assertEqual(profiles(auth[winner]),baseline[winner])
+        browser=TestClient(app,base_url=ORIGIN,client=('127.0.0.1',12001))
+        self.addCleanup(browser.close)
+        me=browser.get('/api/auth/me',headers=PROXY).json()
+        login=browser.post('/api/auth/login',headers={**PROXY,'Origin':ORIGIN,'X-CSRF-Token':me['csrf']},
+                           json={'email':emails[winner],'password':PASSWORD})
+        self.assertEqual(login.status_code,200)
+        self.assertEqual(login.json()['user']['id'],ids[winner])
+        self.assertEqual(client.put(A+'/profile?server=cn',headers=auth[winner],json={}).status_code,503)
+
+    def test_wechat_binding_rejects_invalid_identity_and_disabled_account(self):
+        prepare_account_stopped(self.root,'isolated@example.test',PASSWORD)
+        app,client=self.client(wechat_binding=True)
+        _,auth=self.guest_login(client)
+        def bind():
+            return client.post(A+'/auth/wechat-bind',headers=auth,json={
+                'schema':1,'request_key':secrets.token_hex(16),'password':PASSWORD,'code':'new-code'})
+        with patch.object(WechatVerifier,'__call__',side_effect=MiniError(401,'PLATFORM_CODE_REJECTED','expired')):
+            self.assertEqual(bind().json()['code'],'WECHAT_CODE_EXPIRED')
+        with patch.object(WechatVerifier,'__call__',return_value='different-fixture-subject'):
+            self.assertEqual(bind().json()['code'],'WECHAT_IDENTITY_CHANGED')
+        def disabled_during_exchange(code):
+            with app.web.state.store.connect() as db:
+                db.execute('INSERT INTO account_controls VALUES (?,1,1,1)',(auth['X-Account-ID'],))
+            return 'owned-fixture-platform-subject'
+        with patch.object(WechatVerifier,'__call__',side_effect=disabled_during_exchange):
+            self.assertEqual(bind().json()['code'],'ACCOUNT_DISABLED')
+        self.assertEqual(bind().json()['code'],'ACCOUNT_DISABLED')
+        with app.web.state.store.connect() as db:
+            self.assertEqual(db.execute('SELECT count(*) FROM mini_wechat_bindings').fetchone()[0],0)
 
     def test_disabled_opens_no_state_or_credentials(self):
         self.write(self.config,{**self.declaration,'enabled':False,'state_root':str(self.parent/'absent')})

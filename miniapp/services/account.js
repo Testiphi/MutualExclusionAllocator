@@ -59,7 +59,7 @@ function createAccountClient(wx,config,guest) {
     const value=await direct('/auth/'+action,{method:'POST',data:{schema:1,request_key:key,password,...(code?{code}:{})}});
     return applyWechatResult(value,action,ticket,id);
    }catch(e){
-    if(ticket===generation&&uncertain(e))pendingAuth={key,action};
+    if(ticket===generation&&uncertain(e)&&e.body?.operation_resolved!==true)pendingAuth={key,action};
     throw e;
    }
   }finally{wechatFlight=false;}

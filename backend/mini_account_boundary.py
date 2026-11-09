@@ -5,6 +5,7 @@ from urllib.parse import parse_qsl
 
 from backend.mini_api import ACCOUNT_PREFIX as A, PREFIX as G, MiniGateway, error_response
 from backend.mini_auth import MiniError
+from backend.mini_wechat_binding import ACTIONS as BINDING_ACTIONS
 
 REGISTRATION_ACTIONS = frozenset({'register', 'verify-email', 'resend-verification'})
 
@@ -14,6 +15,7 @@ class AccountBoundaryOptions:
     enabled: bool = False
     cloud_writes: bool = False
     registration: bool = False
+    wechat_binding: bool = False
 
     def __post_init__(self):
         if type(self.enabled) is not bool or type(self.cloud_writes) is not bool:
@@ -22,6 +24,10 @@ class AccountBoundaryOptions:
             raise ValueError('Cloud writes require an enabled account component')
         if type(self.registration) is not bool or (self.registration and (not self.enabled or self.cloud_writes)):
             raise ValueError('Registration acceptance requires an enabled read-only account service')
+        if type(self.wechat_binding) is not bool or (self.wechat_binding and
+                (not self.enabled or self.cloud_writes or self.registration)):
+            raise ValueError('Binding acceptance requires its own enabled read-only service')
+
 
 
 class AccountBoundary:
@@ -64,6 +70,8 @@ class AccountBoundary:
                 ('GET', A+'/profile'), ('PUT', A+'/profile')}
             if self.options.registration and method == 'POST':
                 allowed = allowed or path in {A+'/auth/'+action for action in REGISTRATION_ACTIONS}
+            if self.options.wechat_binding and method == 'POST':
+                allowed = allowed or path in {A+'/auth/'+action for action in BINDING_ACTIONS}
             if method == 'GET' and re.fullmatch(re.escape(A)+r'/operations/[A-Za-z0-9_-]{16,80}', path):
                 pairs = parse_qsl(scope.get('query_string', b'').decode('latin1'), keep_blank_values=True)
                 query = dict(pairs)
@@ -72,6 +80,8 @@ class AccountBoundary:
                            query['action'] == 'profile-save' and query['server'] in ('cn', 'global'))
                 if self.options.registration and len(pairs) == 1 and pairs[0][0] == 'action':
                     allowed = allowed or pairs[0][1] in REGISTRATION_ACTIONS
+                if self.options.wechat_binding and len(pairs) == 1 and pairs[0][0] == 'action':
+                    allowed = allowed or pairs[0][1] in BINDING_ACTIONS
             if not allowed:
                 error = MiniError(404, 'ACCOUNT_ROUTE_PENDING', 'Route is outside this A preparation scope')
             elif method == 'PUT' and not self.options.cloud_writes:
