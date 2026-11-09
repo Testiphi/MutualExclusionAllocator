@@ -18,6 +18,7 @@ from starlette.concurrency import run_in_threadpool
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from backend.mini_auth import MiniError, fail, request_key
 from backend.mini_api import limited_body, error_response
+from backend import mini_wechat_binding
 
 PREFIX = '/api/mini/account/v1'
 KIND = 'racepick-native-accounts-v1'
@@ -145,9 +146,15 @@ def make_native_account(config, source):
     a_only=config.get('account_a_only') is True
     formal=config.get('formal_account') is True
     player_registration=not formal and config.get('isolated_player_registration') is True
+    binding_enabled=not formal and a_only and config.get('isolated_wechat_binding') is True
+    binding_actions=mini_wechat_binding.ACTIONS if binding_enabled else frozenset()
     app.state.native_a_only=a_only
     from backend import mini_features
     guest_actions={'register','login','resend-verification','forgot-password','verify-email','reset-password'}
+
+    shortcut='wechat-login'
+    shortcut_enabled=binding_enabled and config.get('isolated_wechat_login') is True
+    if shortcut_enabled:guest_actions.add(shortcut)
 
     def formal_route(request):
         method, path = request.method, request.url.path
@@ -168,19 +175,22 @@ def make_native_account(config, source):
             fail(401,'ROLE_CHANGED','账号权限已变化，请重新登录并清理旧权限缓存')
         return {**actor,'verified':bool(actor['verified'])}
 
-    def features():
-        return {'website':{name:bool(getattr(source,name,False)) for name in ('coverage','contributions','feedback','notifications')},
+    def features(actor=None):
+        binding=({'wechat_binding_v1':{'enabled':True,'bound':mini_wechat_binding.bound(source.store,actor['id'])}}
+                 if binding_enabled and actor and actor['verified'] else {})
+        return {**binding,'website':{name:bool(getattr(source,name,False)) for name in ('coverage','contributions','feedback','notifications')},
                 'profiles':{'cn':'account','global':'account' if getattr(source,'global_profiles',False) else 'unavailable'},
                 'authentication':{'mail_mode':'production' if source.mail_service.config.production else source.mail_service.config.mode,
                                   'mail_token_ttl_seconds':1800,'persistent_wechat_binding':False,'reauth_max_age_seconds':600,
-                                  'isolated_player_registration':player_registration},
+                                  'isolated_player_registration':player_registration,
+                                  **({'isolated_wechat_login':True} if shortcut_enabled else {})},
                 'native_batches':{'A':'ready',**dict.fromkeys(('B','C','D','E'),'pending' if a_only else 'ready')},'feature_writes':{'fixture_only':True,'enabled':not a_only and mini_features.writes_enabled(config,source)}}
 
     def session_result(request,sid):
         row=accounts.authenticate('Bearer '+accounts.token(sid),guests);actor=actor_for(request,row)
         return {'schema_version':1,'session_kind':'racepick_account','token_type':'Bearer','token':accounts.token(sid),
                 'actor':actor,'expires_at':row['expires'],'authenticated_at':row['authenticated_at'],
-                'features':features(),'association':{'kind':'session_only','persistent_binding':False,
+                'features':features(actor),'association':{'kind':'session_only','persistent_binding':False,
                     'guest_identity':guests.authenticate('Bearer '+guests.token(row['guest_sid']))['identity']},
                 'high_privilege_writes_ready':not a_only and mini_features.writes_enabled(config,source) and actor['role'] in ('admin','superadmin') and time.time()-row['authenticated_at']<=600}
 
@@ -236,6 +246,50 @@ def make_native_account(config, source):
         try:return web.models[name].model_validate(body)
         except ValidationError:fail(400,'INVALID_ACCOUNT_BODY','账号字段无效；请按契约检查，秘密不回显')
 
+    def execute_wechat_login(request,body):
+        if set(body)!={'schema','request_key','code'}:
+            fail(400,'INVALID_ACCOUNT_BODY','快捷登录仅接受微信凭证')
+        guest=request.state.guest
+
+        def invoke():
+            try:
+                anchor,actor,expiry=mini_wechat_binding.login(
+                    source.store,guests,config['verifier'],guest,body['code'])
+                try:
+                    sid=accounts.issue(guest,anchor,actor,expiry,web)
+                except BaseException:
+                    web.revoke(anchor)
+                    raise
+                return 200,{'account_sid':sid}
+            except MiniError as error:
+                return error.status,{'schema_version':1,'code':error.code,
+                                     'detail':error.message,'operation_resolved':True}
+
+        status,result=accounts.operation('guest:'+guest['sid'],body['request_key'],
+                                         shortcut,{'code':body['code']},invoke)
+        if status==200:result=session_result(request,result['account_sid'])
+        return JSONResponse(result,status_code=status,headers={'Retry-After':'60'} if status==429 else None)
+
+    def execute_binding(request,action,body):
+        payload={k:v for k,v in body.items() if k not in ('schema','request_key')}
+        mini_wechat_binding.validate(action,payload)
+        row=request.state.account
+
+        def check_session():
+            accounts.authenticate(request.headers.get('authorization'),guests)
+
+        def invoke():
+            try:
+                result=mini_wechat_binding.change(source.store,guests,config['verifier'],row,
+                                                   action,payload,check_session)
+                return 200,result
+            except MiniError as error:
+                return error.status,{'schema_version':1,'code':error.code,'detail':error.message,
+                                     'operation_resolved':True}
+
+        status,result=accounts.operation('account:'+row['sid'],body['request_key'],action,payload,invoke)
+        return JSONResponse(result,status_code=status,headers={'Retry-After':'60'} if status==429 else None)
+
     def execute(request,action,body):
         payload={k:v for k,v in body.items() if k not in ('schema','request_key')}
         if player_registration and action in ('register','resend-verification'):
@@ -283,6 +337,10 @@ def make_native_account(config, source):
 
     @app.post(PREFIX+'/auth/{action}')
     async def auth_action(action:str,request:Request):
+        if shortcut_enabled and action==shortcut:
+            return await run_in_threadpool(execute_wechat_login,request,await body_for(request))
+        if action in binding_actions:
+            return await run_in_threadpool(execute_binding,request,action,await body_for(request))
         if action not in guest_actions|{'reauth','redeem-invitation'}:fail(404,'ACCOUNT_ROUTE_PENDING','账号路径尚未固定')
         return await run_in_threadpool(execute,request,action,await body_for(request))
 
@@ -291,11 +349,11 @@ def make_native_account(config, source):
         request_key(key)
         action=request.query_params.get('action')
         pairs=list(request.query_params.multi_items())
-        if action not in guest_actions|{'reauth','redeem-invitation','profile-save'}:fail(400,'INVALID_QUERY','恢复必须提供固定action')
+        if action not in guest_actions|binding_actions|{'reauth','redeem-invitation','profile-save'}:fail(400,'INVALID_QUERY','恢复必须提供固定action')
         if action=='profile-save':
             if len(pairs)!=2 or {k for k,v in pairs}!={'action','server'} or request.query_params['server'] not in ('cn','global'):fail(400,'INVALID_QUERY','车库恢复必须提供server')
         elif len(pairs)!=1:fail(400,'INVALID_QUERY','恢复query无效')
-        scope=('account:'+request.state.account['sid']) if action=='profile-save' else ('guest:'+request.state.guest['sid'])
+        scope=('account:'+request.state.account['sid']) if action in binding_actions|{'profile-save'} else ('guest:'+request.state.guest['sid'])
         with accounts.connect() as db:row=db.execute('SELECT * FROM operations WHERE scope=? AND request_key=?',(scope,key)).fetchone()
         if row is None:fail(404,'OPERATION_NOT_FOUND','没有保留的操作结果；不自动重复发邮件或保存')
         expected_action='profile-save:'+request.query_params['server'] if action=='profile-save' else action

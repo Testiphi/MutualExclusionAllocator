@@ -1,3 +1,29 @@
+## 2026-11-09 跑法参考与双服成绩上线完成
+
+- 用户确认导入 957 条跑法、发布双服成绩并切换网站。现网 current、网站 PID 276552 和 OCR PID 276545 均指向 `/opt/racepick/releases/6f0dfa79522b55f1b1530fb2`。切换前应用为 `0d730c500f276d055e664d90`。
+- 公网首页与健康接口通过，OCR ready，正式 A 启用且云车库写关闭。公网跑法矩阵国服 783 格／798 条，国际服 159 格／159 条。导入回执 `/root/racepick-deploy/route-video-import.KYUsThjH`，写入后复核完全匹配 957 条、待新增及冲突均为 0。
+- 成绩维护源 `fd6d716fb6841c5b006d3bf2`、冻结 `1c8f617337be89c7e0d9a2c4`。正式计划 `/root/racepick-deploy/maintenance-plan.DI7Ix6sS/plan.json`，执行摘要 `f395f5aeae874b6e15a5ef0636c319d08872d444cc88a53f085324231dabdde1`。应用回执 `/root/racepick-deploy/score-apply.PBpXe4h8/apply.json`，规范摘要 `f0476b17db356340100455cf2bfac25b854304cf2634dff0eb8a52977683e168`。活动国服 `d6c91bbffea4c2036d1e294887faba5b`（4752 键），国际服 `8f4c827ecd4b5b3466bc39bcbd1a521c`（697 条），五份活动文件与批准计划哈希一致，原业务行保留。
+- 写入前成套备份 `scores-20261109T150525047525Z.zip`，SHA256 `692b9cc3c71ae673c02056af0badf677feb43c703b3ca8e5763482111da1325e`，独立恢复 `49f374fd39f60312153711e8` 通过。成绩工具另保存了已含跑法、成绩尚未切换的备份 `scores-20261109T150702414076Z.zip`。
+- 上线后成套备份 `/var/lib/racepick/backups/scores-20261109T150847717302Z.zip`，SHA256 `2b1375e03795d555f4a35e48d05e033219684cb5470c7cd26f6588870a7d52cb`。独立恢复 `59af2a624e7160c9db0e72d8`，双服活动版本正确，待处理批次均为 0，跑法 schema 1，恢复 798 条国服及 159 条国际服启用记录。回执 `/root/racepick-deploy/postcutover-backup.D4Z8cPhN`，标记 POST_CUTOVER_BACKUP_OK。
+- 备份 timer 已恢复为 enabled、active (waiting)，现场所示下次触发为 2026-11-10 04:17:16 CST。本次公网验收覆盖首页、健康与双服矩阵。
+
+## 2026-11-09 Route-video and combined score preflight
+
+- Candidate 6f0dfa79522b55f1b1530fb2 passed target Linux offline runtime, temporary database and OCR self-checks (CANDIDATE_LINUX_SELFCHECK_OK). The final current check matched 0d730c500f276d055e664d90.
+- At 22:56:07 CST, backup scores-20261108T201926976965Z.zip (SHA256 50f12d23514c28f83c247e42599b33aeddb8a02d1f6d5ea342b19170e46da515) passed restore drill into e2619ddeec8ad17a4b6f2f18. Both active versions were recovered, both pending batch counts were zero, and active_database_replaced=false. Receipt: /root/racepick-deploy/restore-drill-20261109.WYf06k9R.log.
+- At 22:58:57 CST, the production account database read-only route preview reported 957 additions, zero duplicates and zero conflicts. Receipt: /root/racepick-deploy/route-video-preview.TxMfcC5I.log.
+- At 23:00:00 CST, the combined score review (approved maintenance freeze 3f4fc0cb55f4ece93aed8dcd plus five lap times and one availability entry) matched the local full diff. CN 4569 to 4752 (184 added, 14 faster, 1 removed), Global 694 to 697 (3 added, 7 faster). Removed CN key: Old Arena / Crossroads, zone 4 theory, Aion 3-star jump route, 24.30 s. Diff SHA256 73f0e8015162649b9aaa3bdecc482f0ea20b3d2b7f645b80bf407b947b2e4cc2. Review-only receipt /root/racepick-deploy/combined-score-review.AnQjQTWu/plan.json, SHA256 ed7f7da4f5e50d0d2364e3035e860cf96431a829cbba9242991c7f7c82bedea7.
+- Await explicit approval of route import, score publication, and application cutover. The review-only receipt is evidence for preparing the executable score maintenance plan.
+
+## 2026-11-09 跑法参考候选 6f0dfa79 只读核验
+
+- 外层 ZIP SHA256 `162b762959b56ce322dfd662ecc76b7d63ee41a2b0e30276b027f21b3a4e727e`、外层 10 项 SHA256SUMS、内层 181 项 manifest 及重算发布 ID `6f0dfa79522b55f1b1530fb2` 均通过。8064 第 238 批种子共 957 条，国服 783 格／798 条，国际服 159 格／159 条。
+- 用户回传 Workbench 2026-11-09 22:45:55 CST。current、网站 PID 266869 与 OCR PID 266860 的实际目录均为 `/opt/racepick/releases/0d730c500f276d055e664d90`，两个单元 active/running。公网健康 ok，OCR ready。
+- 活动国服 `b195cd622bba75671c93308efc2b99ec`、国际服 `9121ae372bdc0b8ed8ac1cbafd769561`。五份活动文件 SHA256 均匹配各自活动 manifest，只有国服 cars.json 与候选种子同 SHA。国服 3 个 applied 批次，国际服无批次。投稿 5 个 accepted、1 个 ignored，已采纳无回执为 0，OCR 队列空。
+- 公网活动逐键对照候选。国服 4569→4752 键，r兔仍 29.70、五区理论 f5 仍 31.49，帝国 21.48、银电 29.93、四区高手 f5★3 25.31 及其普通档镜像均缺键。另有 193 个范围外差异键。国际服 694→697 条，范围外差异 10 个（3 个包内新增、7 个实值变化）。候选成绩是种子。任何后续成绩更新须从真实活动指针制作并审核定点计划。
+- 主站 Nginx 通用 location / 将跑法根路径及子路径交给 127.0.0.1:8001。公网列表及矩阵均返回 JSON 404，账号库尚无两张跑法表。后续先校验候选 Linux 运行条件、备份恢复和实际库只读预览，再另行授权导入与切换。
+- 最近成套备份 `scores-20261108T201926976965Z.zip`，2271529 字节，SHA256 `50f12d23514c28f83c247e42599b33aeddb8a02d1f6d5ea342b19170e46da515`，全部成员哈希通过，清单指向上述双服活动版本。timer enabled/active(waiting)，上次 11-09 04:19:25，下次 11-10 04:15:36 CST，备份服务上次成功。最新列出的恢复目录 `e7f97f5876567566f94f8ff4` 尚未与源备份及成功回执配对。历史演练及其对应备份见下文。本轮只读，未导入、写成绩、迁移、改配置、重启或切换。
+
 ## 2026-11-07 最新交接：隔离双服云车库可写准备与现场回退通过，客户端 W1/W2 待接管；文档更新后暂停
 
 本段覆盖下方旧阶段“cloud_writes=false／真实账号只读未验收”等当前态描述，旧记录原样保留。最后服务器现场验证为 **2026-11-07 02:41:43 Asia/Shanghai（UTC 2026-11-06T18:41:43.152877+00:00）**，本次文档收尾没有再次连接服务器，不能将归档时刻当成新现场检查。用户先授权只读，随后明确授权代理执行本次必要写入与配置修改；代理通过用户已登录的阿里云 Workbench 浏览器终端操作，没有直接 SSH。网站侧准备完成，真实客户端保存/重载尚未执行。本轮文档更新不提交、不推送、不合并，完成后暂停，不继续服务器、客户端、监控或跨对话派工。

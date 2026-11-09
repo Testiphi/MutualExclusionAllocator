@@ -166,3 +166,51 @@ test('platform login accepts small device clock skew only within the parent expi
  assert.equal(c.diagnostics().counts.login,1);
  assert.equal(c.diagnostics().counts.recovery,0);
 });
+
+test('binding acceptance connects only to its fixed isolated delivery and leaves profile writes closed',async()=>{
+ const f=lab(),wechatBindingDelivery='1234567890abcdef12345678';
+ const p={...profile,wechatBindingDelivery,planId:'mini-account-mirror-wechat-binding-fixture'};
+ const c=createAccountConnection(f.wx,p);
+ await assert.rejects(auth(c.client),e=>e.code==='ACCOUNT_DELIVERY_MISMATCH');
+ assert.equal(f.calls.filter(x=>x.kind==='wx.login').length,0);
+ f.setHook((request,url)=>{
+  if(url.pathname.endsWith('/health'))return {body:{...binding.health,delivery_id:wechatBindingDelivery,wechat_binding:true}};
+  if(url.pathname.endsWith('/auth/login')){const session=f.account();session.features.wechat_binding_v1={enabled:true,bound:false};return {body:session};}
+  if(url.pathname.endsWith('/auth/wechat-bind'))return {body:{actor_id:'fixture-actor',bound:true}};
+ });
+ await auth(c.client);
+ assert.deepEqual(c.client.wechatBinding(),{bound:false});
+ assert.deepEqual(await c.client.changeWechatBinding('wechat-bind','fixture-private-only'),{bound:true});
+ await assert.rejects(c.client.saveProfile('cn',{},0),e=>e.code==='CLOUD_WRITE_DISABLED');
+ const change=f.calls.find(x=>x.url?.endsWith('/auth/wechat-bind'));
+ assert.equal(change.header['X-Account-ID'],'fixture-actor');
+ assert.equal(f.calls.filter(x=>x.kind==='wx.login').length,2);
+ assert.equal(f.calls.filter(x=>x.method==='PUT').length,0);
+ await c.client.logout();
+ assert.equal(c.client.wechatBinding(),null);
+});
+
+test('isolated WeChat shortcut needs matching health and capability, and recovers without another code',async()=>{
+ const f=lab(),wechatBindingDelivery='1234567890abcdef12345678';
+ const c=createAccountConnection(f.wx,{...profile,wechatBindingDelivery,wechatLogin:true,planId:'mini-account-mirror-wechat-binding-shortcut'});
+ let enabled=false;
+ f.setHook((request,url)=>{
+  if(url.pathname.endsWith('/health'))return {body:{...binding.health,delivery_id:wechatBindingDelivery,wechat_binding:true,wechat_login:enabled}};
+  if(url.pathname.endsWith('/session')&&request.method==='GET')return {body:{session_kind:'wechat_guest',actor:null,features:{...f.account().features,authentication:{isolated_wechat_login:true}}}};
+  if(url.pathname.endsWith('/auth/wechat-login'))return {lost:true};
+  if(url.pathname.includes('/operations/'))return {body:f.account()};
+ });
+ await assert.rejects(c.client.auth('wechat-login',{}),e=>e.code==='ACCOUNT_DELIVERY_MISMATCH');
+ assert.equal(f.calls.filter(x=>x.kind==='wx.login').length,0);
+ enabled=true;
+ await assert.rejects(c.client.auth('wechat-login',{}));
+ const {key,action}=c.client.pendingAuth();
+ assert.equal(action,'wechat-login');
+ await assert.rejects(c.client.auth('wechat-login',{}));
+ const recovered=await c.client.recoverAuth(key,action);
+ assert.equal(recovered.actor.id,'fixture-actor');
+ const sent=f.calls.filter(x=>x.url?.endsWith('/auth/wechat-login'));
+ assert.equal(sent.length,1);
+ assert.deepEqual(Object.keys(sent[0].data).sort(),['code','request_key','schema']);
+ assert.equal(f.calls.filter(x=>x.kind==='wx.login').length,2);
+});

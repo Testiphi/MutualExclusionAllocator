@@ -3,9 +3,9 @@ const binding=require('./account_readonly_binding.js');
 const {verifyNativeSnapshot}=require('../adapters/snapshot');
 const {sha256,utf8}=require('../adapters/hash');
 const fail=code=>Object.assign(Error(code),{code});
-function verifyHealth(value,writable=false,registrationDelivery){
+function verifyHealth(value,writable=false,registrationDelivery,wechatBindingDelivery){
  function match(actual,expected){return expected&&typeof expected==='object'?actual&&Object.keys(expected).every(k=>match(actual[k],expected[k])):actual===expected;}
- const expected=registrationDelivery?{...binding.health,delivery_id:registrationDelivery,registration:true}:writable?{...binding.health,cloud_writes:true}:binding.health;
+ const expected=wechatBindingDelivery?{...binding.health,delivery_id:wechatBindingDelivery,wechat_binding:true}:registrationDelivery?{...binding.health,delivery_id:registrationDelivery,registration:true}:writable?{...binding.health,cloud_writes:true}:binding.health;
  if(!match(value,expected))throw fail('ACCOUNT_DELIVERY_MISMATCH');
  return true;
 }
