@@ -62,7 +62,7 @@
                 <div class="garage-action-group" role="group" aria-label="临时选车与排序">
                     <button type="button" class="garage-btn" id="selectAllBtn">全部点亮</button>
                     <button type="button" class="garage-btn" id="clearAllBtn">全部清空</button>
-                    <button type="button" class="garage-btn" id="sortBtn">默认</button>
+                    <button type="button" class="garage-btn" id="sortBtn">分↓</button>
                 </div>
                 <span id="garageSaveStatus" role="status">手动保存 · 临时选择不会覆盖车库</span>
             </div>
@@ -144,7 +144,7 @@
     // 车辆度量数据 (cars.json 动态加载后填充)
     let carStats = {};         // 真车名 → { score, max_speed, ... }
     let nickToName = {};       // 昵称 → 真车名
-    let sortMode = 'alpha';    // 'alpha' | 'score-desc' | 'score-asc'
+    let sortMode = 'score-desc';    // 'alpha' | 'score-desc' | 'score-asc'
     let filterClass = null;    // null = 全部, 或 'S','A','B','C','D','R' 之一
 
     // DOM 元素
