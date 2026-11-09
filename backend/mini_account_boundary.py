@@ -16,6 +16,7 @@ class AccountBoundaryOptions:
     cloud_writes: bool = False
     registration: bool = False
     wechat_binding: bool = False
+    wechat_login: bool = False
 
     def __post_init__(self):
         if type(self.enabled) is not bool or type(self.cloud_writes) is not bool:
@@ -27,6 +28,9 @@ class AccountBoundaryOptions:
         if type(self.wechat_binding) is not bool or (self.wechat_binding and
                 (not self.enabled or self.cloud_writes or self.registration)):
             raise ValueError('Binding acceptance requires its own enabled read-only service')
+
+        if type(self.wechat_login) is not bool or (self.wechat_login and not self.wechat_binding):
+            raise ValueError('WeChat login requires isolated binding acceptance')
 
 
 
@@ -72,6 +76,8 @@ class AccountBoundary:
                 allowed = allowed or path in {A+'/auth/'+action for action in REGISTRATION_ACTIONS}
             if self.options.wechat_binding and method == 'POST':
                 allowed = allowed or path in {A+'/auth/'+action for action in BINDING_ACTIONS}
+            if self.options.wechat_login and method == 'POST':
+                allowed = allowed or path == A+'/auth/wechat-login'
             if method == 'GET' and re.fullmatch(re.escape(A)+r'/operations/[A-Za-z0-9_-]{16,80}', path):
                 pairs = parse_qsl(scope.get('query_string', b'').decode('latin1'), keep_blank_values=True)
                 query = dict(pairs)
@@ -82,6 +88,8 @@ class AccountBoundary:
                     allowed = allowed or pairs[0][1] in REGISTRATION_ACTIONS
                 if self.options.wechat_binding and len(pairs) == 1 and pairs[0][0] == 'action':
                     allowed = allowed or pairs[0][1] in BINDING_ACTIONS
+                if self.options.wechat_login:
+                    allowed = allowed or pairs == [('action','wechat-login')]
             if not allowed:
                 error = MiniError(404, 'ACCOUNT_ROUTE_PENDING', 'Route is outside this A preparation scope')
             elif method == 'PUT' and not self.options.cloud_writes:

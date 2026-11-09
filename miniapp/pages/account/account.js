@@ -3,7 +3,7 @@ const runtime=require('../../services/runtime');
 const labels={login:'登录',register:'注册', 'resend-verification':'重发验证邮件','forgot-password':'找回密码','verify-email':'验证邮箱','reset-password':'重置密码','redeem-invitation':'兑换管理员邀请',reauth:'再次验证密码'};
 Page({
  data:{moreOpen:false,mode:'login',title:'登录',email:'',password:'',passwordConfirm:'',token:'',invite_code:'',busy:false,actor:null,options:Object.entries(labels).map(([value,label])=>({value,label}))},
- onLoad(o={}){this.unloaded=false;try{const policy=runtime.policy();this.actions=policy.restricted?policy.actions:Object.keys(labels);this.setData({restricted:policy.restricted,registration:policy.registration===true,bindingAcceptance:policy.wechatBinding===true});this.client=runtime.account();this.pending=this.client.pendingAuth?.();this.setData({actor:this.client.state().actor,wechatBinding:this.client.wechatBinding?.()||null,recoverable:!!this.pending});this.unwatch=this.client.subscribe(s=>this.publish({actor:s.actor,wechatBinding:this.client.wechatBinding?.()||null}));if(o.mode&&labels[o.mode])this.changeMode({detail:{value:o.mode}});}catch(e){this.setData({error:e.message});}},
+ onLoad(o={}){this.unloaded=false;try{const policy=runtime.policy();this.actions=policy.restricted?policy.actions:Object.keys(labels);this.setData({restricted:policy.restricted,registration:policy.registration===true,bindingAcceptance:policy.wechatBinding===true,wechatLogin:policy.wechatLogin===true});this.client=runtime.account();this.pending=this.client.pendingAuth?.();this.setData({actor:this.client.state().actor,wechatBinding:this.client.wechatBinding?.()||null,recoverable:!!this.pending});this.unwatch=this.client.subscribe(s=>this.publish({actor:s.actor,wechatBinding:this.client.wechatBinding?.()||null}));if(o.mode&&labels[o.mode])this.changeMode({detail:{value:o.mode}});}catch(e){this.setData({error:e.message});}},
  publish(value){if(!this.unloaded)this.setData(value);},
  input(e){if(['email','password','passwordConfirm','token','invite_code','wechatPassword'].includes(e.currentTarget.dataset.key))this.setData({[e.currentTarget.dataset.key]:e.detail.value});},
  chooseMode(e){this.changeMode({detail:{value:e.currentTarget.dataset.mode}});},
@@ -23,6 +23,17 @@ Page({
   try{const value=await this.client.auth(action,fields);this.pending=null;this.publish({actor:this.client.state().actor,message:value.message||(['login','reauth'].includes(action)?'登录成功，可返回主页使用账号车库':'操作已完成'),recoverable:false});}
   catch(e){this.pending=this.client.pendingAuth?.()||null;this.publish({error:e.message,recoverable:!!this.pending,retryAfterMs:e.retryAfterMs||0});}
   finally{fields=null;this.publish({busy:false,password:'',passwordConfirm:'',token:'',invite_code:''});}
+ },
+ async loginWithWechat(){
+  if(this.data.busy||this.pending||this.data.actor||!this.data.wechatLogin)return;
+  this.publish({busy:true,password:'',error:'',message:''});
+  try{
+   await this.client.auth('wechat-login',{});
+   this.publish({message:'微信登录成功，可返回主页使用账号车库'});
+  }catch(e){
+   this.pending=this.client.pendingAuth?.()||null;
+   this.publish({error:e.message,recoverable:!!this.pending});
+  }finally{this.publish({busy:false});}
  },
  chooseWechatBinding(){
   const binding=this.client?.wechatBinding?.();

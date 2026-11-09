@@ -9,7 +9,8 @@ const candidate=/^--w3-candidate-[ab]$/.test(process.argv[4]||'');
 const role=/^--w3-(prepare|candidate)-a$/.test(process.argv[4]||'')?'a':/^--w3-(prepare|candidate)-b$/.test(process.argv[4]||'')?'b':null;
 const writable=process.argv[4]==='--write-w1w2'||candidate,readback=process.argv[4]==='--saved-readback';
 const registration=process.argv[4]==='--isolated-registration';
-const wechatBinding=process.argv[4]==='--isolated-wechat-binding';
+const wechatLogin=process.argv[4]==='--isolated-wechat-login';
+const wechatBinding=wechatLogin||process.argv[4]==='--isolated-wechat-binding';
 const localSync=process.argv[4]==='--local-sync';
 const formalWrite=process.argv[4]==='--formal-write';
 const firstRelease=process.argv[4]==='--formal-first-release';
@@ -19,7 +20,7 @@ assert.ok(!process.argv[4]||writable||readback||role||localSync||formal||registr
 if(localSync)assert.match(planId,/^mini-local-sync-[a-zA-Z0-9_-]+$/);
 const readbackBinding=require('../miniapp/services/account_readback_binding');
 const writableBinding=require('../miniapp/services/account_writable_binding');
-const config=validateAccountProfile(formal?JSON.parse(fs.readFileSync(process.argv[5],'utf8')):localSync?{enabled:false}:{enabled:true,origin:binding.origin,allowCloudWrites:writable,planId,...(registration?{registrationDelivery:process.argv[5]}:{}),...(wechatBinding?{wechatBindingDelivery:process.argv[5]}:{}),...(writable?{writableReceipt:writableBinding.handoff_sha256}: {}),...(readback?{readbackReceipt:readbackBinding.receipt_sha256}: {}),...(role?{conflictRole:role,conflictGroup:'w3-20261107-01',conflictReceipt:readbackBinding.receipt_sha256}: {})});
+const config=validateAccountProfile(formal?JSON.parse(fs.readFileSync(process.argv[5],'utf8')):localSync?{enabled:false}:{enabled:true,origin:binding.origin,allowCloudWrites:writable,planId,...(registration?{registrationDelivery:process.argv[5]}:{}),...(wechatBinding?{wechatBindingDelivery:process.argv[5],...(wechatLogin?{wechatLogin:true}:{})}:{}),...(writable?{writableReceipt:writableBinding.handoff_sha256}: {}),...(readback?{readbackReceipt:readbackBinding.receipt_sha256}: {}),...(role?{conflictRole:role,conflictGroup:'w3-20261107-01',conflictReceipt:readbackBinding.receipt_sha256}: {})});
 if(formal){assert.equal(config.mode,'production-a');assert.equal(config.allowCloudWrites,formalWrite||firstRelease);assert.equal(config.planId,planId);}
 const ocr=formalOcr?require('../docs/MINI_OCR_EXPECTED_20261104.json'):null;
 const native=ocr?{enabled:true,kind:'platform',origin:ocr.origin}:{enabled:false};
@@ -63,6 +64,6 @@ write('generated/native-config.js','module.exports='+JSON.stringify(native)+';\n
 write('generated/account-config.js','module.exports='+JSON.stringify(config)+';\n','independent account origin and write policy');
 const buildId=crypto.createHash('sha256').update(JSON.stringify(receipt.files)+planId+out).digest('hex').slice(0,20);receipt.buildId=buildId;write('generated/build-info.js','module.exports='+JSON.stringify(localSync?{buildId,storageScope:planId}:{buildId,...(firstRelease?{}:{planId}),...(ocr?{ocrBinding}:{})})+';\n','bound developer build identity');
 const local=JSON.parse(fs.readFileSync(path.join(root,'miniapp/project.config.json'),'utf8'));
-write('project.config.json',JSON.stringify({...local,projectname:firstRelease?'RacePick-first-release':formalOcr?'RacePick-formal-OCR-readonly-candidate':formalWrite?'RacePick-formal-cloud-save-candidate':localSync?'RacePick-local-source-sync':wechatBinding?'RacePick-isolated-wechat-binding':registration?'RacePick-isolated-registration':role?'RacePick-W3-'+role+(candidate?'-CANDIDATE':'-PREPARED-NO-WRITES'):writable?'RacePick-W1W2-write-acceptance':readback?'RacePick-saved-readback':'RacePick-mirror-account-readonly',setting:{...local.setting,urlCheck:true}},null,2),'local ignored identity; never print AppID');
+write('project.config.json',JSON.stringify({...local,projectname:firstRelease?'RacePick-first-release':formalOcr?'RacePick-formal-OCR-readonly-candidate':formalWrite?'RacePick-formal-cloud-save-candidate':localSync?'RacePick-local-source-sync':wechatLogin?'RacePick-isolated-wechat-login':wechatBinding?'RacePick-isolated-wechat-binding':registration?'RacePick-isolated-registration':role?'RacePick-W3-'+role+(candidate?'-CANDIDATE':'-PREPARED-NO-WRITES'):writable?'RacePick-W1W2-write-acceptance':readback?'RacePick-saved-readback':'RacePick-mirror-account-readonly',setting:{...local.setting,urlCheck:true}},null,2),'local ignored identity; never print AppID');
 fs.writeFileSync(path.join(path.dirname(out),'mirror-project-receipt.json'),JSON.stringify(receipt,null,2)+'\n',{flag:'wx'});
 console.log(JSON.stringify({project:out,planId,buildId,source,dirty:receipt.dirty,accountLazy:true,cloudWrites:receipt.allowCloudWrites,networkExecuted:false}));

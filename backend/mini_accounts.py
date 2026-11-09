@@ -152,6 +152,10 @@ def make_native_account(config, source):
     from backend import mini_features
     guest_actions={'register','login','resend-verification','forgot-password','verify-email','reset-password'}
 
+    shortcut='wechat-login'
+    shortcut_enabled=binding_enabled and config.get('isolated_wechat_login') is True
+    if shortcut_enabled:guest_actions.add(shortcut)
+
     def formal_route(request):
         method, path = request.method, request.url.path
         allowed = (method, path) in {
@@ -178,7 +182,8 @@ def make_native_account(config, source):
                 'profiles':{'cn':'account','global':'account' if getattr(source,'global_profiles',False) else 'unavailable'},
                 'authentication':{'mail_mode':'production' if source.mail_service.config.production else source.mail_service.config.mode,
                                   'mail_token_ttl_seconds':1800,'persistent_wechat_binding':False,'reauth_max_age_seconds':600,
-                                  'isolated_player_registration':player_registration},
+                                  'isolated_player_registration':player_registration,
+                                  **({'isolated_wechat_login':True} if shortcut_enabled else {})},
                 'native_batches':{'A':'ready',**dict.fromkeys(('B','C','D','E'),'pending' if a_only else 'ready')},'feature_writes':{'fixture_only':True,'enabled':not a_only and mini_features.writes_enabled(config,source)}}
 
     def session_result(request,sid):
@@ -240,6 +245,30 @@ def make_native_account(config, source):
     def validated(name,body):
         try:return web.models[name].model_validate(body)
         except ValidationError:fail(400,'INVALID_ACCOUNT_BODY','账号字段无效；请按契约检查，秘密不回显')
+
+    def execute_wechat_login(request,body):
+        if set(body)!={'schema','request_key','code'}:
+            fail(400,'INVALID_ACCOUNT_BODY','快捷登录仅接受微信凭证')
+        guest=request.state.guest
+
+        def invoke():
+            try:
+                anchor,actor,expiry=mini_wechat_binding.login(
+                    source.store,guests,config['verifier'],guest,body['code'])
+                try:
+                    sid=accounts.issue(guest,anchor,actor,expiry,web)
+                except BaseException:
+                    web.revoke(anchor)
+                    raise
+                return 200,{'account_sid':sid}
+            except MiniError as error:
+                return error.status,{'schema_version':1,'code':error.code,
+                                     'detail':error.message,'operation_resolved':True}
+
+        status,result=accounts.operation('guest:'+guest['sid'],body['request_key'],
+                                         shortcut,{'code':body['code']},invoke)
+        if status==200:result=session_result(request,result['account_sid'])
+        return JSONResponse(result,status_code=status,headers={'Retry-After':'60'} if status==429 else None)
 
     def execute_binding(request,action,body):
         payload={k:v for k,v in body.items() if k not in ('schema','request_key')}
@@ -308,6 +337,8 @@ def make_native_account(config, source):
 
     @app.post(PREFIX+'/auth/{action}')
     async def auth_action(action:str,request:Request):
+        if shortcut_enabled and action==shortcut:
+            return await run_in_threadpool(execute_wechat_login,request,await body_for(request))
         if action in binding_actions:
             return await run_in_threadpool(execute_binding,request,action,await body_for(request))
         if action not in guest_actions|{'reauth','redeem-invitation'}:fail(404,'ACCOUNT_ROUTE_PENDING','账号路径尚未固定')

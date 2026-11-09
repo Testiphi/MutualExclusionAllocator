@@ -189,3 +189,28 @@ test('binding acceptance connects only to its fixed isolated delivery and leaves
  await c.client.logout();
  assert.equal(c.client.wechatBinding(),null);
 });
+
+test('isolated WeChat shortcut needs matching health and capability, and recovers without another code',async()=>{
+ const f=lab(),wechatBindingDelivery='1234567890abcdef12345678';
+ const c=createAccountConnection(f.wx,{...profile,wechatBindingDelivery,wechatLogin:true,planId:'mini-account-mirror-wechat-binding-shortcut'});
+ let enabled=false;
+ f.setHook((request,url)=>{
+  if(url.pathname.endsWith('/health'))return {body:{...binding.health,delivery_id:wechatBindingDelivery,wechat_binding:true,wechat_login:enabled}};
+  if(url.pathname.endsWith('/session')&&request.method==='GET')return {body:{session_kind:'wechat_guest',actor:null,features:{...f.account().features,authentication:{isolated_wechat_login:true}}}};
+  if(url.pathname.endsWith('/auth/wechat-login'))return {lost:true};
+  if(url.pathname.includes('/operations/'))return {body:f.account()};
+ });
+ await assert.rejects(c.client.auth('wechat-login',{}),e=>e.code==='ACCOUNT_DELIVERY_MISMATCH');
+ assert.equal(f.calls.filter(x=>x.kind==='wx.login').length,0);
+ enabled=true;
+ await assert.rejects(c.client.auth('wechat-login',{}));
+ const {key,action}=c.client.pendingAuth();
+ assert.equal(action,'wechat-login');
+ await assert.rejects(c.client.auth('wechat-login',{}));
+ const recovered=await c.client.recoverAuth(key,action);
+ assert.equal(recovered.actor.id,'fixture-actor');
+ const sent=f.calls.filter(x=>x.url?.endsWith('/auth/wechat-login'));
+ assert.equal(sent.length,1);
+ assert.deepEqual(Object.keys(sent[0].data).sort(),['code','request_key','schema']);
+ assert.equal(f.calls.filter(x=>x.kind==='wx.login').length,2);
+});

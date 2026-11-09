@@ -46,8 +46,8 @@ class AccountServiceTests(unittest.TestCase):
     def write(self,path,data):
         path.write_text(json.dumps(data),encoding='utf-8');path.chmod(0o600)
 
-    def client(self,writes=False,registration=False,wechat_binding=False):
-        self.write(self.config,{**self.declaration,'cloud_writes':writes,'registration':registration,'wechat_binding':wechat_binding})
+    def client(self,writes=False,registration=False,wechat_binding=False,wechat_login=False):
+        self.write(self.config,{**self.declaration,'cloud_writes':writes,'registration':registration,'wechat_binding':wechat_binding,'wechat_login':wechat_login})
         app=make_app(self.config)
         client=TestClient(app,base_url=ORIGIN,client=('127.0.0.1',12000));client.__enter__()
         self.addCleanup(client.__exit__,None,None,None)
@@ -203,6 +203,56 @@ class AccountServiceTests(unittest.TestCase):
         self.assertEqual(login.status_code,200)
         self.assertEqual(login.json()['user']['id'],ids[winner])
         self.assertEqual(client.put(A+'/profile?server=cn',headers=auth[winner],json={}).status_code,503)
+
+    def test_wechat_binding_shortcut_preserves_account_and_garages_until_unbound(self):
+        prepare_account_stopped(self.root,'isolated@example.test',PASSWORD)
+        app,client=self.client(wechat_binding=True,wechat_login=True)
+        self.assertTrue(client.get('/_account-test/health',headers=PROXY).json()['wechat_login'])
+        guest,auth=self.guest_login(client)
+        uid=auth['X-Account-ID']
+        with app.web.state.store.connect() as db:
+            db.execute('INSERT INTO profiles VALUES (?,?,?,?,?)',(uid,'["f5"]','{"f5":5}',3,1))
+            db.execute('INSERT INTO profiles_global VALUES (?,?,?,?,?,?)',
+                       (uid,'["ssc"]','{"ssc":6}','{"ssc":true}',4,1))
+
+        def profiles(header):
+            return [client.get(A+'/profile',params={'server':s},headers=header).json() for s in ('cn','global')]
+
+        def shortcut(key=None):
+            return client.post(A+'/auth/wechat-login',headers=guest,json={
+                'schema':1,'request_key':key or secrets.token_hex(16),'code':'new-shortcut-code'})
+
+        def bind(action,header,**extra):
+            return client.post(A+'/auth/'+action,headers=header,json={
+                'schema':1,'request_key':secrets.token_hex(16),'password':PASSWORD,**extra})
+
+        baseline=profiles(auth)
+        self.assertEqual([row['revision'] for row in baseline],[3,4])
+        self.assertEqual(shortcut().json()['code'],'WECHAT_LOGIN_UNAVAILABLE')
+        self.assertEqual(bind('wechat-bind',auth,code='binding-code').json(),{'actor_id':uid,'bound':True})
+        self.assertEqual(client.delete(A+'/session',headers=auth).status_code,200)
+        with patch.object(WechatVerifier,'__call__',side_effect=MiniError(401,'PLATFORM_CODE_REJECTED','expired')):
+            self.assertEqual(shortcut().json()['code'],'WECHAT_CODE_EXPIRED')
+        key=secrets.token_hex(16)
+        logged=shortcut(key)
+        self.assertEqual(logged.status_code,200,logged.text)
+        self.assertNotIn('Set-Cookie',logged.headers)
+        self.assertEqual(logged.json()['actor']['id'],uid)
+        recovered=client.get(A+'/operations/'+key,params={'action':'wechat-login'},headers=guest)
+        self.assertEqual(recovered.json()['actor']['id'],uid)
+        auth={**PROXY,'Authorization':'Bearer '+logged.json()['token'],'X-Account-ID':uid}
+        self.assertEqual(profiles(auth),baseline)
+        self.assertEqual(bind('wechat-unbind',auth).json(),{'actor_id':uid,'bound':False})
+        self.assertEqual(client.delete(A+'/session',headers=auth).status_code,200)
+        self.assertEqual(shortcut().json()['code'],'WECHAT_LOGIN_UNAVAILABLE')
+        relogin=client.post(A+'/auth/login',headers=guest,json={
+            'schema':1,'request_key':secrets.token_hex(16),'email':'isolated@example.test','password':PASSWORD})
+        self.assertEqual(relogin.status_code,200)
+        self.assertEqual(relogin.json()['actor']['id'],uid)
+        auth['Authorization']='Bearer '+relogin.json()['token']
+        self.assertEqual(profiles(auth),baseline)
+        with app.web.state.store.connect() as db:
+            self.assertEqual(db.execute('SELECT count(*) FROM users').fetchone()[0],1)
 
     def test_wechat_binding_rejects_invalid_identity_and_disabled_account(self):
         prepare_account_stopped(self.root,'isolated@example.test',PASSWORD)

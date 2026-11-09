@@ -6,13 +6,16 @@
   <view class="meta">{{wechatBinding.bound ? '已绑定微信' : '尚未绑定微信'}}</view>
   <button wx:if="{{!wechatConfirm}}" bindtap="chooseWechatBinding" disabled="{{busy || recoverable}}">{{wechatBinding.bound ? '解绑微信' : '绑定当前微信'}}</button>
   <view wx:if="{{wechatConfirm}}">
-   <view class="field-label">请输入 RacePick 账号密码确认{{wechatConfirm === 'wechat-unbind' ? '解绑' : '绑定'}}</view>
+   <view class="field-label">请输入当前账号的密码，确认{{wechatConfirm === 'wechat-unbind' ? '解绑' : '绑定'}}</view>
    <input password="{{true}}" value="{{wechatPassword}}" data-key="wechatPassword" bindinput="input" maxlength="128" disabled="{{busy}}"/>
    <button bindtap="submitWechatBinding" loading="{{busy}}" disabled="{{busy}}">{{wechatConfirm === 'wechat-unbind' ? '确认解绑' : '确认绑定'}}</button>
    <button bindtap="cancelWechatBinding" disabled="{{busy}}">取消</button>
   </view>
  </view>
  <view wx:if="{{!actor}}" class="actions"><button data-mode="login" bindtap="chooseMode" disabled="{{busy}}">登录</button><button wx:if="{{!restricted || registration}}" data-mode="register" bindtap="chooseMode" disabled="{{busy}}">注册</button><button wx:if="{{!restricted}}" data-mode="forgot-password" bindtap="chooseMode" disabled="{{busy}}">忘记密码</button></view>
+ <view wx:if="{{wechatLogin && !actor}}" class="actions">
+  <button bindtap="loginWithWechat" disabled="{{busy || recoverable}}">微信快捷登录</button>
+ </view>
  <view wx:if="{{registration && !actor}}" class="actions"><button data-mode="verify-email" bindtap="chooseMode" disabled="{{busy}}">验证邮箱</button><button data-mode="resend-verification" bindtap="chooseMode" disabled="{{busy}}">重发验证邮件</button></view>
  <view wx:if="{{!restricted}}" class="actions"><button class="plain-link" bindtap="toggleMore">{{moreOpen ? '收起更多账号操作' : '验证邮件 / 邀请码 / 更多操作'}}</button></view><view wx:if="{{moreOpen && !restricted}}" class="actions"><button data-mode="resend-verification" bindtap="chooseMode">重发验证邮件</button><button data-mode="verify-email" bindtap="chooseMode">验证邮箱</button><button data-mode="reset-password" bindtap="chooseMode">重置密码</button><button wx:if="{{actor}}" data-mode="redeem-invitation" bindtap="chooseMode">兑换管理员邀请</button><button wx:if="{{actor}}" data-mode="reauth" bindtap="chooseMode">再次验证密码</button></view>
  <view wx:if="{{!actor || mode === 'redeem-invitation' || mode === 'reauth' || mode === 'reset-password' || mode === 'verify-email' || mode === 'resend-verification'}}" class="panel"><view class="heading">{{title}}</view>

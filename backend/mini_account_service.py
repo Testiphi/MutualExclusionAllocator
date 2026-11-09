@@ -36,10 +36,10 @@ def provenance():
 def settings(path):
     data=json.loads(private(path).read_bytes())
     required={'kind','origin','state_root','mini_config','enabled','cloud_writes'}
-    if not required<=set(data)<=required|{'registration','wechat_binding'} or data['kind']!=KIND:
+    if not required<=set(data)<=required|{'registration','wechat_binding','wechat_login'} or data['kind']!=KIND:
         raise ValueError('Strict account service declaration required')
     validate_origin(data['origin'])
-    AccountBoundaryOptions(data['enabled'],data['cloud_writes'],data.get('registration',False),data.get('wechat_binding',False))
+    AccountBoundaryOptions(data['enabled'],data['cloud_writes'],data.get('registration',False),data.get('wechat_binding',False),data.get('wechat_login',False))
     if not isinstance(data['state_root'],str) or not Path(data['state_root']).is_absolute():
         raise ValueError('Explicit absolute isolated state root required')
     if not isinstance(data['mini_config'],str) or not Path(data['mini_config']).is_absolute():
@@ -57,7 +57,7 @@ class IsolatedAccountService:
     """Acquire exclusive state ownership at ASGI startup before opening any API state."""
     def __init__(self,declaration):
         self.config=declaration
-        self.options=AccountBoundaryOptions(declaration['enabled'],declaration['cloud_writes'],declaration.get('registration',False),declaration.get('wechat_binding',False))
+        self.options=AccountBoundaryOptions(declaration['enabled'],declaration['cloud_writes'],declaration.get('registration',False),declaration.get('wechat_binding',False),declaration.get('wechat_login',False))
         self.lease=None;self.web=None;self.native=None;self.started=False
 
     def start(self):
@@ -93,6 +93,7 @@ class IsolatedAccountService:
                 from backend.mini_wechat_binding import bound
                 bound(self.web.state.store, '')
                 mini['isolated_wechat_binding']=True
+                mini['isolated_wechat_login']=self.options.wechat_login
             self.source=SimpleNamespace(**self.web.state._state,
                 score_versions=snapshot.score_versions,global_score_versions=snapshot.global_score_versions)
             gateway=MiniGateway(self.web,config=mini,source=self.source,service=None,origin=config['origin'],production=True)
@@ -102,6 +103,7 @@ class IsolatedAccountService:
                     'enabled':True,'cloud_writes':self.options.cloud_writes,'mail_mode':'file',
                     'registration':self.options.registration,
                     **({'wechat_binding':True} if self.options.wechat_binding else {}),
+                    **({'wechat_login':True} if self.options.wechat_login else {}),
                     'native_batches':{'A':'ready',**dict.fromkeys(('B','C','D','E'),'pending')},
                     'schemas':{'business':6,'global_profile':1,'guest':1,'native_account':1},
                     'coverage_schema':0,'global_score_schema':0,'ocr_enabled':False,'production_business':False,

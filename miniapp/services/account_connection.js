@@ -24,14 +24,16 @@ function validateAccountProfile(value){
  if(registration&&(value.allowCloudWrites||conflict||value.readbackReceipt!==undefined||!/^mini-account-mirror-registration-[a-zA-Z0-9_-]+$/.test(value.planId)||typeof value.registrationDelivery!=='string'||!/^[a-f0-9]{24}$/.test(value.registrationDelivery)))throw error('ACCOUNT_CONFIG_INVALID');
  const wechatBinding=value.wechatBindingDelivery!==undefined;
  if(wechatBinding&&(registration||value.allowCloudWrites||conflict||value.readbackReceipt!==undefined||!/^mini-account-mirror-wechat-binding-[a-zA-Z0-9_-]+$/.test(value.planId)||typeof value.wechatBindingDelivery!=='string'||!/^[a-f0-9]{24}$/.test(value.wechatBindingDelivery)))throw error('ACCOUNT_CONFIG_INVALID');
- const allowed=['enabled','origin','allowCloudWrites','planId',...(registration?['registrationDelivery']:[]),...(wechatBinding?['wechatBindingDelivery']:[]),...(value.allowCloudWrites?['writableReceipt']:[]),...(value.readbackReceipt!==undefined?['readbackReceipt']:[]),...(conflict?['conflictRole','conflictGroup','conflictReceipt']:[])];
+ if(value.wechatLogin!==undefined&&(value.wechatLogin!==true||!wechatBinding))throw error('ACCOUNT_CONFIG_INVALID');
+ const allowed=['enabled','origin','allowCloudWrites','planId',...(registration?['registrationDelivery']:[]),...(wechatBinding?['wechatBindingDelivery','wechatLogin']:[]),...(value.allowCloudWrites?['writableReceipt']:[]),...(value.readbackReceipt!==undefined?['readbackReceipt']:[]),...(conflict?['conflictRole','conflictGroup','conflictReceipt']:[])];
  if(Object.keys(value).some(k=>!allowed.includes(k)))throw error('ACCOUNT_CONFIG_INVALID');
  return {...value};
 }
 function createAccountConnection(wx,input){
  const profile=validateAccountProfile(input);if(!profile.enabled)throw error('ACCOUNT_CONFIG_DISABLED');
  const formal=profile.mode==='production-a',healthPath=formal?'/api/health':'/_account-test/health';
- const registration=!!profile.registrationDelivery,actions=['login',...(registration?registrationActions:[])];
+ const wechatLogin=profile.wechatLogin===true;
+ const registration=!!profile.registrationDelivery,actions=['login',...(registration?registrationActions:[]),...(wechatLogin?['wechat-login']:[])];
  const wechatBinding=!!profile.wechatBindingDelivery;
  const conflict=!!profile.conflictRole;
  const readback=!!profile.readbackReceipt,readbackSeen=new Set();let readbackHalted=false;
@@ -53,6 +55,8 @@ function createAccountConnection(wx,input){
   else if(m==='GET'&&/^\/api\/mini\/v1\/snapshot\?server=(cn|global)$/.test(p))counter='snapshot';
   else if(m==='POST'&&p==='/api/mini/account/v1/auth/login')counter='login';
   else if(registration&&m==='POST'&&registrationActions.some(a=>p==='/api/mini/account/v1/auth/'+a))counter=p.split('/').pop();
+  else if(wechatLogin&&m==='POST'&&p==='/api/mini/account/v1/auth/wechat-login')counter='wechat-login';
+  else if(wechatLogin&&m==='GET'&&/^\/api\/mini\/account\/v1\/operations\/[a-zA-Z0-9_-]{16,80}\?action=wechat-login$/.test(p))counter='recovery';
   else if(wechatBinding&&m==='POST'&&bindingActions.some(action=>p==='/api/mini/account/v1/auth/'+action))counter=p.split('/').pop();
   else if(wechatBinding&&m==='GET'&&/^\/api\/mini\/account\/v1\/operations\/[a-zA-Z0-9_-]{16,80}\?action=wechat-(bind|unbind)$/.test(p))counter='recovery';
   else if((m==='GET'||wechatBinding&&m==='DELETE')&&p==='/api/mini/account/v1/session')counter='session';
@@ -65,7 +69,7 @@ function createAccountConnection(wx,input){
   counts[counter]=(counts[counter]||0)+1;return wx.request(o);
  };
  observed.uploadFile=observed.downloadFile=()=>{throw error('ACCOUNT_MEDIA_DISABLED');};
- const guest=createNativeApi(observed,config),client=createAccountClient(observed,{...config,wechatBinding},guest);
+ const guest=createNativeApi(observed,config),client=createAccountClient(observed,{...config,wechatBinding,wechatLogin},guest);
  let parent=null;
  guest.session.subscribe(s=>{if(s.identity!==parent){parent=s.identity;ready=false;client.clear();}});
  async function run(fn){if(disposed)throw error('ACCOUNT_CONNECTION_DISPOSED');if(retryAt>Date.now())throw Object.assign(error('ACCOUNT_RETRY_WAIT'),{retryAfterMs:retryAt-Date.now()});try{const value=await fn();if(disposed)throw error('ACCOUNT_CONNECTION_DISPOSED');return value;}catch(e){if(e.retryAfterMs>0)retryAt=Date.now()+e.retryAfterMs;throw e;}}
@@ -74,12 +78,16 @@ function createAccountConnection(wx,input){
   const r=await new Promise((resolve,reject)=>observed.request({url:config.origin+healthPath,method:'GET',dataType:'other',responseType:'arraybuffer',timeout:30000,success:resolve,fail:reason=>{healthDiagnostic=networkDiagnostic(reason);reject(error('HEALTH_REQUEST_FAILED'));}}));
   healthDiagnostic={kind:'http',httpStatus:r.statusCode};
   if(r.statusCode!==200){const h=r.header||{},k=Object.keys(h).find(k=>k.toLowerCase()==='retry-after');throw Object.assign(error('HEALTH_REQUEST_FAILED'),{status:r.statusCode,retryAfterMs:Number(h[k])>0?Number(h[k])*1000:0});}
-  if(formal)verifyProductionHealth(responseJSON(r),profile.fixedRuntime.snapshot_versions,writing);else verifyHealth(responseJSON(r),writable||readback||conflict,profile.registrationDelivery,profile.wechatBindingDelivery);
+  if(formal)verifyProductionHealth(responseJSON(r),profile.fixedRuntime.snapshot_versions,writing);else {
+   const value=responseJSON(r);
+   verifyHealth(value,writable||readback||conflict,profile.registrationDelivery,profile.wechatBindingDelivery);
+   if(wechatLogin&&value.wechat_login!==true)throw error('ACCOUNT_DELIVERY_MISMATCH');
+  }
  }
  async function ensure(){
   if(ready&&guest.session.current().expiresAt>Date.now())return;
   if(readyFlight)return readyFlight;
-  const work=run(async()=>{await health();if(disposed)throw error('ACCOUNT_CONNECTION_DISPOSED');await guest.reconnectSession();const id=guest.identity();for(const s of ['cn','global']){if(disposed)throw error('ACCOUNT_CONNECTION_DISPOSED');catalogs[s]=verifySnapshot(await guest.snapshot(s),s,id,profile.fixedRuntime);}const gate=await guest.accountRequest('/session',{method:'GET'});if(guest.identity()!==id||gate.session_kind!=='wechat_guest'||gate.actor!==null||(registration&&gate.features?.authentication?.isolated_player_registration!==true)||gate.features?.profiles?.cn!=='account'||gate.features?.profiles?.global!=='account')throw error('ACCOUNT_GATE_INVALID');ready=true;});
+  const work=run(async()=>{await health();if(disposed)throw error('ACCOUNT_CONNECTION_DISPOSED');await guest.reconnectSession();const id=guest.identity();for(const s of ['cn','global']){if(disposed)throw error('ACCOUNT_CONNECTION_DISPOSED');catalogs[s]=verifySnapshot(await guest.snapshot(s),s,id,profile.fixedRuntime);}const gate=await guest.accountRequest('/session',{method:'GET'});if(guest.identity()!==id||gate.session_kind!=='wechat_guest'||gate.actor!==null||(registration&&gate.features?.authentication?.isolated_player_registration!==true)||(wechatLogin&&gate.features?.authentication?.isolated_wechat_login!==true)||gate.features?.profiles?.cn!=='account'||gate.features?.profiles?.global!=='account')throw error('ACCOUNT_GATE_INVALID');ready=true;});
   readyFlight=work;try{return await work;}finally{if(readyFlight===work)readyFlight=null;}
  }
  const unavailable=()=>Promise.reject(error('ACCOUNT_FEATURE_UNAVAILABLE'));
@@ -93,7 +101,7 @@ function createAccountConnection(wx,input){
   saveProfile:(server,draft,revision,options={})=>run(async()=>{if(!writable)throw error('CLOUD_WRITE_DISABLED');if(!['cn','global'].includes(server))throw error('SERVER_INVALID');verifyProfile({server,storage:'account',remote_supported:true,revision:Math.max(1,revision),profile:draft},server);if(formal&&options.intent!=='save')throw error('ACCOUNT_ACTION_DISABLED');const g=formal?null:acceptance(),generation=client.generation();try{await health(true);}catch(e){g?.failed(e);throw e;}if(client.generation()!==generation)throw error('STALE_ACCOUNT_PROFILE');g?.beforeSave(server,draft,revision,options,conflict?client.sessionProof(profile.conflictGroup):null);try{const result=await client.saveProfile(server,draft,revision,options);if(g)return g.success(result,server);if(result?.server!==server||result.revision!==revision+1)throw Object.assign(Error('保存回执异常，需核对原操作'),{status:200,code:'OPERATION_UNCERTAIN'});return result;}catch(e){e.operationKey=options.key;if(conflict){try{if(!g.acceptConflict(e,server))g.failed(e);}catch(invalid){invalid.operationKey=options.key;g.failed(invalid);throw invalid;}}else g?.failed(e);throw e;}}).catch(e=>{if(!e.operationKey)e.notSent=true;throw e;}),logout:()=>wechatBinding?run(()=>client.logout()):Promise.reject(error('ACCOUNT_ACTION_DISABLED')),
   call:unavailable,contract:unavailable,recover:unavailable,uploadEvidence:unavailable,downloadEvidence:unavailable
  };
- return {client:facade,ensure,dispose(){disposed=true;ready=false;guest.session.invalidate();},origin:config.origin,planId:profile.planId,policy:{restricted:true,allowCloudWrites:writable,writeAcceptance:writable&&!conflict&&!formal,productionAccount:formal,conflictAcceptance:conflict,readbackAcceptance:readback,actions,registration,wechatBinding},
+ return {client:facade,ensure,dispose(){disposed=true;ready=false;guest.session.invalidate();},origin:config.origin,planId:profile.planId,policy:{restricted:true,allowCloudWrites:writable,writeAcceptance:writable&&!conflict&&!formal,productionAccount:formal,conflictAcceptance:conflict,readbackAcceptance:readback,actions,registration,wechatBinding,wechatLogin},
   diagnostics:()=>({ready,healthDiagnostic,counts:{...counts},...(registration?{registration:true}:{}),retryAfterMs:Math.max(0,retryAt-Date.now()),allowCloudWrites:writable,...(readback?{readbackAcceptance:true,readbackHalted}:{}),...(conflict?{conflictAcceptance:guard?.summary()||null,conflictConfigured:true}:writable&&!formal?{writeAcceptance:guard?.summary()||null}: {})})};
 }
 module.exports={validateAccountProfile,createAccountConnection};
