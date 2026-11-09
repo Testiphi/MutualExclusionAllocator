@@ -1,0 +1,1087 @@
+{
+  "workbook_sha256": "40ff2244becc7f9495134b6c5abea582b705f46021033ae0b1c2417ff82e5a41",
+  "runtime_freeze_sha256": "8556df2883198f69a7e37be5dc8eb38f8c9f39a7f71b7190f7847e015e12e1bb",
+  "ledger_sha256": "cd0d212234e7498aa6b96b1fc7dea58469dd4a71da34cf652533024a8b0a79e4",
+  "workbook_bv_rows": 103,
+  "workbook_review": [
+    {
+      "sheet_row": 561,
+      "raw_car": "Huracan Evo Spyder",
+      "raw_lap": "23.633",
+      "official_lap": 23.63,
+      "big": "开罗",
+      "small": "杰基拉岛",
+      "car": "小牛",
+      "zone": "五区",
+      "tier": "理论",
+      "bv": "BV17jtnzgEC6",
+      "status": "add"
+    },
+    {
+      "sheet_row": 562,
+      "raw_car": "Huracan Evo Spyder",
+      "raw_lap": "21.966",
+      "official_lap": 21.96,
+      "big": "纽约",
+      "small": "闯荡华尔街",
+      "car": "小牛",
+      "zone": "五区",
+      "tier": "理论",
+      "bv": "BV17jtnzgEC6",
+      "status": "add"
+    },
+    {
+      "sheet_row": 565,
+      "raw_car": "Egoista",
+      "raw_lap": "23.533",
+      "official_lap": 23.53,
+      "big": "美国中西部",
+      "small": "龙卷风山道",
+      "car": "自私",
+      "zone": "五区",
+      "tier": "理论",
+      "bv": "BV17jtnzgEC6",
+      "status": "add"
+    },
+    {
+      "sheet_row": 561,
+      "raw_car": "Huracan Evo Spyder",
+      "raw_lap": "23.633",
+      "official_lap": 23.63,
+      "big": "开罗",
+      "small": "杰基拉岛",
+      "car": "小牛",
+      "zone": "四区",
+      "tier": "理论",
+      "bv": "BV17jtnzgEC6",
+      "status": "not_in_formal_runtime"
+    },
+    {
+      "sheet_row": 562,
+      "raw_car": "Huracan Evo Spyder",
+      "raw_lap": "21.966",
+      "official_lap": 21.96,
+      "big": "纽约",
+      "small": "闯荡华尔街",
+      "car": "小牛",
+      "zone": "四区",
+      "tier": "理论",
+      "bv": "BV17jtnzgEC6",
+      "status": "not_in_formal_runtime"
+    },
+    {
+      "sheet_row": 565,
+      "raw_car": "Egoista",
+      "raw_lap": "23.533",
+      "official_lap": 23.53,
+      "big": "美国中西部",
+      "small": "龙卷风山道",
+      "car": "自私",
+      "zone": "四区",
+      "tier": "理论",
+      "bv": "BV17jtnzgEC6",
+      "status": "not_in_formal_runtime"
+    },
+    {
+      "sheet_row": 571,
+      "raw_car": "AP-0",
+      "raw_lap": "28.033",
+      "official_lap": 28.03,
+      "big": "布宜诺斯艾利斯",
+      "small": "拉博卡区",
+      "car": "ap0",
+      "zone": "五区",
+      "tier": "高手",
+      "bv": "BV17jtnzgEC6",
+      "status": "not_in_formal_runtime"
+    },
+    {
+      "sheet_row": 571,
+      "raw_car": "AP-0",
+      "raw_lap": "28.033",
+      "official_lap": 28.03,
+      "big": "布宜诺斯艾利斯",
+      "small": "拉博卡区",
+      "car": "ap0",
+      "zone": "四区",
+      "tier": "高手",
+      "bv": "BV17jtnzgEC6",
+      "status": "not_in_formal_runtime"
+    },
+    {
+      "sheet_row": 568,
+      "raw_car": "Apollo N",
+      "raw_lap": "25.033",
+      "official_lap": 25.03,
+      "big": "开罗",
+      "small": "王者回归",
+      "car": "阿波罗n",
+      "zone": "五区",
+      "tier": "高手",
+      "bv": "BV17jtnzgEC6",
+      "status": "not_in_formal_runtime"
+    },
+    {
+      "sheet_row": 568,
+      "raw_car": "Apollo N",
+      "raw_lap": "25.033",
+      "official_lap": 25.03,
+      "big": "开罗",
+      "small": "王者回归",
+      "car": "阿波罗n",
+      "zone": "四区",
+      "tier": "高手",
+      "bv": "BV17jtnzgEC6",
+      "status": "not_in_formal_runtime"
+    },
+    {
+      "sheet_row": 567,
+      "raw_car": "Apollo N",
+      "raw_lap": "25.599",
+      "official_lap": 25.59,
+      "big": "美国中西部",
+      "small": "龙卷风山道",
+      "car": "阿波罗n",
+      "zone": "五区",
+      "tier": "高手",
+      "bv": "BV17jtnzgEC6",
+      "status": "not_in_formal_runtime"
+    },
+    {
+      "sheet_row": 567,
+      "raw_car": "Apollo N",
+      "raw_lap": "25.599",
+      "official_lap": 25.59,
+      "big": "美国中西部",
+      "small": "龙卷风山道",
+      "car": "阿波罗n",
+      "zone": "四区",
+      "tier": "高手",
+      "bv": "BV17jtnzgEC6",
+      "status": "not_in_formal_runtime"
+    },
+    {
+      "sheet_row": 566,
+      "raw_car": "Aventador J",
+      "raw_lap": "24.233",
+      "official_lap": 24.23,
+      "big": "大阪",
+      "small": "明治冲击",
+      "car": "avj",
+      "zone": "五区",
+      "tier": "高手",
+      "bv": "BV17jtnzgEC6",
+      "status": "not_in_formal_runtime"
+    },
+    {
+      "sheet_row": 566,
+      "raw_car": "Aventador J",
+      "raw_lap": "24.233",
+      "official_lap": 24.23,
+      "big": "大阪",
+      "small": "明治冲击",
+      "car": "avj",
+      "zone": "四区",
+      "tier": "高手",
+      "bv": "BV17jtnzgEC6",
+      "status": "not_in_formal_runtime"
+    },
+    {
+      "sheet_row": 548,
+      "raw_car": "P1",
+      "raw_lap": "20.733",
+      "official_lap": 20.73,
+      "big": "旧金山",
+      "small": "隧道",
+      "car": "迈凯伦p1",
+      "zone": "五区",
+      "tier": "高手",
+      "bv": "BV17jtnzgEC6",
+      "status": "not_in_formal_runtime"
+    },
+    {
+      "sheet_row": 548,
+      "raw_car": "P1",
+      "raw_lap": "20.733",
+      "official_lap": 20.73,
+      "big": "旧金山",
+      "small": "隧道",
+      "car": "迈凯伦p1",
+      "zone": "四区",
+      "tier": "高手",
+      "bv": "BV17jtnzgEC6",
+      "status": "not_in_formal_runtime"
+    },
+    {
+      "sheet_row": 550,
+      "raw_car": "P1",
+      "raw_lap": "25.366",
+      "official_lap": 25.36,
+      "big": "托斯卡纳",
+      "small": "河滨疾驰",
+      "car": "迈凯伦p1",
+      "zone": "五区",
+      "tier": "高手",
+      "bv": "BV17jtnzgEC6",
+      "status": "not_in_formal_runtime"
+    },
+    {
+      "sheet_row": 550,
+      "raw_car": "P1",
+      "raw_lap": "25.366",
+      "official_lap": 25.36,
+      "big": "托斯卡纳",
+      "small": "河滨疾驰",
+      "car": "迈凯伦p1",
+      "zone": "四区",
+      "tier": "高手",
+      "bv": "BV17jtnzgEC6",
+      "status": "not_in_formal_runtime"
+    },
+    {
+      "sheet_row": 549,
+      "raw_car": "P1",
+      "raw_lap": "18.899",
+      "official_lap": 18.89,
+      "big": "挪威",
+      "small": "未来融合",
+      "car": "迈凯伦p1",
+      "zone": "五区",
+      "tier": "高手",
+      "bv": "BV17jtnzgEC6",
+      "status": "not_in_formal_runtime"
+    },
+    {
+      "sheet_row": 549,
+      "raw_car": "P1",
+      "raw_lap": "18.899",
+      "official_lap": 18.89,
+      "big": "挪威",
+      "small": "未来融合",
+      "car": "迈凯伦p1",
+      "zone": "四区",
+      "tier": "高手",
+      "bv": "BV17jtnzgEC6",
+      "status": "not_in_formal_runtime"
+    },
+    {
+      "sheet_row": 545,
+      "raw_car": "VLF Force 1 V10",
+      "raw_lap": "24.766",
+      "official_lap": 24.76,
+      "big": "开罗",
+      "small": "王者回归",
+      "car": "叶问",
+      "zone": "五区",
+      "tier": "高手",
+      "bv": "BV17jtnzgEC6",
+      "status": "not_in_formal_runtime"
+    },
+    {
+      "sheet_row": 545,
+      "raw_car": "VLF Force 1 V10",
+      "raw_lap": "24.766",
+      "official_lap": 24.76,
+      "big": "开罗",
+      "small": "王者回归",
+      "car": "叶问",
+      "zone": "四区",
+      "tier": "高手",
+      "bv": "BV17jtnzgEC6",
+      "status": "not_in_formal_runtime"
+    },
+    {
+      "sheet_row": 817,
+      "raw_car": "Devel 16",
+      "raw_lap": "18.399",
+      "official_lap": 18.399,
+      "big": "喜马拉雅山",
+      "small": "信仰之跃",
+      "car": "恶魔",
+      "zone": "五区",
+      "tier": "理论",
+      "bv": "BV13LgW62E3D",
+      "status": "add"
+    }
+  ],
+  "additions": [
+    {
+      "server": "cn",
+      "big": "旷野飙车",
+      "small": "河岸狂飙",
+      "car": "玻璃",
+      "video_id": "BV1h24n61EeX",
+      "part": 1,
+      "start": 0,
+      "title": "玻璃 河岸狂飙 22.998",
+      "tier": "",
+      "zone": "",
+      "lap": 22.998,
+      "url": "https://www.bilibili.com/video/BV1h24n61EeX/"
+    },
+    {
+      "server": "cn",
+      "big": "热带天堂",
+      "small": "酒店大道",
+      "car": "肥龙",
+      "video_id": "BV1h24n61EeX",
+      "part": 1,
+      "start": 42,
+      "title": "肥龙 酒店大道 27.710",
+      "tier": "",
+      "zone": "",
+      "lap": 27.71,
+      "url": "https://www.bilibili.com/video/BV1h24n61EeX/?t=42"
+    },
+    {
+      "server": "global",
+      "big": "开罗",
+      "small": "杰基拉岛",
+      "car": "小牛",
+      "video_id": "BV17jtnzgEC6",
+      "part": 1,
+      "start": 0,
+      "title": "小牛★5 杰基拉岛 23.633",
+      "tier": "理论",
+      "zone": "五区",
+      "lap": 23.633,
+      "url": "https://www.bilibili.com/video/BV17jtnzgEC6/"
+    },
+    {
+      "server": "global",
+      "big": "纽约",
+      "small": "闯荡华尔街",
+      "car": "小牛",
+      "video_id": "BV17jtnzgEC6",
+      "part": 1,
+      "start": 0,
+      "title": "小牛★5 闯荡华尔街 21.966",
+      "tier": "理论",
+      "zone": "五区",
+      "lap": 21.966,
+      "url": "https://www.bilibili.com/video/BV17jtnzgEC6/"
+    },
+    {
+      "server": "global",
+      "big": "美国中西部",
+      "small": "龙卷风山道",
+      "car": "自私",
+      "video_id": "BV17jtnzgEC6",
+      "part": 1,
+      "start": 0,
+      "title": "自私★6 龙卷风山道 23.533",
+      "tier": "理论",
+      "zone": "五区",
+      "lap": 23.533,
+      "url": "https://www.bilibili.com/video/BV17jtnzgEC6/"
+    },
+    {
+      "server": "global",
+      "big": "喜马拉雅山",
+      "small": "信仰之跃",
+      "car": "恶魔",
+      "video_id": "BV13LgW62E3D",
+      "part": 1,
+      "start": 0,
+      "title": "恶魔★6 信仰之跃 18.399（滑雪）",
+      "tier": "理论",
+      "zone": "五区",
+      "lap": 18.399,
+      "url": "https://www.bilibili.com/video/BV13LgW62E3D/"
+    },
+    {
+      "server": "cn",
+      "big": "雄鹰之城",
+      "small": "拉博卡",
+      "car": "ap0",
+      "video_id": "BV17jtnzgEC6",
+      "part": 1,
+      "start": 0,
+      "title": "ap0★5 拉博卡 28.033（国际服录像）",
+      "tier": "高手",
+      "zone": "",
+      "lap": 28.033,
+      "url": "https://www.bilibili.com/video/BV17jtnzgEC6/"
+    },
+    {
+      "server": "cn",
+      "big": "沙漠迷雾",
+      "small": "国王的复兴",
+      "car": "阿波罗n",
+      "video_id": "BV17jtnzgEC6",
+      "part": 1,
+      "start": 0,
+      "title": "阿波罗n★5 国王的复兴 25.033（国际服录像）",
+      "tier": "高手",
+      "zone": "",
+      "lap": 25.033,
+      "url": "https://www.bilibili.com/video/BV17jtnzgEC6/"
+    },
+    {
+      "server": "cn",
+      "big": "西部牧场",
+      "small": "龙卷风",
+      "car": "阿波罗n",
+      "video_id": "BV17jtnzgEC6",
+      "part": 1,
+      "start": 0,
+      "title": "阿波罗n★5 龙卷风 25.599（国际服录像）",
+      "tier": "高手",
+      "zone": "",
+      "lap": 25.599,
+      "url": "https://www.bilibili.com/video/BV17jtnzgEC6/"
+    },
+    {
+      "server": "cn",
+      "big": "樱花港",
+      "small": "明治冲击",
+      "car": "avj",
+      "video_id": "BV17jtnzgEC6",
+      "part": 1,
+      "start": 0,
+      "title": "avj★5 明治冲击 24.233（国际服录像）",
+      "tier": "高手",
+      "zone": "",
+      "lap": 24.233,
+      "url": "https://www.bilibili.com/video/BV17jtnzgEC6/"
+    },
+    {
+      "server": "cn",
+      "big": "大桥海湾",
+      "small": "隧道",
+      "car": "迈凯伦p1",
+      "video_id": "BV17jtnzgEC6",
+      "part": 1,
+      "start": 0,
+      "title": "迈凯伦p1★5 隧道 20.733（国际服录像）",
+      "tier": "高手",
+      "zone": "",
+      "lap": 20.733,
+      "url": "https://www.bilibili.com/video/BV17jtnzgEC6/"
+    },
+    {
+      "server": "cn",
+      "big": "旷野飙车",
+      "small": "河岸狂飙",
+      "car": "迈凯伦p1",
+      "video_id": "BV17jtnzgEC6",
+      "part": 1,
+      "start": 0,
+      "title": "迈凯伦p1★5 河岸狂飙 25.366（国际服录像）",
+      "tier": "高手",
+      "zone": "",
+      "lap": 25.366,
+      "url": "https://www.bilibili.com/video/BV17jtnzgEC6/"
+    },
+    {
+      "server": "cn",
+      "big": "极昼之地",
+      "small": "未来融合",
+      "car": "迈凯伦p1",
+      "video_id": "BV17jtnzgEC6",
+      "part": 1,
+      "start": 0,
+      "title": "迈凯伦p1★5 未来融合 18.899（国际服录像）",
+      "tier": "高手",
+      "zone": "",
+      "lap": 18.899,
+      "url": "https://www.bilibili.com/video/BV17jtnzgEC6/"
+    },
+    {
+      "server": "cn",
+      "big": "沙漠迷雾",
+      "small": "国王的复兴",
+      "car": "叶问",
+      "video_id": "BV17jtnzgEC6",
+      "part": 1,
+      "start": 0,
+      "title": "叶问★5 国王的复兴 24.766（国际服录像）",
+      "tier": "高手",
+      "zone": "",
+      "lap": 24.766,
+      "url": "https://www.bilibili.com/video/BV17jtnzgEC6/"
+    }
+  ],
+  "title_corrections": [
+    {
+      "key": [
+        "cn",
+        "古老斗技场",
+        "跌宕之路",
+        "爱音",
+        "BV1PtEu6DE9M",
+        1,
+        0
+      ],
+      "before": "爱音 跌宕之路 17.701",
+      "after": "爱音★1 跌宕之路 17.701（半改）",
+      "archive_source": "batch-119-BV1R2BvBHE8L-detail.json"
+    },
+    {
+      "key": [
+        "cn",
+        "大桥海湾",
+        "城市狂飙",
+        "恶魔",
+        "BV1r9utzpECS",
+        1,
+        0
+      ],
+      "before": "恶魔 城市狂飙 24.7",
+      "after": "恶魔★1 城市狂飙 24.7",
+      "archive_source": "batch-116-BV1i5DrYGE9X-detail.json"
+    },
+    {
+      "key": [
+        "cn",
+        "大桥海湾",
+        "水滨",
+        "杰皇",
+        "BV1UUtMzfEUJ",
+        1,
+        0
+      ],
+      "before": "杰皇 水滨 27.664",
+      "after": "杰皇★1 水滨 27.664",
+      "archive_source": "batch-175-archive-leads.json"
+    },
+    {
+      "key": [
+        "cn",
+        "季风秘境",
+        "碎石山路",
+        "21c",
+        "BV1TuGN6dEMP",
+        1,
+        0
+      ],
+      "before": "21C 碎石山路 29.436",
+      "after": "21C★1 碎石山路 29.436（特改）",
+      "archive_source": "batch-104-BV1TuGN6dEMP-detail.json"
+    },
+    {
+      "key": [
+        "cn",
+        "旷野飙车",
+        "河滨城堡",
+        "杰皇",
+        "BV1rUNoeNExL",
+        1,
+        0
+      ],
+      "before": "杰皇 河滨城堡 34.688",
+      "after": "杰皇★1 河滨城堡 34.688",
+      "archive_source": "batch-112-BV1rUNoeNExL-detail.json"
+    },
+    {
+      "key": [
+        "cn",
+        "极昼之地",
+        "凌云狂飙",
+        "杰皇",
+        "BV1Tms8eSEm4",
+        1,
+        0
+      ],
+      "before": "杰皇 凌云狂飙 34.039",
+      "after": "杰皇★1 凌云狂飙 34.039",
+      "archive_source": "batch-111-extended-related.json"
+    },
+    {
+      "key": [
+        "cn",
+        "樱花港",
+        "急速之争",
+        "杰皇",
+        "BV1j8zVYME32",
+        1,
+        0
+      ],
+      "before": "杰皇 急速之争 34.387",
+      "after": "杰皇★1 急速之争 34.387",
+      "archive_source": "batch-118-BV1Sq5bzDEWi-detail.json"
+    },
+    {
+      "key": [
+        "cn",
+        "樱花港",
+        "急速之争",
+        "恶魔",
+        "BV1oZzKBLEBk",
+        1,
+        0
+      ],
+      "before": "恶魔 急速之争 34.290（四区）",
+      "after": "恶魔★1 急速之争 34.290（四区）",
+      "archive_source": "batch-105-BV1HrmHBDE13-detail.json"
+    },
+    {
+      "key": [
+        "cn",
+        "沙漠迷雾",
+        "地下冲刺",
+        "恶魔",
+        "BV19bcczLEsJ",
+        1,
+        0
+      ],
+      "before": "恶魔 地下冲刺 32.423",
+      "after": "恶魔★1 地下冲刺 32.423",
+      "archive_source": "batch-105-BV1HrmHBDE13-detail.json"
+    },
+    {
+      "key": [
+        "cn",
+        "沙漠迷雾",
+        "岛屿幻想",
+        "爱音",
+        "BV1ygLy6ME6z",
+        1,
+        0
+      ],
+      "before": "爱音 岛屿幻想 22.695",
+      "after": "爱音★4 岛屿幻想 22.695",
+      "archive_source": "batch-100-related.json"
+    },
+    {
+      "key": [
+        "cn",
+        "海港博物馆",
+        "海洋爆冲",
+        "f5r",
+        "BV1zK3e64Ee5",
+        1,
+        0
+      ],
+      "before": "f5r 海洋爆冲",
+      "after": "f5r★1 海洋爆冲",
+      "archive_source": "batch-123-extended-related.json"
+    },
+    {
+      "key": [
+        "cn",
+        "狂野赛车场",
+        "侧面视角",
+        "杰皇",
+        "BV1YR1KY8EKS",
+        1,
+        0
+      ],
+      "before": "杰皇 侧面视角 40.2",
+      "after": "杰皇★1 侧面视角 40.2",
+      "archive_source": "batch-111-extended-related.json"
+    },
+    {
+      "key": [
+        "cn",
+        "狮城",
+        "乐园追逐",
+        "恶魔",
+        "BV1ivU7BAEQW",
+        1,
+        0
+      ],
+      "before": "恶魔 乐园追逐 33.455（四区）",
+      "after": "恶魔★1 乐园追逐 33.455（四区）",
+      "archive_source": "batch-105-BV1HrmHBDE13-detail.json"
+    },
+    {
+      "key": [
+        "cn",
+        "狮城",
+        "海岸飞驰",
+        "玻璃",
+        "BV1Sq5bzDEWi",
+        1,
+        0
+      ],
+      "before": "玻璃 海岸飞驰 39.595",
+      "after": "玻璃★1 海岸飞驰 39.595",
+      "archive_source": "batch-118-BV1Sq5bzDEWi-detail.json"
+    },
+    {
+      "key": [
+        "cn",
+        "神山垭口",
+        "冰封地堡",
+        "银电",
+        "BV1tvPEeiEq1",
+        1,
+        0
+      ],
+      "before": "银电 冰封地堡 33.8",
+      "after": "银电★3 冰封地堡 33.8",
+      "archive_source": "batch-182-archive-leads.json"
+    },
+    {
+      "key": [
+        "cn",
+        "神山垭口",
+        "自由落体",
+        "大超",
+        "BV1deK36gEFb",
+        1,
+        40
+      ],
+      "before": "大超 自由落体 18.364",
+      "after": "大超★1 自由落体 18.364",
+      "archive_source": "batch-107-extended-related.json"
+    },
+    {
+      "key": [
+        "cn",
+        "花都疾驰",
+        "地铁冲刺",
+        "大超",
+        "BV1HrmHBDE13",
+        1,
+        0
+      ],
+      "before": "大超 地铁冲刺 35.757（四区）",
+      "after": "大超★1 地铁冲刺 35.757（四区）",
+      "archive_source": "batch-105-BV1HrmHBDE13-detail.json"
+    },
+    {
+      "key": [
+        "cn",
+        "花都疾驰",
+        "河畔漂移",
+        "杰皇",
+        "BV1gp1MYFE6t",
+        1,
+        0
+      ],
+      "before": "杰皇 河畔漂移 24.569",
+      "after": "杰皇★1 河畔漂移 24.569",
+      "archive_source": "batch-106-extra-metadata.json"
+    },
+    {
+      "key": [
+        "cn",
+        "西部牧场",
+        "铁道迷",
+        "r兔",
+        "BV1hC6EBTEA6",
+        1,
+        0
+      ],
+      "before": "r兔 铁道迷 23.1",
+      "after": "r兔★1 铁道迷 23.1",
+      "archive_source": "batch-139-BV1hC6EBTEA6-detail.json"
+    },
+    {
+      "key": [
+        "cn",
+        "高地穿梭",
+        "灯塔",
+        "玻璃",
+        "BV17CjhzGEho",
+        1,
+        0
+      ],
+      "before": "玻璃 灯塔 35.739",
+      "after": "玻璃★1 灯塔 35.739",
+      "archive_source": "batch-107-second-hop.json"
+    },
+    {
+      "key": [
+        "global",
+        "开罗",
+        "杰基拉岛",
+        "帝国",
+        "BV1a7hvz2Er6",
+        1,
+        0
+      ],
+      "before": "帝国 杰基拉岛 21.966",
+      "after": "帝国★3 杰基拉岛 21.966",
+      "archive_source": "batch-136-BV1a7hvz2Er6-detail.json"
+    },
+    {
+      "key": [
+        "global",
+        "开罗",
+        "杰基拉岛",
+        "爱音E",
+        "BV1NukJBTE7M",
+        1,
+        0
+      ],
+      "before": "爱音E 杰基拉岛 22.2",
+      "after": "爱音E★5 杰基拉岛 22.2（OC 无金卡）",
+      "archive_source": "batch-100-extended-related.json"
+    },
+    {
+      "key": [
+        "global",
+        "美国中西部",
+        "铁道迷",
+        "帝国",
+        "BV1DshqzSEp1",
+        1,
+        0
+      ],
+      "before": "帝国 铁道迷 22.233",
+      "after": "帝国★3 铁道迷 22.233",
+      "archive_source": "batch-136-BV1a7hvz2Er6-detail.json"
+    }
+  ],
+  "pending_title_candidates": {},
+  "counts": {
+    "cn": 808,
+    "global": 163
+  },
+  "national_migration_ledger_sha256": "4c806f6a2e2e380207fd459557b3033c3e0d59bc9b4d26ffe58b772da84dbf37",
+  "national_workbook_review": [
+    {
+      "sheet_row": 571,
+      "big": "雄鹰之城",
+      "small": "拉博卡",
+      "car": "ap0",
+      "zone": "五区",
+      "tier": "高手",
+      "bv": "BV17jtnzgEC6",
+      "raw_lap": 28.033,
+      "official_lap": 28.03,
+      "exact": true
+    },
+    {
+      "sheet_row": 571,
+      "big": "雄鹰之城",
+      "small": "拉博卡",
+      "car": "ap0",
+      "zone": "四区",
+      "tier": "高手",
+      "bv": "BV17jtnzgEC6",
+      "raw_lap": 28.033,
+      "official_lap": 28.03,
+      "exact": true
+    },
+    {
+      "sheet_row": 568,
+      "big": "沙漠迷雾",
+      "small": "国王的复兴",
+      "car": "阿波罗n",
+      "zone": "五区",
+      "tier": "高手",
+      "bv": "BV17jtnzgEC6",
+      "raw_lap": 25.033,
+      "official_lap": 25.03,
+      "exact": true
+    },
+    {
+      "sheet_row": 568,
+      "big": "沙漠迷雾",
+      "small": "国王的复兴",
+      "car": "阿波罗n",
+      "zone": "四区",
+      "tier": "高手",
+      "bv": "BV17jtnzgEC6",
+      "raw_lap": 25.033,
+      "official_lap": 25.03,
+      "exact": true
+    },
+    {
+      "sheet_row": 567,
+      "big": "西部牧场",
+      "small": "龙卷风",
+      "car": "阿波罗n",
+      "zone": "五区",
+      "tier": "高手",
+      "bv": "BV17jtnzgEC6",
+      "raw_lap": 25.599,
+      "official_lap": 25.59,
+      "exact": true
+    },
+    {
+      "sheet_row": 567,
+      "big": "西部牧场",
+      "small": "龙卷风",
+      "car": "阿波罗n",
+      "zone": "四区",
+      "tier": "高手",
+      "bv": "BV17jtnzgEC6",
+      "raw_lap": 25.599,
+      "official_lap": 25.59,
+      "exact": true
+    },
+    {
+      "sheet_row": 566,
+      "big": "樱花港",
+      "small": "明治冲击",
+      "car": "avj",
+      "zone": "五区",
+      "tier": "高手",
+      "bv": "BV17jtnzgEC6",
+      "raw_lap": 24.233,
+      "official_lap": 24.23,
+      "exact": true
+    },
+    {
+      "sheet_row": 566,
+      "big": "樱花港",
+      "small": "明治冲击",
+      "car": "avj",
+      "zone": "四区",
+      "tier": "高手",
+      "bv": "BV17jtnzgEC6",
+      "raw_lap": 24.233,
+      "official_lap": 24.23,
+      "exact": true
+    },
+    {
+      "sheet_row": 548,
+      "big": "大桥海湾",
+      "small": "隧道",
+      "car": "迈凯伦p1",
+      "zone": "五区",
+      "tier": "高手",
+      "bv": "BV17jtnzgEC6",
+      "raw_lap": 20.733,
+      "official_lap": 20.73,
+      "exact": true
+    },
+    {
+      "sheet_row": 548,
+      "big": "大桥海湾",
+      "small": "隧道",
+      "car": "迈凯伦p1",
+      "zone": "四区",
+      "tier": "高手",
+      "bv": "BV17jtnzgEC6",
+      "raw_lap": 20.733,
+      "official_lap": 20.73,
+      "exact": true
+    },
+    {
+      "sheet_row": 550,
+      "big": "旷野飙车",
+      "small": "河岸狂飙",
+      "car": "迈凯伦p1",
+      "zone": "五区",
+      "tier": "高手",
+      "bv": "BV17jtnzgEC6",
+      "raw_lap": 25.366,
+      "official_lap": 25.36,
+      "exact": true
+    },
+    {
+      "sheet_row": 550,
+      "big": "旷野飙车",
+      "small": "河岸狂飙",
+      "car": "迈凯伦p1",
+      "zone": "四区",
+      "tier": "高手",
+      "bv": "BV17jtnzgEC6",
+      "raw_lap": 25.366,
+      "official_lap": 25.36,
+      "exact": true
+    },
+    {
+      "sheet_row": 549,
+      "big": "极昼之地",
+      "small": "未来融合",
+      "car": "迈凯伦p1",
+      "zone": "五区",
+      "tier": "高手",
+      "bv": "BV17jtnzgEC6",
+      "raw_lap": 18.899,
+      "official_lap": 18.89,
+      "exact": true
+    },
+    {
+      "sheet_row": 549,
+      "big": "极昼之地",
+      "small": "未来融合",
+      "car": "迈凯伦p1",
+      "zone": "四区",
+      "tier": "高手",
+      "bv": "BV17jtnzgEC6",
+      "raw_lap": 18.899,
+      "official_lap": 18.89,
+      "exact": true
+    },
+    {
+      "sheet_row": 545,
+      "big": "沙漠迷雾",
+      "small": "国王的复兴",
+      "car": "叶问",
+      "zone": "五区",
+      "tier": "高手",
+      "bv": "BV17jtnzgEC6",
+      "raw_lap": 24.766,
+      "official_lap": 24.76,
+      "exact": true
+    },
+    {
+      "sheet_row": 545,
+      "big": "沙漠迷雾",
+      "small": "国王的复兴",
+      "car": "叶问",
+      "zone": "四区",
+      "tier": "高手",
+      "bv": "BV17jtnzgEC6",
+      "raw_lap": 24.766,
+      "official_lap": 24.76,
+      "exact": true
+    }
+  ],
+  "followup_20261110": [
+    {
+      "big": "季风秘境",
+      "small": "疾风原野",
+      "car": "恶魔",
+      "bv": "BV1cPtA6jE7W",
+      "start": 0,
+      "lap": 63.984,
+      "stars": 1,
+      "old_title": "恶魔 疾风原野 63.984",
+      "new_title": "恶魔★1 疾风原野 63.984",
+      "result_frame_seconds": 74,
+      "evidence": "原题及分P标一星，结算01:03.984",
+      "user_confirmed": true
+    },
+    {
+      "big": "沙漠迷雾",
+      "small": "高塔赛道",
+      "car": "银电",
+      "bv": "BV1p8atzEEsJ",
+      "start": 138,
+      "lap": 30.942,
+      "stars": 3,
+      "old_title": "银电 高塔赛道 30.942",
+      "new_title": "银电★3 高塔赛道 30.942",
+      "result_frame_seconds": 180,
+      "evidence": "原题标三星，简介指明30.9为最后一圈，结算30.942",
+      "user_confirmed": true
+    },
+    {
+      "big": "沙漠高速",
+      "small": "发夹弯冲刺",
+      "car": "爱音",
+      "bv": "BV113Vw6SE1F",
+      "start": 0,
+      "lap": 30.304,
+      "stars": 2,
+      "old_title": "爱音 发夹弯冲刺 30.304",
+      "new_title": "爱音★2 发夹弯冲刺 30.304",
+      "result_frame_seconds": 34.1,
+      "evidence": "原题标二星，分P明确二星30.3，结算30.304",
+      "user_confirmed": true
+    },
+    {
+      "big": "冰火岛",
+      "small": "破冰船",
+      "car": "爱音",
+      "bv": "BV1hxjc6AEWz",
+      "start": 19,
+      "lap": 32.834,
+      "stars": 4,
+      "old_title": "爱音 破冰船 32.834",
+      "new_title": "爱音★4 破冰船 32.834",
+      "result_frame_seconds": 56.5,
+      "evidence": "结算确认 32.834，星级采用用户指定的四星。",
+      "user_confirmed": true
+    }
+  ]
+}
