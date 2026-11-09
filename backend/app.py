@@ -3,6 +3,7 @@ import argparse
 from contextlib import contextmanager
 import hashlib
 import json
+import re
 from pathlib import Path
 import secrets
 import sqlite3
@@ -132,7 +133,14 @@ class Store:
             db.execute('INSERT INTO attempts VALUES (?,1,?) ON CONFLICT(bucket) DO UPDATE SET count=count+1', (key, now+600))
 
 
-def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None, mail_config=None, preview_source=None, writeback_lab=None, production=False, score_version_lab=None, score_state=None, contributions=False, feedback=False, notifications=False, usage=False, coverage=False, map_recognition=None, mini_config=None, isolated_account_root=None):
+def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None, mail_config=None, preview_source=None, writeback_lab=None, production=False, score_version_lab=None, score_state=None, contributions=False, feedback=False, notifications=False, usage=False, coverage=False, map_recognition=None, mini_config=None, isolated_account_root=None, route_video_pilot=False, route_video_store=None):
+    if route_video_pilot and (production or not coverage or score_version_lab is None
+                              or not re.fullmatch(r'http://127[.]0[.]0[.]1:[0-9]+', origin)):
+        raise ValueError('跑法视频仅在回环成绩版本实验室启用')
+    if route_video_store is not None and (not production or not coverage or score_state is None
+            or Path(route_video_store).absolute() != Path(data_dir).absolute()/'accounts.sqlite3'):
+        raise ValueError('正式跑法库必须位于已启用成绩表的版本化账号库')
+    route_videos_enabled = route_video_pilot or route_video_store is not None
     isolated = isolated_account_root is not None
     frozen = None
     if isolated:
@@ -542,7 +550,7 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
 
     if coverage:
         from backend.coverage import install as install_coverage
-        install_coverage(app,store,ROOT,user)
+        install_coverage(app,store,ROOT,user,route_video_pilot=route_video_pilot,lab=score_version_lab,route_video_store=route_video_store)
     if contributions:
         from backend.contributions import install as install_contributions
         install_contributions(app,store,ROOT,user)
@@ -619,6 +627,8 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
         if hasattr(app.state,'global_score_versions'):html=html.replace('</head>','<script>globalThis.RACEPICK_VERSIONED_GLOBAL_SCORES=true;</script></head>')
         if global_profiles_ready:html=html.replace('</head>','<script>globalThis.RACEPICK_GLOBAL_PROFILE_CLOUD=true;</script></head>')
         if versioned_scores:html=html.replace('</head>','<script>globalThis.RACEPICK_VERSIONED_SCORES=true;</script></head>')
+        if route_videos_enabled:
+            html=html.replace('</head>','<script src="/route_videos.js"></script></head>',1)
         return HTMLResponse(usage_html(html))
 
     if versioned_scores:
@@ -632,6 +642,7 @@ def create_app(data_dir=None, origin='http://127.0.0.1:8000', reference_dir=None
     if recognition_service:assets.update({'map_recognition.js','map_recognition.css'})
     assets.update({'cars.global.json','gauntlet_data.global.json','global-data-manifest.json'})
     if coverage: assets.update({'coverage.js','coverage.css'})
+    if route_videos_enabled:assets.add('route_videos.js')
     if usage: assets.update({'usage.js','usage_admin.js','usage.css'})
     if feedback: assets.add('feedback.js')
     if contributions: assets.update({'leaderboard.js','leaderboard.css'})
@@ -699,6 +710,7 @@ def main():
     parser.add_argument('--preview-source',type=Path,help='正式成绩库只读预览来源；需显式指定，不接收网页路径参数')
     parser.add_argument('--writeback-lab',type=Path,help='仅允许专门创建的隔离写回测试环境')
     parser.add_argument('--usage',action='store_true',help='独立本地环境启用使用统计')
+    parser.add_argument('--route-video-pilot',action='store_true',help='回环隔离成绩版本实验室的跑法视频试点')
     parser.add_argument('--coverage',action='store_true',help='仅新建隔离库启用成绩覆盖表与解锁')
     parser.add_argument('--notifications',action='store_true',help='仅独立本地环境启用按账号未读提醒')
     parser.add_argument('--feedback',action='store_true',help='独立本地环境启用文字反馈')
@@ -719,6 +731,6 @@ def main():
     except (ValueError,KeyboardInterrupt) as error:
         parser.exit(1, ('已取消' if isinstance(error,KeyboardInterrupt) else str(error))+'\n')
     import uvicorn
-    uvicorn.run(create_app(args.data_dir,f'http://127.0.0.1:{args.port}',mail_config=config,preview_source=args.preview_source,writeback_lab=args.writeback_lab,score_version_lab=args.score_version_lab,contributions=args.contributions,feedback=args.feedback,notifications=args.notifications,usage=args.usage,coverage=args.coverage),host='127.0.0.1',port=args.port,proxy_headers=False)
+    uvicorn.run(create_app(args.data_dir,f'http://127.0.0.1:{args.port}',mail_config=config,preview_source=args.preview_source,writeback_lab=args.writeback_lab,score_version_lab=args.score_version_lab,contributions=args.contributions,feedback=args.feedback,notifications=args.notifications,usage=args.usage,coverage=args.coverage,route_video_pilot=args.route_video_pilot),host='127.0.0.1',port=args.port,proxy_headers=False)
 
 if __name__=='__main__': main()

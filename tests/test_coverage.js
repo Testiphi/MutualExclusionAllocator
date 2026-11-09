@@ -10,7 +10,7 @@ class Node{
 }
 function fixture({guest=false,failSubmit=false,global=false,failLoad=false,columnLimit=48,columnTotal=3,expert=false}={}){
  const ids={};for(const m of html.matchAll(/id="([^"]+)"/g))ids[m[1]]=new Node(['server','map','route','star','choice'].includes(m[1])?'select':'div');
- Object.assign(ids.server,{value:global?'global':'cn'});ids.map.value='all';ids.route.value='normal';ids.gaps.checked=false;
+ Object.assign(ids.server,{value:global?'global':'cn'});ids.map.value='all';ids.route.value='normal';
  let now=1000;class Clock extends Date{static now(){return now;}}
  const calls=[],navigations=[];let failures=failSubmit?1:0,requestId=0,user=guest?null:{id:'player',verified:true,role:'player'};
  const target={big:'测试地图',small:'道路',zone:'五区',tier:'理论',car:'恶魔',stars:null,route:''};

@@ -665,3 +665,5 @@ select:disabled {
     .garage-action-group button { flex: 1 0 auto; padding-inline: 8px; }
     .garage-actions #garageSaveStatus { text-align: left; }
 }
+
+.route-video-links{display:grid;gap:4px;margin-top:5px;font-size:.75rem;overflow-wrap:anywhere}.route-video-links a{color:#58a6ff}.route-video-links details a{display:block;margin-top:4px}.route-video-links summary{cursor:pointer;color:inherit}#resultGrid .route-video-links{grid-column:1/-1}

@@ -79,13 +79,14 @@ def make_app(config,password):
         contribution_ready=state(db)['contribution_schema']==1
         from backend.coverage import state as coverage_state
         coverage_ready=coverage_state(db)['coverage_schema'] in (1,2)
+        video_ready=db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='route_video_schema'").fetchone() is not None
     ocr_config=os.environ.get('RACEPICK_MAP_RECOGNITION_CONFIG') or None
     mini_config = formal_mini_config(os.environ.get('RACEPICK_MINI_CONFIG'), os.environ.get('RACEPICK_NATIVE_PROFILE_WRITES', '0'))
     if mini_config and mini_config.get('formal_account'):
         for state in (mini_config['store'].root, mini_config['account_store'].root):
             if state.is_relative_to(path) or path.is_relative_to(state):
                 raise ValueError('Native state must be separate from the website data directory')
-    return create_app(path,config['origin'],score_state=score_state,contributions=contribution_ready,coverage=coverage_ready,feedback=feedback_ready,notifications=notifications_ready,usage=(path/'usage.sqlite3').exists(),mail_config=MailConfig('smtp','',password,production=True,daily_limit=config['mail_daily_limit']),production=True,map_recognition=ocr_config,mini_config=mini_config)
+    return create_app(path,config['origin'],score_state=score_state,contributions=contribution_ready,coverage=coverage_ready,feedback=feedback_ready,notifications=notifications_ready,usage=(path/'usage.sqlite3').exists(),mail_config=MailConfig('smtp','',password,production=True,daily_limit=config['mail_daily_limit']),production=True,map_recognition=ocr_config,mini_config=mini_config,route_video_store=path/'accounts.sqlite3' if video_ready else None)
 
 @contextmanager
 def service_lock(path):

@@ -83,18 +83,10 @@ def run_types(track,mode):
     if track.get('has_special_route') and track.get('special_route_note') in SC_TYPES:types.add(track['special_route_note'])
     return sorted(types)
 
-def matrix(data,catalog,access,*,server='cn',zone='五区',tier='理论',big='all',route='normal',query='',stars='all',offset=0,gaps=False,star_map=None,oc=False):
-    if server not in ('cn','global') or zone not in ('五区','四区') or tier not in ('理论','高手') or route not in ('normal','special'):raise HTTPException(422,'表格范围无效')
-    if type(oc) is not bool or (oc and server!='global'):raise HTTPException(422,'该服别不支持OC表格')
-    if server=='global':require_scope(server,catalog,zone,tier)
-    if stars!='all' and stars not in ('1','2','3','4','5','6'):raise HTTPException(422,'星级无效')
-    star_map=star_map or {}
-    if len(star_map)>200 or any(type(v) is not int or not 1<=v<=6 or len(k)>80 for k,v in star_map.items()):raise HTTPException(422,'星级选择无效')
+def ordered_score_cars(data,catalog,zone,tier,route,oc):
     cars=[c for c in catalog['cars'] if c.get('nickname') and zone in c.get('zones',[])]
     bounds={c['nickname']:star_limits(c,zone) for c in cars};counts={c['nickname']:0 for c in cars}
     coverage={c['nickname']:set() for c in cars}
-    for c,star in star_map.items():
-        if c in bounds and not bounds[c][0]<=star<=bounds[c][1]:raise HTTPException(422,'所选星级不适用于该车和分区')
     for index,track in enumerate(data['tracks']):
         seen=set()
         for run in run_types(track,route):
@@ -107,6 +99,19 @@ def matrix(data,catalog,access,*,server='cn',zone='五区',tier='理论',big='al
     samples=public_columns(coverage)
     # References lead, then coverage; neither changes when filters or stars change.
     cars.sort(key=lambda c:(c['nickname'] not in samples,-counts[c['nickname']],c['nickname'].casefold()))
+    return cars,bounds,counts,samples
+
+
+def matrix(data,catalog,access,*,server='cn',zone='五区',tier='理论',big='all',route='normal',query='',stars='all',offset=0,gaps=False,star_map=None,oc=False):
+    if server not in ('cn','global') or zone not in ('五区','四区') or tier not in ('理论','高手') or route not in ('normal','special'):raise HTTPException(422,'表格范围无效')
+    if type(oc) is not bool or (oc and server!='global'):raise HTTPException(422,'该服别不支持OC表格')
+    if server=='global':require_scope(server,catalog,zone,tier)
+    if stars!='all' and stars not in ('1','2','3','4','5','6'):raise HTTPException(422,'星级无效')
+    star_map=star_map or {}
+    if len(star_map)>200 or any(type(v) is not int or not 1<=v<=6 or len(k)>80 for k,v in star_map.items()):raise HTTPException(422,'星级选择无效')
+    cars,bounds,counts,samples=ordered_score_cars(data,catalog,zone,tier,route,oc)
+    for c,star in star_map.items():
+        if c in bounds and not bounds[c][0]<=star<=bounds[c][1]:raise HTTPException(422,'所选星级不适用于该车和分区')
     candidates=[]
     for c in cars:
         if query.casefold() not in (c['nickname']+' '+c['title']).casefold():continue
@@ -150,7 +155,7 @@ class Choice(BaseModel):
     server:str='cn'
     map_id:str=Field(pattern=r'^[a-f0-9]{24}$')
 
-def install(app,store,root,user):
+def install(app,store,root,user,*,route_video_pilot=False,lab=None,route_video_store=None):
     def actor(request):
         try:return user(request)
         except HTTPException as error:
@@ -164,8 +169,17 @@ def install(app,store,root,user):
         global_root=app.state.global_score_versions.current_dir() if hasattr(app.state,'global_score_versions') else root
         data,catalog,_=global_source(global_root)
         return data,catalog,data['_meta']['dataset_version']
+    videos_enabled = route_video_pilot or route_video_store is not None
+    if videos_enabled:
+        from backend.route_videos import install as install_videos
+        video_path = Path(lab)/'route-videos.sqlite3' if route_video_pilot else route_video_store
+        install_videos(app,video_path,user,source,initialize=route_video_pilot)
     @app.get('/score-table')
-    def page():return HTMLResponse((root/'coverage.html').read_text(encoding='utf-8'))
+    def page():
+        html=(root/'coverage.html').read_text(encoding='utf-8')
+        if videos_enabled:
+            html=html.replace('</head>','<script src="/route_videos.js"></script></head>',1)
+        return HTMLResponse(html)
     def listing_data(request:Request,server:str='cn',zone:str='五区',tier:str='理论',big:str='all',route:str='normal',q:str='',stars:str='all',offset:int=0,gaps:bool=False,star_map=None,oc:bool=False):
         if len(q)>80 or not 0<=offset<=5000:raise HTTPException(422,'筛选范围无效')
         current=actor(request);data,catalog,version=source(server)

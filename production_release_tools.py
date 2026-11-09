@@ -40,6 +40,10 @@ APP_FILES=BASE_FILES+SCOPED_FILES+COVERAGE_FILES+THEME_FILES+SCORE_FILES+COMMUNI
 ISOLATED_ACCOUNT_FILES=('backend/mini_account_boundary.py','backend/mini_account_isolation.py','backend/mini_account_service.py','backend/mini_snapshot.py')
 APP_FILES+=ISOLATED_ACCOUNT_FILES
 COMPONENT_GROUPS+=(ISOLATED_ACCOUNT_FILES,)
+ROUTE_VIDEO_FILES=('backend/route_videos.py','backend/route_video_release.py','route_videos.js',
+                  'route-video-seed.json','ROUTE_VIDEO_RELEASE.md')
+APP_FILES+=ROUTE_VIDEO_FILES
+COMPONENT_GROUPS+=(ROUTE_VIDEO_FILES,)
 OCR_CODE_FILES=('backend/map_layout.py','backend/map_recognition.py','backend/map_ocr_engine.py','backend/map_ocr_worker.py',
  'backend/map_ocr_production.py','backend/map_ocr_supervisor.py','map_recognition.js','map_recognition.css',
  'production/ocr-models.json','production/ocr-assets.json','production/ocr-selfcheck.py','production/racepick-map-ocr.service',
@@ -78,6 +82,10 @@ def digest(raw):return hashlib.sha256(raw).hexdigest()
 def allowed(name):return name in APP_FILES or name in OCR_FILES or bool(re.fullmatch(r'wheels/[A-Za-z0-9_.+\-]+\.whl',name))
 
 def verify_selection(contents):
+ if set(contents)&set(ROUTE_VIDEO_FILES):
+  if not set(ROUTE_VIDEO_FILES)<=set(contents):raise ValueError('发布包缺少跑法参考组件')
+  seed=json.loads(contents['route-video-seed.json'])
+  if len(seed.get('videos',[]))!=sum(item['videos'] for item in seed['totals'].values()):raise ValueError('跑法参考数量不一致')
  if b'from backend.mini_result import native_result' in contents.get('backend/mini_api.py',b'') and 'backend/mini_result.py' not in contents:
   raise ValueError('发布包缺少原生结果校验组件')
  if b'from backend import mini_features' in contents.get('backend/mini_accounts.py',b'') and not set(MIRROR_FILES)<=set(contents):raise ValueError('发布包缺少原生B-E组件')

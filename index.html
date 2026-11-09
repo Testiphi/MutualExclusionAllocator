@@ -486,6 +486,7 @@
             if (!map) return;
             panel.querySelector('summary').textContent = currentTier === '普通' || currentTier === '自动'
                 ? '查看本图优先候选前三' : '查看本图前三可用车';
+            const videoScope = getRouteVideoScope(map);
             const top = getTopCars(candidates[index], ownedInZone, map.big, map.small, currentZone);
             panel.querySelector('.track-top-empty').hidden = top.length !== 0;
             for (const item of top) {
@@ -498,6 +499,7 @@
                 score.textContent = item.score == null ? '暂无成绩' : `${Number(item.score).toFixed(2)} 秒`;
                 li.append(name, score);
                 list.appendChild(li);
+                globalThis.RacePickRouteVideos?.showForCar(li, APP_CONFIG.server, map, item.car, videoScope);
             }
         });
     }
@@ -872,6 +874,17 @@
         return Object.keys(types);
     }
 
+    function getRouteVideoScope({big, small}) {
+        const track = RACE_DATA?.tracks?.find(item => item.大地图 === big && item.小地图 === small);
+        const available = track?.has_special_route ? getScTypes(track) : [];
+        const route = available.length ? getRouteState(big, small) : 'off';
+        return {
+            zone: currentZone === 'zone4' ? '四区' : '五区',
+            tier: currentTier,
+            specialRoutes: route === 'all' ? available : available.filter(type => type === route),
+        };
+    }
+
     function renderScToggles() {
         var panel = document.getElementById('scPanel');
         var list = document.getElementById('scToggleList');
@@ -1007,6 +1020,15 @@
         }
         resultGrid.innerHTML = html;
         renderResultGuidance(scheme);
+        if (globalThis.RacePickRouteVideos) {
+            for (let i = 0; i < ROWS; i++) {
+                const big = bigSelects[i].value, small = smallSelects[i].value;
+                if (!big || !small) continue;
+                const map = {big, small};
+                RacePickRouteVideos.showForCar(resultGrid.children[i], APP_CONFIG.server,
+                    map, scheme.assignment[i], getRouteVideoScope(map));
+            }
+        }
     }
 
     // 更新下拉菜单及显示
