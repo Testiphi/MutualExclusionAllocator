@@ -14,7 +14,8 @@ const wechatBinding=wechatLogin||process.argv[4]==='--isolated-wechat-binding';
 const localSync=process.argv[4]==='--local-sync';
 const formalWrite=process.argv[4]==='--formal-write';
 const firstRelease=process.argv[4]==='--formal-first-release';
-const formalOcr=process.argv[4]==='--formal-ocr-readonly'||firstRelease;
+const formalRelease=process.argv[4]==='--formal-release-readonly';
+const formalOcr=process.argv[4]==='--formal-ocr-readonly'||firstRelease||formalRelease;
 const formal=process.argv[4]==='--formal-readonly'||formalWrite||formalOcr;
 assert.ok(!process.argv[4]||writable||readback||role||localSync||formal||registration||wechatBinding);
 if(localSync)assert.match(planId,/^mini-local-sync-[a-zA-Z0-9_-]+$/);
@@ -27,12 +28,16 @@ const native=ocr?{enabled:true,kind:'platform',origin:ocr.origin}:{enabled:false
 const ocrBinding=ocr?{snapshot_versions:ocr.snapshot_versions,files:ocr.files,global_dataset:ocr.global_dataset,cn_catalog_version:ocr.cn_catalog_version}:null;
 if(ocr){
  assert.equal(ocr.origin,'https://mini-test.racepick.cn');
- assert.deepEqual(ocr.files,config.fixedRuntime.files);
- assert.equal(ocr.global_dataset,config.fixedRuntime.global_dataset);
+ if(!formalRelease){
+  assert.deepEqual(ocr.files,config.fixedRuntime.files);
+  assert.equal(ocr.global_dataset,config.fixedRuntime.global_dataset);
+ }
  assert.match(ocr.cn_catalog_version,/^[a-f0-9]{64}$/);
 }
+const formalRuntimeDir=formalRelease&&process.argv[6]?path.resolve(process.argv[6]):null;
+if(formalRelease)assert.ok(formalRuntimeDir,'正式候选需要已核对的五份活动运行文件');
 const source=cp.execFileSync('git',['rev-parse','HEAD'],{cwd:root,encoding:'utf8'}).trim();
-const receipt={source,dirty:!!cp.execFileSync('git',['status','--porcelain'],{cwd:root,encoding:'utf8'}).trim(),planId,origin:config.origin,allowCloudWrites:config.allowCloudWrites===true,...(registration?{registrationDelivery:config.registrationDelivery}:{}),...(wechatBinding?{wechatBindingDelivery:config.wechatBindingDelivery}:{}),...(readback?{readbackBinding}: {}),...(writable?{writableBinding}: {}),...(ocr?{ocrOrigin:ocr.origin,ocrBinding}:{}),files:{},previewInvoked:false,formalPackage:firstRelease,uploaded:false,networkExecuted:false};
+const receipt={source,dirty:!!cp.execFileSync('git',['status','--porcelain'],{cwd:root,encoding:'utf8'}).trim(),planId,origin:config.origin,...(formalRelease?{formalRuntime:config.fixedRuntime}:{}),allowCloudWrites:config.allowCloudWrites===true,...(registration?{registrationDelivery:config.registrationDelivery}:{}),...(wechatBinding?{wechatBindingDelivery:config.wechatBindingDelivery}:{}),...(readback?{readbackBinding}: {}),...(writable?{writableBinding}: {}),...(ocr?{ocrOrigin:ocr.origin,ocrBinding}:{}),files:{},previewInvoked:false,formalPackage:firstRelease||formalRelease,uploaded:false,networkExecuted:false};
 function write(name,bytes,from){const file=path.join(out,name);assert.ok(!fs.existsSync(file));fs.mkdirSync(path.dirname(file),{recursive:true});fs.writeFileSync(file,bytes,{flag:'wx'});receipt.files[name]={sha256:crypto.createHash('sha256').update(bytes).digest('hex'),bytes:Buffer.byteLength(bytes),from};}
 const files=cp.execFileSync('git',['ls-files','-z','miniapp'],{cwd:root,encoding:'utf8'}).split('\0').filter(Boolean);
 for(const name of ['account_write_acceptance.js','account_writable_binding.js','account_readback_binding.js','account_conflict_acceptance.js','profile_conflict.js','account_production.js']){const file='miniapp/services/'+name;if(!files.includes(file))files.push(file);}
@@ -52,18 +57,19 @@ const page=cp.execFileSync('git',['show',fixed.ref+':index.html'],{cwd:root,enco
 write('shared/web_home.js',require('./web_home_adapter.cjs').generateWebHomeAdapter(page),fixed.ref+':index.html derived compatibility');
 const bundle={kind:'local-unfrozen',files:{},hashes:{}};
 for(const [name,fixedMeta] of Object.entries(binding.fixed_runtime.files)){
- const b=localSync?cp.execFileSync('git',['show',mirror.ref+':'+name],{cwd:root}):fs.readFileSync(path.join(workspace,'offline-evaluation/mini-account-isolation-20261105-01/candidate-04/snapshot',name));
+ const b=localSync?cp.execFileSync('git',['show',mirror.ref+':'+name],{cwd:root}):fs.readFileSync(path.join(formalRuntimeDir||path.join(workspace,'offline-evaluation/mini-account-isolation-20261105-01/candidate-04/snapshot'),name));
  const meta=localSync?{bytes:b.length,sha256:crypto.createHash('sha256').update(b).digest('hex')}:formal?config.fixedRuntime.files[name]:fixedMeta;
  assert.equal(b.length,meta.bytes);assert.equal(crypto.createHash('sha256').update(b).digest('hex'),meta.sha256);
  bundle.hashes[name]=meta;
  bundle.files[name]=new TextDecoder('utf-8',{fatal:true}).decode(b);
 }
-require('../miniapp/adapters/snapshot').verifyLocalBundle(bundle);
-write('generated/local-bundle.js','module.exports='+JSON.stringify(bundle)+';\n',localSync?mirror.ref+':five local runtime JSON blobs':'fixed account delivery five raw files');
+const verified=require('../miniapp/adapters/snapshot').verifyLocalBundle(bundle);
+if(formalRelease)assert.equal(verified.global.cars._meta.dataset_version,config.fixedRuntime.global_dataset);
+write('generated/local-bundle.js','module.exports='+JSON.stringify(bundle)+';\n',localSync?mirror.ref+':five local runtime JSON blobs':formalRelease?'verified formal active runtime files':'fixed account delivery five raw files');
 write('generated/native-config.js','module.exports='+JSON.stringify(native)+';\n',ocr?'fixed OCR gateway':'no OCR/visitor-service connection');
 write('generated/account-config.js','module.exports='+JSON.stringify(config)+';\n','independent account origin and write policy');
-const buildId=crypto.createHash('sha256').update(JSON.stringify(receipt.files)+planId+out).digest('hex').slice(0,20);receipt.buildId=buildId;write('generated/build-info.js','module.exports='+JSON.stringify(localSync?{buildId,storageScope:planId}:{buildId,...(firstRelease?{}:{planId}),...(ocr?{ocrBinding}:{})})+';\n','bound developer build identity');
 const local=JSON.parse(fs.readFileSync(path.join(root,'miniapp/project.config.json'),'utf8'));
-write('project.config.json',JSON.stringify({...local,projectname:firstRelease?'RacePick-first-release':formalOcr?'RacePick-formal-OCR-readonly-candidate':formalWrite?'RacePick-formal-cloud-save-candidate':localSync?'RacePick-local-source-sync':wechatLogin?'RacePick-isolated-wechat-login':wechatBinding?'RacePick-isolated-wechat-binding':registration?'RacePick-isolated-registration':role?'RacePick-W3-'+role+(candidate?'-CANDIDATE':'-PREPARED-NO-WRITES'):writable?'RacePick-W1W2-write-acceptance':readback?'RacePick-saved-readback':'RacePick-mirror-account-readonly',setting:{...local.setting,urlCheck:true}},null,2),'local ignored identity; never print AppID');
+write('project.config.json',JSON.stringify({...local,projectname:formalRelease?'RacePick-formal-readonly-release':firstRelease?'RacePick-first-release':formalOcr?'RacePick-formal-OCR-readonly-candidate':formalWrite?'RacePick-formal-cloud-save-candidate':localSync?'RacePick-local-source-sync':wechatLogin?'RacePick-isolated-wechat-login':wechatBinding?'RacePick-isolated-wechat-binding':registration?'RacePick-isolated-registration':role?'RacePick-W3-'+role+(candidate?'-CANDIDATE':'-PREPARED-NO-WRITES'):writable?'RacePick-W1W2-write-acceptance':readback?'RacePick-saved-readback':'RacePick-mirror-account-readonly',setting:{...local.setting,urlCheck:true}},null,2),'local ignored identity; never print AppID');
+const buildId=crypto.createHash('sha256').update(JSON.stringify(receipt.files)+planId+out).digest('hex').slice(0,20);receipt.buildId=buildId;write('generated/build-info.js','module.exports='+JSON.stringify(localSync?{buildId,storageScope:planId}:{buildId,...(firstRelease||formalRelease?{}:{planId}),...(formalRelease?{formalRuntimeModel:true}:{}),...(ocr?{ocrBinding}:{})})+';\n','bound developer build identity');
 fs.writeFileSync(path.join(path.dirname(out),'mirror-project-receipt.json'),JSON.stringify(receipt,null,2)+'\n',{flag:'wx'});
 console.log(JSON.stringify({project:out,planId,buildId,source,dirty:receipt.dirty,accountLazy:true,cloudWrites:receipt.allowCloudWrites,networkExecuted:false}));

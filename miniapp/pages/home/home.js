@@ -66,7 +66,7 @@ Page({
   async connectNative(restart=false) {
     if(this.nativeConnectFlight)return this.nativeConnectFlight;
     const work=(async()=>{this.setData({initializing:true,error:''});
-    try{this.nativeApi=this.nativeApi||createNativeApi(wx,nativeConfig);if(restart)await this.nativeApi.reconnectSession();const service=await createNativeService(wx,core,nativeConfig,{api:this.nativeApi,fixedBinding:buildInfo.ocrBinding});if(!this.unloaded)this.mountService(service);else service.cancel();}
+    try{this.nativeApi=this.nativeApi||createNativeApi(wx,nativeConfig);if(restart)await this.nativeApi.reconnectSession();const service=await createNativeService(wx,core,nativeConfig,{api:this.nativeApi,fixedBinding:buildInfo.ocrBinding,modelBundle:buildInfo.formalRuntimeModel?bundle:null});if(!this.unloaded)this.mountService(service);else service.cancel();}
     catch(e){if(!this.unloaded)this.setData({error:e.message,nativeDiagnostic:e.nativeReason||'',connectionFailed:true});}
     finally{if(!this.unloaded)this.setData({initializing:false});}})();
     this.nativeConnectFlight=work;try{return await work;}finally{if(this.nativeConnectFlight===work)this.nativeConnectFlight=null;}

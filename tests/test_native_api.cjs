@@ -62,3 +62,31 @@ test('busy worker does not prevent resuming and confirming an existing result',a
  const h=harness((o,u)=>{if(o.url.endsWith('/session'))return {body:session};if(o.url.includes('/snapshot?')){const e=examples(o.url.includes('server=global')?'global':'cn');e.identity=session.identity;return {body:e};}if(o.url.includes('/catalog?'))return {body:{server:'cn',identity:session.identity,version:cn.catalog_version,catalog_version:cn.catalog_version,maps,worker}};if(u)worker='busy';return {body:job};});
  const s=await createNativeService(h.wx,core,config);await s.recognize({path:'tmp/a',size:3});s.suspend();const result=await s.resume();assert.equal(result.slots.length,5);await s.verifyRecognition();assert.equal(s.diagnostics().network.uploads,1);
 });
+
+test('formal score bundle drives calculation while OCR results keep their verified catalogue',async()=>{
+ const cn=examples('cn'),global=examples('global'),data=JSON.parse(cn.files['gauntlet_data.json'].text);
+ const maps=data.tracks.map(t=>({big:t.大地图,small:t.小地图}));
+ const chosen=maps.slice(0,5);
+ const job={id:'a'.repeat(32),server:'cn',catalog_version:cn.catalog_version,state:'succeeded',expires_at:session.expires_at,result:{schema_version:1,server:'cn',catalog_version:cn.catalog_version,status:'complete',slots:chosen.map((m,i)=>({slot:i+1,state:'matched',...m}))}};
+ const h=harness((o,u)=>{
+  if(o.url.endsWith('/session'))return {body:session};
+  if(o.url.includes('/snapshot?'))return {body:{...(o.url.includes('server=global')?global:cn),identity:session.identity}};
+  if(o.url.includes('/catalog?'))return {body:{server:'cn',identity:session.identity,version:cn.catalog_version,catalog_version:cn.catalog_version,maps,worker:'ready'}};
+  return {body:job};
+ });
+ const buildBundle=tracks=>{
+  const files=Object.fromEntries(Object.entries({...cn.files,...global.files}).map(([name,meta])=>[name,meta.text]));
+  files['gauntlet_data.json']=JSON.stringify({...data,tracks});
+  const hashes=Object.fromEntries(Object.entries(files).map(([name,text])=>[name,{bytes:Buffer.byteLength(text),sha256:crypto.createHash('sha256').update(text).digest('hex')}]));
+  return {kind:'local-unfrozen',files,hashes};
+ };
+ const draft={schema:1,server:'cn',zone:'zone5',tier:'理论',maps:[null,null,null,null,null],cars:[],stars:{},oc:{},routes:{}};
+ const service=await createNativeService(h.wx,core,config,{modelBundle:buildBundle(data.tracks)});
+ const version=service.model(draft).version;
+ assert.notEqual(version,cn.version);
+ assert.equal((await service.recognize({path:'tmp/a',size:3})).version,version);
+ assert.equal(h.calls.filter(c=>c.upload).length,1);
+ const incompatible=await createNativeService(h.wx,core,config,{modelBundle:buildBundle(data.tracks.slice(1))});
+ await assert.rejects(incompatible.recognize({path:'tmp/a',size:3}),/目录不一致/);
+ assert.equal(h.calls.filter(c=>c.upload).length,1);
+});
