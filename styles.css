@@ -667,3 +667,22 @@ select:disabled {
 }
 
 .route-video-links{display:grid;gap:4px;margin-top:5px;font-size:.75rem;overflow-wrap:anywhere}.route-video-links a{color:#58a6ff}.route-video-links details a{display:block;margin-top:4px}.route-video-links summary{cursor:pointer;color:inherit}#resultGrid .route-video-links{grid-column:1/-1}
+
+#resultGrid .result-car:has(.map-ban-trigger) { position:relative; padding-inline:44px; overflow-wrap:anywhere; }
+#resultGrid .map-ban-trigger {
+    position:absolute; right:0; top:50%; transform:translateY(-50%);
+    min-height:28px; padding:0 3px; border:0; border-radius:4px;
+    background:transparent; color:var(--rp-accent-text); font-size:.72rem; white-space:nowrap;
+}
+#resultGrid .map-ban-trigger:hover { background:var(--rp-raised); }
+#resultGrid .map-ban-trigger[data-active] { color:var(--rp-warning); }
+.map-ban-hint { color:var(--rp-muted); font-size:.85rem; }
+.map-ban-list { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:4px 10px; margin:6px 0 12px; }
+.map-ban-list label { display:flex; align-items:center; flex-wrap:wrap; gap:5px; min-height:32px; border-bottom:1px solid var(--rp-divider); overflow-wrap:anywhere; cursor:pointer; }
+.map-ban-list input { accent-color:var(--rp-blue); }
+.map-ban-list label span { color:var(--rp-muted); font-size:.75rem; }
+.map-ban-actions { display:flex; justify-content:flex-end; gap:6px; flex-wrap:wrap; }
+@media (max-width:700px) {
+    #resultGrid .result-car:has(.map-ban-trigger) { padding-inline:0; }
+    #resultGrid .map-ban-trigger { position:static; transform:none; margin-left:3px; }
+}

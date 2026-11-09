@@ -102,6 +102,21 @@
             <a id="resultGuidanceLink" class="ui-button" href="/score-table">投稿我的成绩</a>
         </section>
         <div class="result-grid" id="resultGrid"></div>
+        <dialog id="mapBanDialog" class="result-guidance-picker" aria-labelledby="mapBanTitle">
+            <form method="dialog">
+                <h2 id="mapBanTitle"></h2>
+                <p class="map-ban-hint">勾选本图不用的车辆，取消勾选即可恢复。</p>
+                <div class="map-ban-actions">
+                    <button id="mapBanAll" type="button">全选</button>
+                    <button id="mapBanNone" type="button">取消全选</button>
+                </div>
+                <div id="mapBanList" class="map-ban-list"></div>
+                <div class="map-ban-actions">
+                    <button type="submit" value="cancel">取消</button>
+                    <button type="submit" class="ui-primary" value="apply">应用</button>
+                </div>
+            </form>
+        </dialog>
         <dialog id="resultGuidancePicker" class="result-guidance-picker" aria-labelledby="resultGuidancePickerTitle">
             <h2 id="resultGuidancePickerTitle">选择要投稿的地图</h2>
             <div id="resultGuidanceMaps"></div>
@@ -155,6 +170,10 @@
     const recommendBtn = document.getElementById('recommendBtn');
     const schemeSelect = document.getElementById('schemeSelect');
     const resultGrid = document.getElementById('resultGrid');
+    const mapBanDialog = document.getElementById('mapBanDialog');
+    const mapBanList = document.getElementById('mapBanList');
+    const mapBans = new Map();
+    let editingMapBan;
     const schemeCountBadge = document.getElementById('schemeCountBadge');
     const loadingOverlay = document.getElementById('loadingOverlay');
 
@@ -506,7 +525,7 @@
 
     function refreshTopCars() {
         const maps = getCurrentValidMaps();
-        renderTopCars(maps, prepareMapCandidates(maps, currentZone),
+        renderTopCars(maps, excludeMapBans(prepareMapCandidates(maps, currentZone), maps, currentZone),
             new Set(getCurrentCarList().filter(car => selectedCars.has(car))));
     }
 
@@ -826,6 +845,70 @@
         return selectionCore.prepareMapCandidates(validMaps, (big, small) => getOriginalGroups(big, small, zone));
     }
 
+    function excludeMapBans(candidates, maps, zone) {
+        return candidates.map((candidate, index) => {
+            const {big, small} = maps[index];
+            const banned = mapBans.get(mapBanKey(big, small, zone));
+            if (!banned?.size) return candidate;
+            return {...candidate, groups: candidate.groups.map(group => group.filter(car => !banned.has(car)))};
+        });
+    }
+
+    function mapBanKey(big, small, zone = currentZone) {
+        return JSON.stringify([APP_CONFIG.server, zone, big, small]);
+    }
+
+    function addMapBanButton(card, big, small, currentCar) {
+        const key = mapBanKey(big, small);
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'map-ban-trigger';
+        button.textContent = '⊘ 禁车';
+        button.setAttribute('aria-haspopup', 'dialog');
+        const count = mapBans.get(key)?.size || 0;
+        button.toggleAttribute('data-active', count > 0);
+        button.setAttribute('aria-label', small + '禁车设置，已禁' + count + '辆');
+        button.onclick = () => {
+            const banned = mapBans.get(key) || new Set();
+            const candidates = (getOriginalGroups(big, small, currentZone) || []).flat()
+                .filter(car => selectedCars.has(car));
+            const cars = [...new Set([...candidates, ...banned])];
+            editingMapBan = key;
+            mapBanDialog.returnValue = '';
+            document.getElementById('mapBanTitle').textContent = small + ' · 禁车';
+            mapBanList.replaceChildren(...cars.map(car => {
+                const label = document.createElement('label');
+                const input = document.createElement('input');
+                input.type = 'checkbox';
+                input.value = car;
+                input.checked = banned.has(car);
+                label.append(input, car);
+                if (car === currentCar) {
+                    const current = document.createElement('span');
+                    current.textContent = '当前';
+                    label.append(current);
+                }
+                return label;
+            }));
+            mapBanDialog.showModal();
+        };
+        card.querySelector('.result-car').append(button);
+    }
+
+    function setMapBanChecks(checked) {
+        for (const input of mapBanList.querySelectorAll('input')) input.checked = checked;
+    }
+
+    document.getElementById('mapBanAll').onclick = () => setMapBanChecks(true);
+    document.getElementById('mapBanNone').onclick = () => setMapBanChecks(false);
+    mapBanDialog.onclose = () => {
+        if (mapBanDialog.returnValue !== 'apply') return;
+        const banned = new Set([...mapBanList.querySelectorAll('input:checked')].map(input => input.value));
+        if (banned.size) mapBans.set(editingMapBan, banned);
+        else mapBans.delete(editingMapBan);
+        computeAndDisplay(undefined, currentBestSchemes[Number(schemeSelect.value)]?.assignment);
+    };
+
     /** 页面层：把紧凑方案映射回显示行，未选地图的位置保留为空。 */
     function mapSchemesToRows(schemes, validMaps, rowCount) {
         return schemes.map(scheme => {
@@ -1020,19 +1103,20 @@
         }
         resultGrid.innerHTML = html;
         renderResultGuidance(scheme);
-        if (globalThis.RacePickRouteVideos) {
-            for (let i = 0; i < ROWS; i++) {
-                const big = bigSelects[i].value, small = smallSelects[i].value;
-                if (!big || !small) continue;
+        for (let i = 0; i < ROWS; i++) {
+            const big = bigSelects[i].value, small = smallSelects[i].value;
+            if (!big || !small) continue;
+            const card = resultGrid.children[i];
+            addMapBanButton(card, big, small, scheme.assignment[i]);
+            if (globalThis.RacePickRouteVideos) {
                 const map = {big, small};
-                RacePickRouteVideos.showForCar(resultGrid.children[i], APP_CONFIG.server,
-                    map, scheme.assignment[i], getRouteVideoScope(map));
+                RacePickRouteVideos.showForCar(card, APP_CONFIG.server, map, scheme.assignment[i], getRouteVideoScope(map));
             }
         }
     }
 
     // 更新下拉菜单及显示
-    function updateUIWithSchemes(schemes) {
+    function updateUIWithSchemes(schemes, previousAssignment) {
         currentBestSchemes = schemes;
         schemeSelect.innerHTML = '';
         if (currentBestSchemes.length === 0) {
@@ -1054,8 +1138,11 @@
             option.textContent = homePresenter.schemeSummary(scheme,bigSelects.map((sel,i)=>({big:sel.value,small:smallSelects[i].value})),idx);
             schemeSelect.appendChild(option);
         });
-        schemeSelect.value = 0;
-        renderResultGrid(currentBestSchemes[0]);
+        const selected = previousAssignment
+            ? Math.max(0, schemes.findIndex(scheme => scheme.assignment.every((car, i) => car === previousAssignment[i])))
+            : 0;
+        schemeSelect.value = selected;
+        renderResultGrid(currentBestSchemes[selected]);
     }
 
     /** 方案数量上限 */
@@ -1078,7 +1165,7 @@
         resultGrid.textContent = '计算失败，请重试或刷新页面。';
         console.error(error);
     }
-    function computeAndDisplay(event) {
+    function computeAndDisplay(event, previousAssignment) {
         const recordUsage=event?.isTrusted && event.currentTarget===recommendBtn;
         const usageResult=result=>{if(recordUsage)globalThis.Usage?.feature('generate',result);};
         computation.cancel();
@@ -1103,7 +1190,8 @@
 
         try {
             // 输入在当前事件中准备完毕，排队任务不读取后来变化的界面状态。
-            const candidates = prepareMapCandidates(validMaps, currentZone);
+            const unfilteredCandidates = prepareMapCandidates(validMaps, currentZone);
+            const candidates = excludeMapBans(unfilteredCandidates, validMaps, currentZone);
             const ownedInZone = new Set(getCurrentCarList().filter(car => selectedCars.has(car)));
             renderTopCars(validMaps, candidates, ownedInZone);
             computation.run({
@@ -1111,7 +1199,7 @@
                     const schemes = allocator.generateParetoSchemes(candidates, ownedInZone, SCHEME_LIMIT, NO_CAR_PRIORITY);
                     return mapSchemesToRows(schemes, validMaps, ROWS);
                 },
-                publish: schemes=>{resultGuidanceInput={maps:validMaps,candidates,ownedCars:ownedInZone};updateUIWithSchemes(schemes);usageResult(schemes.length?'success':'empty');},
+                publish: schemes=>{resultGuidanceInput={maps:validMaps,candidates:unfilteredCandidates,ownedCars:ownedInZone};updateUIWithSchemes(schemes,previousAssignment);usageResult(schemes.length?'success':'empty');},
                 onError: error=>{computationError(error);usageResult('failed');},
                 onStart: () => {resultGuidanceInput=null;renderResultGuidance(null);loadingOverlay.classList.add('show');},
                 onFinish: () => loadingOverlay.classList.remove('show'),
