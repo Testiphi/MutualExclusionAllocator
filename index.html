@@ -19,7 +19,7 @@
     <div class="loading-overlay" id="loadingOverlay">
         <div class="loading-box">
             <div class="loading-spinner"></div>
-            <p>计算最优方案...</p>
+            <p>计算最优方案…</p>
         </div>
     </div>
 
@@ -66,8 +66,8 @@
                 </div>
                 <span id="garageSaveStatus" role="status">手动保存 · 临时选择不会覆盖车库</span>
             </div>
-        <div class="zone-hint" id="zoneHint">星级代表加速所改装的星级，仅作为参考</div>
-        <input class="garage-search" id="garageSearch" type="text" placeholder="搜索车辆(支持昵称/真名)..." autocomplete="off">
+        <div class="zone-hint" id="zoneHint">星级对应加速改装等级，会影响成绩换算</div>
+        <input class="garage-search" id="garageSearch" type="text" placeholder="搜索车辆（支持昵称/真名）…" autocomplete="off">
         <div class="class-filter" id="classFilter">
             <span class="class-filter-btn active" data-class="">全部</span>
             <span class="class-filter-btn" id="classFilterR" data-class="R">R</span>
@@ -91,7 +91,7 @@
             <span class="badge-pareto" id="schemeCountBadge">0</span>
         </div>
         <div class="scheme-selector">
-            <select id="schemeSelect" aria-label="选择方案"></select>
+            <select id="schemeSelect" aria-label="选择方案"><option value="" disabled selected>尚未生成方案</option></select>
         </div>
         <div class="sc-panel" id="scPanel" style="display:none;margin-bottom:14px;padding:10px 14px;background:#0d1117;border-radius:10px;border:1px solid #21262d;">
             <div style="color:#8b949e;font-size:0.8rem;margin-bottom:8px;">特殊跑法</div>
@@ -540,7 +540,7 @@
             sel.innerHTML = '';
             const emptyOpt = document.createElement('option');
             emptyOpt.value = '';
-            emptyOpt.textContent = '-- 选择大地图 --';
+            emptyOpt.textContent = '选择大地图';
             sel.appendChild(emptyOpt);
             bigMapList.forEach(big => {
                 const opt = document.createElement('option');
@@ -579,7 +579,7 @@
         smallSel.disabled = false;
         const emptyOpt = document.createElement('option');
         emptyOpt.value = '';
-        emptyOpt.textContent = '-- 选择小地图 --';
+        emptyOpt.textContent = '选择小地图';
         smallSel.appendChild(emptyOpt);
         const smallList = smallMapsByBig[bigMap];
         smallList.forEach(sm => {
@@ -725,7 +725,7 @@
         if (filtered.length === 0) {
             const msg = document.createElement('div');
             msg.className = 'no-match';
-            msg.textContent = `未找到"${searchQuery}"`;
+            msg.textContent = `未找到“${searchQuery}”`;
             carGrid.appendChild(msg);
             return;
         }
@@ -1043,11 +1043,11 @@
             const big = bigSelects[i]?.value;
             const small = smallSelects[i]?.value;
             if (big && small) {
-                html += `<div class="result-item"><div class="result-map">${small}</div><div class="result-bigmap">${big}</div><div class="result-car empty">无法分配</div></div>`;
+                html += `<div class="result-item is-empty"><div class="result-map">${small}</div><div class="result-bigmap">${big}</div><div class="result-car empty">无法分配</div></div>`;
             } else if (bigSelects[i]?.value || smallSelects[i]?.value) {
-                html += `<div class="result-item"><div class="result-map">未选完整</div><div class="result-bigmap">--</div><div class="result-car empty">⛔ 缺地图</div></div>`;
+                html += `<div class="result-item is-empty"><div class="result-map">未选完整</div><div class="result-bigmap">--</div><div class="result-car empty">缺小地图</div></div>`;
             } else {
-                html += `<div class="result-item"><div class="result-map">第${i+1}图</div><div class="result-bigmap">未选</div><div class="result-car empty">待选图</div></div>`;
+                html += `<div class="result-item is-empty"><div class="result-map">第${i+1}图</div><div class="result-bigmap">未选</div><div class="result-car empty">待选图</div></div>`;
             }
         }
         resultGrid.innerHTML = html;
@@ -1086,17 +1086,17 @@
                         ${scoreHtml}
                     </div>`;
                 } else {
-                    html += `<div class="result-item">
+                    html += `<div class="result-item is-empty">
                         <div class="result-map">${small}</div>
                         <div class="result-bigmap">${big}</div>
                         <div class="result-car empty">无可用车</div>
                     </div>`;
                 }
             } else {
-                html += `<div class="result-item">
+                html += `<div class="result-item is-empty">
                     <div class="result-map">第${i+1}位</div>
                     <div class="result-bigmap">未选地图</div>
-                    <div class="result-car empty">⛔ 未配置</div>
+                    <div class="result-car empty">空位</div>
                 </div>`;
             }
         }

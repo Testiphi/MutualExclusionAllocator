@@ -1,20 +1,20 @@
 /* Shared control appearance; links keep native navigation semantics. */
-button,.ui-button{box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:38px;padding:8px 13px;border:1px solid #30363d;border-radius:8px;background:#21262d;color:#e6edf3;font:inherit;font-size:14px;line-height:1.4;text-decoration:none;cursor:pointer;vertical-align:middle;max-width:100%;overflow-wrap:anywhere}
-button:hover:not(:disabled),.ui-button:hover{background:#30363d;border-color:#58a6ff;color:#fff;text-decoration:none}
-button:focus-visible,.ui-button:focus-visible{outline:2px solid #58a6ff;outline-offset:3px}
+button,.ui-button{box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:38px;padding:8px 13px;border:1px solid var(--rp-border);border-radius:var(--rp-radius-control);background:var(--rp-raised);color:var(--rp-text);font:inherit;font-size:var(--rp-size-md);line-height:1.4;text-decoration:none;cursor:pointer;vertical-align:middle;max-width:100%;overflow-wrap:anywhere}
+button:hover:not(:disabled),.ui-button:hover{background:var(--rp-border);border-color:var(--rp-blue);color:#f0f6fc;text-decoration:none}
+button:focus-visible,.ui-button:focus-visible{outline:2px solid var(--rp-focus);outline-offset:3px}
 button:disabled{opacity:.5;cursor:not-allowed}
 button[hidden],.ui-button[hidden]{display:none!important}
-.ui-primary,#saveBatch,#save,#publish,#sendFeedback,#saveReply{background:#238636;border-color:#2ea043;color:#fff}
-.ui-primary:hover:not(:disabled),#sendFeedback:hover:not(:disabled),#saveReply:hover:not(:disabled){background:#2ea043}
+.ui-primary,#saveBatch,#save,#publish,#sendFeedback,#saveReply{background:var(--rp-primary);border-color:var(--rp-primary-hover);color:#f0f6fc}
+.ui-primary:hover:not(:disabled),#sendFeedback:hover:not(:disabled),#saveReply:hover:not(:disabled){background:var(--rp-primary-hover)}
 button.ui-danger,#withdraw,#accountOverwrite{border-color:#a35e60;color:#ffc3c3;background:#3a2329}
 button.ui-danger:hover:not(:disabled),#withdraw:hover:not(:disabled){background:#573039;border-color:#e58e91}
 header>.ui-button{margin-bottom:8px}nav>.ui-button{margin-right:0}
 .feedback-layout{display:grid;grid-template-columns:minmax(240px,320px) minmax(0,1fr);gap:24px;margin-top:20px}
 .feedback-list button{display:flex;flex-direction:column;align-items:flex-start;text-align:left;width:100%;gap:5px;margin-bottom:8px}
 .feedback-list button[aria-current=true]{border-color:#58a6ff;background:#1f3a5f}
-.feedback-card{border:1px solid #30363d;border-radius:12px;padding:20px;margin-top:16px;background:#0d1117}
+.feedback-card{border:1px solid var(--rp-divider);border-radius:var(--rp-radius-card);padding:20px;margin-top:16px;background:var(--rp-bg)}
 .feedback-card label{margin:12px 0}.feedback-text{white-space:pre-wrap;overflow-wrap:anywhere}.feedback-event{border-top:1px solid #30363d;padding:12px 0}.feedback-event p{margin:8px 0}
-.feedback-meta{font-size:13px;color:#8b949e;overflow-wrap:anywhere}.feedback-badge{padding:3px 9px;border-radius:12px;background:#21262d;color:#e6edf3;display:inline-block;font-size:13px}
+.feedback-meta{font-size:13px;color:var(--rp-muted);overflow-wrap:anywhere}.feedback-badge{padding:3px 9px;border-radius:12px;background:var(--rp-raised);color:var(--rp-text);display:inline-block;font-size:13px}
 .feedback-empty{padding:20px;color:#8b949e}.feedback-layout aside{border-right:0;padding-right:0}
 @media(max-width:700px){.feedback-layout{grid-template-columns:1fr;gap:10px}.feedback-card{padding:15px}button,.ui-button{min-height:42px}}
 
