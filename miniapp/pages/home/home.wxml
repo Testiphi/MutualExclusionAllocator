@@ -16,14 +16,14 @@
   <view wx:if="{{ready}}">
    <view class="toolbar">
     <view class="mode-row">
-     <button class="toggle-choice {{server === 'cn' ? 'active' : ''}}" data-server="cn" bindtap="switchServer"><text class="choice-dot">{{server === 'cn' ? '●' : '○'}}</text>国服</button>
-     <button class="toggle-choice {{server === 'global' ? 'active' : ''}}" data-server="global" bindtap="switchServer"><text class="choice-dot">{{server === 'global' ? '●' : '○'}}</text>国际服</button>
+     <button class="toggle-choice {{server === 'cn' ? 'active' : ''}}" data-server="cn" bindtap="switchServer">国服</button>
+     <button class="toggle-choice {{server === 'global' ? 'active' : ''}}" data-server="global" bindtap="switchServer">国际服</button>
     </view>
     <view wx:if="{{tiers.length > 1}}" class="mode-row tier-row">
-     <button wx:for="{{tiers}}" wx:key="*this" class="toggle-choice {{tierIndex === index ? 'active' : ''}}" data-index="{{index}}" bindtap="selectTier"><text class="choice-dot">{{tierIndex === index ? '●' : '○'}}</text>{{item}}档</button>
+     <button wx:for="{{tiers}}" wx:key="*this" class="toggle-choice {{tierIndex === index ? 'active' : ''}}" data-index="{{index}}" bindtap="selectTier">{{item}}档</button>
     </view>
     <view wx:if="{{zones.length > 1}}" class="mode-row zone-row">
-     <button wx:for="{{zones}}" wx:key="*this" class="toggle-choice {{zoneIndex === index ? 'active' : ''}}" data-index="{{index}}" bindtap="selectZone"><text class="choice-dot">{{zoneIndex === index ? '●' : '○'}}</text>{{item}}</button>
+     <button wx:for="{{zones}}" wx:key="*this" class="toggle-choice {{zoneIndex === index ? 'active' : ''}}" data-index="{{index}}" bindtap="selectZone">{{item}}</button>
     </view>
    </view>
    <view class="card ocr-workspace">
@@ -73,7 +73,7 @@
 
      <view class="actions garage-tools"><button data-action="select-all" bindtap="selectAll">全部点亮</button><button data-action="clear-all" bindtap="clearAll">全部清空</button><button data-action="sort" bindtap="cycleSort">{{sortLabel}}</button></view>
      <view wx:if="{{zoneHint}}" class="zone-hint">星级代表加速所改装的星级，仅作为参考</view>
-     <input class="search" placeholder="搜索车辆" placeholder-class="muted" value="{{query}}" bindinput="search" />
+     <input class="search" placeholder="搜索车辆名称" placeholder-class="muted" value="{{query}}" bindinput="search" />
      <view class="class-filter"><button wx:for="{{classes}}" wx:key="*this" class="{{carClass === item ? 'active' : ''}}" data-value="{{item}}" bindtap="filterClass">{{item || '全部'}}</button></view>
      <scroll-view scroll-y="{{true}}" class="garage-list">
       <view class="car-grid">
@@ -105,9 +105,9 @@
       <button wx:if="{{resultGuidance.canSubmit}}" bindtap="contributeResult">{{resultGuidance.action}}</button>
     </view>
     <view wx:if="{{activeScheme}}" class="result-grid">
-     <view wx:for="{{activeScheme.rows}}" wx:for-item="row" wx:key="index" class="result-row">
+     <view wx:for="{{activeScheme.rows}}" wx:for-item="row" wx:key="index" class="result-row {{row.empty ? 'is-empty' : ''}}">
       <view class="result-map">{{row.map}}</view><view class="result-big">{{row.big || '—'}}</view>
-      <view class="result-car {{row.empty ? 'empty' : ''}}">{{row.car}}{{row.oc ? ' [OC]' : ''}}<text wx:if="{{row.stars}}" class="result-stars"> ★{{row.stars}}</text></view><view wx:if="{{row.hasTime}}" class="result-time">{{row.timeValue}}<text class="result-unit"> 秒</text></view>
+      <view class="result-car {{row.empty ? 'empty' : ''}}">{{row.empty ? '空位' : row.car}}{{row.oc ? ' [OC]' : ''}}<text wx:if="{{row.stars}}" class="result-stars"> ★{{row.stars}}</text></view><view wx:if="{{row.hasTime}}" class="result-time">{{row.timeValue}}<text class="result-unit"> 秒</text></view>
      </view>
     </view>
    </view>
