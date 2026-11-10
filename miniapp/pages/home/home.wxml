@@ -91,9 +91,11 @@
    </view>
    <view class="action"><button class="primary recommend-btn" loading="{{busy}}" disabled="{{busy}}" bindtap="compute">生成方案</button></view>
    <view class="card results">
+    <view class="result-toolbar">
     <view class="result-heading"><text>方案</text><text class="badge">{{schemes.length}}</text></view>
     <button wx:if="{{activeScheme}}" id="scheme-trigger" class="scheme-trigger" bindtap="openScheme"><view class="select scheme-select">{{schemeOptions[schemeIndex]}}<text class="chevron">⌄</text></view></button>
     <view wx:if="{{!activeScheme}}" class="scheme-trigger scheme-empty"><view class="select scheme-select">请至少选择一张地图</view></view>
+    </view>
     <view wx:if="{{!activeScheme && !resultGuidance && !error && !busy}}" class="empty-result">{{emptyResultText}}</view>
     <view wx:if="{{resultGuidance}}" class="result-guidance" aria-role="status">
       <text>{{resultGuidance.message}}</text>
@@ -102,18 +104,20 @@
    <view wx:if="{{routes.length}}" class="route-panel">
     <view class="section-title muted">特殊跑法</view>
     <view wx:for="{{routes}}" wx:key="key" class="route-row {{item.enabled ? 'is-on' : ''}}">
-     <button data-key="{{item.key}}" bindtap="toggleRoute">{{item.label}} {{item.enabled ? '◉' : '○'}}</button>
+     <button class="route-toggle" data-key="{{item.key}}" bindtap="toggleRoute">{{item.label}} {{item.enabled ? '◉' : '○'}}</button>
      <button wx:if="{{item.showTypes}}" id="route-{{index}}" data-index="{{index}}" class="route-selector" bindtap="openRoute"><view class="route-select">{{item.options[item.optionIndex]}} ⌄</view></button>
     </view>
    </view>
     <view class="result-grid">
      <view wx:for="{{resultRows}}" wx:for-item="row" wx:key="index" class="result-row {{row.empty ? 'is-empty' : ''}}">
-      <view class="result-map">{{row.map}}</view><view class="result-big">{{row.big || '—'}}</view>
+      <view class="result-main">
+      <view class="result-track"><view class="result-map">{{row.map}}</view><view class="result-big">{{row.big || '—'}}</view></view>
       <view class="result-car {{row.empty ? 'empty' : ''}}">
-       <text>{{row.empty && activeScheme ? (row.configured ? '无可用车' : '空位') : row.car}}{{row.oc ? ' [OC]' : ''}}</text><text wx:if="{{row.stars}}" class="result-stars"> ★{{row.stars}}</text>
+       <view class="result-car-label"><text>{{row.empty && activeScheme ? (row.configured ? '无可用车' : '空位') : row.car}}{{row.oc ? ' [OC]' : ''}}</text><text wx:if="{{row.stars}}" class="result-stars"> ★{{row.stars}}</text></view>
        <button wx:if="{{mapBansAvailable && hasComputedResult && row.configured}}" class="map-ban-trigger {{row.banCount ? 'is-active' : ''}}" data-index="{{row.index}}" bindtap="openMapBans" disabled="{{busy}}" aria-label="{{row.map}}禁车设置，已禁{{row.banCount}}辆">⊘ 禁车{{row.banCount ? ' ' + row.banCount : ''}}</button>
       </view>
       <view wx:if="{{row.hasTime}}" class="result-time">{{row.timeValue}}<text class="result-unit"> 秒</text></view>
+      </view>
       <view wx:if="{{routeVideoLab && !row.empty}}" class="result-video-links"><button class="result-video" size="mini" data-index="{{row.index}}" bindtap="openRouteVideos">跑法视频</button></view>
      </view>
     </view>
