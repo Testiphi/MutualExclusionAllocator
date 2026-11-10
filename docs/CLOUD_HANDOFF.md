@@ -1,3 +1,12 @@
+## 2026-11-10 跑法视频 1117 条批次 0272786b 上线
+
+- 20:55:25 CST 生产复核通过，967 条启用绑定逐键零差异，154 条可新增、35 条待更新、4 条待停用，零冲突。冻结 ID `0272786bc62ca02ce75aee31`，计划 SHA-256 `0272786bc62ca02ce75aee319f21a8732f11c226c7a2c6b6181e763e88a8c467`。现场回执 `/root/racepick-deploy/video1117-recheck.5krxipCq/field.log`。
+- 写入前成套备份 `scores-20261110T125721876273Z.zip`，SHA-256 `c1860b4e8cafc04e064b877de70198efe2917107f4d4431eb520ca3f0fcff4cf`。独立恢复目录 `4837196831605631b64b241c`，967 条基线、193 项及五份成绩文件核验通过。
+- 生产单事务新增 154 条、更新 35 条、停用 4 条。回执 `/root/racepick-deploy/video1117-apply.6vm6kpFn/apply.json`，SHA-256 `6e6acfb7cca8bf794a9aa4a6fda0d28ef4b8b817a6a6d04c91142a762fa55215`。
+- 21:00:16 CST 公网健康与矩阵逐格核对通过，国服 797 格／953 条，国际服 160 格／164 条。网站 PID 285482、OCR PID 285479 的实际目录和 current 均为 `/opt/racepick/releases/80fd1c937db91d3df4ac1170`。OCR ready，正式 A 云车库写关。本批仅发布视频数据，未切换网页或同步小程序。
+- 双服活动成绩为国服 `d6c91bbffea4c2036d1e294887faba5b` 和国际服 `8f4c827ecd4b5b3466bc39bcbd1a521c`。写入前后备份和恢复副本的五份成绩文件哈希一致。
+- 上线后成套备份 `scores-20261110T130143999959Z.zip`，SHA-256 `4c528ddadf72d060dc0c191fa00025f7902d3efd2365bd4e8842b88631c68224`。独立恢复 `a8f91369f55e591d35a81eed`，1117 条启用绑定逐键匹配冻结目标，193 项按行 ID 读回匹配写入回执。收尾回执 `/root/racepick-deploy/video1117-postwrite.kc6r0vKW`。备份 timer enabled、active(waiting)，下次触发 2026-11-11 04:18:00 CST.
+
 ## 2026-11-10 网站 80fd1c93 与视频批次 dfcb6de8 上线
 
 - Workbench 13:08:06 CST 切换网站到 `80fd1c937db91d3df4ac1170`，源码 `f76c896e12e7b34f627d8a8506eb3920dd3b96c6`，前一版 `9ade659b378f4f94f17a9d10`。网站 PID 283003 与 OCR PID 282996 的实际目录均指向新版本。公网首页、健康和逐格视频矩阵通过。OCR ready，正式 A 云车库写关闭。切换回执 `/root/racepick-deploy/80fd-dfcb-cutover.3BXVG5bF`。
