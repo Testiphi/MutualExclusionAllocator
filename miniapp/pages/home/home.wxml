@@ -4,7 +4,7 @@
   <view class="subtitle">{{subtitle}}</view>
   <view wx:if="{{planId}}" class="notice">{{conflictAcceptance ? 'W3冲突验收准备' : formalWriteCandidate ? '正式云保存验收工程' : writeAcceptance ? 'W1/W2写验收工程' : readbackAcceptance ? '已保存车库只读复核' : '只读验收工程'}}：{{buildId}}<button bindtap="copyAcceptanceReport">复制验收报告</button></view>
   <view wx:if="{{ready && !accountRestricted}}" class="coverage-entry"><view><view class="coverage-entry-title">擂台成绩表 <text class="coverage-entry-new">新功能</text></view><view class="coverage-entry-description">查看各图参考成绩，补充缺失记录</view></view><button class="coverage-entry-link" data-page="coverage" bindtap="navigate">查看成绩表 →</button></view>
-  <view wx:if="{{ready}}" class="account-panel"><view class="account-heading">{{actor ? (homeNickname || '已登录') + ' · ' + (actor.role === 'superadmin' ? '超级管理员' : actor.role === 'admin' ? '管理员' : '玩家') : '游客 · 资料保存在本机'}}</view><view wx:if="{{!actor}}" class="account-actions"><button disabled="{{!accountAvailable}}" class="account-primary" data-page="account" data-mode="login" bindtap="navigate">登录</button><button wx:if="{{registrationAvailable}}" data-page="account" data-mode="register" bindtap="navigate">注册</button></view><view class="account-navigation"><button wx:if="{{actor}}" data-page="account" bindtap="navigate">个人中心<text wx:if="{{unreadCounts.feedback}}" class="unread-dot"></text></button><button wx:if="{{!accountRestricted}}" data-hub="contributions" bindtap="openHub">数据贡献<text wx:if="{{unreadCounts.submissions}}" class="unread-dot"></text></button><button wx:if="{{!accountRestricted && (actor.role === 'admin' || actor.role === 'superadmin')}}" data-hub="management" bindtap="openHub">管理工作台<text wx:if="{{unreadCounts.review || unreadCounts.feedback_admin}}" class="unread-dot"></text></button><button wx:if="{{!accountRestricted}}" data-page="community" data-tab="announcements" bindtap="navigate">更新公告</button></view></view>
+  <view wx:if="{{ready}}" class="account-panel"><view class="account-heading">{{actor ? (homeNickname || '已登录') + ' · ' + (actor.role === 'superadmin' ? '超级管理员' : actor.role === 'admin' ? '管理员' : '玩家') : '游客 · 资料保存在本机'}}</view><view wx:if="{{!actor}}" class="account-actions"><button disabled="{{!accountAvailable}}" class="account-primary" data-page="account" data-mode="login" bindtap="navigate">登录</button><button wx:if="{{registrationAvailable}}" data-page="account" data-mode="register" bindtap="navigate">注册</button></view><view class="account-navigation"><button wx:if="{{actor}}" data-page="account" bindtap="navigate">个人中心<text wx:if="{{unreadCounts.feedback}}" class="unread-dot"></text></button><button wx:if="{{!accountRestricted}}" data-hub="contributions" bindtap="openHub">数据贡献<text wx:if="{{unreadCounts.submissions}}" class="unread-dot"></text></button><button wx:if="{{!accountRestricted && (actor.role === 'admin' || actor.role === 'superadmin')}}" data-hub="management" bindtap="openHub">管理工作台<text wx:if="{{unreadCounts.review || unreadCounts.feedback_admin}}" class="unread-dot"></text></button><button wx:if="{{!accountRestricted}}" class="account-announcements" data-page="community" data-tab="announcements" bindtap="navigate">更新公告</button></view></view>
   <view wx:if="{{mode === 'mock'}}" class="notice">本地联调 · 模拟目录与结果，非真实计算 / OCR</view>
   <view wx:if="{{mode === 'local'}}" class="notice">本地计算 · 数据未冻结 · 识图尚未接入</view>
   <view wx:if="{{mode === 'native-fixture'}}" class="notice">本地接口联调 · fixture身份，非真实微信鉴权</view>
@@ -53,7 +53,7 @@
      <text class="number">{{item.index + 1}}</text>
      <view class="map-fields">
      <view class="map-field"><view class="field-label">大地图</view><button id="map-{{item.index}}-big" class="map-picker map-trigger" data-index="{{item.index}}" data-field="big" bindtap="openDropdown"><view class="select">{{item.big || '选择大地图'}}<text class="chevron">⌄</text></view></button></view>
-     <view class="map-field"><view class="field-label">小地图</view><button id="map-{{item.index}}-small" class="map-picker map-trigger" disabled="{{!item.big}}" data-index="{{item.index}}" data-field="small" bindtap="openDropdown"><view class="select {{!item.big ? 'is-disabled' : ''}}">{{item.small || '选择小地图'}}<text class="chevron">⌄</text></view></button></view>
+     <view class="map-field"><view class="field-label">小地图</view><button id="map-{{item.index}}-small" class="map-picker map-trigger" disabled="{{!item.big}}" data-index="{{item.index}}" data-field="small" bindtap="openDropdown"><view class="select {{!item.big ? 'is-disabled' : ''}}">{{item.small || (item.big ? '选择小地图' : '先选大地图')}}<text class="chevron">⌄</text></view></button></view>
      </view>
      <view wx:if="{{item.top}}" class="track-top-cars">
       <button class="top-toggle" data-index="{{item.index}}" bindtap="toggleTop">{{item.topOpen ? '▾' : '▸'}} {{item.top.label}}</button>
@@ -71,11 +71,11 @@
     <view wx:if="{{actor}}" class="cloud-profile"><view>{{cloudStatus}}</view><button wx:if="{{!cloudLoaded}}" bindtap="syncAccount">重试读取账号车库</button><button wx:if="{{!writeAcceptance && !readbackAcceptance && !conflictAcceptance && !formalWriteCandidate}}" bindtap="importGarage">导入本机游客车库</button><button wx:if="{{allowCloudWrites}}" bindtap="recoverCloud">核对上次保存</button><button wx:if="{{writeAcceptance || conflictAcceptance}}" disabled="{{cloudSaving}}" bindtap="reloadCloud">认证GET重载当前服</button><view wx:if="{{cloudEmpty}}">账号尚未保存此服车库（null）。</view>
      <view wx:if="{{cloudConflict}}"><view>本地 {{cloudConflict.local ? cloudConflict.local.cars.length : 0}} 辆 · 云端 {{cloudConflict.remote ? cloudConflict.remote.cars.length : 0}} 辆</view><view>两份车库均已保留，请明确选择。</view><view wx:if="{{cloudConflict.localText}}">本次提交 revision {{cloudConflict.localRevision}}：{{cloudConflict.localText}}</view><view wx:if="{{cloudConflict.remoteText}}">当前云端 revision {{cloudConflict.remoteRevision}}：{{cloudConflict.remoteText}}</view><button bindtap="restore">加载云端版本</button><button wx:if="{{allowCloudWrites && !writeAcceptance && !conflictAcceptance}}" bindtap="overwriteCloud">保存本地版本</button></view>
     </view>
-    <view class="actions"><button disabled="{{cloudSaving || (conflictAcceptance && cloudConflict) || (actor && (!allowCloudWrites || !cloudLoaded))}}" bindtap="save">保存车库</button><button bindtap="restore">恢复已保存</button><text wx:if="{{actor ? cloudDirty : dirty}}" class="save-status">尚未保存</text></view>
-
-     <view class="actions garage-tools"><button data-action="select-all" bindtap="selectAll">全部点亮</button><button data-action="clear-all" bindtap="clearAll">全部清空</button><button data-action="sort" bindtap="cycleSort">{{sortLabel}}</button></view>
+    <view class="garage-actions"><view class="garage-action-group"><button disabled="{{cloudSaving || (conflictAcceptance && cloudConflict) || (actor && (!allowCloudWrites || !cloudLoaded))}}" bindtap="save">保存车库</button><button bindtap="restore">恢复已保存</button></view>
+     <view class="garage-action-group"><button data-action="select-all" bindtap="selectAll">全部点亮</button><button data-action="clear-all" bindtap="clearAll">全部清空</button><button data-action="sort" bindtap="cycleSort">{{sortLabel}}</button></view>
+     <text wx:if="{{actor ? cloudDirty : dirty}}" class="save-status">{{actor && !allowCloudWrites ? '车库只读 · 临时修改仅保存在本机' : '手动保存 · 点击保存才会更新车库'}}</text></view>
      <view wx:if="{{zoneHint}}" class="zone-hint">星级代表加速所改装的星级，仅作为参考</view>
-     <input class="search" placeholder="搜索车辆名称" placeholder-class="muted" value="{{query}}" bindinput="search" />
+     <input class="search" placeholder="搜索车辆（支持昵称/真名）…" placeholder-class="muted" value="{{query}}" bindinput="search" />
      <view class="class-filter"><button wx:for="{{classes}}" wx:key="*this" class="{{carClass === item ? 'active' : ''}}" data-value="{{item}}" bindtap="filterClass">{{item || '全部'}}</button></view>
      <scroll-view scroll-y="{{true}}" class="garage-list">
       <view class="car-grid">
@@ -89,13 +89,6 @@
      </scroll-view>
     </view>
    </view>
-   <view wx:if="{{routes.length}}" class="card route-panel">
-    <view class="section-title muted">特殊跑法</view>
-    <view wx:for="{{routes}}" wx:key="key" class="route-row {{item.enabled ? 'is-on' : ''}}">
-     <button data-key="{{item.key}}" bindtap="toggleRoute">{{item.label}} {{item.enabled ? '◉' : '○'}}</button>
-     <button wx:if="{{item.showTypes}}" id="route-{{index}}" data-index="{{index}}" class="route-selector" bindtap="openRoute"><view class="route-select">{{item.options[item.optionIndex]}} ⌄</view></button>
-    </view>
-   </view>
    <view class="action"><button class="primary recommend-btn" loading="{{busy}}" disabled="{{busy}}" bindtap="compute">生成方案</button></view>
    <view class="card results">
     <view class="result-heading"><text>方案</text><text class="badge">{{schemes.length}}</text></view>
@@ -106,6 +99,13 @@
       <text>{{resultGuidance.message}}</text>
       <button wx:if="{{resultGuidance.canSubmit}}" bindtap="contributeResult">{{resultGuidance.action}}</button>
     </view>
+   <view wx:if="{{routes.length}}" class="route-panel">
+    <view class="section-title muted">特殊跑法</view>
+    <view wx:for="{{routes}}" wx:key="key" class="route-row {{item.enabled ? 'is-on' : ''}}">
+     <button data-key="{{item.key}}" bindtap="toggleRoute">{{item.label}} {{item.enabled ? '◉' : '○'}}</button>
+     <button wx:if="{{item.showTypes}}" id="route-{{index}}" data-index="{{index}}" class="route-selector" bindtap="openRoute"><view class="route-select">{{item.options[item.optionIndex]}} ⌄</view></button>
+    </view>
+   </view>
     <view class="result-grid">
      <view wx:for="{{resultRows}}" wx:for-item="row" wx:key="index" class="result-row {{row.empty ? 'is-empty' : ''}}">
       <view class="result-map">{{row.map}}</view><view class="result-big">{{row.big || '—'}}</view>
@@ -128,7 +128,7 @@
    <scroll-view scroll-y="{{true}}" class="map-ban-list">
     <checkbox-group bindchange="changeMapBans">
      <label wx:for="{{banEditor.cars}}" wx:key="id" class="map-ban-choice">
-      <checkbox value="{{item.id}}" checked="{{item.checked}}"/>{{item.id}}<text wx:if="{{item.id === banEditor.currentCar}}" class="map-ban-current">当前方案</text>
+      <checkbox value="{{item.id}}" checked="{{item.checked}}" color="#58a6ff"/>{{item.id}}<text wx:if="{{item.id === banEditor.currentCar}}" class="map-ban-current">当前</text>
      </label>
     </checkbox-group>
     <view wx:if="{{!banEditor.cars.length}}" class="muted">当前车库没有本图候选车辆</view>

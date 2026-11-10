@@ -92,7 +92,7 @@
 .mode-row { display:inline-flex; gap:4px; padding:3px; border-radius:8px; background:#0d1117; }
 .mode-row + .mode-row { margin-top:0; border-top:0; }
 .toolbar .toggle-choice { font-size:14px; padding:6px 10px; min-height:36px; border:1px solid transparent; border-radius:6px; color:#9aa4b2; }
-.toolbar .toggle-choice.active { background:#1b2b3c; border-color:#385878; color:#a9d1ff; }
+
 .map-section { margin:0 0 28px; }
 .map-row { flex-wrap:wrap; padding:10px 12px; gap:10px; border:0; border-radius:8px; margin-bottom:8px; background:#0f141a; }
 .number { width:18px; font:11px ui-monospace,Menlo,Consolas,monospace; color:#7d8896; }
@@ -207,4 +207,42 @@
 }
 @media (max-width:380px) {
  .map-row .number { line-height:40px; margin-top:0; }
+}
+
+/* Native controls follow the mobile homepage dimensions and wrapping. */
+.toolbar .mode-row { flex:0 1 auto; min-width:0; padding:2px; margin:0; }
+.toolbar .mode-row + .mode-row { padding-top:2px; border-top:1px solid #30363d; }
+.toolbar .toggle-choice { min-height:32px; padding:4px 12px; border:0; font-size:12px; line-height:1.2; }
+.toolbar .toggle-choice.active { border:0; }
+.account-panel { background:#0d1117; border:0; border-radius:12px; }
+.account-navigation button { min-height:42px; font-size:14px; border-color:#30363d; border-radius:8px; }
+.account-navigation .account-announcements { flex-basis:100%; }
+.map-fields .select { background:#161b22; }
+.map-fields .select.is-disabled { background:#0f141a; color:#7d8896; border-color:#30363d; }
+.garage { border-top:1px solid #21262d; border-radius:0; }
+.garage-actions { display:flex; flex-wrap:wrap; align-items:center; gap:8px 12px; margin:14px 0; }
+.garage-action-group { display:flex; flex:1 1 100%; gap:8px; max-width:100%; }
+.garage-action-group button { flex:1 0 auto; min-width:0; margin:0; min-height:42px; padding:8px; border-radius:8px; font-size:13px; white-space:nowrap; }
+.garage-actions .save-status { flex:0 0 100%; font-size:12px; line-height:1.6; color:#e3b341; }
+.garage .search { height:40px; margin:0 0 10px; padding:9px 12px; }
+.garage .class-filter { gap:4px; margin-bottom:8px; padding-bottom:4px; }
+.garage .class-filter button { min-height:34px; padding:5px 10px; }
+.garage .garage-list { height:300px; padding:0; border:0; border-radius:0; background:transparent; }
+.garage .car-grid { gap:6px; }
+.garage .car-row { min-height:54px; padding:5px 9px; gap:2px; }
+.garage .car-row .car-name { padding:0; color:inherit; font-size:12px; }
+.garage .star-select { font-size:11px; }
+.results .route-panel { margin:0 0 14px; padding:12px 14px 10px; border-radius:8px; }
+.results .route-row { margin:0 8px 0 0; border-radius:6px; }
+.results .route-row button { min-height:42px; padding:6px 12px; font-size:12px; }
+.map-ban-dialog { width:calc(100vw - 34px); padding:20px; border:1px solid #30363d; }
+.map-ban-dialog .hub-heading { font-size:18px; line-height:1.4; }
+.map-ban-dialog .map-ban-hint { margin:16px 0 12px; }
+.map-ban-dialog .map-ban-actions button { min-height:36px; padding:6px 12px; font-size:12px; }
+.map-ban-dialog .map-ban-choice { min-height:40px; }
+.map-ban-dialog checkbox .wx-checkbox-input { width:16px; height:16px; border:1.5px solid #8b949e; border-radius:5px; background:#0d1117; }
+@media (max-width:640px) and (orientation:portrait) {
+ .toolbar { display:flex; flex-direction:column; align-items:flex-start; gap:8px; margin-bottom:14px; }
+ .garage { padding:18px 0 0; }
+ .account-panel { padding:14px; }
 }

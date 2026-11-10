@@ -20,6 +20,24 @@ function functionalTheme(theme){
   const source=theme.rules.find(r=>r.source==='styles.css'&&r.selector===web&&r.conditions.includes(mobileCondition));
   return source?native+'{'+resolve(source.declarations)+'}\n':'';
  }).join('');
+ const sharedHomeStyles=[
+  ['.toggle-group','.toolbar .mode-row',['gap','padding','border','border-radius','background']],
+  ['.toggle-group button.active, .toggle-group .toggle-choice.active','.toolbar .toggle-choice.active',['background','color','font-weight']],
+  ['.car-tag','.garage .car-row',['background','color','border','border-radius','font-size','line-height']],
+  ['.car-tag.selected','.garage .car-row.selected',['background','color','border-color','font-weight']],
+  ['.star-display','.garage .star-select',['color','border-radius','line-height']],
+  ['.class-filter-btn','.garage .class-filter button',['background','color','border','border-radius','font-size','line-height']],
+  ['.class-filter-btn.active','.garage .class-filter button.active',['background','color','border-color']],
+  ['.garage-search','.garage .search',['background','color','border','border-radius','font-size']],
+  ['.sc-control.is-on','.results .route-row.is-on',['background','color','border-color']],
+  ['.map-ban-hint','.map-ban-dialog .map-ban-hint',['color','font-size','line-height']],
+ ];
+ const homeStyles=sharedHomeStyles.map(([web,native,properties])=>{
+  const source=theme.rules.find(r=>r.source==='styles.css'&&!r.conditions.length&&r.selector.replace(/\s+/g,' ')===web);
+  if(!source)return '';
+  const declarations=Object.fromEntries(source.declarations.split(';').map(d=>d.trim()).filter(Boolean).map(d=>d.split(/:(.*)/s).slice(0,2)));
+  return rule(native,Object.fromEntries(properties.filter(key=>key in declarations).map(key=>[key,declarations[key].trim()])));
+ }).join('');
  return '/* Generated mobile theme mapping; rem uses the website root 16px. */\n'+
  rule('.mirror-page',{padding:mobile.margin.split(' ')[0],'font-size':body['font-size'],'line-height':body['line-height']})+
  rule('.mirror-page>.mirror-surface.panel',{background:body.background,border:body.border,'border-radius':mobile['border-radius'],padding:spacing.padding,margin:'0'})+
@@ -27,6 +45,7 @@ function functionalTheme(theme){
  rule('.mirror-page .page-title',h1)+
  '.mirror-page .heading{font-size:17.6px;font-weight:600;margin:16px 0 8px}.mirror-page .muted,.mirror-page .tag{font-size:13.6px;color:'+(theme.tokens['--rp-text-2']||theme.tokens['--rp-muted'])+'}\n'+
  '.mirror-page button{display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:8px 13px;border-radius:8px;line-height:1.4}.mirror-page .field-label{font-size:14px;margin-bottom:5px}\n'+
+ homeStyles+
  (mobileResults?mobileCondition+'{\n'+mobileResults+'}\n':'');
 }
 module.exports={functionalTheme};
