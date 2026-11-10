@@ -38,7 +38,7 @@ function matches(video, scope) {
   return !special || scope.routes.includes(special);
 }
 
-function load(wx, scope, origin = 'http://127.0.0.1:18746') {
+function fetchVideos(wx, scope, origin = 'http://127.0.0.1:18746') {
   if (!['http://127.0.0.1:18746', 'https://account-test.racepick.cn', 'https://racepick.cn'].includes(origin)) {
     return Promise.reject(Error('跑法视频服务地址无效'));
   }
@@ -53,19 +53,36 @@ function load(wx, scope, origin = 'http://127.0.0.1:18746') {
         if (statusCode !== 200 || !Array.isArray(data?.videos)) return failed();
         if (data.videos.some(video => typeof video?.title !== 'string' ||
             typeof video.url !== 'string' || !videoUrl.test(video.url))) return failed();
-        resolve(data.videos.filter(video => matches(video, scope))
-          .map(({id, title, url, tier, zone, part, start, lap}) => ({
-            id, title, url, part, start, ...biliTarget(url),
-            detail: [zone, tier, lap == null ? '' : lap + ' 秒', part > 1 ? 'P' + part : '', start ? '从 ' + start + ' 秒播放' : ''].filter(Boolean).join(' · '),
-          })));
+        resolve(data.videos);
       },
       fail: failed,
     });
   });
 }
 
+function videoItem({id, title, url, tier, zone, part, start, lap}) {
+  return {
+    id, title, url, part, start, ...biliTarget(url),
+    detail: [zone, tier, lap == null ? '' : lap + ' 秒', part > 1 ? 'P' + part : '',
+      start ? '从 ' + start + ' 秒播放' : ''].filter(Boolean).join(' · '),
+  };
+}
+
+async function load(wx, scope, origin) {
+  const videos = await fetchVideos(wx, scope, origin);
+  return videos.filter(video => matches(video, scope) &&
+    (scope.videoId === undefined || String(video.id) === scope.videoId)).map(videoItem);
+}
+
+async function loadForCars(wx, scope, cars, origin) {
+  const videos = await fetchVideos(wx, scope, origin);
+  return Object.fromEntries(cars.map(car => [
+    car, videos.filter(video => matches(video, {...scope, car})).map(videoItem),
+  ]));
+}
+
 function open(wx, scope) {
   wx.navigateTo({url: '/pages/route-videos/route-videos?scope=' + encodeURIComponent(JSON.stringify(scope))});
 }
 
-module.exports = {load, open};
+module.exports = {load, loadForCars, open};

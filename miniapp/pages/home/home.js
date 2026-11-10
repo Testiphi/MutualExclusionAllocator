@@ -78,12 +78,15 @@ Page({
     const s = this.state, d = s.draft, m = s.model;
     const bigs = [...new Set(m.maps.map(x => x.big))];
     this.topKeys=this.topKeys||{};this.topOpen=this.topOpen||{};
+    this.topVideoRows=this.topVideoRows||new Map();
     const row = (map, index,review=false) => {
       const big = map && map.big || '', small = map && map.small || '';
       const options = m.maps.filter(x => x.big === big).map(x => x.small);
       const top=!review&&(m.topCars||[]).find(t=>t.index===index);
       if(!review){const key=d.server+':'+big+'/'+small;if(this.topKeys[index]!==key){this.topKeys[index]=key;this.topOpen[index]=false;}}
-      return { index, big, small,top:top||null,topOpen:!review&&this.topOpen[index],bigs: ['选择大地图'].concat(bigs),
+      const topOpen=!!(!review&&this.topOpen[index]);
+      const videos=topOpen&&top?.items.length&&this.data.routeVideoLab ? this.topVideoRow(index,d,map,top) : null;
+      return { index, big, small,top:top?{...top,items:this.topVideoItems(top,videos)}:null,topOpen,videoKey:videos?.key,bigs: ['选择大地图'].concat(bigs),
         bigIndex: bigs.indexOf(big) + 1, smalls: ['选择小地图'].concat(options),
         smallIndex: options.indexOf(small) + 1 };
     };
@@ -199,16 +202,56 @@ Page({
     this.selectMap({currentTarget:{dataset:{index:menu.index,field:menu.field,pending:menu.pending}},detail:{value}});
   },
   openStars(e) {const car=this.data.cars.find(c=>c.id===e.currentTarget.dataset.id);if(car)this.presentMenu({field:'stars',carId:car.id,options:car.stars.map((n,i)=>({label:'★'+n,value:i,selected:i===car.starIndex}))},'star-'+e.currentTarget.dataset.anchor);},
+  routeVideoScope(draft,map) {
+    const key=map.big+'/'+map.small;
+    const types=this.state.model.routes?.find(route=>route.key===key)?.types||[];
+    const selected=draft.routes[key];
+    return {...map,server:draft.server,zone:draft.zone==='zone4'?'四区':'五区',tier:draft.tier,
+      routes:selected==='off'?[]:types.includes(selected)?[selected]:types};
+  },
+  topVideoItems(top,entry) {
+    return top.items.map(item=>({...item,videos:entry?.videos?.[item.car]||[],
+      videosOpen:entry?.expanded.has(item.car)||false}));
+  },
+  topVideoRow(index,draft,map,top) {
+    const scope=this.routeVideoScope(draft,map),cars=top.items.map(item=>item.car);
+    const key=JSON.stringify([scope,cars]);
+    const existing=this.topVideoRows.get(index);
+    if(existing?.key===key)return existing;
+    const entry={key,scope,expanded:new Set()};
+    this.topVideoRows.set(index,entry);
+    routeVideos.loadForCars(wx,scope,cars,buildInfo.routeVideoOrigin).then(videos=>{
+      entry.videos=videos;
+      const row=this.data.rows?.[index];
+      if(!this.unloaded&&row?.videoKey===key&&this.topVideoRows.get(index)===entry){
+        this.setData({['rows['+index+'].top.items']:this.topVideoItems(row.top,entry)});
+      }
+    }).catch(()=>{
+      if(this.topVideoRows.get(index)===entry)this.topVideoRows.delete(index);
+    });
+    return entry;
+  },
+  toggleTopVideos(e) {
+    const {index,car}=e.currentTarget.dataset,row=this.data.rows?.[index];
+    const entry=this.topVideoRows?.get(Number(index));
+    if(!row?.topOpen||!entry||row.videoKey!==entry.key||!(entry.videos?.[car]?.length>1))return;
+    if(entry.expanded.has(car))entry.expanded.delete(car);
+    else entry.expanded.add(car);
+    this.setData({['rows['+index+'].top.items']:this.topVideoItems(row.top,entry)});
+  },
+  openTopVideo(e) {
+    const {index,car,videoId}=e.currentTarget.dataset,row=this.data.rows?.[index];
+    const entry=this.topVideoRows?.get(Number(index));
+    if(!row?.topOpen||!entry||row.videoKey!==entry.key||
+       !entry.videos?.[car]?.some(item=>String(item.id)===String(videoId)))return;
+    routeVideos.open(wx,{...entry.scope,car,videoId:String(videoId)});
+  },
   openRouteVideos(e) {
     const index=Number(e.currentTarget.dataset.index);
     const draft=this.state?.draft, map=draft?.maps[index];
     const row=this.data.activeScheme?.rows[index];
     if(!this.data.routeVideoLab||!map?.small||!row||row.empty||this.state.busy||this.state.error)return;
-    const key=map.big+'/'+map.small;
-    const types=this.state.model.routes?.find(route=>route.key===key)?.types||[];
-    const selected=draft.routes[key];
-    routeVideos.open(wx,{...map,server:draft.server,zone:draft.zone==='zone4'?'四区':'五区',tier:draft.tier,
-      car:row.car,routes:selected==='off'?[]:types.includes(selected)?[selected]:types});
+    routeVideos.open(wx,{...this.routeVideoScope(draft,map),car:row.car});
   },
   openScheme() {this.presentMenu({field:'scheme',options:this.data.schemeOptions.map((label,i)=>({label,value:i,selected:i===this.data.schemeIndex}))},'scheme-trigger');},
   openRoute(e) {const route=this.data.routes[e.currentTarget.dataset.index];if(route)this.presentMenu({field:'route',routeKey:route.key,options:route.options.map((label,i)=>({label,value:i,selected:i===route.optionIndex}))},'route-'+e.currentTarget.dataset.index);},

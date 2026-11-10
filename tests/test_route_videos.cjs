@@ -76,3 +76,24 @@ test('video entries carry a native target and preserve the original website link
   assert.deepEqual([single,share,av].map(item=>item.url),links);
   assert.deepEqual([share.part,share.start,av.part,av.start],[4,8,2,8]);
 });
+
+test('top-car video groups reuse one response and a selected title opens only that video', async () => {
+  let requests = 0;
+  const url = 'https://www.bilibili.com/video/BV1eQxR6jE3B/';
+  const wx = {request(options) {
+    requests++;
+    options.success({statusCode:200,data:{videos:[
+      {id:1,car:'f5',title:'普通跑法一',url},
+      {id:2,car:'f5',title:'普通跑法二',url},
+      {id:3,car:'ssc',title:'普通跑法三',url},
+      {id:4,car:'ssc',title:'四区普通跑法',url},
+    ]}});
+  }};
+  const {loadForCars} = require('../miniapp/services/route_videos');
+  const groups = await loadForCars(wx, scope, ['f5','ssc','其他车']);
+  assert.equal(requests,1);
+  assert.deepEqual(groups.f5.map(v=>v.id),[1,2]);
+  assert.deepEqual(groups.ssc.map(v=>v.id),[3]);
+  assert.deepEqual(groups['其他车'],[]);
+  assert.deepEqual((await load(wx,{...scope,videoId:'2'})).map(v=>v.id),[2]);
+});

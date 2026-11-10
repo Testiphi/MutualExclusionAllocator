@@ -41,7 +41,7 @@
       <text class="number">{{item.index + 1}}</text>
       <view class="map-fields">
        <view class="map-field"><button id="review-map-{{item.index}}-big" class="map-picker map-trigger" data-index="{{item.index}}" data-field="big" data-pending="{{true}}" bindtap="openDropdown"><view class="select">{{item.big || '选择大地图'}}<text class="chevron">⌄</text></view></button></view>
-       <view class="map-field"><button id="review-map-{{item.index}}-small" class="map-picker map-trigger" disabled="{{!item.big}}" data-index="{{item.index}}" data-field="small" data-pending="{{true}}" bindtap="openDropdown"><view class="select">{{item.small || '补充地图'}}<text class="chevron">⌄</text></view></button></view>
+       <view class="map-field"><button id="review-map-{{item.index}}-small" class="map-picker map-trigger" wx:if="{{item.big}}" data-index="{{item.index}}" data-field="small" data-pending="{{true}}" bindtap="openDropdown"><view class="select">{{item.small || '选择小地图'}}<text class="chevron">⌄</text></view></button><view wx:else class="select is-disabled map-disabled" aria-disabled="true">先选大地图<text class="chevron">⌄</text></view></view>
       </view>
      </view>
      <button class="primary" bindtap="applyRecognition">应用选图</button>
@@ -49,18 +49,26 @@
     <view wx:if="{{ocrBusy}}" class="ocr-status">识别中…</view>
    </view>
    <view class="card map-section">
-    <view class="map-row" wx:for="{{rows}}" wx:key="index">
+    <view class="map-row {{item.topOpen ? 'is-top-open' : ''}}" wx:for="{{rows}}" wx:key="index">
      <text class="number">{{item.index + 1}}</text>
      <view class="map-fields">
      <view class="map-field"><view class="field-label">大地图</view><button id="map-{{item.index}}-big" class="map-picker map-trigger" data-index="{{item.index}}" data-field="big" bindtap="openDropdown"><view class="select">{{item.big || '选择大地图'}}<text class="chevron">⌄</text></view></button></view>
-     <view class="map-field"><view class="field-label">小地图</view><button id="map-{{item.index}}-small" class="map-picker map-trigger" disabled="{{!item.big}}" data-index="{{item.index}}" data-field="small" bindtap="openDropdown"><view class="select {{!item.big ? 'is-disabled' : ''}}">{{item.small || (item.big ? '选择小地图' : '先选大地图')}}<text class="chevron">⌄</text></view></button></view>
+     <view class="map-field"><view class="field-label">小地图</view><button id="map-{{item.index}}-small" class="map-picker map-trigger" wx:if="{{item.big}}" data-index="{{item.index}}" data-field="small" bindtap="openDropdown"><view class="select">{{item.small || '选择小地图'}}<text class="chevron">⌄</text></view></button><view wx:else class="select is-disabled map-disabled" aria-disabled="true">先选大地图<text class="chevron">⌄</text></view></view>
      </view>
      <view wx:if="{{item.top}}" class="track-top-cars">
       <button class="top-toggle" data-index="{{item.index}}" bindtap="toggleTop">{{item.topOpen ? '▾' : '▸'}} {{item.top.label}}</button>
       <view wx:if="{{item.topOpen}}">
        <view class="track-top-note">单图参考，未扣除其他图用车。成绩沿用当前档位与星级口径。</view>
        <view wx:if="{{!item.top.items.length}}" class="track-top-note">当前车库下无可用车</view>
-       <view wx:for="{{item.top.items}}" wx:for-item="topCar" wx:key="car" class="track-top-item">{{index + 1}}. {{topCar.car}}{{topCar.oc ? ' [OC]' : ''}}<text wx:if="{{topCar.stars !== null}}"> ★{{topCar.stars}}</text><text class="track-top-score">{{topCar.scoreText}}</text></view>
+       <view wx:for="{{item.top.items}}" wx:for-item="topCar" wx:key="car" class="track-top-item">
+        <view>{{index + 1}}. {{topCar.car}}{{topCar.oc ? ' [OC]' : ''}}<text wx:if="{{topCar.stars !== null}}"> ★{{topCar.stars}}</text><text class="track-top-score">{{topCar.scoreText}}</text></view>
+        <view wx:if="{{topCar.videos.length}}" class="track-top-videos">
+         <button wx:if="{{topCar.videos.length > 1}}" class="top-videos-toggle" data-index="{{item.index}}" data-car="{{topCar.car}}" bindtap="toggleTopVideos">{{topCar.videosOpen ? '▾' : '▸'}} 跑法视频 {{topCar.videos.length}}</button>
+         <block wx:if="{{topCar.videos.length === 1 || topCar.videosOpen}}">
+          <button wx:for="{{topCar.videos}}" wx:for-item="video" wx:key="id" class="top-video-link" data-index="{{item.index}}" data-car="{{topCar.car}}" data-video-id="{{video.id}}" bindtap="openTopVideo">{{video.title}}</button>
+         </block>
+        </view>
+       </view>
       </view>
      </view>
     </view>
@@ -114,7 +122,7 @@
       <view class="result-track"><view class="result-map">{{row.map}}</view><view class="result-big">{{row.big || '—'}}</view></view>
       <view class="result-car {{row.empty ? 'empty' : ''}}">
        <view class="result-car-label"><text>{{row.empty && activeScheme ? (row.configured ? '无可用车' : '空位') : row.car}}{{row.oc ? ' [OC]' : ''}}</text><text wx:if="{{row.stars}}" class="result-stars"> ★{{row.stars}}</text></view>
-       <button wx:if="{{mapBansAvailable && hasComputedResult && row.configured}}" class="map-ban-trigger {{row.banCount ? 'is-active' : ''}}" data-index="{{row.index}}" bindtap="openMapBans" disabled="{{busy}}" aria-label="{{row.map}}禁车设置，已禁{{row.banCount}}辆">⊘ 禁车{{row.banCount ? ' ' + row.banCount : ''}}</button>
+       <button wx:if="{{mapBansAvailable && hasComputedResult && row.configured}}" class="map-ban-trigger {{row.banCount ? 'is-active' : ''}}" data-index="{{row.index}}" bindtap="openMapBans" disabled="{{busy}}" aria-label="{{row.map}}禁车设置，已禁{{row.banCount}}辆"><text>⊘ 禁车{{row.banCount ? ' ' + row.banCount : ''}}</text></button>
       </view>
       <view wx:if="{{row.hasTime}}" class="result-time">{{row.timeValue}}<text class="result-unit"> 秒</text></view>
       </view>

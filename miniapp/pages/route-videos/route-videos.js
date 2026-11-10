@@ -11,7 +11,8 @@ Page({
       if (!['cn', 'global'].includes(scope.server) || !['四区', '五区'].includes(scope.zone) ||
           !['理论', '高手', '普通', '自动'].includes(scope.tier) ||
           !['big', 'small', 'car'].every(key => typeof scope[key] === 'string' && scope[key]) ||
-          !Array.isArray(scope.routes)) throw Error('invalid scope');
+          !Array.isArray(scope.routes) ||
+          (scope.videoId !== undefined && (typeof scope.videoId !== 'string' || !/^[0-9]+$/.test(scope.videoId)))) throw Error('invalid scope');
       this.scope = scope;
       this.setData({heading: scope.small + ' · ' + scope.car});
       return this.retry();
