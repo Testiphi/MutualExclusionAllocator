@@ -83,8 +83,7 @@ Page({
       const options = m.maps.filter(x => x.big === big).map(x => x.small);
       const top=!review&&(m.topCars||[]).find(t=>t.index===index);
       if(!review){const key=d.server+':'+big+'/'+small;if(this.topKeys[index]!==key){this.topKeys[index]=key;this.topOpen[index]=false;}}
-      const banCount=!review&&map?.small?(d.mapBans?.[mapBanKey(d,map)]?.length||0):0;
-      return { index, big, small,banCount,top:top||null,topOpen:!review&&this.topOpen[index],bigs: ['选择大地图'].concat(bigs),
+      return { index, big, small,top:top||null,topOpen:!review&&this.topOpen[index],bigs: ['选择大地图'].concat(bigs),
         bigIndex: bigs.indexOf(big) + 1, smalls: ['选择小地图'].concat(options),
         smallIndex: options.indexOf(small) + 1 };
     };
@@ -103,7 +102,7 @@ Page({
     const schemes = s.result ? s.result.schemes.map((scheme,index)=>({
       index,prioritySum:scheme.prioritySum,totalText:scheme.total==null?'—':scheme.total.toFixed(3)+'秒',
       rows:scheme.rows.map((r,i)=>({index:i,map:r.map||('第'+(i+1)+'位'),big:r.map?(d.maps[i]&&d.maps[i].big||''):'未选地图',
-        configured:!!r.map,car:r.car||(r.map?'无可用车':'⛔ 未配置'),empty:r.car==null,oc:d.server==='global'&&d.oc[r.car]===true,
+        configured:!!r.map,banCount:d.maps[i]?.small?(d.mapBans?.[mapBanKey(d,d.maps[i])]?.length||0):0,car:r.car||(r.map?'无可用车':'⛔ 未配置'),empty:r.car==null,oc:d.server==='global'&&d.oc[r.car]===true,
         stars:d.tier==='理论'?null:(m.cars.find(c=>c.id===r.car)||{}).effectiveStar,
         hasTime:r.time!=null,timeValue:r.time==null?'':r.time.toFixed(2),timeText:r.time==null?'':r.time.toFixed(2)+' 秒'}))
     })) : [];
@@ -120,7 +119,13 @@ Page({
       zoneIndex: m.zones.indexOf(d.zone), tiers: m.tiers, tierIndex: m.tiers.indexOf(d.tier),
       rows: d.maps.map((m,i)=>row(m,i)), cars, routes, slotRows: s.pending ? s.pending.map((m,i)=>row(m,i,true)) : [],
       emptyResultText:hasMaps?'没有可用方案':'请先选择地图',resultGuidance:guidance,
-      schemes,schemeIndex,schemeOptions:s.result?s.result.schemes.map((x,i)=>x.summary||('方案'+(i+1)+' · Σ='+x.prioritySum)):[],activeScheme:schemes[schemeIndex]||null });
+      resultRows:schemes[schemeIndex]?.rows||d.maps.map((map,index)=>({
+        index,map:map?.small||(map?.big?'未选完整':'第'+(index+1)+'图'),big:map?.big||'未选',
+        empty:true,configured:!!map?.small,
+        banCount:map?.small?(d.mapBans?.[mapBanKey(d,map)]?.length||0):0,
+        car:map?.small?(s.result?'无可用车':'待生成方案'):(map?.big?'缺小地图':'待选图')
+      })),
+      hasComputedResult:!!s.result,schemes,schemeIndex,schemeOptions:s.result?s.result.schemes.map((x,i)=>x.summary||('方案'+(i+1)+' · Σ='+x.prioritySum)):[],activeScheme:schemes[schemeIndex]||null });
   },
   async onShow() {this.homeVisible=true;this.refreshingAccount=true;try{if(this.account)await this.account.refresh();}catch(e){this.setData({cloudStatus:e.message});}finally{this.refreshingAccount=false;}if(this.controller){await this.syncAccount((runtime.policy().writeAcceptance||runtime.policy().readbackAcceptance||runtime.policy().conflictAcceptance)?false:true);this.controller.show();if(this.account){void runtime.usage()?.visit('home',this.state.draft.server,'resume');void this.refreshHomeIdentity();}}},
   onHide() {this.homeVisible=false;this.setData({homeHub:null,banEditor:null}); this.closeDropdown();if (this.controller) this.controller.hide(); },
@@ -133,7 +138,7 @@ Page({
     if(!map?.small||!this.service.banOptions||this.data.busy)return;
     const key=mapBanKey(draft,map),selected=draft.mapBans?.[key]||[];
     const cars=this.service.banOptions(draft,map).map(id=>({id,checked:selected.includes(id)}));
-    this.setData({banEditor:{index,key,title:map.small,cars,selected,actor:this.account?.generation()}});
+    this.setData({banEditor:{index,key,title:map.small,cars,selected,currentCar:this.data.activeScheme?.rows[index]?.empty?'':this.data.activeScheme?.rows[index]?.car,actor:this.account?.generation()}});
   },
   changeMapBans(e) {
     const editor=this.data.banEditor;
@@ -141,15 +146,18 @@ Page({
     const selected=e.detail.value;
     this.setData({banEditor:{...editor,selected,cars:editor.cars.map(c=>({...c,checked:selected.includes(c.id)}))}});
   },
+  selectAllMapBans(){
+    const editor=this.data.banEditor;
+    if(editor)this.changeMapBans({detail:{value:editor.cars.map(car=>car.id)}});
+  },
+  clearMapBanChecks(){this.changeMapBans({detail:{value:[]}});},
   keepMapBansOpen(){},
   closeMapBans(){this.setData({banEditor:null});},
-  applyMapBans(){this.commitMapBans(false);},
-  restoreMapBans(){this.commitMapBans(true);},
-  commitMapBans(restore) {
+  applyMapBans() {
     const editor=this.data.banEditor;
     if(!editor)return;
     this.closeMapBans();
-    if(editor.actor!==this.account?.generation()||!this.controller.setMapBans(editor.index,editor.key,restore?[]:editor.selected)){
+    if(editor.actor!==this.account?.generation()||!this.controller.setMapBans(editor.index,editor.key,editor.selected)){
       this.setData({error:'选图或账号已变化，请重新打开单图禁车'});
     }
   },

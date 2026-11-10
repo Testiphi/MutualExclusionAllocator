@@ -170,8 +170,41 @@
  .map-row .number { align-self:flex-start; margin-top:6px; }
 }
 
-.map-ban-entry { flex:0 0 100%; }
-.map-ban-entry button { min-height:36px; padding:6px 10px; font-size:12px; color:#a9d1ff; }
 .map-ban-dialog { box-sizing:border-box; }
 .map-ban-list { max-height:45vh; }
 .map-ban-choice { display:flex; align-items:center; min-height:44px; gap:8px; border-bottom:1px solid #30363d; }
+
+.result-row { background:#0f141a; border:1px solid #21262d; }
+.result-row.is-empty { background:transparent; }
+.result-row .result-big, .result-row.is-empty .result-car.empty { color:#7d8896; }
+.result-row .result-time { color:#a9d1ff; line-height:1.2; }
+.result-video-links { grid-column:1 / -1; margin-top:6px; }
+.result-video-links .result-video { margin:0; padding:0; min-height:24px; border:0; background:transparent; color:#58a6ff; font-size:11px; }
+.result-car .map-ban-trigger { display:inline-block; margin:0 0 0 3px; padding:0 4px; min-height:32px; border:0; border-radius:4px; background:transparent; color:#a9d1ff; font-size:11px; white-space:nowrap; vertical-align:middle; }
+.result-car .map-ban-trigger.is-active { color:#e3b341; }
+.map-ban-hint { color:#9aa4b2; font-size:12px; }
+.map-ban-actions { justify-content:flex-end; gap:6px; margin-top:8px; }
+.map-ban-current { color:#8b949e; font-size:12px; }
+.map-ban-choice { min-height:36px; gap:5px; border-color:#21262d; }
+@media (max-width:640px) and (orientation:portrait) {
+ .results { display:grid; grid-template-columns:auto minmax(0,1fr); align-items:center; gap:8px; }
+ .results > view, .results > button { grid-column:1 / -1; }
+ .results > .result-heading { grid-column:1; margin:0; }
+ .results > .scheme-trigger { grid-column:2; min-width:0; }
+ .results .scheme-select { margin:0; }
+ .map-row { gap:8px; padding:6px 8px; align-items:flex-start; }
+ .map-row .number { width:20px; line-height:44px; font-size:10px; }
+ .map-fields { gap:6px; }
+ .map-field + .map-field { flex-grow:1.15; }
+ .map-fields .field-label { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap; }
+ .map-fields .select { padding:11px 26px 9px 8px; }
+}
+@media (max-width:480px) {
+ .page { padding:10px; padding-bottom:calc(20px + env(safe-area-inset-bottom)); }
+ .shell { padding:14px; border-radius:10px; }
+ .home-heading { column-gap:8px; }
+ .brand { font-size:20px; }
+}
+@media (max-width:380px) {
+ .map-row .number { line-height:40px; margin-top:0; }
+}

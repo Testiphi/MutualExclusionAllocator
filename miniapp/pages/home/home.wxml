@@ -55,9 +55,6 @@
      <view class="map-field"><view class="field-label">大地图</view><button id="map-{{item.index}}-big" class="map-picker map-trigger" data-index="{{item.index}}" data-field="big" bindtap="openDropdown"><view class="select">{{item.big || '选择大地图'}}<text class="chevron">⌄</text></view></button></view>
      <view class="map-field"><view class="field-label">小地图</view><button id="map-{{item.index}}-small" class="map-picker map-trigger" disabled="{{!item.big}}" data-index="{{item.index}}" data-field="small" bindtap="openDropdown"><view class="select {{!item.big ? 'is-disabled' : ''}}">{{item.small || '选择小地图'}}<text class="chevron">⌄</text></view></button></view>
      </view>
-     <view wx:if="{{mapBansAvailable && item.small}}" class="map-ban-entry">
-      <button data-index="{{item.index}}" bindtap="openMapBans" disabled="{{busy}}">单图禁车{{item.banCount ? ' · 已禁 ' + item.banCount : ''}}</button>
-     </view>
      <view wx:if="{{item.top}}" class="track-top-cars">
       <button class="top-toggle" data-index="{{item.index}}" bindtap="toggleTop">{{item.topOpen ? '▾' : '▸'}} {{item.top.label}}</button>
       <view wx:if="{{item.topOpen}}">
@@ -109,11 +106,15 @@
       <text>{{resultGuidance.message}}</text>
       <button wx:if="{{resultGuidance.canSubmit}}" bindtap="contributeResult">{{resultGuidance.action}}</button>
     </view>
-    <view wx:if="{{activeScheme}}" class="result-grid">
-     <view wx:for="{{activeScheme.rows}}" wx:for-item="row" wx:key="index" class="result-row {{row.empty ? 'is-empty' : ''}}">
+    <view class="result-grid">
+     <view wx:for="{{resultRows}}" wx:for-item="row" wx:key="index" class="result-row {{row.empty ? 'is-empty' : ''}}">
       <view class="result-map">{{row.map}}</view><view class="result-big">{{row.big || '—'}}</view>
-      <view class="result-car {{row.empty ? 'empty' : ''}}">{{row.empty ? '空位' : row.car}}{{row.oc ? ' [OC]' : ''}}<text wx:if="{{row.stars}}" class="result-stars"> ★{{row.stars}}</text></view><view wx:if="{{row.hasTime}}" class="result-time">{{row.timeValue}}<text class="result-unit"> 秒</text></view>
-      <button wx:if="{{routeVideoLab && !row.empty}}" class="result-video" size="mini" data-index="{{row.index}}" bindtap="openRouteVideos">跑法视频</button>
+      <view class="result-car {{row.empty ? 'empty' : ''}}">
+       <text>{{row.empty && activeScheme ? (row.configured ? '无可用车' : '空位') : row.car}}{{row.oc ? ' [OC]' : ''}}</text><text wx:if="{{row.stars}}" class="result-stars"> ★{{row.stars}}</text>
+       <button wx:if="{{mapBansAvailable && hasComputedResult && row.configured}}" class="map-ban-trigger {{row.banCount ? 'is-active' : ''}}" data-index="{{row.index}}" bindtap="openMapBans" disabled="{{busy}}" aria-label="{{row.map}}禁车设置，已禁{{row.banCount}}辆">⊘ 禁车{{row.banCount ? ' ' + row.banCount : ''}}</button>
+      </view>
+      <view wx:if="{{row.hasTime}}" class="result-time">{{row.timeValue}}<text class="result-unit"> 秒</text></view>
+      <view wx:if="{{routeVideoLab && !row.empty}}" class="result-video-links"><button class="result-video" size="mini" data-index="{{row.index}}" bindtap="openRouteVideos">跑法视频</button></view>
      </view>
     </view>
    </view>
@@ -121,20 +122,20 @@
  </view>
  <view wx:if="{{banEditor}}" class="hub-backdrop" bindtap="closeMapBans">
   <view class="hub-dialog map-ban-dialog" catchtap="keepMapBansOpen">
-   <view class="hub-heading">{{banEditor.title}} · 单图禁车</view>
-   <view class="hub-help">勾选后仅在当前分区的这张图排除车辆。</view>
+   <view class="hub-heading">{{banEditor.title}} · 禁车</view>
+   <view class="hub-help map-ban-hint">勾选本图不用的车辆，取消勾选即可恢复。</view>
+   <view class="actions map-ban-actions"><button bindtap="selectAllMapBans">全选</button><button bindtap="clearMapBanChecks">取消全选</button></view>
    <scroll-view scroll-y="{{true}}" class="map-ban-list">
     <checkbox-group bindchange="changeMapBans">
      <label wx:for="{{banEditor.cars}}" wx:key="id" class="map-ban-choice">
-      <checkbox value="{{item.id}}" checked="{{item.checked}}"/>{{item.id}}
+      <checkbox value="{{item.id}}" checked="{{item.checked}}"/>{{item.id}}<text wx:if="{{item.id === banEditor.currentCar}}" class="map-ban-current">当前方案</text>
      </label>
     </checkbox-group>
     <view wx:if="{{!banEditor.cars.length}}" class="muted">当前车库没有本图候选车辆</view>
    </scroll-view>
-   <view class="actions">
-    <button class="primary" bindtap="applyMapBans">应用禁车</button>
-    <button bindtap="restoreMapBans">恢复全部</button>
+   <view class="actions map-ban-actions">
     <button bindtap="closeMapBans">取消</button>
+    <button class="primary" bindtap="applyMapBans">应用</button>
    </view>
   </view>
  </view>
