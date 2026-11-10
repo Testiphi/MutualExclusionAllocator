@@ -1,3 +1,12 @@
+## 2026-11-10 网站 9ade659b 与 974 条跑法视频上线
+
+- Workbench 确认 current、网站 PID 280752 和 OCR PID 280749 均指向 `/opt/racepick/releases/9ade659b378f4f94f17a9d10`，前一版本为 `6f0dfa79522b55f1b1530fb2`。公网首页和健康通过，OCR ready。正式 A 云车库写关，隔离账号服务 PID 241421 及健康开关与预检一致。
+- 独立视频计划 `528ef822444581f665016dcb9c83060be850f6915a4f1c65fb2d390226876591` 实际更新 412 条、新增 17 条。写入后零待写、零冲突，公网矩阵国服 791 格／811 条，国际服 163 格／163 条。写入回执 `/root/racepick-deploy/video974-apply.H3yxG2yt`。
+- 双服活动成绩维持已核验基线，国服 `d6c91bbffea4c2036d1e294887faba5b`（4752 键），国际服 `8f4c827ecd4b5b3466bc39bcbd1a521c`（697 条）。写入前后成套备份及恢复副本的五份成绩文件哈希一致。
+- 写入前成套备份 `scores-20261110T024923789838Z.zip`，SHA256 `41810e09e21b25a680aab39378a9b5124205f1e59433f3b1e0b9b529c48930a1`，独立恢复目录 `8185b1a3528c84b6f04d922b`。恢复副本复现 412 条待更新、17 条待新增和零冲突。回执 `/root/racepick-deploy/video974-prewrite.0mgEvvYl`。
+- 10:51:42 CST 启动上线后备份验收。成套备份 `scores-20261110T025143314101Z.zip`，SHA256 `1929a673e75b39810ef396cb5d86d9743e837564940076f2610d67f2f4bd7b04`，独立恢复目录 `82d264ed46ba9769255a8c00`。双服版本、五文件哈希及 974 条启用视频通过核验。回执 `/root/racepick-deploy/video974-postcutover.LKADseuO`，标记 VIDEO974_POST_CUTOVER_BACKUP_OK。
+- 收尾通过标记表明备份 timer 已恢复为 enabled、active。此次回传片段未含恢复后的下次触发时间。
+
 ## 2026-11-09 跑法参考与双服成绩上线完成
 
 - 用户确认导入 957 条跑法、发布双服成绩并切换网站。现网 current、网站 PID 276552 和 OCR PID 276545 均指向 `/opt/racepick/releases/6f0dfa79522b55f1b1530fb2`。切换前应用为 `0d730c500f276d055e664d90`。
