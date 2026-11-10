@@ -18,7 +18,7 @@ const selectionCore = (() => {
         }
         return {zone5Cars, zone4Cars, rules: CAR_STAR_RULES};
     }
-    function originalGroups(entries, {tier, starsFor, ocMap = {}, routeState = 'all'}) {
+    function originalGroups(entries, {tier, starsFor, ocMap = {}, routeState = 'all', times}) {
         const scState = routeState;
         var scOn = scState !== 'off';
 
@@ -50,6 +50,7 @@ const selectionCore = (() => {
             var sc = scOn ? scores.effectiveTime(usable, carName, tier, starsFor(carName), 'all', true, {ocMap}) : null;
             var best = normal;
             if (sc != null && (best == null || sc < best)) best = sc;
+            times?.set(carName, best);
             return { car: carName, time: best };
         });
 
@@ -60,13 +61,14 @@ const selectionCore = (() => {
 
         return withTime.concat(noTime).map(function(s) { return [s.car]; });
     }
-    function prepareMapCandidates(validMaps, groupsFor) {
+    function prepareMapCandidates(validMaps, groupsFor, includeTimes = false) {
         const n = validMaps.length;
         // 1. 预计算每张图的数据:候选组、车→优先级映射
         const mapsData = [];
         for (let i = 0; i < n; i++) {
             const { big, small } = validMaps[i];
-            const originalGroups = groupsFor(big, small);
+            const times = includeTimes ? new Map() : undefined;
+            const originalGroups = groupsFor(big, small, times);
             if (!originalGroups) {
                 // 无数据的地图，标记为空
                 mapsData.push({ groups: [], carToPriority: new Map() });
@@ -84,10 +86,22 @@ const selectionCore = (() => {
                     }
                 }
             }
-            mapsData.push({ groups: originalGroups, carToPriority });
+            mapsData.push({ groups: originalGroups, carToPriority, ...(includeTimes ? {times} : {}) });
         }
 
         return mapsData;
+    }
+    function ranksByTime(tier) {
+        return tier === '高手' || tier === '理论';
+    }
+    function recommendSchemes(candidates, owned, tier, limit, noCarPriority) {
+        const solver = typeof module !== 'undefined' && module.exports ? require('./allocator.js') : allocator;
+        const solve = ranksByTime(tier) ? solver.generateRankedSchemes : solver.generateParetoSchemes;
+        return solve(candidates, owned, limit, noCarPriority);
+    }
+    function excludeBannedCars(candidate, banned) {
+        if (!banned?.size) return candidate;
+        return {...candidate, groups: candidate.groups.map(group => group.filter(car => !banned.has(car)))};
     }
     function starRange(rule, zone) {
         if (!rule) return {min: 1, max: 6};
@@ -119,14 +133,14 @@ const selectionCore = (() => {
             const entries = entriesFor(track, opt);
             return state.route(opt.scStates[track.大地图 + '/' + track.小地图], [...new Set(entries.filter(e => e.sc).map(e => e.sc_type))]);
         }
-        function candidates(input) {
+        function candidates(input, includeTimes = false) {
             const opt = options(input);
-            return prepareMapCandidates(input.maps, (big, small) => {
+            return prepareMapCandidates(input.maps, (big, small, times) => {
                 const track = trackFor(big, small);
                 if (!track) return null;
                 const entries = entriesFor(track, opt).map(raw => Object.assign([raw.cars[0].name], {_raw: raw}));
-                return originalGroups(entries, {...opt, routeState: routeFor(track, opt)});
-            });
+                return originalGroups(entries, {...opt, routeState: routeFor(track, opt), times});
+            }, includeTimes);
         }
         function effectiveTime({big, small, car, ...input}) {
             const opt = options(input), track = trackFor(big, small);
@@ -136,7 +150,6 @@ const selectionCore = (() => {
         return {carRules: () => derived, prepareMapCandidates: candidates, effectiveTime};
     }
     function createSelectionContext(snapshot) {
-        const solver = typeof module !== 'undefined' && module.exports ? require('./allocator.js') : allocator;
         const {cars, data, server, version} = snapshot;
         const shared = createSelectionCore({cars, data, server});
         const derived = shared.carRules();
@@ -173,10 +186,15 @@ const selectionCore = (() => {
                 })};
         }
         function calculate(draft) {
-            const input=inputFor(draft), candidates=shared.prepareMapCandidates(input);
+            const input = inputFor(draft);
+            const candidates = shared.prepareMapCandidates(input, ranksByTime(input.tier)).map((candidate, i) => {
+                const {big, small} = input.maps[i];
+                const banned = draft.mapBans?.[JSON.stringify([server, input.zone, big, small])];
+                return excludeBannedCars(candidate, new Set(banned));
+            });
             const pool=derived[input.zone==='zone4'?'zone4Cars':'zone5Cars'];
             const owned=state.garage(draft.cars,new Set(pool));
-            const schemes=input.maps.length ? solver.generateParetoSchemes(candidates,owned,25,99) : [];
+            const schemes=recommendSchemes(candidates,owned,input.tier,25,99);
             return {schemes:schemes.map(scheme => {
                 const rows=Array.from({length:5},(_,i)=>({map:draft.maps[i]?.small || '',car:null,time:null}));
                 const assignment=new Array(5).fill(null),vector=new Array(5).fill(null);
@@ -191,6 +209,7 @@ const selectionCore = (() => {
         }
         return {getModel, calculate};
     }
-    return {carRules, starRange, carStars, originalGroups, prepareMapCandidates, createSelectionCore, createSelectionContext};
+    return {carRules, starRange, carStars, originalGroups, prepareMapCandidates, ranksByTime, recommendSchemes,
+        excludeBannedCars, createSelectionCore, createSelectionContext};
 })();
 if (typeof module !== 'undefined' && module.exports) module.exports = selectionCore;

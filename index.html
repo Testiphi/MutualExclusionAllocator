@@ -830,27 +830,26 @@
      *    sc 类型筛选仍生效（指定类型时只用该类型的 sc）。
      * 无成绩的车按原数据顺序附在末尾。
      */
-    function getOriginalGroups(big, small, zone) {
+    function getOriginalGroups(big, small, zone, times) {
         const found = smallMapsByBig[big]?.find(item => item.name === small);
         if (!found) return null;
         return selectionCore.originalGroups(zone === 'zone4' ? found.zone4Entries : found.zone5Entries, {
-            tier: currentTier, starsFor: getCarStars, ocMap, routeState: getRouteState(big, small, zone)
+            tier: currentTier, starsFor: getCarStars, ocMap, routeState: getRouteState(big, small, zone), times
         });
     }
     /** 默认无车优先级标记（100 以内，远大于实际优先级值） */
     const NO_CAR_PRIORITY = 99;
 
     /** 页面层：按选定地图和分区准备候选车组及原始优先级。 */
-    function prepareMapCandidates(validMaps, zone) {
-        return selectionCore.prepareMapCandidates(validMaps, (big, small) => getOriginalGroups(big, small, zone));
+    function prepareMapCandidates(validMaps, zone, includeTimes = false) {
+        return selectionCore.prepareMapCandidates(validMaps, (big, small, times) => getOriginalGroups(big, small, zone, times), includeTimes);
     }
 
     function excludeMapBans(candidates, maps, zone) {
         return candidates.map((candidate, index) => {
             const {big, small} = maps[index];
             const banned = mapBans.get(mapBanKey(big, small, zone));
-            if (!banned?.size) return candidate;
-            return {...candidate, groups: candidate.groups.map(group => group.filter(car => !banned.has(car)))};
+            return selectionCore.excludeBannedCars(candidate, banned);
         });
     }
 
@@ -1149,9 +1148,8 @@
     const SCHEME_LIMIT = 25;
 
     /**
-     * 主控：根据当前地图选择 + 车库状态，生成帕累托最优方案并渲染。
+     * 主控：按当前档位求解互斥阵容并渲染。
      * 无地图选中时显示提示；有地图时异步计算（延迟一帧给加载动画时间）。
-     * 结果按总优先级分升序排列。
      */
     const computation = appState.createScheduler(callback => {
         requestAnimationFrame(() => setTimeout(callback, 0));
@@ -1190,13 +1188,14 @@
 
         try {
             // 输入在当前事件中准备完毕，排队任务不读取后来变化的界面状态。
-            const unfilteredCandidates = prepareMapCandidates(validMaps, currentZone);
+            const tier = currentTier;
+            const unfilteredCandidates = prepareMapCandidates(validMaps, currentZone, selectionCore.ranksByTime(tier));
             const candidates = excludeMapBans(unfilteredCandidates, validMaps, currentZone);
             const ownedInZone = new Set(getCurrentCarList().filter(car => selectedCars.has(car)));
             renderTopCars(validMaps, candidates, ownedInZone);
             computation.run({
                 compute: () => {
-                    const schemes = allocator.generateParetoSchemes(candidates, ownedInZone, SCHEME_LIMIT, NO_CAR_PRIORITY);
+                    const schemes = selectionCore.recommendSchemes(candidates, ownedInZone, tier, SCHEME_LIMIT, NO_CAR_PRIORITY);
                     return mapSchemesToRows(schemes, validMaps, ROWS);
                 },
                 publish: schemes=>{resultGuidanceInput={maps:validMaps,candidates:unfilteredCandidates,ownedCars:ownedInZone};updateUIWithSchemes(schemes,previousAssignment);usageResult(schemes.length?'success':'empty');},

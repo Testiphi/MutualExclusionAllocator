@@ -8,20 +8,21 @@ const root = path.resolve(__dirname, '..');
 // Validate native flags before generating shared files.
 const sharedOnly=process.argv[2]==='--shared-only';
 if(sharedOnly&&process.argv.length!==3)throw Error('--shared-only 不能与运行配置参数并用');
-const nativeArgs=process.argv.slice(2).filter(arg=>arg!=='--local-presenter-preview');
+const localSelectionPreview = process.argv.includes('--local-selection-preview');
+const nativeArgs=process.argv.slice(2).filter(arg=>!['--local-presenter-preview','--local-selection-preview'].includes(arg));
 const native=require('./native_profile.cjs').nativeFlags(sharedOnly?[]:nativeArgs);
-const accountIndex=process.argv.indexOf('--account-profile');
-const accountProfile=require('../miniapp/services/account_connection').validateAccountProfile(accountIndex<0?{enabled:false}:JSON.parse(fs.readFileSync(path.resolve(process.argv[accountIndex+1]),'utf8')));
 const config = require('../miniapp/shared-source.json');
 const files = config.files;
 const output = path.join(root, 'miniapp/shared');
 fs.mkdirSync(output, { recursive: true });
 const manifest = { source: cp.execFileSync('git', ['rev-parse', config.ref], { cwd: root, encoding: 'utf8' }).trim(), files: {} };
 for (const name of files) {
-  // Read immutable Git blobs, never the website's concurrently edited worktree.
-  const bytes = cp.execFileSync('git', ['show', manifest.source + ':' + name], { cwd: root });
+  const local = localSelectionPreview && ['allocator.js', 'selection_core.js'].includes(name);
+  const bytes = local ? fs.readFileSync(path.join(root, name))
+    : cp.execFileSync('git', ['show', manifest.source + ':' + name], { cwd: root });
   fs.writeFileSync(path.join(output, name), bytes);
-  manifest.files[name] = { bytes: bytes.length, sha256: crypto.createHash('sha256').update(bytes).digest('hex') };
+  manifest.files[name] = { bytes: bytes.length, sha256: crypto.createHash('sha256').update(bytes).digest('hex'),
+    ...(local ? {source: 'uncommitted-local-worktree'} : {}) };
 }
 const pageSource=cp.execFileSync('git',['show',manifest.source+':index.html'],{cwd:root});
 const mirror=require('../miniapp/mirror-source.json');
@@ -54,6 +55,8 @@ manifest.derived={'web_home.js':{source_file:'index.html',source_sha256:crypto.c
 fs.writeFileSync(path.join(output, 'source.json'), JSON.stringify(manifest, null, 2) + '\n');
 console.log(JSON.stringify(manifest, null, 2));
 if(sharedOnly)return;
+const accountIndex=process.argv.indexOf('--account-profile');
+const accountProfile=require('../miniapp/services/account_connection').validateAccountProfile(accountIndex<0?{enabled:false}:JSON.parse(fs.readFileSync(path.resolve(process.argv[accountIndex+1]),'utf8')));
 let dataBinding=null;
 const receiptIndex = process.argv.indexOf('--data-receipt');
 const generated = path.join(root,'miniapp/generated'); fs.mkdirSync(generated,{recursive:true});

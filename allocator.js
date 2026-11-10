@@ -138,7 +138,110 @@ const allocator = (() => {
         return paretoFront.slice(0, maxSchemesLimit);
     }
 
-    return { generateParetoSchemes };
+    // Sum decimal score values exactly, including the existing three-decimal estimates.
+    function timeUnits(options) {
+        const decimals = options.map(option => {
+            const [mantissa, exponent = '0'] = String(option.time).split('e');
+            const [whole, fraction = ''] = mantissa.split('.');
+            return {digits: whole + fraction, places: fraction.length - Number(exponent)};
+        });
+        const places = decimals.reduce((max, value) => Math.max(max, value.places), 0);
+        const units = decimals.map(value => value.digits + '0'.repeat(places - value.places));
+        const wide = units.some(value => Number(value) > Number.MAX_SAFE_INTEGER / 5);
+        options.forEach((option, i) => { option.units = wide ? BigInt(units[i]) : Number(units[i]); });
+        return wide ? BigInt(0) : 0;
+    }
+
+    function generateRankedSchemes(mapCandidates, ownedSet, limit, noCarPriority) {
+        const n = mapCandidates.length;
+        if (!n || limit <= 0) return [];
+        const byCar = new Map();
+        mapCandidates.forEach(({groups, carToPriority, times}, slot) => {
+            let order = 0;
+            for (const group of groups) for (const car of group) {
+                order++;
+                if (!ownedSet.has(car)) continue;
+                if (!byCar.has(car)) byCar.set(car, []);
+                byCar.get(car).push({car, slot, order, priority: carToPriority.get(car) ?? noCarPriority,
+                    time: times?.get(car)});
+            }
+        });
+        const full = (1 << n) - 1;
+        const cars = [...byCar.values()];
+
+        function search(timed) {
+            const options = timed ? cars.map(choices => choices.filter(({time}) => Number.isFinite(time) && time > 0)) : cars;
+            const zero = timed ? timeUnits(options.flat()) : 0;
+            const best = Array.from({length: full + 1}, () => []);
+            best[0].push({choices: new Array(n).fill(null), vector: new Array(n).fill(noCarPriority),
+                seconds: zero, priority: n * noCarPriority, covered: 0});
+            function compare(a, b) {
+                if (timed && a.seconds !== b.seconds) return a.seconds < b.seconds ? -1 : 1;
+                if (a.priority !== b.priority) return a.priority - b.priority;
+                for (let i = 0; i < n; i++) {
+                    const difference = a.vector[i] - b.vector[i];
+                    if (difference) return difference;
+                }
+                for (let i = 0; i < n; i++) {
+                    const difference = (a.choices[i]?.order ?? 0) - (b.choices[i]?.order ?? 0);
+                    if (difference) return difference;
+                }
+                return 0;
+            }
+            function keepOnFrontier(frontier, next) {
+                let equal = 0, worstEqual = -1;
+                for (let i = 0; i < frontier.length; i++) {
+                    const existing = frontier[i];
+                    if (dominates(existing.vector, next.vector)) return;
+                    if (!existing.vector.every((priority, slot) => priority === next.vector[slot])) continue;
+                    equal++;
+                    if (worstEqual === -1 || compare(existing, frontier[worstEqual]) > 0) worstEqual = i;
+                }
+                if (equal === limit) {
+                    if (compare(next, frontier[worstEqual]) >= 0) return;
+                    frontier.splice(worstEqual, 1);
+                }
+                for (let i = frontier.length - 1; i >= 0; i--) {
+                    if (dominates(next.vector, frontier[i].vector)) frontier.splice(i, 1);
+                }
+                frontier.push(next);
+            }
+            // At the same mask, future cars and open slots are identical. Adding
+            // the same choices preserves strict dominance and the ranking of ties.
+            // Cap equal vectors only: distinct frontier vectors may survive later.
+            for (const choices of options) {
+                for (let mask = full - 1; mask >= 0; mask--) {
+                    for (const choice of choices) {
+                        const bit = 1 << choice.slot;
+                        if (mask & bit) continue;
+                        const target = best[mask | bit];
+                        for (const previous of best[mask]) {
+                            const assigned = previous.choices.slice();
+                            assigned[choice.slot] = choice;
+                            const vector = previous.vector.slice();
+                            vector[choice.slot] = choice.priority;
+                            keepOnFrontier(target, {choices: assigned, vector, seconds: timed ? previous.seconds + choice.units : zero,
+                                priority: previous.priority + choice.priority - noCarPriority, covered: previous.covered + 1});
+                        }
+                    }
+                }
+            }
+            if (timed) return best[full].sort(compare).slice(0, limit);
+            const all = best.flat();
+            const coverage = all.reduce((max, scheme) => Math.max(max, scheme.covered), 0);
+            const eligible = all.filter(scheme => scheme.covered === coverage);
+            return eligible.filter(scheme => !eligible.some(other => dominates(other.vector, scheme.vector)))
+                .sort(compare).slice(0, limit);
+        }
+
+        const timed = n === 5 ? search(true) : [];
+        return (timed.length ? timed : search(false)).map(({choices, vector}) => ({
+            assignment: choices.map(choice => choice?.car ?? null),
+            vector,
+        }));
+    }
+
+    return { generateParetoSchemes, generateRankedSchemes };
 })();
 
 // The browser keeps its existing binding; mini-program logic can import the core.

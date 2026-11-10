@@ -78,7 +78,9 @@ test('真实页面清空选择后不会发布排队的旧结果', () => {
         const requestAnimationFrame=f=>raf.push(f),setTimeout=f=>timers.push(f);
         const prepareMapCandidates=m=>m,getCurrentCarList=()=>['X'],selectedCars=new Set(['X']);
         const currentZone='zone5',SCHEME_LIMIT=25,NO_CAR_PRIORITY=99,ROWS=5;
-        const allocator={generateParetoSchemes:()=>[{assignment:['X'],vector:[0]}]};
+        const currentTier='高手';
+        const excludeMapBans=candidates=>candidates;
+        const selectionCore={ranksByTime:()=>true,recommendSchemes:()=>[{assignment:['X'],vector:[0]}]};
         const mapSchemesToRows=s=>s,updateUIWithSchemes=s=>published.push(s);
         const renderTopCars=()=>{};
         let resultGuidanceInput=null;const renderResultGuidance=()=>{};
