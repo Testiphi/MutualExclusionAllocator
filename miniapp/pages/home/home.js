@@ -14,11 +14,12 @@ const {createNativeApi}=require('../../adapters/native_api');
 const {visibleCars,garageClasses}=require('../../lib/garage_view');
 const runtime=require('../../services/runtime');
 const routeVideos=require('../../services/route_videos');
+const {mapBanKey}=require('../../lib/home_presenter_adapter');
 const {conflictView}=require('../../services/profile_conflict');
 const {createAcceptanceReport}=require('../../services/account_acceptance_report');
 
 Page({
-  data: { routeVideoLab:buildInfo.routeVideoLab===true, buildId:buildInfo.buildId,planId:buildInfo.planId||'',writeAcceptance:accountConfig.allowCloudWrites===true&&accountConfig.mode!=='production-a',formalWriteCandidate:accountConfig.allowCloudWrites===true&&accountConfig.mode==='production-a',readbackAcceptance:!!accountConfig.readbackReceipt,conflictAcceptance:!!accountConfig.conflictRole,ready:false, garageOpen: true, query: '', rows: [], cars: [], schemes: [], slotRows: [], schemeIndex:0, activeScheme:null, dropdown:null,sortMode:'alpha',carClass:'',classes:['','R','S','A','B','C','D'] },
+  data: { routeVideoLab:buildInfo.routeVideoLab===true, buildId:buildInfo.buildId,planId:buildInfo.planId||'',writeAcceptance:accountConfig.allowCloudWrites===true&&accountConfig.mode!=='production-a',formalWriteCandidate:accountConfig.allowCloudWrites===true&&accountConfig.mode==='production-a',readbackAcceptance:!!accountConfig.readbackReceipt,conflictAcceptance:!!accountConfig.conflictRole,ready:false, garageOpen: true, query: '', rows: [], cars: [], schemes: [], slotRows: [], schemeIndex:0, activeScheme:null, dropdown:null,sortMode:'score-desc',carClass:'',classes:['','R','S','A','B','C','D'] },
   onLoad() {
     this.unloaded=false;this.routeMemory={};
     if(nativeConfig.enabled){this.connectNative();return;}
@@ -82,14 +83,15 @@ Page({
       const options = m.maps.filter(x => x.big === big).map(x => x.small);
       const top=!review&&(m.topCars||[]).find(t=>t.index===index);
       if(!review){const key=d.server+':'+big+'/'+small;if(this.topKeys[index]!==key){this.topKeys[index]=key;this.topOpen[index]=false;}}
-      return { index, big, small,top:top||null,topOpen:!review&&this.topOpen[index],bigs: ['选择大地图'].concat(bigs),
+      const banCount=!review&&map?.small?(d.mapBans?.[mapBanKey(d,map)]?.length||0):0;
+      return { index, big, small,banCount,top:top||null,topOpen:!review&&this.topOpen[index],bigs: ['选择大地图'].concat(bigs),
         bigIndex: bigs.indexOf(big) + 1, smalls: ['选择小地图'].concat(options),
         smallIndex: options.indexOf(small) + 1 };
     };
     const scope=runtime.scope()||buildInfo.storageScope;
     const viewKey=(scope?scope+'.':'')+'racepick.mini.view.v1.'+s.mode+'.'+d.server;
     const classes=garageClasses(d.server);
-    if(this.lastViewKey!==viewKey){this.lastViewKey=viewKey;let saved;try{saved=wx.getStorageSync(viewKey);}catch(_){}this.setData({sortMode:saved&&['alpha','score-desc','score-asc'].includes(saved.sortMode)?saved.sortMode:'alpha',carClass:classes.includes(saved?.carClass)?saved.carClass:'',classes});}
+    if(this.lastViewKey!==viewKey){this.lastViewKey=viewKey;let saved;try{saved=wx.getStorageSync(viewKey);}catch(_){}this.setData({sortMode:saved&&['alpha','score-desc','score-asc'].includes(saved.sortMode)?saved.sortMode:'score-desc',carClass:classes.includes(saved?.carClass)?saved.carClass:'',classes});}
     const sourceCars=this.service.garageView?this.service.garageView(d,(this.data.query||'').trim(),this.data.carClass,this.data.sortMode).map(id=>m.cars.find(c=>c.id===id)).filter(Boolean):visibleCars(m.cars,this.data.query,this.data.carClass,this.data.sortMode);
     const cars = sourceCars
       .map((x,index) => ({ ...x, index,selected: d.cars.includes(x.id), starIndex: x.stars.indexOf(x.effectiveStar|| (x.stars.includes(d.stars[x.id]) ? d.stars[x.id] : x.defaultStar)),
@@ -112,6 +114,7 @@ Page({
     this.lastResult=s.result;
     this.closeDropdown();
     this.setData({ ready:true, server: d.server, mode: s.mode, error: s.error, busy: s.busy,
+      mapBansAvailable:typeof this.service.banOptions==='function',
       dirty: s.dirty, image: s.image, hasPending: !!s.pending,ocrBusy:!!s.image&&s.busy,subtitle:m.subtitle||'帕累托最优 · 擂台选车',zoneHint:d.zone==='zone4',
       selectedCount: m.cars.filter(c=>d.cars.includes(c.id)).length,serviceStatus:s.serviceStatus,sortLabel:({'alpha':'字母','score-desc':'分↓','score-asc':'分↑'})[this.data.sortMode],zones: m.zones.map(x => x === 'zone4' ? '四区' : '五区'),
       zoneIndex: m.zones.indexOf(d.zone), tiers: m.tiers, tierIndex: m.tiers.indexOf(d.tier),
@@ -120,11 +123,36 @@ Page({
       schemes,schemeIndex,schemeOptions:s.result?s.result.schemes.map((x,i)=>x.summary||('方案'+(i+1)+' · Σ='+x.prioritySum)):[],activeScheme:schemes[schemeIndex]||null });
   },
   async onShow() {this.homeVisible=true;this.refreshingAccount=true;try{if(this.account)await this.account.refresh();}catch(e){this.setData({cloudStatus:e.message});}finally{this.refreshingAccount=false;}if(this.controller){await this.syncAccount((runtime.policy().writeAcceptance||runtime.policy().readbackAcceptance||runtime.policy().conflictAcceptance)?false:true);this.controller.show();if(this.account){void runtime.usage()?.visit('home',this.state.draft.server,'resume');void this.refreshHomeIdentity();}}},
-  onHide() {this.homeVisible=false;this.setData({homeHub:null}); this.closeDropdown();if (this.controller) this.controller.hide(); },
+  onHide() {this.homeVisible=false;this.setData({homeHub:null,banEditor:null}); this.closeDropdown();if (this.controller) this.controller.hide(); },
   onUnload() { this.unloaded=true;this.cloudTicket=(this.cloudTicket||0)+1;if(this.unsubscribeAccount)this.unsubscribeAccount();this.closeDropdown();if (this.controller) this.controller.destroy();if(this.nativeApi)this.nativeApi.session.invalidate(); },
   onPageScroll() { this.closeDropdown(); },
   closeDropdown() { this.dropdownGeneration=(this.dropdownGeneration||0)+1;if(this.data.dropdown)this.setData({dropdown:null}); },
   blockDropdownScroll() {},
+  openMapBans(e) {
+    const index=Number(e.currentTarget.dataset.index),draft=this.state.draft,map=draft.maps[index];
+    if(!map?.small||!this.service.banOptions||this.data.busy)return;
+    const key=mapBanKey(draft,map),selected=draft.mapBans?.[key]||[];
+    const cars=this.service.banOptions(draft,map).map(id=>({id,checked:selected.includes(id)}));
+    this.setData({banEditor:{index,key,title:map.small,cars,selected,actor:this.account?.generation()}});
+  },
+  changeMapBans(e) {
+    const editor=this.data.banEditor;
+    if(!editor)return;
+    const selected=e.detail.value;
+    this.setData({banEditor:{...editor,selected,cars:editor.cars.map(c=>({...c,checked:selected.includes(c.id)}))}});
+  },
+  keepMapBansOpen(){},
+  closeMapBans(){this.setData({banEditor:null});},
+  applyMapBans(){this.commitMapBans(false);},
+  restoreMapBans(){this.commitMapBans(true);},
+  commitMapBans(restore) {
+    const editor=this.data.banEditor;
+    if(!editor)return;
+    this.closeMapBans();
+    if(editor.actor!==this.account?.generation()||!this.controller.setMapBans(editor.index,editor.key,restore?[]:editor.selected)){
+      this.setData({error:'选图或账号已变化，请重新打开单图禁车'});
+    }
+  },
   openDropdown(e) {
     const {field,pending}=e.currentTarget.dataset,index=Number(e.currentTarget.dataset.index);
     if(!Number.isInteger(index)||index<0||index>4||!['big','small'].includes(field))return;

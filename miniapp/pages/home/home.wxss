@@ -169,3 +169,9 @@
  .map-field { width:100%; }
  .map-row .number { align-self:flex-start; margin-top:6px; }
 }
+
+.map-ban-entry { flex:0 0 100%; }
+.map-ban-entry button { min-height:36px; padding:6px 10px; font-size:12px; color:#a9d1ff; }
+.map-ban-dialog { box-sizing:border-box; }
+.map-ban-list { max-height:45vh; }
+.map-ban-choice { display:flex; align-items:center; min-height:44px; gap:8px; border-bottom:1px solid #30363d; }

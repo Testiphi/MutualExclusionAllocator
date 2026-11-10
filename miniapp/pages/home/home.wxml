@@ -55,6 +55,9 @@
      <view class="map-field"><view class="field-label">大地图</view><button id="map-{{item.index}}-big" class="map-picker map-trigger" data-index="{{item.index}}" data-field="big" bindtap="openDropdown"><view class="select">{{item.big || '选择大地图'}}<text class="chevron">⌄</text></view></button></view>
      <view class="map-field"><view class="field-label">小地图</view><button id="map-{{item.index}}-small" class="map-picker map-trigger" disabled="{{!item.big}}" data-index="{{item.index}}" data-field="small" bindtap="openDropdown"><view class="select {{!item.big ? 'is-disabled' : ''}}">{{item.small || '选择小地图'}}<text class="chevron">⌄</text></view></button></view>
      </view>
+     <view wx:if="{{mapBansAvailable && item.small}}" class="map-ban-entry">
+      <button data-index="{{item.index}}" bindtap="openMapBans" disabled="{{busy}}">单图禁车{{item.banCount ? ' · 已禁 ' + item.banCount : ''}}</button>
+     </view>
      <view wx:if="{{item.top}}" class="track-top-cars">
       <button class="top-toggle" data-index="{{item.index}}" bindtap="toggleTop">{{item.topOpen ? '▾' : '▸'}} {{item.top.label}}</button>
       <view wx:if="{{item.topOpen}}">
@@ -113,6 +116,25 @@
       <button wx:if="{{routeVideoLab && !row.empty}}" class="result-video" size="mini" data-index="{{row.index}}" bindtap="openRouteVideos">跑法视频</button>
      </view>
     </view>
+   </view>
+  </view>
+ </view>
+ <view wx:if="{{banEditor}}" class="hub-backdrop" bindtap="closeMapBans">
+  <view class="hub-dialog map-ban-dialog" catchtap="keepMapBansOpen">
+   <view class="hub-heading">{{banEditor.title}} · 单图禁车</view>
+   <view class="hub-help">勾选后仅在当前分区的这张图排除车辆。</view>
+   <scroll-view scroll-y="{{true}}" class="map-ban-list">
+    <checkbox-group bindchange="changeMapBans">
+     <label wx:for="{{banEditor.cars}}" wx:key="id" class="map-ban-choice">
+      <checkbox value="{{item.id}}" checked="{{item.checked}}"/>{{item.id}}
+     </label>
+    </checkbox-group>
+    <view wx:if="{{!banEditor.cars.length}}" class="muted">当前车库没有本图候选车辆</view>
+   </scroll-view>
+   <view class="actions">
+    <button class="primary" bindtap="applyMapBans">应用禁车</button>
+    <button bindtap="restoreMapBans">恢复全部</button>
+    <button bindtap="closeMapBans">取消</button>
    </view>
   </view>
  </view>

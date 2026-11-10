@@ -18,6 +18,8 @@ function createStorage(wx, namespace,actorScope='') {
         Object.values(value.stars).some(x => !Number.isInteger(x)) ||
         !value.oc || typeof value.oc !== 'object' || Array.isArray(value.oc) ||
         Object.values(value.oc).some(x => typeof x !== 'boolean') ||
+        (value.mapBans!==undefined&&(!value.mapBans||typeof value.mapBans!=='object'||Array.isArray(value.mapBans)||
+         Object.values(value.mapBans).some(ids=>!Array.isArray(ids)||ids.some(id=>typeof id!=='string')))) ||
         !value.routes || typeof value.routes !== 'object' || Array.isArray(value.routes)) {
       throw Error('本机草稿损坏，已保留原记录');
     }

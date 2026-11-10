@@ -49,7 +49,7 @@ test('top-three references use owned candidate order without subtracting other m
  await f.c.compute();assert.ok(f.state.result.schemes.every(s=>s.assignment.filter(c=>c==='f5').length===1));
 });
 test('search aliases/subtitle/sort are generated from fixed website functions, not another hand-maintained ruleset',()=>{
- const manifest=require('../miniapp/shared/source.json'),source=cp.execFileSync('git',['show',manifest.source+':index.html'],{cwd:path.resolve(__dirname,'..')});
+ const manifest=require('../miniapp/shared/source.json'),source=cp.execFileSync('git',['show',(manifest.derived['web_home.js'].source_ref||manifest.source)+':index.html'],{cwd:path.resolve(__dirname,'..')});
  const generated=require('../tools/web_home_adapter.cjs').generateWebHomeAdapter(source.toString('utf8')),actual=fs.readFileSync(path.resolve(__dirname,'../miniapp/shared/web_home.js'),'utf8');assert.equal(actual,generated);
  assert.equal(crypto.createHash('sha256').update(actual).digest('hex'),manifest.derived['web_home.js'].sha256);
  const f=make();assert.ok(f.service.garageView(f.state.draft,'第六元素','','alpha').includes('六子'));assert.ok(f.state.model.subtitle.includes('星级'));

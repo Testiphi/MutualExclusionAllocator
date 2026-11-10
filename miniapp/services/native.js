@@ -67,11 +67,12 @@ async function createNativeService(wx,core,config,options={}) {
     defaults:server=>home[server].defaults(),
     garageView:(d,query,cls,sort)=>home[d.server].visible(d,query,cls,sort),
     model:d=>({...enrichModel(contexts[d.server].getModel(d),snapshots[d.server],d,core),knownCarIds:known[d.server],topCars:home[d.server].tops(d),subtitle:home[d.server].subtitle(d)}),
+    banOptions:(d,map)=>home[d.server].banOptions(d,map),
     calculate:d=>home[d.server].calculate(d),
     resultGuidance:(d,index)=>home[d.server].guidance(d,index),
     ...(formalModel?{
       defaults:formalModel.defaults,garageView:formalModel.garageView,model:formalModel.model,
-      calculate:formalModel.calculate,resultGuidance:formalModel.resultGuidance
+      banOptions:formalModel.banOptions,calculate:formalModel.calculate,resultGuidance:formalModel.resultGuidance
     }:{}),
     async recognize(image){const ticket=++generation;lastBinding=await catalog(true);if(ticket!==generation)throw Error('本次识别已停止');return wrap(await jobs.start(image));},
     async retryRecognition(){const b=await catalog();if(!lastBinding||b.identity!==lastBinding.identity||b.version!==lastBinding.version)throw Error('原任务目录已变化');return wrap(await jobs.resume());},

@@ -1,4 +1,5 @@
 'use strict';
+const {mapBanKey}=require('./home_presenter_adapter');
 const clone = value => JSON.parse(JSON.stringify(value));
 function blank(server) {
   return { schema: 1, server, zone: 'zone5', tier: '理论',
@@ -123,6 +124,19 @@ function createController({ service, storage, media, render, autoCompute=false,s
       }
       change(() => { draft.maps[index] = map; });
     },
+    setMapBans(index,key,ids) {
+      const map=draft.maps[index];
+      if(!map?.small||mapBanKey(draft,map)!==key||!service.banOptions||!Array.isArray(ids))return false;
+      const allowed=new Set(service.banOptions(draft,map));
+      if(ids.some(id=>!allowed.has(id)))return false;
+      change(()=>{
+        const bans={...draft.mapBans};
+        if(ids.length)bans[key]=[...new Set(ids)];
+        else delete bans[key];
+        draft.mapBans=bans;
+      });
+      return true;
+    },
     setCar(id, selected) { if (model.cars.some(x => x.id === id)) change(() => {
       draft.cars = draft.cars.filter(x => x !== id); if (selected) draft.cars.push(id);
     }); },
@@ -134,7 +148,7 @@ function createController({ service, storage, media, render, autoCompute=false,s
       if (route && (value==='off' || value==='all' || route.types.includes(value))) change(()=>{draft.routes[key]=value;});
     },
     restore() {
-      const current={maps:clone(draft.maps),zone:draft.zone,tier:draft.tier,routes:clone(draft.routes)};
+      const current={maps:clone(draft.maps),zone:draft.zone,tier:draft.tier,routes:clone(draft.routes),...(draft.mapBans?{mapBans:clone(draft.mapBans)}:{})};
       try{if(storage.clearWorking)storage.clearWorking(draft.server);}catch(e){error='恢复失败，当前选择仍保留';publish();return;}
       invalidate();error='';load(draft.server,false);Object.assign(draft,current);refresh();
       updateDirty();publish();queueCompute();
