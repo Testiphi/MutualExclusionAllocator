@@ -1,3 +1,11 @@
+## 2026-11-10 网站 80fd1c93 与视频批次 dfcb6de8 上线
+
+- Workbench 13:08:06 CST 切换网站到 `80fd1c937db91d3df4ac1170`，源码 `f76c896e12e7b34f627d8a8506eb3920dd3b96c6`，前一版 `9ade659b378f4f94f17a9d10`。网站 PID 283003 与 OCR PID 282996 的实际目录均指向新版本。公网首页、健康和逐格视频矩阵通过。OCR ready，正式 A 云车库写关闭。切换回执 `/root/racepick-deploy/80fd-dfcb-cutover.3BXVG5bF`。
+- 视频冻结 `dfcb6de86673be3e471a7db6`，计划 SHA256 `dfcb6de86673be3e471a7db6664358d8d8900c30ff5c512c8bebb68dfc19599a`。974 条旧基线零差异，单事务更新 13 条、停用 7 条，启用 967 条。公网国服 787 格／807 条，国际服 160 格／160 条。写入回执 `/root/racepick-deploy/80fd-dfcb-apply.4X5KyKze/apply.json`，SHA256 `43a883acb0f5a7cff846c167582ff8f75be025f4cab4cc2500984fc567682eb4`。首次写入命令在 Python 解析阶段退出，修正版重新验证 974 条旧基线后执行成功。切换时 SHA256 清单一行格式警告，收尾分别重验写入回执和 967 条种子通过。
+- 国服活动成绩 `d6c91bbffea4c2036d1e294887faba5b`（4752 键），国际服 `8f4c827ecd4b5b3466bc39bcbd1a521c`（697 条）。写入前后备份清单与恢复副本的五份成绩文件哈希一致。本次范围为网页与跑法视频。
+- 写入前备份 `scores-20261110T050421617554Z.zip`，SHA256 `3183b3a072ac7364e44f02a05651ce3a60888893ba729059f5787b85369bd6de`，恢复目录 `730ec0c20fda23cb081414e8`，恢复副本逐键匹配 974 条。
+- 上线后备份 `scores-20261110T050915599459Z.zip`，SHA256 `1bca0e3836592f7ba9df2e0f841a921242def50d08553c6a3660fbc02c5ebc10`。恢复目录 `1f89c827f191c52787197859`，967 条启用绑定逐键匹配目标，7 条停用记录按原行 ID 和键核对通过。现场回执 `/root/racepick-deploy/80fd-dfcb-postcutover.6qZj2Lwd`。备份 timer enabled、active(waiting)，下次触发 2026-11-11 04:15:49 CST。
+
 ## 2026-11-10 网站 9ade659b 与 974 条跑法视频上线
 
 - Workbench 确认 current、网站 PID 280752 和 OCR PID 280749 均指向 `/opt/racepick/releases/9ade659b378f4f94f17a9d10`，前一版本为 `6f0dfa79522b55f1b1530fb2`。公网首页和健康通过，OCR ready。正式 A 云车库写关，隔离账号服务 PID 241421 及健康开关与预检一致。
