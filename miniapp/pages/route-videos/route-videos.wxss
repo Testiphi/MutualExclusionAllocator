@@ -1,0 +1,4 @@
+@import "../../shared/functional_theme.wxss";
+.page { padding: 24rpx; }
+.video { padding: 20rpx 0; }
+.video button { margin-top: 12rpx; }

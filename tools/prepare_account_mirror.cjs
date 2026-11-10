@@ -11,10 +11,15 @@ const writable=process.argv[4]==='--write-w1w2'||candidate,readback=process.argv
 const registration=process.argv[4]==='--isolated-registration';
 const wechatLogin=process.argv[4]==='--isolated-wechat-login';
 const wechatBinding=wechatLogin||process.argv[4]==='--isolated-wechat-binding';
-const localSync=process.argv[4]==='--local-sync';
+const httpsVideoLab=process.argv[4]==='--route-video-https-lab';
+const publicVideoLab=process.argv[4]==='--route-video-public-lab';
+const routeVideoLab=process.argv[4]==='--route-video-lab'||httpsVideoLab||publicVideoLab;
+const routeVideoOrigin=publicVideoLab?'https://racepick.cn':httpsVideoLab?'https://account-test.racepick.cn':null;
+const localSync=process.argv[4]==='--local-sync'||routeVideoLab;
 const formalWrite=process.argv[4]==='--formal-write';
 const firstRelease=process.argv[4]==='--formal-first-release';
-const formalRelease=process.argv[4]==='--formal-release-readonly';
+const formalVideo=process.argv[4]==='--formal-release-readonly-with-route-videos';
+const formalRelease=process.argv[4]==='--formal-release-readonly'||formalVideo;
 const formalOcr=process.argv[4]==='--formal-ocr-readonly'||firstRelease||formalRelease;
 const formal=process.argv[4]==='--formal-readonly'||formalWrite||formalOcr;
 assert.ok(!process.argv[4]||writable||readback||role||localSync||formal||registration||wechatBinding);
@@ -46,15 +51,19 @@ for(const file of files){if(file==='miniapp/README.md')continue;write(file.slice
 if(!files.includes('miniapp/services/account_connection.js'))write('services/account_connection.js',fs.readFileSync(path.join(root,'miniapp/services/account_connection.js')),'local client source');
 const fixed=require('../miniapp/shared-source.json'),mirror=require('../miniapp/mirror-source.json');
 for(const name of fixed.files)write('shared/'+name,cp.execFileSync('git',['show',fixed.ref+':'+name],{cwd:root}),fixed.ref+':'+name);
-for(const name of mirror.files)write('shared/'+name,cp.execFileSync('git',['show',mirror.ref+':'+name],{cwd:root}),mirror.ref+':'+name);
+const themeRef=mirror.themeRef||mirror.ref;
+for(const name of mirror.files){
+ const source=(name==='home_theme.json'?themeRef:mirror.ref)+':'+name;
+ write('shared/'+name,cp.execFileSync('git',['show',source],{cwd:root}),source);
+}
 const feature=cp.execFileSync('git',['show',mirror.ref+':'+mirror.contract],{cwd:root});
 write('shared/feature_contract.js','module.exports='+feature.toString('utf8')+';\n',mirror.ref+':'+mirror.contract);
 write('shared/'+path.basename(mirror.contract),feature,mirror.ref+':'+mirror.contract);
 const tokens=JSON.parse(fs.readFileSync(path.join(out,'shared/home_theme.json'),'utf8'));
-write('shared/theme.wxss',`page{background:${tokens.tokens['--rp-bg']};color:${tokens.tokens['--rp-text']};font-family:${tokens.tokens['--rp-font']};}\n.mirror-surface{background:${tokens.tokens['--rp-surface']};border-color:${tokens.tokens['--rp-divider']};}\n.mirror-muted{color:${tokens.tokens['--rp-muted']};}\n.mirror-selected{background:${tokens.tokens['--rp-selected']};border-color:${tokens.tokens['--rp-blue']};}\n`,mirror.ref+':home_theme.json');
-write('shared/functional_theme.wxss',require('./mini_theme.cjs').functionalTheme(tokens),mirror.ref+':home_theme.json');
-const page=cp.execFileSync('git',['show',fixed.ref+':index.html'],{cwd:root,encoding:'utf8'});
-write('shared/web_home.js',require('./web_home_adapter.cjs').generateWebHomeAdapter(page),fixed.ref+':index.html derived compatibility');
+write('shared/theme.wxss',`page{background:${tokens.tokens['--rp-bg']};color:${tokens.tokens['--rp-text']};font-family:${tokens.tokens['--rp-font']};}\n.mirror-surface{background:${tokens.tokens['--rp-surface']};border-color:${tokens.tokens['--rp-divider']};}\n.mirror-muted{color:${tokens.tokens['--rp-muted']};}\n.mirror-selected{background:${tokens.tokens['--rp-selected']};border-color:${tokens.tokens['--rp-blue']};}\n`,themeRef+':home_theme.json');
+write('shared/functional_theme.wxss',require('./mini_theme.cjs').functionalTheme(tokens),themeRef+':home_theme.json');
+const page=cp.execFileSync('git',['show',(fixed.pageRef||fixed.ref)+':index.html'],{cwd:root,encoding:'utf8'});
+write('shared/web_home.js',require('./web_home_adapter.cjs').generateWebHomeAdapter(page),(fixed.pageRef||fixed.ref)+':index.html derived compatibility');
 const bundle={kind:'local-unfrozen',files:{},hashes:{}};
 for(const [name,fixedMeta] of Object.entries(binding.fixed_runtime.files)){
  const b=localSync?cp.execFileSync('git',['show',mirror.ref+':'+name],{cwd:root}):fs.readFileSync(path.join(formalRuntimeDir||path.join(workspace,'offline-evaluation/mini-account-isolation-20261105-01/candidate-04/snapshot'),name));
@@ -70,6 +79,6 @@ write('generated/native-config.js','module.exports='+JSON.stringify(native)+';\n
 write('generated/account-config.js','module.exports='+JSON.stringify(config)+';\n','independent account origin and write policy');
 const local=JSON.parse(fs.readFileSync(path.join(root,'miniapp/project.config.json'),'utf8'));
 write('project.config.json',JSON.stringify({...local,projectname:formalRelease?'RacePick-formal-readonly-release':firstRelease?'RacePick-first-release':formalOcr?'RacePick-formal-OCR-readonly-candidate':formalWrite?'RacePick-formal-cloud-save-candidate':localSync?'RacePick-local-source-sync':wechatLogin?'RacePick-isolated-wechat-login':wechatBinding?'RacePick-isolated-wechat-binding':registration?'RacePick-isolated-registration':role?'RacePick-W3-'+role+(candidate?'-CANDIDATE':'-PREPARED-NO-WRITES'):writable?'RacePick-W1W2-write-acceptance':readback?'RacePick-saved-readback':'RacePick-mirror-account-readonly',setting:{...local.setting,urlCheck:true}},null,2),'local ignored identity; never print AppID');
-const buildId=crypto.createHash('sha256').update(JSON.stringify(receipt.files)+planId+out).digest('hex').slice(0,20);receipt.buildId=buildId;write('generated/build-info.js','module.exports='+JSON.stringify(localSync?{buildId,storageScope:planId}:{buildId,...(firstRelease||formalRelease?{}:{planId}),...(formalRelease?{formalRuntimeModel:true}:{}),...(ocr?{ocrBinding}:{})})+';\n','bound developer build identity');
+const buildId=crypto.createHash('sha256').update(JSON.stringify(receipt.files)+planId+out+(routeVideoLab?'|route-video-lab|'+(routeVideoOrigin||'loopback'):'')+(formalVideo?'|formal-public-route-videos':'')).digest('hex').slice(0,20);receipt.buildId=buildId;write('generated/build-info.js','module.exports='+JSON.stringify(localSync?{buildId,storageScope:planId,...(routeVideoLab?{routeVideoLab:true,...(routeVideoOrigin?{routeVideoOrigin}:{})}:{})}:{buildId,...(firstRelease||formalRelease?{}:{planId}),...(formalRelease?{formalRuntimeModel:true}:{}),...(formalVideo?{routeVideoLab:true,routeVideoOrigin:'https://racepick.cn'}:{}),...(ocr?{ocrBinding}:{})})+';\n','bound developer build identity');
 fs.writeFileSync(path.join(path.dirname(out),'mirror-project-receipt.json'),JSON.stringify(receipt,null,2)+'\n',{flag:'wx'});
 console.log(JSON.stringify({project:out,planId,buildId,source,dirty:receipt.dirty,accountLazy:true,cloudWrites:receipt.allowCloudWrites,networkExecuted:false}));

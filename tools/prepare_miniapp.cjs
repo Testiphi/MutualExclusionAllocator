@@ -23,11 +23,12 @@ for (const name of files) {
   fs.writeFileSync(path.join(output, name), bytes);
   manifest.files[name] = { bytes: bytes.length, sha256: crypto.createHash('sha256').update(bytes).digest('hex') };
 }
-const pageSource=cp.execFileSync('git',['show',manifest.source+':index.html'],{cwd:root});
+const pageSource=cp.execFileSync('git',['show',(config.pageRef||manifest.source)+':index.html'],{cwd:root});
 const mirror=require('../miniapp/mirror-source.json');
-manifest.mirror={source:mirror.ref,files:{}};
+const themeRef=mirror.themeRef||mirror.ref;
+manifest.mirror={source:mirror.ref,themeSource:themeRef,files:{}};
 for(const name of [...mirror.files,mirror.contract]) {
-  const bytes=cp.execFileSync('git',['show',mirror.ref+':'+name],{cwd:root});
+  const bytes=cp.execFileSync('git',['show',(name==='home_theme.json'?themeRef:mirror.ref)+':'+name],{cwd:root});
   fs.writeFileSync(path.join(output,path.basename(name)),bytes);
   manifest.mirror.files[name]={sha256:crypto.createHash('sha256').update(bytes).digest('hex'),bytes:bytes.length};
 }
@@ -50,7 +51,7 @@ fs.writeFileSync(path.join(output,'functional_theme.wxss'),functional);
 manifest.mirror.functionalThemeSha256=crypto.createHash('sha256').update(functional).digest('hex');
 const homeCode=require('./web_home_adapter.cjs').generateWebHomeAdapter(pageSource.toString('utf8'));
 fs.writeFileSync(path.join(output,'web_home.js'),homeCode);
-manifest.derived={'web_home.js':{source_file:'index.html',source_sha256:crypto.createHash('sha256').update(pageSource).digest('hex'),sha256:crypto.createHash('sha256').update(homeCode).digest('hex')}};
+manifest.derived={'web_home.js':{source_ref:config.pageRef||manifest.source,source_file:'index.html',source_sha256:crypto.createHash('sha256').update(pageSource).digest('hex'),sha256:crypto.createHash('sha256').update(homeCode).digest('hex')}};
 fs.writeFileSync(path.join(output, 'source.json'), JSON.stringify(manifest, null, 2) + '\n');
 console.log(JSON.stringify(manifest, null, 2));
 if(sharedOnly)return;

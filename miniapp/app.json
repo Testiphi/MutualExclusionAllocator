@@ -5,7 +5,8 @@
     "pages/coverage/coverage",
     "pages/submissions/submissions",
     "pages/community/community",
-    "pages/workbench/workbench"
+    "pages/workbench/workbench",
+    "pages/route-videos/route-videos"
   ],
   "window": {
     "navigationBarTitleText": "",

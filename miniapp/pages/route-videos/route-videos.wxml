@@ -1,0 +1,16 @@
+<view class="page">
+  <view class="panel">
+    <view>{{heading || '跑法视频'}}</view>
+    <view wx:if="{{busy}}" class="muted">正在读取跑法视频…</view>
+    <view wx:elif="{{error}}">{{error}}</view>
+    <view wx:elif="{{!items.length}}" class="muted">当前地图、车辆和跑法暂无匹配视频</view>
+    <button wx:if="{{error && heading}}" bindtap="retry">重试</button>
+    <view wx:if="{{items.length}}" class="muted">iOS 上哔哩哔哩弹幕网可能无法播放。建议复制视频链接，在微信对话中打开后再进入 B 站 App。</view>
+    <view wx:for="{{items}}" wx:key="id" class="video">
+      <view>{{item.title}}</view>
+      <view wx:if="{{item.detail}}" class="muted">{{item.detail}}</view>
+      <button wx:if="{{item.aid || item.shortLink}}" size="mini" data-index="{{index}}" bindtap="openBili">打开哔哩哔哩弹幕网</button>
+      <button size="mini" data-index="{{index}}" bindtap="copy">复制视频链接</button>
+    </view>
+  </view>
+</view>

@@ -13,11 +13,12 @@ const {createNativeService}=require('../../services/native');
 const {createNativeApi}=require('../../adapters/native_api');
 const {visibleCars,garageClasses}=require('../../lib/garage_view');
 const runtime=require('../../services/runtime');
+const routeVideos=require('../../services/route_videos');
 const {conflictView}=require('../../services/profile_conflict');
 const {createAcceptanceReport}=require('../../services/account_acceptance_report');
 
 Page({
-  data: { buildId:buildInfo.buildId,planId:buildInfo.planId||'',writeAcceptance:accountConfig.allowCloudWrites===true&&accountConfig.mode!=='production-a',formalWriteCandidate:accountConfig.allowCloudWrites===true&&accountConfig.mode==='production-a',readbackAcceptance:!!accountConfig.readbackReceipt,conflictAcceptance:!!accountConfig.conflictRole,ready:false, garageOpen: true, query: '', rows: [], cars: [], schemes: [], slotRows: [], schemeIndex:0, activeScheme:null, dropdown:null,sortMode:'alpha',carClass:'',classes:['','R','S','A','B','C','D'] },
+  data: { routeVideoLab:buildInfo.routeVideoLab===true, buildId:buildInfo.buildId,planId:buildInfo.planId||'',writeAcceptance:accountConfig.allowCloudWrites===true&&accountConfig.mode!=='production-a',formalWriteCandidate:accountConfig.allowCloudWrites===true&&accountConfig.mode==='production-a',readbackAcceptance:!!accountConfig.readbackReceipt,conflictAcceptance:!!accountConfig.conflictRole,ready:false, garageOpen: true, query: '', rows: [], cars: [], schemes: [], slotRows: [], schemeIndex:0, activeScheme:null, dropdown:null,sortMode:'alpha',carClass:'',classes:['','R','S','A','B','C','D'] },
   onLoad() {
     this.unloaded=false;this.routeMemory={};
     if(nativeConfig.enabled){this.connectNative();return;}
@@ -162,6 +163,17 @@ Page({
     this.selectMap({currentTarget:{dataset:{index:menu.index,field:menu.field,pending:menu.pending}},detail:{value}});
   },
   openStars(e) {const car=this.data.cars.find(c=>c.id===e.currentTarget.dataset.id);if(car)this.presentMenu({field:'stars',carId:car.id,options:car.stars.map((n,i)=>({label:'★'+n,value:i,selected:i===car.starIndex}))},'star-'+e.currentTarget.dataset.anchor);},
+  openRouteVideos(e) {
+    const index=Number(e.currentTarget.dataset.index);
+    const draft=this.state?.draft, map=draft?.maps[index];
+    const row=this.data.activeScheme?.rows[index];
+    if(!this.data.routeVideoLab||!map?.small||!row||row.empty||this.state.busy||this.state.error)return;
+    const key=map.big+'/'+map.small;
+    const types=this.state.model.routes?.find(route=>route.key===key)?.types||[];
+    const selected=draft.routes[key];
+    routeVideos.open(wx,{...map,server:draft.server,zone:draft.zone==='zone4'?'四区':'五区',tier:draft.tier,
+      car:row.car,routes:selected==='off'?[]:types.includes(selected)?[selected]:types});
+  },
   openScheme() {this.presentMenu({field:'scheme',options:this.data.schemeOptions.map((label,i)=>({label,value:i,selected:i===this.data.schemeIndex}))},'scheme-trigger');},
   openRoute(e) {const route=this.data.routes[e.currentTarget.dataset.index];if(route)this.presentMenu({field:'route',routeKey:route.key,options:route.options.map((label,i)=>({label,value:i,selected:i===route.optionIndex}))},'route-'+e.currentTarget.dataset.index);},
   canEditGarage(){if(this.account?.state().actor&&!this.cloudReady){this.setData({cloudStatus:'账号车库尚未读取，原草稿已保留，请先重试读取'});return false;}return true;},

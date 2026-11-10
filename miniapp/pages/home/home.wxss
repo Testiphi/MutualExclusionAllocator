@@ -73,6 +73,7 @@
 .scheme-select { margin-bottom:20rpx; }
 .result-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16rpx; }
 .result-row { min-width:0; padding:20rpx 12rpx; border:1rpx solid #21262d; border-radius:16rpx; background:#0d1117; text-align:center; }
+.result-video { margin: 8rpx 0 0; }
 .result-map { color:#e6edf3; font-size:26rpx; font-weight:600; overflow-wrap:break-word; }
 .result-big { min-height:34rpx; margin:4rpx 0 16rpx; color:#8b949e; font-size:22rpx; }
 .result-car { padding:6rpx 0; color:#e6edf3; font-size:31rpx; font-weight:600; overflow-wrap:break-word; }
@@ -86,7 +87,7 @@
 .home-heading { gap:0 16px; }
 .brand { font-size:24px; letter-spacing:-.8px; }
 .heading-title { font-size:24px; }
-.subtitle { font-size:12.8px; margin:4px 0 24px; }
+.subtitle { color:#7d8896; font-size:12.8px; margin:4px 0 24px; }
 .toolbar { display:flex; flex-wrap:wrap; gap:8px; margin:0 0 14px; }
 .mode-row { display:inline-flex; gap:4px; padding:3px; border-radius:8px; background:#0d1117; }
 .mode-row + .mode-row { margin-top:0; border-top:0; }
@@ -98,7 +99,7 @@
 .map-fields { display:flex; flex:1; min-width:0; gap:8px; }
 .map-field { flex:1; min-width:0; }
 .map-fields .map-trigger { flex:none; width:100%; }
-.field-label { color:#6e7681; font-size:11.2px; margin-bottom:4px; }
+.field-label { color:#7d8896; font-size:11.2px; margin-bottom:4px; }
 .select { min-height:44px; padding:11px 22px 9px 8px; border-radius:8px; font-size:14px; }
 .chevron { top:11px; right:7px; }
 .track-top-cars { flex:0 0 100%; min-width:0; color:#c9d1d9; font-size:13.6px; }
@@ -166,5 +167,5 @@
 @media (max-width:380px) {
  .map-fields { flex-direction:column; }
  .map-field { width:100%; }
- .map-section .number { align-self:flex-start; margin-top:6px; }
+ .map-row .number { align-self:flex-start; margin-top:6px; }
 }

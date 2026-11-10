@@ -10,7 +10,7 @@ button[disabled] { color:#6e7681; background:#161b22; border-color:#21262d; }
 
 .mirror-page{padding-bottom:calc(20px + env(safe-area-inset-bottom))}
 .mirror-page>.mirror-surface.panel{border-radius:12px}
-.mirror-page .panel>.panel{border:0;border-radius:8px;background:#0f141a;margin-bottom:12px}
+.mirror-page .panel .panel{border:0;border-radius:8px;background:#0f141a;margin-bottom:12px}
 .mirror-page input,.mirror-page textarea{width:100%;box-sizing:border-box;padding:8px 10px;background:#0d1117;color:#e6edf3;border:1px solid #30363d;border-radius:8px;font-size:14px;margin:5px 0 12px}
 .mirror-page input{height:42px}.mirror-page textarea{min-height:82px}.mirror-page .actions{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:12px 0}
 .mirror-page button{width:auto;max-width:100%;margin:0;box-sizing:border-box;font-size:14px;background:#21262d;border:1px solid #30363d;color:#e6edf3}

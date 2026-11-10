@@ -39,8 +39,10 @@
      <view class="section-title">核对地图</view>
      <view class="map-row" wx:for="{{slotRows}}" wx:key="index">
       <text class="number">{{item.index + 1}}</text>
-      <button id="review-map-{{item.index}}-big" class="map-picker map-trigger" data-index="{{item.index}}" data-field="big" data-pending="{{true}}" bindtap="openDropdown"><view class="select">{{item.big || '选择大地图'}}<text class="chevron">⌄</text></view></button>
-      <button id="review-map-{{item.index}}-small" class="map-picker map-trigger" disabled="{{!item.big}}" data-index="{{item.index}}" data-field="small" data-pending="{{true}}" bindtap="openDropdown"><view class="select">{{item.small || '补充地图'}}<text class="chevron">⌄</text></view></button>
+      <view class="map-fields">
+       <view class="map-field"><button id="review-map-{{item.index}}-big" class="map-picker map-trigger" data-index="{{item.index}}" data-field="big" data-pending="{{true}}" bindtap="openDropdown"><view class="select">{{item.big || '选择大地图'}}<text class="chevron">⌄</text></view></button></view>
+       <view class="map-field"><button id="review-map-{{item.index}}-small" class="map-picker map-trigger" disabled="{{!item.big}}" data-index="{{item.index}}" data-field="small" data-pending="{{true}}" bindtap="openDropdown"><view class="select">{{item.small || '补充地图'}}<text class="chevron">⌄</text></view></button></view>
+      </view>
      </view>
      <button class="primary" bindtap="applyRecognition">应用选图</button>
     </view>
@@ -108,6 +110,7 @@
      <view wx:for="{{activeScheme.rows}}" wx:for-item="row" wx:key="index" class="result-row {{row.empty ? 'is-empty' : ''}}">
       <view class="result-map">{{row.map}}</view><view class="result-big">{{row.big || '—'}}</view>
       <view class="result-car {{row.empty ? 'empty' : ''}}">{{row.empty ? '空位' : row.car}}{{row.oc ? ' [OC]' : ''}}<text wx:if="{{row.stars}}" class="result-stars"> ★{{row.stars}}</text></view><view wx:if="{{row.hasTime}}" class="result-time">{{row.timeValue}}<text class="result-unit"> 秒</text></view>
+      <button wx:if="{{routeVideoLab && !row.empty}}" class="result-video" size="mini" data-index="{{row.index}}" bindtap="openRouteVideos">跑法视频</button>
      </view>
     </view>
    </view>
