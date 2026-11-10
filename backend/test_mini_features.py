@@ -167,7 +167,7 @@ class MirrorTests(unittest.TestCase):
         rolled=self.call('POST','/admin/score-versions/'+prepared['id']+'/rollback',{'reason':'isolated fixture rollback'}).json()
         self.assertEqual(rolled['state'],'rolled_back')
 
-    def test_b_role_matrix_uses_same_web_coverage_and_no_private_data_for_guests(self):
+    def test_b_role_matrix_retains_native_entitlements_alongside_public_web(self):
         for role in ('player','admin','superadmin'):
             email=role+'-matrix@example.test';self.user(email,role);self.auth=self.login(email)
             native=self.call('GET','/coverage?server=global').json()
@@ -178,7 +178,15 @@ class MirrorTests(unittest.TestCase):
                 r=browser.post('/api/auth/login',headers={'Origin':'http://127.0.0.1:8050','X-CSRF-Token':me['csrf']},json={'email':email,'password':PASSWORD})
                 self.assertEqual(r.status_code,200,r.text)
                 website=browser.get('/api/coverage?server=global').json()
-            native.pop('source_snapshot');self.assertEqual(native,website)
+            self.assertNotIn('access',website)
+            self.assertEqual(native['user_id'],website['user_id'])
+            self.assertEqual([c['car'] for c in native['columns']],[c['car'] for c in website['columns']])
+            native_cells=[c for row in native['rows'] for c in row['cells']]
+            web_cells=[c for row in website['rows'] for c in row['cells']]
+            self.assertEqual([c['key'] for c in native_cells],[c['key'] for c in web_cells])
+            self.assertTrue(all(c['value'] is not None for c in web_cells if c['status']=='filled'))
+            self.assertEqual(any(c['visibility']=='locked' for c in native_cells),role=='player')
+            self.assertTrue(all(n['value']==w['value'] for n,w in zip(native_cells,web_cells) if n['visibility']!='locked'))
         self.call('GET','/submissions',auth={},expected=401)
         self.call('GET','/admin/accounts',auth=self.guest,expected=401)
 

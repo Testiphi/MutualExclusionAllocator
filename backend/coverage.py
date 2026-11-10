@@ -1,4 +1,4 @@
-"""Read-only score coverage and ledger-derived national viewing rights. No score writes."""
+"""Public website coverage and legacy native coverage entitlements."""
 import hashlib
 import json
 import math
@@ -102,7 +102,7 @@ def ordered_score_cars(data,catalog,zone,tier,route,oc):
     return cars,bounds,counts,samples
 
 
-def matrix(data,catalog,access,*,server='cn',zone='五区',tier='理论',big='all',route='normal',query='',stars='all',offset=0,gaps=False,star_map=None,oc=False):
+def matrix(data,catalog,access=None,*,server='cn',zone='五区',tier='理论',big='all',route='normal',query='',stars='all',offset=0,gaps=False,star_map=None,oc=False):
     if server not in ('cn','global') or zone not in ('五区','四区') or tier not in ('理论','高手') or route not in ('normal','special'):raise HTTPException(422,'表格范围无效')
     if type(oc) is not bool or (oc and server!='global'):raise HTTPException(422,'该服别不支持OC表格')
     if server=='global':require_scope(server,catalog,zone,tier)
@@ -117,7 +117,7 @@ def matrix(data,catalog,access,*,server='cn',zone='五区',tier='理论',big='al
         if query.casefold() not in (c['nickname']+' '+c['title']).casefold():continue
         low,high=bounds[c['nickname']]
         chosen=star_map.get(c['nickname'],int(stars) if stars!='all' and low<=int(stars)<=high else high)
-        candidates.append({'car':c['nickname'],'title':c['title'],'stars':None if tier=='理论' else chosen,'max_stars':high,'star_options':list(range(low,high+1)) if tier=='高手' else [],'coverage_count':counts[c['nickname']],'public':c['nickname'] in samples})
+        candidates.append({'car':c['nickname'],'title':c['title'],'stars':None if tier=='理论' else chosen,'max_stars':high,'star_options':list(range(low,high+1)) if tier=='高手' else [],'coverage_count':counts[c['nickname']],'public':access is None or c['nickname'] in samples})
     offset=min(offset,((len(candidates)-1)//COLUMN_LIMIT)*COLUMN_LIMIT) if candidates else 0
     columns=candidates[offset:offset+COLUMN_LIMIT];rows=[]
     for t in data['tracks']:
@@ -130,8 +130,8 @@ def matrix(data,catalog,access,*,server='cn',zone='五区',tier='理论',big='al
                 values=[found[k] for k in ((c['car'],None),(c['car'],c['max_stars'])) if k in found] if tier=='理论' else [found[c['car'],c['stars']]] if (c['car'],c['stars']) in found else []
                 value=min(values,default=None)
                 is_sample=c['car'] in samples
-                visible=unlocked(access,server,t['大地图']) or is_sample
-                cells.append({'key':key(target),'status':'empty' if value is None else 'filled','value':value if visible else None,'public':is_sample,'target':target,'value_source':'runtime_dataset' if value is not None else 'missing','calculation':'none','visibility':'public' if is_sample else 'unlocked' if visible else 'locked'})
+                visible=access is None or unlocked(access,server,t['大地图']) or is_sample
+                cells.append({'key':key(target),'status':'empty' if value is None else 'filled','value':value if visible else None,'public':access is None or is_sample,'target':target,'value_source':'runtime_dataset' if value is not None else 'missing','calculation':'none','visibility':'public' if access is None or is_sample else 'unlocked' if visible else 'locked'})
             if gaps and not any(c['status']=='empty' for c in cells):continue
             rows.append({'big':t['大地图'],'small':t['小地图'],'route':run,'map_id':map_id(t['大地图'],server),'cells':cells})
     return {'columns':columns,'rows':rows,'column_total':len(candidates),'column_offset':offset,'column_limit':COLUMN_LIMIT,'oc':oc,'provenance':'runtime projection; independent measurement/estimation lineage not included'}
@@ -184,7 +184,10 @@ def install(app,store,root,user,*,route_video_pilot=False,lab=None,route_video_s
         if len(q)>80 or not 0<=offset<=5000:raise HTTPException(422,'筛选范围无效')
         current=actor(request);data,catalog,version=source(server)
         with store.connect() as db:
-            access=rights(db,current,server);result=matrix(data,catalog,access,server=server,zone=zone,tier=tier,big=big,route=route,query=q,stars=stars,offset=offset,gaps=gaps,star_map=star_map,oc=oc)
+            # The server-owned native adapter retains its existing coverage contract.
+            native = 'racepick.native.account_marker' in request.scope
+            access = rights(db,current,server) if native else None
+            result=matrix(data,catalog,access,server=server,zone=zone,tier=tier,big=big,route=route,query=q,stars=stars,offset=offset,gaps=gaps,star_map=star_map,oc=oc)
             own={}
             if current:
                 for row in db.execute("SELECT id,status,payload FROM submissions WHERE owner_id=? AND status IN ('draft','pending','needs_info','accepted') AND NOT EXISTS(SELECT 1 FROM write_receipts WHERE submission_id=submissions.id) ORDER BY updated_at",(current['id'],)):
@@ -192,8 +195,9 @@ def install(app,store,root,user,*,route_video_pilot=False,lab=None,route_video_s
             for r in result['rows']:
                 for c in r['cells']:
                     if c['key'] in own:c['mine']=own[c['key']]
-        result.update(version=version,server=server,production=app.state.score_versions.production,access=access,user_id=current['id'] if current else None,rules=RULES,
+        result.update(version=version,server=server,production=app.state.score_versions.production,user_id=current['id'] if current else None,
                       capabilities=capabilities(server,catalog),maps=[{'id':map_id(name,server),'name':name} for name in dict.fromkeys(t['大地图'] for t in data['tracks'])])
+        if native:result.update(access=access,rules=RULES)
         return JSONResponse(result,headers={'Cache-Control':'private, no-store','Vary':'Cookie'})
     @app.get('/api/coverage')
     def listing(request:Request,server:str='cn',zone:str='五区',tier:str='理论',big:str='all',route:str='normal',q:str='',stars:str='all',offset:int=0,gaps:bool=False,oc:bool=False):

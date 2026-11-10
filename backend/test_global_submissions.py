@@ -84,10 +84,29 @@ class GlobalSubmissionTests(unittest.TestCase):
         gm=self.player.get('/api/coverage?server=global').json()['maps'][0]
         self.assertEqual(self.player.post('/api/coverage/choice',json={'map_id':map_id('测试地图')}).status_code,200)
         self.assertEqual(self.player.post('/api/coverage/choice',json={'server':'global','map_id':gm['id']}).status_code,200)
-        for server,chosen in [('cn',map_id('测试地图')),('global',gm['id'])]:self.assertEqual(self.player.get('/api/coverage?server='+server).json()['access']['chosen'],chosen)
+        with self.app.state.store.connect() as db:
+            self.assertEqual(db.execute('SELECT map_id FROM coverage_choices').fetchone()[0],map_id('测试地图'))
+            self.assertEqual(db.execute('SELECT map_id FROM coverage_global_choices').fetchone()[0],gm['id'])
         self.assertEqual(self.player.post('/api/coverage/choice',json={'server':'global','map_id':map_id('测试地图')}).status_code,422)
         with self.app.state.store.connect() as db:db.execute('UPDATE contributions SET bonus=0,quality_points=0')
-        reply=self.player.get('/api/coverage?server=global').json();self.assertEqual(reply['access']['level'],0);self.assertEqual(reply['access']['chosen'],gm['id'])
+        reply=self.player.get('/api/coverage?server=global').json();self.assertNotIn('access',reply)
+        with self.app.state.store.connect() as db:self.assertEqual(db.execute('SELECT map_id FROM coverage_global_choices').fetchone()[0],gm['id'])
+    def test_website_global_submission_marker_is_private_and_scope_specific(self):
+        sid=self.create()
+        target=self.entry
+        query={'server':'global','q':target['car'],'big':map_id(target['big'],'global')}
+        def cell(client, **overrides):
+            result=client.get('/api/coverage',params={**query,**overrides})
+            self.assertEqual(result.status_code,200,result.text)
+            return next(c for row in result.json()['rows'] if row['small']==target['small']
+                        for c in row['cells'] if c['target']['car']==target['car'])
+        own=cell(self.player)
+        self.assertEqual(own['mine'],{'id':sid,'status':'draft'})
+        self.assertIsNotNone(own['value'])
+        self.assertNotIn('mine',cell(self.client))
+        self.assertNotIn('mine',cell(self.player,oc='true'))
+        with self.new_client() as guest:self.assertNotIn('mine',cell(guest))
+
     def test_oc_submission_never_compares_against_non_oc_and_cannot_cross_scope(self):
         entry={**self.entry,'oc':True};m,_=self.plan(entry);self.assertTrue(m['result']['items'][0]['target']['oc']);r=self.execute(m);self.assertEqual(r.status_code,200,r.text)
         raw=self.global_writer.current()[1];data=json.loads(raw['gauntlet_data.global.json']);track=next(t for t in data['tracks'] if t['大地图']==entry['big'] and t['小地图']==entry['small'])

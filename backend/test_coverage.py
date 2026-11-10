@@ -87,7 +87,7 @@ class CoverageAPITests(unittest.TestCase):
     def setUp(self):
         fixtures.ContributionTests.setUp(self);self.client.close();self.player.close()
         self.samples=patch('backend.coverage.public_columns',return_value=set());self.samples.start();self.addCleanup(self.samples.stop)
-        self.app=create_app(self.path,score_version_lab=self.lab,contributions=True,coverage=True)
+        self.app=create_app(self.path,score_version_lab=self.lab,contributions=True,coverage=True,route_video_pilot=True)
         self.client=self.new_client();self.player=self.new_client();self.login(self.client,'owner@example.com');self.login(self.player,'player@example.com')
     def grant_fixture(self,count=5,high=0):
         uid=self.player_user['id']
@@ -116,16 +116,18 @@ class CoverageAPITests(unittest.TestCase):
         self.assertEqual(self.player.post(url,json={'map_id':'a'*24}).status_code,422)
         self.assertEqual(self.player.post(url,json=body).status_code,200);self.assertEqual(self.player.post(url,json=body).status_code,200)
         with self.app.state.store.connect() as db:self.assertEqual(state(db)['coverage_counts']['coverage_events'],1)
-        self.assertEqual(self.player.get('/api/coverage').json()['access']['chosen'],body['map_id'])
-    def test_ledger_reduction_removes_access_without_deleting_choice_and_new_schema_cannot_be_omitted(self):
+        with self.app.state.store.connect() as db:self.assertEqual(db.execute('SELECT map_id FROM coverage_choices').fetchone()[0],body['map_id'])
+    def test_ledger_reduction_preserves_public_read_and_choice_history(self):
         self.grant_fixture();self.player.post('/api/coverage/choice',json={'map_id':map_id('测试地图')})
         reply=self.player.get('/api/coverage',params={'tier':'高手','stars':'6'}).json();cell=next(c for c in reply['rows'][0]['cells'] if c['status']=='filled');self.assertEqual(cell['value'],25)
         with self.app.state.store.connect() as db:db.execute('UPDATE contributions SET quality_points=0,bonus=0')
-        reply=self.player.get('/api/coverage',params={'tier':'高手','stars':'6'}).json();self.assertEqual(reply['access']['level'],0);self.assertTrue(reply['access']['chosen']);self.assertTrue(all(c['value'] is None for c in reply['rows'][0]['cells']))
+        reply=self.player.get('/api/coverage',params={'tier':'高手','stars':'6'}).json();self.assertNotIn('access',reply);self.assertEqual(next(c for c in reply['rows'][0]['cells'] if c['status']=='filled')['value'],25)
+        with self.app.state.store.connect() as db:self.assertEqual(db.execute('SELECT count(*) FROM coverage_choices').fetchone()[0],1)
         with self.assertRaises(ValueError):create_app(self.path,score_version_lab=self.lab,contributions=True)
     def test_full_level_is_dynamic_admins_work_independently_and_unlocks_both_servers(self):
-        self.grant_fixture(15,5);self.assertEqual(self.player.get('/api/coverage').json()['access']['level'],2)
-        self.assertTrue(self.client.get('/api/coverage').json()['access']['admin'])
+        self.grant_fixture(15,5)
+        self.assertNotIn('access',self.player.get('/api/coverage').json())
+        self.assertNotIn('access',self.client.get('/api/coverage').json())
         r=self.player.get('/api/coverage?server=global').json();self.assertEqual(r['server'],'global');self.assertTrue(all(c['value'] is not None for row in r['rows'] for c in row['cells'] if c['status']=='filled'))
         self.assertEqual(self.player.get('/api/coverage?server=global&zone=四区').status_code,422)
     def test_existing_submission_chain_accepts_prefill_and_pending_is_private_without_filling_cell(self):
@@ -135,9 +137,35 @@ class CoverageAPITests(unittest.TestCase):
         self.assertEqual(self.player.post('/api/submissions/'+sid+'/submit',json={'revision':1}).status_code,200)
         after=self.player.get('/api/coverage',params={'tier':'高手','stars':'5','q':'恶魔'}).json()['rows'][0]['cells'][0];self.assertEqual(after['status'],'empty');self.assertEqual(after['mine']['status'],'pending')
         owner=self.client.get('/api/coverage',params={'tier':'高手','stars':'5','q':'恶魔'}).json()['rows'][0]['cells'][0];self.assertNotIn('mine',owner)
-        self.assertEqual(self.player.get('/api/coverage').json()['access']['points'],0)
+        with self.new_client() as guest:
+            anonymous=guest.get('/api/coverage',params={'tier':'高手','stars':'5','q':'恶魔'}).json()
+        self.assertNotIn('mine',anonymous['rows'][0]['cells'][0])
+        self.assertNotIn('access',anonymous)
+        self.assertIsNone(anonymous['user_id'])
     def test_disabled_user_rejected_and_responses_are_not_shared_cached(self):
         r=self.player.get('/api/coverage');self.assertIn('no-store',r.headers['cache-control']);self.assertEqual(r.headers['vary'],'Cookie')
         self.client.post('/api/admin/accounts/'+self.player_user['id']+'/control',json={'revision':0,'action':'disable','reason':'测试停用'})
         # Account control invalidates sessions. Public browsing can continue, with no account rights.
-        after=self.player.get('/api/coverage');self.assertEqual(after.status_code,200);self.assertIsNone(after.json()['user_id']);self.assertEqual(after.json()['access']['level'],0)
+        after=self.player.get('/api/coverage');self.assertEqual(after.status_code,200);self.assertIsNone(after.json()['user_id']);self.assertNotIn('access',after.json())
+
+    def test_guest_reads_all_public_cells_in_both_servers_and_cannot_maintain_video(self):
+        with self.new_client() as guest:
+            for server in ('cn','global'):
+                with self.subTest(server=server):
+                    params={'server':server,'tier':'高手' if server=='cn' else '理论'}
+                    response=guest.get('/api/coverage',params=params)
+                    self.assertEqual(response.status_code,200)
+                    result=response.json()
+                    signed=self.player.get('/api/coverage',params=params).json()
+                    self.assertEqual(result['rows'],signed['rows'])
+                    self.assertNotIn('access',result)
+                    self.assertNotIn('rules',result)
+                    cells=[c for row in result['rows'] for c in row['cells']]
+                    self.assertTrue(any(c['status']=='filled' for c in cells))
+                    self.assertTrue(all(c['value'] is not None for c in cells if c['status']=='filled'))
+                    self.assertTrue(all(c['value'] is None for c in cells if c['status']=='empty'))
+                    self.assertTrue(all('mine' not in c and c['visibility']=='public' for c in cells))
+            target={'server':'cn','big':'测试地图','small':'测试赛道','car':'恶魔'}
+            self.assertIn(guest.post('/api/route-videos/cell',json=target).status_code,(401,403))
+            self.assertEqual(self.player.post('/api/route-videos/cell',json=target).status_code,403)
+            self.assertEqual(self.client.post('/api/route-videos/cell',json=target).status_code,200)
