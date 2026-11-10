@@ -14,12 +14,18 @@ function functionalTheme(theme){
   ['#resultGrid .result-car.empty','.result-row.is-empty .result-car.empty'],
   ['#resultGrid .result-stars','.result-row .result-stars'],
   ['#resultGrid .result-score','.result-row .result-time'],
+  ['#mapRowsContainer select','.map-section .map-fields .select, .ocr-workspace .map-fields .select',['min-height','padding','font-size','text-overflow']],
  ];
  const mobileCondition='@media (max-width: 640px) and (orientation: portrait)';
- const mobileResults=resultMappings.map(([web,native])=>{
+ const mobileResults=resultMappings.map(([web,native,properties])=>{
   const source=theme.rules.find(r=>r.source==='styles.css'&&r.selector===web&&r.conditions.includes(mobileCondition));
-  return source?native+'{'+resolve(source.declarations)+'}\n':'';
+  return source?mappedRule(native,source,properties):'';
  }).join('');
+ function mappedRule(selector,source,properties) {
+  if(!properties)return selector+'{'+resolve(source.declarations)+'}\n';
+  const declarations=Object.fromEntries(source.declarations.split(';').map(d=>d.trim()).filter(Boolean).map(d=>d.split(/:(.*)/s).slice(0,2)));
+  return rule(selector,Object.fromEntries(properties.filter(key=>key in declarations).map(key=>[key,declarations[key].trim()])));
+ }
  const sharedHomeStyles=[
   ['.toggle-group','.toolbar .mode-row',['gap','padding','border','border-radius','background']],
   ['.toggle-group button.active, .toggle-group .toggle-choice.active','.toolbar .toggle-choice.active',['background','color','font-weight']],
@@ -31,12 +37,16 @@ function functionalTheme(theme){
   ['.garage-search','.garage .search',['background','color','border','border-radius','font-size']],
   ['.sc-control.is-on','.results .route-row.is-on',['background','color','border-color']],
   ['.map-ban-hint','.map-ban-dialog .map-ban-hint',['color','font-size','line-height']],
+  ['#resultGrid .map-ban-trigger','.results .result-car .map-ban-trigger',['min-height','padding','border','border-radius','background','color','font-size','white-space']],
+  ['#resultGrid .map-ban-trigger[data-active]','.results .result-car .map-ban-trigger.is-active',['color']],
+  ['.route-video-links','.track-top-cars .track-top-videos',['display','gap','margin-top','font-size','line-height','overflow-wrap']],
+  ['.route-video-links a','.track-top-videos .top-video-link',['color']],
+  ['.route-video-links summary','.track-top-videos .top-videos-toggle',['color']],
  ];
  const homeStyles=sharedHomeStyles.map(([web,native,properties])=>{
   const source=theme.rules.find(r=>r.source==='styles.css'&&!r.conditions.length&&r.selector.replace(/\s+/g,' ')===web);
   if(!source)return '';
-  const declarations=Object.fromEntries(source.declarations.split(';').map(d=>d.trim()).filter(Boolean).map(d=>d.split(/:(.*)/s).slice(0,2)));
-  return rule(native,Object.fromEntries(properties.filter(key=>key in declarations).map(key=>[key,declarations[key].trim()])));
+  return mappedRule(native,source,properties);
  }).join('');
  return '/* Generated mobile theme mapping; rem uses the website root 16px. */\n'+
  rule('.mirror-page',{padding:mobile.margin.split(' ')[0],'font-size':body['font-size'],'line-height':body['line-height']})+

@@ -210,8 +210,12 @@ Page({
       routes:selected==='off'?[]:types.includes(selected)?[selected]:types};
   },
   topVideoItems(top,entry) {
-    return top.items.map(item=>({...item,videos:entry?.videos?.[item.car]||[],
-      videosOpen:entry?.expanded.has(item.car)||false}));
+    return top.items.map(item=>{
+      const videos=entry?.videos?.[item.car]||[];
+      const videosOpen=entry?.expanded.has(item.car)||false;
+      return {...item,videos,videoCount:videos.length,videosOpen,
+        visibleVideos:videos.length<=1||videosOpen?videos:[]};
+    });
   },
   topVideoRow(index,draft,map,top) {
     const scope=this.routeVideoScope(draft,map),cars=top.items.map(item=>item.car);
@@ -224,7 +228,7 @@ Page({
       entry.videos=videos;
       const row=this.data.rows?.[index];
       if(!this.unloaded&&row?.videoKey===key&&this.topVideoRows.get(index)===entry){
-        this.setData({['rows['+index+'].top.items']:this.topVideoItems(row.top,entry)});
+        this.setData({['rows['+index+']']:{...row,top:{...row.top,items:this.topVideoItems(row.top,entry)}}});
       }
     }).catch(()=>{
       if(this.topVideoRows.get(index)===entry)this.topVideoRows.delete(index);
@@ -237,7 +241,7 @@ Page({
     if(!row?.topOpen||!entry||row.videoKey!==entry.key||!(entry.videos?.[car]?.length>1))return;
     if(entry.expanded.has(car))entry.expanded.delete(car);
     else entry.expanded.add(car);
-    this.setData({['rows['+index+'].top.items']:this.topVideoItems(row.top,entry)});
+    this.setData({['rows['+index+']']:{...row,top:{...row.top,items:this.topVideoItems(row.top,entry)}}});
   },
   openTopVideo(e) {
     const {index,car,videoId}=e.currentTarget.dataset,row=this.data.rows?.[index];

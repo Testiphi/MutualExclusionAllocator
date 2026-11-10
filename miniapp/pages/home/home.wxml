@@ -62,11 +62,9 @@
        <view wx:if="{{!item.top.items.length}}" class="track-top-note">当前车库下无可用车</view>
        <view wx:for="{{item.top.items}}" wx:for-item="topCar" wx:key="car" class="track-top-item">
         <view>{{index + 1}}. {{topCar.car}}{{topCar.oc ? ' [OC]' : ''}}<text wx:if="{{topCar.stars !== null}}"> ★{{topCar.stars}}</text><text class="track-top-score">{{topCar.scoreText}}</text></view>
-        <view wx:if="{{topCar.videos.length}}" class="track-top-videos">
-         <button wx:if="{{topCar.videos.length > 1}}" class="top-videos-toggle" data-index="{{item.index}}" data-car="{{topCar.car}}" bindtap="toggleTopVideos">{{topCar.videosOpen ? '▾' : '▸'}} 跑法视频 {{topCar.videos.length}}</button>
-         <block wx:if="{{topCar.videos.length === 1 || topCar.videosOpen}}">
-          <button wx:for="{{topCar.videos}}" wx:for-item="video" wx:key="id" class="top-video-link" data-index="{{item.index}}" data-car="{{topCar.car}}" data-video-id="{{video.id}}" bindtap="openTopVideo">{{video.title}}</button>
-         </block>
+        <view wx:if="{{topCar.videoCount}}" class="track-top-videos">
+         <button wx:if="{{topCar.videoCount > 1}}" class="top-videos-toggle" data-index="{{item.index}}" data-car="{{topCar.car}}" bindtap="toggleTopVideos">{{topCar.videosOpen ? '▾' : '▸'}} 跑法视频 {{topCar.videoCount}}</button>
+          <button wx:for="{{topCar.visibleVideos}}" wx:for-item="video" wx:key="id" class="top-video-link" data-index="{{item.index}}" data-car="{{topCar.car}}" data-video-id="{{video.id}}" bindtap="openTopVideo">{{video.title}}</button>
         </view>
        </view>
       </view>
