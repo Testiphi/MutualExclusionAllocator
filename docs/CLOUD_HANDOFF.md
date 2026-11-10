@@ -1,3 +1,12 @@
+## 2026-11-10 网页 2a57aa17 上线
+
+- 23:05:17 CST 开始应用切换。23:08:21 CST 起的收尾回执确认 current、网站 PID 287231、OCR PID 287228 均指向 /opt/racepick/releases/2a57aa1739d1e96301c6b302。源码 11fe5a44cc46c8e9291aa2b6f097f520bb9b65e1，上一版本 80fd1c937db91d3df4ac1170。发布范围为首页键盘操作和双服网页成绩公开，沿用现有账号库、活动成绩及视频绑定。
+- 包 SHA-256 9dd79bd2d7af54cd72e2f55647cc35ce4d56280d9eec536c4be89694ec5c8672，外层 10 文件、内层 183 文件及发布 ID 校验通过。Ubuntu 24.04 / Python 3.12.3 的隔离网络和生产路径屏蔽检查通过，37 个锁定 wheel 离线安装、临时库冒烟及恢复、CPU 合成图 OCR 通过。最终路径自检日志在下述回执根目录的 final-runtime.BMEHni6H/selfcheck.log。
+- 公网静态资源匹配发布包，OCR ready，正式 A 启用且云车库写入关闭。国服匿名成绩页 994 个有成绩单元格可读，国际服 624 个可读。首次切换验收误将国际服网页 dataset_version 与活动成绩指针比较，收尾按不同字段复核通过，无需重切。浏览器键盘交互验收沿用发布前记录，本轮生产回执覆盖静态资源和 HTTP 接口。
+- 国服活动指针 d6c91bbffea4c2036d1e294887faba5b，国际服 8f4c827ecd4b5b3466bc39bcbd1a521c。国际服网页 dataset_version 为 39ac7a7f856073e47520e9f25f71c21e2f8018bd7fc1c4b3ff476b15a94b489f。五份活动成绩文件在切换前、上线后和恢复副本的哈希一致。全部 1128 条视频行（1117 启用、11 停用）SHA-256 为 f1c13d542b5cd7561553393f8235d9a054a5feb7340cf32255d0a60c2e08fdae。公网矩阵逐格匹配，国服 797 格／953 条，国际服 160 格／164 条。
+- 切换前成套备份 scores-20261110T150246044384Z.zip，SHA-256 0a7f1f8e4cd3d2e7315012387eb23eaf985cd9f9c391bd4d2f3d99d3a065ae04，独立恢复目录 9becc9afc52ffe5aaaa1f448。上线后备份 scores-20261110T150825604724Z.zip，SHA-256 540533c63a78044c88a65b34ea2f0b8dca322d1c1bfa863eeb8b34425dba3662，独立恢复目录 04ea4530505e91e98b4dd178。两次演练均未替换活动库，备份位于 /var/lib/racepick/backups。
+- 回执根目录 /root/racepick-deploy/web-access-2a57aa17-selfcheck.yl7nWL4f，切换前备份 precutover-backup.6HtvJNzP，切换 cutover.ji8ztr1q，收尾 postcutover.42tEQoDC，末尾标记 POSTCUTOVER_BACKUP_RESTORE_OK。备份 timer 为 enabled、active(waiting)，下次触发 2026-11-11 04:17:16 CST。
+
 ## 2026-11-10 跑法视频 1117 条批次 0272786b 上线
 
 - 20:55:25 CST 生产复核通过，967 条启用绑定逐键零差异，154 条可新增、35 条待更新、4 条待停用，零冲突。冻结 ID `0272786bc62ca02ce75aee31`，计划 SHA-256 `0272786bc62ca02ce75aee319f21a8732f11c226c7a2c6b6181e763e88a8c467`。现场回执 `/root/racepick-deploy/video1117-recheck.5krxipCq/field.log`。
