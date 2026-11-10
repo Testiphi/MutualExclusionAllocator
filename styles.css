@@ -92,7 +92,7 @@ h1 {
     border-radius: var(--rp-radius-control);
     background: var(--rp-bg);
 }
-.toggle-group label,
+.toggle-group button,
 .toggle-group .toggle-choice {
     display: inline-flex;
     align-items: center;
@@ -109,15 +109,15 @@ h1 {
     text-decoration: none;
     transition: background .15s, color .15s;
 }
-.toggle-group label::before,
+.toggle-group button::before,
 .toggle-group .toggle-choice::before { content: none; }
-.toggle-group label.active,
+.toggle-group button.active,
 .toggle-group .toggle-choice.active {
     background: var(--rp-raised);
     color: var(--rp-text);
     font-weight: 600;
 }
-.toggle-group label.inactive:hover,
+.toggle-group button.inactive:hover,
 .toggle-group .toggle-choice.inactive:hover {
     background: var(--rp-surface);
     color: var(--rp-text-2);
@@ -126,7 +126,7 @@ h1 {
 .mode-controls { display:flex; flex-direction:column; align-items:flex-start; gap:8px; margin:0 0 16px; }
 .mode-controls .toggle-group { margin:0; flex-wrap:wrap; row-gap:2px; align-self:flex-start; }
 .mode-controls .toggle-group + .toggle-group { padding-top:2px; border-top:0; }
-.mode-controls label { white-space:nowrap; }
+.mode-controls button { white-space:nowrap; }
 .mode-controls .toggle-choice { white-space:nowrap; }
 .mode-controls .toggle-choice:focus-visible { outline:2px solid var(--rp-focus); outline-offset:2px; border-radius:var(--rp-radius-chip); }
 .server-note { color:var(--rp-text-2); font-size:.8rem; line-height:1.55; margin:0 0 12px; }
@@ -150,7 +150,6 @@ h1 {
     cursor: pointer;
     padding: 1px 4px;
     user-select: none;
-    position: relative;
     border-radius: 4px;
 }
 .star-display:hover {
@@ -398,6 +397,7 @@ select:disabled {
     scrollbar-color: var(--rp-border) transparent;
 }
 .car-tag {
+    position: relative;
     display: inline-flex;
     align-items: center;
     gap: 2px;
@@ -674,7 +674,7 @@ select:disabled {
 .loading-box p { color: var(--rp-text-2); font-size: var(--rp-size-sm); margin: 0; }
 @media (prefers-reduced-motion: reduce) {
     .loading-spinner { animation: none; }
-    .toggle-group label, .toggle-group .toggle-choice, .map-row, .car-tag { transition: none; }
+    .toggle-group button, .toggle-group .toggle-choice, .map-row, .car-tag { transition: none; }
 }
 
 .garage-actions button,.garage-confirm button{background:var(--rp-raised);color:var(--rp-text);border:1px solid var(--rp-border);border-radius:var(--rp-radius-control);padding:7px 12px;cursor:pointer}.garage-confirm{background:var(--rp-surface);color:var(--rp-text);border:1px solid var(--rp-border);border-radius:var(--rp-radius-card);max-width:440px}.garage-confirm::backdrop{background:#0009}#garageSaveStatus{color:var(--rp-warning);font-size:var(--rp-size-sm)}
@@ -742,7 +742,7 @@ select:disabled {
     .class-filter-btn { flex: 0 0 auto; min-height: 32px; }
 
     .garage-actions button { min-height: 42px; font-size: 13px; }
-    .toggle-group label, .toggle-group .toggle-choice { min-height: 32px; }
+    .toggle-group button, .toggle-group .toggle-choice { min-height: 32px; }
     .car-tag { min-height: 34px; }
     .class-filter-btn { min-height: 34px; }
 
@@ -819,4 +819,25 @@ select:disabled {
     #resultGrid .result-car:has(.map-ban-trigger) { padding-inline:0; }
     #resultGrid .map-ban-trigger { position:static; transform:none; margin-left:3px; }
     .map-ban-list { grid-template-columns:minmax(0,1fr); }
+}
+
+.toggle-group button, .car-choice, button.star-display {
+    border: 0;
+    background: transparent;
+    font-family: inherit;
+}
+.car-choice {
+    color: inherit;
+    font-size: inherit;
+    font-weight: inherit;
+    line-height: inherit;
+    padding: 0;
+    cursor: pointer;
+}
+.toggle-group button:focus-visible, .class-filter-btn:focus-visible,
+.car-choice:focus-visible, button.star-display:focus-visible, .star-opt:focus-visible,
+.map-row select:focus-visible, #schemeSelect:focus-visible, #recommendBtn:focus-visible,
+#mapBanDialog input:focus-visible, .map-ban-trigger:focus-visible, #garageSearch:focus-visible {
+    outline: 2px solid var(--rp-focus);
+    outline-offset: 2px;
 }

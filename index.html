@@ -31,16 +31,16 @@
         <a class="toggle-choice inactive" id="serverGlobalLink" href="?server=global">国际服</a>
     </nav>
     <!-- 档位切换 -->
-    <div class="toggle-group" id="tierToggle">
-        <label data-tier="理论" class="inactive">理论档</label>
-        <label data-tier="高手" class="active">高手档</label>
-        <label data-tier="普通" class="inactive">普通档</label>
-        <label data-tier="自动" class="inactive">自动档</label>
+    <div class="toggle-group" id="tierToggle" role="group" aria-label="档位">
+        <button type="button" data-tier="理论" class="inactive" aria-pressed="false">理论档</button>
+        <button type="button" data-tier="高手" class="active" aria-pressed="true">高手档</button>
+        <button type="button" data-tier="普通" class="inactive" aria-pressed="false">普通档</button>
+        <button type="button" data-tier="自动" class="inactive" aria-pressed="false">自动档</button>
     </div>
 
-    <div class="toggle-group" id="zoneToggle">
-        <label data-zone="zone5" class="active">五区</label>
-        <label data-zone="zone4" class="inactive">四区</label>
+    <div class="toggle-group" id="zoneToggle" role="group" aria-label="分区">
+        <button type="button" data-zone="zone5" class="active" aria-pressed="true">五区</button>
+        <button type="button" data-zone="zone4" class="inactive" aria-pressed="false">四区</button>
     </div>
     </div>
     <p class="server-note" id="serverNote" hidden></p>
@@ -67,15 +67,15 @@
                 <span id="garageSaveStatus" role="status">手动保存 · 临时选择不会覆盖车库</span>
             </div>
         <div class="zone-hint" id="zoneHint">星级对应加速改装等级，会影响成绩换算</div>
-        <input class="garage-search" id="garageSearch" type="text" placeholder="搜索车辆（支持昵称/真名）…" autocomplete="off">
+        <input class="garage-search" id="garageSearch" aria-label="搜索车辆" type="text" placeholder="搜索车辆（支持昵称/真名）…" autocomplete="off">
         <div class="class-filter" id="classFilter">
-            <span class="class-filter-btn active" data-class="">全部</span>
-            <span class="class-filter-btn" id="classFilterR" data-class="R">R</span>
-            <span class="class-filter-btn" data-class="S">S</span>
-            <span class="class-filter-btn" data-class="A">A</span>
-            <span class="class-filter-btn" data-class="B">B</span>
-            <span class="class-filter-btn" data-class="C">C</span>
-            <span class="class-filter-btn" data-class="D">D</span>
+            <button type="button" class="class-filter-btn active" data-class="" aria-pressed="true">全部</button>
+            <button type="button" class="class-filter-btn" id="classFilterR" data-class="R" aria-pressed="false">R</button>
+            <button type="button" class="class-filter-btn" data-class="S" aria-pressed="false">S</button>
+            <button type="button" class="class-filter-btn" data-class="A" aria-pressed="false">A</button>
+            <button type="button" class="class-filter-btn" data-class="B" aria-pressed="false">B</button>
+            <button type="button" class="class-filter-btn" data-class="C" aria-pressed="false">C</button>
+            <button type="button" class="class-filter-btn" data-class="D" aria-pressed="false">D</button>
         </div>
         <div class="car-grid" id="carGrid"></div>
         </div>
@@ -173,6 +173,7 @@
     const mapBanDialog = document.getElementById('mapBanDialog');
     const mapBanList = document.getElementById('mapBanList');
     const mapBans = new Map();
+    let mapBanOpener = null;
     let editingMapBan;
     const schemeCountBadge = document.getElementById('schemeCountBadge');
     const loadingOverlay = document.getElementById('loadingOverlay');
@@ -708,6 +709,7 @@
         }
 
         document.querySelectorAll('.class-filter-btn').forEach(btn => {
+            btn.setAttribute('aria-pressed', String((btn.dataset.class || null) === filterClass));
             const cls = btn.dataset.class || null;
             btn.classList.toggle('active', cls === filterClass);
         });
@@ -728,12 +730,17 @@
             sortMode
         );
 
+        const active = document.activeElement;
+        const previousCar = active?.closest?.('.car-tag')?.dataset.carNick;
+        const previousControl = active?.closest?.('.oc-toggle') ? '.oc-toggle'
+            : active?.closest?.('.star-display, .star-opt') ? 'button.star-display' : '.car-choice';
         carGrid.innerHTML = '';
         if (filtered.length === 0) {
             const msg = document.createElement('div');
             msg.className = 'no-match';
             msg.textContent = `未找到“${searchQuery}”`;
             carGrid.appendChild(msg);
+            if (previousCar) document.getElementById('garageSearch').focus();
             return;
         }
 
@@ -745,22 +752,38 @@
             const label = realName && searchQuery && realName.toLowerCase().includes(searchQuery.toLowerCase())
                 ? `${car} (${realName})`
                 : car;
-            var carStars = getCarStars(car);
-            var initStars = getInitCarStars(car);
-            var starsHtml = '<span class="star-display" data-car="' + car + '">';
-            starsHtml += '★' + initStars;
-            // popover 双区都有
-            var range = getStarRange(car);
+            const choice = document.createElement('button');
+            choice.type = 'button';
+            choice.className = 'car-choice';
+            choice.textContent = label;
+            choice.setAttribute('aria-pressed', String(selectedCars.has(car)));
+            const stars = document.createElement(APP_CONFIG.server === 'global' ? 'span' : 'button');
+            stars.className = 'star-display';
+            stars.textContent = '★' + getInitCarStars(car);
+            span.append(choice, stars);
             if (APP_CONFIG.server !== 'global') {
-                starsHtml += '<span class="star-popover" data-car="' + car + '">';
-                for (var si = range.min; si <= range.max; si++) {
-                    var activeCls = si === carStars ? ' active-star' : '';
-                    starsHtml += '<button class="star-opt' + activeCls + '" data-stars="' + si + '" data-car="' + car + '">' + si + '</button>';
+                stars.type = 'button';
+                stars.setAttribute('aria-label', car + ' 星级，当前 ' + getCarStars(car) + ' 星');
+                stars.setAttribute('aria-expanded', 'false');
+                const popover = document.createElement('span');
+                popover.className = 'star-popover';
+                popover.id = 'garage-stars-' + carList.indexOf(car);
+                stars.setAttribute('aria-controls', popover.id);
+                const {min, max} = getStarRange(car);
+                for (let level = min; level <= max; level++) {
+                    const option = document.createElement('button');
+                    const selected = level === getCarStars(car);
+                    option.type = 'button';
+                    option.className = 'star-opt' + (selected ? ' active-star' : '');
+                    option.dataset.stars = level;
+                    option.dataset.car = car;
+                    option.textContent = level;
+                    option.setAttribute('aria-label', level + ' 星');
+                    option.setAttribute('aria-pressed', String(selected));
+                    popover.appendChild(option);
                 }
-                starsHtml += '</span>';
+                span.appendChild(popover);
             }
-            starsHtml += '</span>';
-            span.innerHTML = label + starsHtml;
             if (APP_CONFIG.server === 'global' && selectedCars.has(car) && ocAvailable.has(car)) {
                 span.classList.add('has-oc-toggle');
                 const button = document.createElement('button');
@@ -773,7 +796,11 @@
             if (APP_CONFIG.server === 'global' && !Number.isFinite(carStats[realName]?.score)) span.title = 'EVO参数待补';
             span.dataset.carNick = car;
             carGrid.appendChild(span);
+            if (car === previousCar) {
+                (span.querySelector(previousControl) || choice).focus({preventScroll:true});
+            }
         });
+        if (previousCar && !filtered.includes(previousCar)) document.getElementById('garageSearch').focus();
     }
 
     /** 处理车库标签点击（通过 carGrid 事件委托） */
@@ -869,6 +896,7 @@
         const button = document.createElement('button');
         button.type = 'button';
         button.className = 'map-ban-trigger';
+        button.dataset.mapBanFocusKey = key;
         button.textContent = '⊘ 禁车';
         button.setAttribute('aria-haspopup', 'dialog');
         const count = mapBans.get(key)?.size || 0;
@@ -880,6 +908,7 @@
                 .filter(car => selectedCars.has(car));
             const cars = [...new Set([...candidates, ...banned])];
             editingMapBan = key;
+            mapBanOpener = button;
             mapBanDialog.returnValue = '';
             document.getElementById('mapBanTitle').textContent = small + ' · 禁车';
             mapBanList.replaceChildren(...cars.map(car => {
@@ -907,7 +936,15 @@
 
     document.getElementById('mapBanAll').onclick = () => setMapBanChecks(true);
     document.getElementById('mapBanNone').onclick = () => setMapBanChecks(false);
+    function focusMapBanTrigger(key) {
+        const trigger = [...resultGrid.querySelectorAll('.map-ban-trigger')]
+            .find(button => button.dataset.mapBanFocusKey === key);
+        (trigger || schemeSelect).focus({preventScroll:true});
+    }
     mapBanDialog.onclose = () => {
+        if (mapBanOpener?.isConnected) mapBanOpener.focus({preventScroll:true});
+        else focusMapBanTrigger(editingMapBan);
+        mapBanOpener = null;
         if (mapBanDialog.returnValue !== 'apply') return;
         const banned = new Set([...mapBanList.querySelectorAll('input:checked')].map(input => input.value));
         if (banned.size) mapBans.set(editingMapBan, banned);
@@ -1067,6 +1104,7 @@
      * 每列突出车辆、有效星级及成绩；总优先级仅在方案选择中显示。
      */
     function renderResultGrid(scheme) {
+        const focusedBan = document.activeElement?.dataset?.mapBanFocusKey;
         if (!scheme) {
             renderEmptyResult();
             renderResultGuidance(null);
@@ -1121,6 +1159,7 @@
                 RacePickRouteVideos.showForCar(card, APP_CONFIG.server, map, scheme.assignment[i], getRouteVideoScope(map));
             }
         }
+        if (focusedBan) focusMapBanTrigger(focusedBan);
     }
 
     // 更新下拉菜单及显示
@@ -1292,32 +1331,51 @@
                 }
                 return;
             }
-            // 星级显示按钮点击 → 切换 popover 显隐
             const display = e.target.closest('.star-display');
             if (display) {
-                const popover = display.querySelector('.star-popover');
-                if (popover) {
-                    const isOpen = popover.classList.contains('show');
-                    // 关闭其他所有 popover
-                    document.querySelectorAll('.star-popover.show').forEach(function(p) { p.classList.remove('show'); });
-                    if (!isOpen) {
-                        popover.classList.add('show');
-                    }
+                const popover = display.parentElement.querySelector('.star-popover');
+                if (!popover) return;
+                const isOpen = popover.classList.contains('show');
+                closeStarOptions();
+                if (!isOpen) {
+                    popover.classList.add('show');
+                    display.setAttribute('aria-expanded', 'true');
+                    (popover.querySelector('.active-star') || popover.firstElementChild).focus();
                 }
                 return;
             }
-            // 普通标签点击 → 切换选中
-            const tag = e.target.closest('.car-tag');
-            if (tag && tag.dataset.carNick) {
-                onCarTagClick(e);
-            }
+            if (e.target.closest('.car-tag')) onCarTagClick(e);
         });
 
-        // 点击页面其他地方关闭所有 popover
-        document.addEventListener('click', function(e) {
-            if (!e.target.closest('.star-display') && !e.target.closest('.star-popover')) {
-                document.querySelectorAll('.star-popover.show').forEach(function(p) { p.classList.remove('show'); });
+        function closeStarOptions() {
+            for (const popover of carGrid.querySelectorAll('.star-popover.show')) {
+                popover.classList.remove('show');
+                popover.parentElement.querySelector('button.star-display').setAttribute('aria-expanded', 'false');
             }
+        }
+        carGrid.addEventListener('keydown', e => {
+            const popover = e.target.closest('.star-popover.show');
+            if (!popover) return;
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                const trigger = popover.parentElement.querySelector('button.star-display');
+                closeStarOptions();
+                trigger.focus();
+            } else if (['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(e.key)) {
+                e.preventDefault();
+                const options = [...popover.querySelectorAll('button')];
+                const index = options.indexOf(e.target);
+                const next = e.key === 'Home' ? 0 : e.key === 'End' ? options.length - 1
+                    : (index + (e.key === 'ArrowRight' ? 1 : -1) + options.length) % options.length;
+                options[next].focus();
+            }
+        });
+        carGrid.addEventListener('focusout', e => {
+            const tag = e.target.closest('.car-tag');
+            if (tag && !tag.contains(e.relatedTarget)) closeStarOptions();
+        });
+        document.addEventListener('click', e => {
+            if (!e.target.closest('.star-display, .star-popover')) closeStarOptions();
         });
 
         // 方案下拉切换恢复计算结果（已有，保留）
@@ -1338,7 +1396,7 @@
     // 档位切换
     function initTierToggle() {
         if (APP_CONFIG.server === 'global') { currentTier = '理论'; document.getElementById('tierToggle').hidden = true; return; }
-        const labels = document.querySelectorAll('#tierToggle label');
+        const labels = document.querySelectorAll('#tierToggle button');
         labels.forEach(label => {
             label.addEventListener('click', () => {
                 const tier = label.dataset.tier;
@@ -1347,6 +1405,7 @@
                 // 更新样式
                 labels.forEach(l => {
                     l.className = l.dataset.tier === currentTier ? 'active' : 'inactive';
+                    l.setAttribute('aria-pressed', String(l.dataset.tier === currentTier));
                 });
                 // 重构建地图索引（档位数据不同）
                 buildMapIndex();
@@ -1359,6 +1418,7 @@
         // 初始样式
         labels.forEach(l => {
             l.className = l.dataset.tier === currentTier ? 'active' : 'inactive';
+            l.setAttribute('aria-pressed', String(l.dataset.tier === currentTier));
         });
     }
 
@@ -1376,7 +1436,7 @@
 
     function initZoneToggle() {
         if (APP_CONFIG.server === 'global') { currentZone = 'zone5'; document.getElementById('zoneToggle').hidden = true; return; }
-        const labels = document.querySelectorAll('#zoneToggle label');
+        const labels = document.querySelectorAll('#zoneToggle button');
         labels.forEach(label => {
             label.addEventListener('click', () => {
                 const zone = label.dataset.zone;
@@ -1386,6 +1446,7 @@
                 // 更新toggle样式
                 labels.forEach(l => {
                     l.className = l.dataset.zone === currentZone ? 'active' : 'inactive';
+                    l.setAttribute('aria-pressed', String(l.dataset.zone === currentZone));
                 });
                 // 四区提示显示切换
                 var hint = document.getElementById('zoneHint');
@@ -1400,6 +1461,7 @@
         // 设置初始样式
         labels.forEach(l => {
             l.className = l.dataset.zone === currentZone ? 'active' : 'inactive';
+            l.setAttribute('aria-pressed', String(l.dataset.zone === currentZone));
         });
     }
 
