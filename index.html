@@ -531,9 +531,18 @@
 
     // 刷新大地图选项(互斥避免同一大地图重复)
     function refreshBigMaps() {
-        const oldBigValues = bigSelects.map(sel => sel.value);
+        const currentSelectedBigs = new Set();
+        const oldBigValues = bigSelects.map(sel => {
+            const big = sel.value;
+            if (!big || !bigMapList.includes(big)) return '';
+            if (currentSelectedBigs.has(big)) {
+                mapSelectionRevision++;
+                return '';
+            }
+            currentSelectedBigs.add(big);
+            return big;
+        });
         const oldSmallValues = smallSelects.map(sel => sel.value);
-        const currentSelectedBigs = oldBigValues.filter(v => v !== '');
 
         bigSelects.forEach((sel, idx) => {
             const oldVal = oldBigValues[idx];
@@ -546,9 +555,7 @@
                 const opt = document.createElement('option');
                 opt.value = big;
                 opt.textContent = big;
-                const usedCount = currentSelectedBigs.filter(v => v === big).length;
-                const isSelf = (oldVal === big);
-                if (!isSelf && usedCount > 0) opt.disabled = true;
+                opt.disabled = oldVal !== big && currentSelectedBigs.has(big);
                 sel.appendChild(opt);
             });
             if (oldVal && Array.from(sel.options).some(opt => opt.value === oldVal && !opt.disabled)) {
@@ -929,6 +936,8 @@
 
     // 获取当前有效地图列表
     function getCurrentValidMaps() {
+        const bigs = bigSelects.map(sel => sel.value).filter(Boolean);
+        if (new Set(bigs).size !== bigs.length) refreshBigMaps();
         const maps = [];
         for (let i = 0; i < ROWS; i++) {
             const big = bigSelects[i].value;
