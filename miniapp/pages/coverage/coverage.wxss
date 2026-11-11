@@ -20,8 +20,11 @@
 .public-check checkbox .wx-checkbox-input {width:15px;height:15px;margin:0;}
 .public-legend,.public-summary {color:#9aa4b2;font-size:12px;line-height:1.6;}
 .public-legend {margin-top:10px;}
-.public-reference-hint {margin-top:14px;}
+.public-reference-panel {margin:0 0 20px;padding:14px;border:1px solid #21262d;border-radius:8px;background:#0d1117;}
+.public-reference-panel .public-toolbar rp-select,.public-reference-panel .public-field,.public-reference-panel .public-check {margin-top:0;}
+.public-reference-hint {margin:14px 0;}
 .public-summary {margin:7px 0;}
+.public-reference-panel .public-summary {margin:14px 0;color:#e6edf3;font-size:14px;}
 .public-status {margin:7px 0;color:#e3b341;font-size:12px;}
 .public-status button {margin-left:6px;font-size:12px;}
 .public-scroll {width:100%;max-height:460px;border:1px solid #30363d;border-radius:12px 12px 0 0;background:#0d1117;}

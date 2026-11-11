@@ -9,6 +9,7 @@
     <button class="{{publicMode === 'scores' ? 'current' : ''}}" data-mode="scores" bindtap="publicTab">成绩表</button>
     <button class="{{publicMode === 'videos' ? 'current' : ''}}" data-mode="videos" bindtap="publicTab">跑法参考</button>
    </view>
+   <view class="{{publicMode === 'videos' ? 'public-reference-panel' : ''}}">
    <view wx:if="{{publicMode === 'scores'}}" class="public-toolbar">
     <rp-select variant="score" label="服别" options="{{publicServers}}" value="{{scoreServer}}" data-key="scoreServer" bindchange="publicFilter"/>
     <rp-select variant="score" label="大地图" options="{{scoreMaps}}" value="{{scoreMap}}" data-key="scoreMap" bindchange="publicFilter"/>
@@ -80,5 +81,6 @@
       class="{{item.zone === scoreZone && item.tier === scoreTier ? 'current' : ''}}">{{item.label}}</button>
     </view>
    </scroll-view>
+   </view>
   </view>
  </view>
