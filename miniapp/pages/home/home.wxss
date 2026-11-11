@@ -236,4 +236,4 @@
 .map-ban-dialog .map-ban-title { font-weight:700; }
 .map-ban-dialog .map-ban-hint { margin:0 0 12px; }
 .map-ban-dialog .map-ban-choices { display:grid; grid-template-columns:minmax(0,1fr); }
-.map-ban-dialog .map-ban-actions button { margin:0; }
+.map-ban-dialog .map-ban-actions button { width:auto; margin:0; }
