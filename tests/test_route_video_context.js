@@ -55,11 +55,20 @@ test('manual tiers share videos and automatic mode uses explicit automatic refer
         ['跑法视频 2', '9x8 偏僻小道 19.8（自动）', '9x8（自动）']);
 });
 
-test('zone and enabled special route constrain links; detached results stay empty', async () => {
-    const zone4 = await render('普通', '四区', ['旧跳图']);
-    assert.deepEqual(zone4.children.map(node => node.textContent),
-        ['跑法视频 3', '9x8 偏僻小道 19.169', '9x8 四区参考', '9x8（旧跳图）']);
+test('only enabled special routes are shown, with no fallback to normal links', async () => {
+    const oldJump = await render('普通', '四区', ['旧跳图']);
+    assert.equal(oldJump.tag, 'a');
+    assert.equal(oldJump.textContent, '9x8（旧跳图）');
+
+    const both = await render('普通', '五区', ['新跳图', '旧跳图']);
+    assert.deepEqual(both.children.map(node => node.textContent),
+        ['跑法视频 2', '9x8（新跳图）', '9x8（旧跳图）']);
+
+    assert.equal(await render('普通', '五区', ['滑雪']), undefined);
     assert.equal(await render('普通', '五区', [], '帕梅'), undefined);
+});
+
+test('detached results stay empty', async () => {
     const jump = await render('普通', '五区', ['跳图'], '帕梅');
     assert.equal(jump.tag, 'a');
     assert.equal(jump.textContent, '帕梅 偏僻小道 19.022（跳图）');
