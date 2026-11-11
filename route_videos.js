@@ -444,7 +444,7 @@
         if (automatic !== (tier === '自动')) return false;
 
         const special = video.title.match(/稳定跳图|旧跳图|新跳图|跳图|滑栏杆|滑雪|跳楼|跳船|挂桥/)?.[0];
-        return !special || specialRoutes.includes(special);
+        return special ? specialRoutes.includes(special) : specialRoutes.length === 0;
     }
 
     function showForCar(anchor, server, map, car, scope) {
