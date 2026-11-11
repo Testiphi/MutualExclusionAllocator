@@ -1,9 +1,10 @@
 'use strict';
 const ui=require('../../lib/feature_page');
-const query=x=>Object.entries(x).map(([k,v])=>k+'='+encodeURIComponent(v)).join('&');
-Page({data:{server:'cn',zone:'五区',tier:'理论',route:'normal',big:'all',stars:'all',q:'',offset:0,oc:false,gaps:false,star_map:{},busy:false,
+const publicSheet=require('./public_sheet');
+const accountConfig=require('../../generated/account-config');
+Page({...publicSheet,data:{server:'cn',zone:'五区',tier:'理论',route:'normal',big:'all',stars:'all',q:'',offset:0,oc:false,gaps:false,star_map:{},busy:false,
  servers:ui.options(['cn','global'],{cn:'国服',global:'国际服'}),zones:ui.options(['五区','四区']),tiers:ui.options(['理论','高手']),routes:ui.options(['normal','special'],{normal:'普通跑法',special:'特殊跑法'}),starOptions:ui.options(['all','1','2','3','4','5','6'],{all:'全部星级'}),bigOptions:[{value:'all',label:'全部地图'}]},
- onLoad(o){try{ui.install(this);this.setData({server:o.server==='global'?'global':'cn'});this.load();}catch(e){this.setData({error:e.message});}},
+ onLoad(o){if(accountConfig.mode==='production-a')return this.startPublic(o);try{ui.install(this);this.setData({server:o.server==='global'?'global':'cn'});this.load();}catch(e){this.setData({error:e.message});}},
  async onShow(){if(this.client)try{await this.client.refresh();if(!this.data.matrix&&!this.data.busy)this.load();}catch(e){this.setData({error:e.message});}},
  change(e){if(this.data.busy)return;const key=e.currentTarget.dataset.key;this.setData({[key]:e.detail.value,offset:0});if(key==='server')this.setData({big:'all',stars:'all',star_map:{},oc:false});if(this.data.server==='global')this.setData({zone:'五区',tier:'理论'});this.load();},
  input(e){this.setData({q:e.detail.value});},toggle(e){if(this.data.busy)return;this.setData({[e.currentTarget.dataset.key]:!this.data[e.currentTarget.dataset.key],offset:0});this.load();},
@@ -20,5 +21,5 @@ Page({data:{server:'cn',zone:'五区',tier:'理论',route:'normal',big:'all',sta
  page(e){if(this.data.busy)return;const next=Math.max(0,this.data.offset+Number(e.currentTarget.dataset.delta)*48);if(next<this.data.matrix.column_total){this.setData({offset:next});this.load();}},
  choose(){if(!this.data.picked||this.data.busy)return;const generation=this.client.generation(),server=this.data.server,map_id=this.data.picked.map_id;wx.showModal({title:'解锁所选地图',content:'此服一级权益的地图首次选择后不能自行更改，确认选择？',success:r=>{if(!r.confirm)return;if(generation!==this.client.generation()||server!==this.data.server||map_id!==this.data.picked?.map_id){this.setData({error:'账号、服别或地图已变化，未执行旧选择'});return;}void ui.run(this,async()=>{await this.client.call('/coverage/choice',{method:'POST',data:{server,map_id}});if(generation!==this.client.generation()||server!==this.data.server)return;await this.fetchMatrix();this.setData({message:'地图已选择，表格已按当前权益更新'});});}});},
  contribute(){if(!this.data.picked)return;getApp().submissionTarget={...this.data.picked.target};wx.navigateTo({url:'/pages/submissions/submissions?server='+this.data.server});},
- recover(){return ui.recover(this);},onUnload(){ui.cleanup(this);}
+ recover(){return ui.recover(this);},onUnload(){this.stopPublic();ui.cleanup(this);}
 });

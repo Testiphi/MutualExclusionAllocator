@@ -1,1 +1,7 @@
-<view class="field"><view wx:if="{{label}}" class="label">{{label}}</view><button disabled="{{disabled}}" bindtap="toggle">{{selectedLabel}} ⌄</button><scroll-view wx:if="{{open}}" scroll-y="{{true}}" class="options"><button wx:for="{{options}}" wx:key="value" class="{{item.value === value ? 'selected' : ''}}" data-index="{{index}}" bindtap="choose">{{item.label}}</button></scroll-view></view>
+<view wx:if="{{variant}}" class="native-select {{variant}}">
+ <view wx:if="{{label}}" class="native-label">{{label}}</view>
+ <picker range="{{options}}" range-key="label" value="{{selectedIndex}}" disabled="{{disabled}}" bindchange="nativeChoose">
+  <view class="native-trigger">{{selectedLabel}}<text class="native-chevron" aria-hidden="true"/></view>
+ </picker>
+</view>
+<view wx:else class="field"><view wx:if="{{label}}" class="label">{{label}}</view><button disabled="{{disabled}}" bindtap="toggle">{{selectedLabel}} ⌄</button><scroll-view wx:if="{{open}}" scroll-y="{{true}}" class="options"><button wx:for="{{options}}" wx:key="value" class="{{item.value === value ? 'selected' : ''}}" data-index="{{index}}" bindtap="choose">{{item.label}}</button></scroll-view></view>

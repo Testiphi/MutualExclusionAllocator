@@ -3,3 +3,10 @@ view,button,scroll-view{box-sizing:border-box}.field{position:relative;margin:8p
 .field button{display:block;width:100%!important}
 
 .field>button{background:#0d1117!important;color:#e6edf3;border-color:#30363d}.field>button[disabled]{background:#161b22!important;color:#6e7681!important}.options button{background:transparent!important}.options .selected{background:#1f3a5f!important;color:#58a6ff}
+
+.native-select {width:100%;min-width:0;}
+.native-label {margin-bottom:4px;color:#e6edf3;font-size:13px;line-height:1.6;}
+.native-trigger {position:relative;display:flex;align-items:center;height:34px;padding:7px 21px 7px 9px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;border:1px solid #30363d;border-radius:6px;background:#0d1117;color:#e6edf3;font-size:13px;line-height:1.25;}
+.native-chevron {position:absolute;right:6px;top:50%;width:6px;height:6px;border-right:1.5px solid #e6edf3;border-bottom:1.5px solid #e6edf3;transform:translateY(-70%) rotate(45deg);}
+.star .native-trigger {height:22px;padding:1px 14px 1px 3px;font-size:11px;}
+.star .native-chevron {right:4px;width:5px;height:5px;}

@@ -1,4 +1,5 @@
-<view class="mirror-page"><view class="panel mirror-surface"><view class="page-title">擂台成绩表 <text class="tag">新功能</text></view>
+<block wx:if="{{publicMode}}"><include src="./public_sheet.wxml"/></block>
+<view wx:else class="mirror-page"><view class="panel mirror-surface"><view class="page-title">擂台成绩表 <text class="tag">新功能</text></view>
  <view class="filters"><rp-select label="服别" value="{{server}}" options="{{servers}}" data-key="server" bindchange="change"/><rp-select label="跑法" value="{{route}}" options="{{routes}}" data-key="route" bindchange="change"/></view>
  <rp-select label="地图" value="{{big}}" options="{{bigOptions}}" data-key="big" bindchange="change"/><rp-select label="星级" value="{{stars}}" options="{{starOptions}}" data-key="stars" bindchange="change"/>
  <input value="{{q}}" bindinput="input" placeholder="搜索车辆"/><view class="actions"><button bindtap="load" loading="{{busy}}">查询 / 刷新</button><button data-key="gaps" bindtap="toggle">{{gaps ? '✓ ' : ''}}仅看缺成绩</button><button wx:if="{{server === 'global'}}" data-key="oc" bindtap="toggle">{{oc ? '✓ OC' : '普通车辆'}}</button></view>

@@ -25,6 +25,7 @@ function biliTarget(url) {
 
 function matches(video, scope) {
   if (video.car !== scope.car) return false;
+  if (scope.reference===true) return true;
   const zones = [...new Set(video.title.match(/[四五]区/g) || [])];
   const zone = video.zone || (zones.length === 1 ? zones[0] : '');
   if (zone && zone !== scope.zone) return false;

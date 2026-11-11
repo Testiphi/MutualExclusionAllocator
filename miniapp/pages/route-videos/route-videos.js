@@ -8,10 +8,10 @@ Page({
     if (!build.routeVideoLab) return this.setData({error: '跑法视频服务暂未开放'});
     try {
       const scope = JSON.parse(decodeURIComponent(options.scope));
-      if (!['cn', 'global'].includes(scope.server) || !['四区', '五区'].includes(scope.zone) ||
-          !['理论', '高手', '普通', '自动'].includes(scope.tier) ||
+      const normalScope=['四区', '五区'].includes(scope.zone) &&
+        ['理论', '高手', '普通', '自动'].includes(scope.tier) && Array.isArray(scope.routes);
+      if (!['cn', 'global'].includes(scope.server) || (!normalScope && scope.reference!==true) ||
           !['big', 'small', 'car'].every(key => typeof scope[key] === 'string' && scope[key]) ||
-          !Array.isArray(scope.routes) ||
           (scope.videoId !== undefined && (typeof scope.videoId !== 'string' || !/^[0-9]+$/.test(scope.videoId)))) throw Error('invalid scope');
       this.scope = scope;
       this.setData({heading: scope.small + ' · ' + scope.car});

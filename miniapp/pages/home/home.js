@@ -33,7 +33,7 @@ Page({
     this.baseService=service;
     this.account=runtime.mount(wx,nativeConfig,service,accountConfig);
     const policy=runtime.policy();
-    this.setData({accountAvailable:!!this.account,accountRestricted:policy.restricted,registrationAvailable:!!this.account&&(!policy.restricted||policy.registration===true),allowCloudWrites:policy.allowCloudWrites});
+    this.setData({accountAvailable:!!this.account,accountRestricted:policy.restricted,publicCoverage:policy.productionAccount===true,registrationAvailable:!!this.account&&(!policy.restricted||policy.registration===true),allowCloudWrites:policy.allowCloudWrites});
     if(this.account){
       this.unsubscribeAccount=this.account.subscribe(s=>{
         const id=s.actor?.id||'',generation=this.account.generation();
@@ -405,7 +405,7 @@ Page({
   openHub(e){this.closeDropdown();this.setData({homeHub:e.currentTarget.dataset.hub});},
   closeHub(){this.setData({homeHub:null});},
   async refreshHomeIdentity(){if(runtime.policy().restricted||!this.account?.state().actor)return;const ticket=this.account.generation();const values=await Promise.allSettled([this.account.call('/notifications'),this.account.call('/contributions/me?period=month')]);if(ticket!==this.account.generation())return;this.setData({unreadCounts:values[0].status==='fulfilled'?values[0].value.counts:{},homeNickname:values[1].status==='fulfilled'?values[1].value.preference.nickname:''});},
-  navigate(e){const {page,mode,tab,compose}=e.currentTarget.dataset;const policy=runtime.policy();if(policy.restricted&&(page!=='account'||mode&&mode!=='login'&&!(mode==='register'&&policy.registration===true&&!this.data.actor))){this.setData({cloudStatus:'当前服务暂未开放此功能'});return;}if(!['account','coverage','submissions','community','workbench'].includes(page))return;this.setData({homeHub:null});wx.navigateTo({url:'/pages/'+page+'/'+page+'?server='+this.state.draft.server+(mode?'&mode='+encodeURIComponent(mode):'')+(tab?'&tab='+encodeURIComponent(tab):'')+(compose?'&compose=1':'')});},
+  navigate(e){const {page,mode,tab,compose}=e.currentTarget.dataset;const policy=runtime.policy();if(policy.restricted&&!(page==='coverage'&&policy.productionAccount===true)&&(page!=='account'||mode&&mode!=='login'&&!(mode==='register'&&policy.registration===true&&!this.data.actor))){this.setData({cloudStatus:'当前服务暂未开放此功能'});return;}if(!['account','coverage','submissions','community','workbench'].includes(page))return;this.setData({homeHub:null});wx.navigateTo({url:'/pages/'+page+'/'+page+'?server='+this.state.draft.server+(mode?'&mode='+encodeURIComponent(mode):'')+(tab?'&tab='+encodeURIComponent(tab):'')+(compose?'&compose=1':'')});},
   compute() { this.controller.compute(); }, chooseImage() { this.controller.chooseImage(); },
   reconnect() {return this.controller?this.controller.reconnect():this.connectNative(true);},
   retryRecognition() {return this.controller.retryRecognition();},
