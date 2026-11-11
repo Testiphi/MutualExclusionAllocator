@@ -8,6 +8,7 @@ function blank(server) {
 function createController({ service, storage, media, render, autoCompute=false,schedule=fn=>setTimeout(fn,0) }) {
   let draft = blank('cn'), saved = null, model, epoch = 0, mediaEpoch = 0, visible = true;
   let error = '', busy = false, result = null, pending = null, image = null, dirty = false;
+  let preferredAssignment = null, preferredSchemeIndex = 0;
   let blocked = false;
   let startRecognitionOnShow = false;
   let workingBlocked=false;
@@ -33,17 +34,20 @@ function createController({ service, storage, media, render, autoCompute=false,s
     // the page displays a valid value without overwriting the user's other-zone input.
   }
   function publish() {
-    render({ draft: clone(draft), model: clone(model), error, busy, result,
+    render({ draft: clone(draft), model: clone(model), error, busy, result, preferredSchemeIndex,
       pending: pending && clone(pending), image: image && image.path, dirty,
       mode: service.mode, storageBlocked: blocked,serviceStatus:service.status?service.status():null });
   }
   function invalidate(preserveMedia = false,preserveTask = false,preserveResult = false) {
     if (!preserveMedia) { mediaEpoch++; startRecognitionOnShow = false; }
-    epoch++; busy = false;if(!preserveResult)result = null; pending = null;
+    epoch++; busy = false; preferredAssignment = null;
+    if(!preserveResult){result = null;preferredSchemeIndex = 0;}
+    pending = null;
     if(preserveTask&&service.suspend)service.suspend();else service.cancel();
   }
-  function change(fn) {
+  function change(fn, assignment = null) {
     invalidate(); error = '';
+    preferredAssignment = assignment;
     fn(); refresh(); updateDirty();publish();queueCompute();
   }
   function load(server,working=true) {
@@ -72,10 +76,18 @@ function createController({ service, storage, media, render, autoCompute=false,s
   async function compute() {
     if (busy) return;
     if (!draft.maps.some(x => x && x.small)) {result=null;error='';publish();return;}
+    const assignment = preferredAssignment;
     invalidate(); const ticket = epoch; busy = true; error = ''; publish();
     try {
       const value = await service.calculate(clone(draft));
-      if (ticket === epoch && visible) result = value;
+      if (ticket === epoch && visible) {
+        result = value;
+        if (assignment) {
+          preferredSchemeIndex = Math.max(0, value.schemes.findIndex(scheme =>
+            scheme.assignment.length === assignment.length && scheme.assignment.every((car, i) => car === assignment[i])
+          ));
+        }
+      }
     } catch (e) { if (ticket === epoch) error = e.message; }
     finally { if (ticket === epoch) { busy = false; publish(); } }
   }
@@ -124,7 +136,7 @@ function createController({ service, storage, media, render, autoCompute=false,s
       }
       change(() => { draft.maps[index] = map; });
     },
-    setMapBans(index,key,ids) {
+    setMapBans(index,key,ids,assignment=null) {
       const map=draft.maps[index];
       if(!map?.small||mapBanKey(draft,map)!==key||!service.banOptions||!Array.isArray(ids))return false;
       const allowed=new Set(service.banOptions(draft,map));
@@ -134,7 +146,7 @@ function createController({ service, storage, media, render, autoCompute=false,s
         if(ids.length)bans[key]=[...new Set(ids)];
         else delete bans[key];
         draft.mapBans=bans;
-      });
+      }, assignment);
       return true;
     },
     setCar(id, selected) { if (model.cars.some(x => x.id === id)) change(() => {

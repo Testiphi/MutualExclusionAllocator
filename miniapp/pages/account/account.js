@@ -3,7 +3,7 @@ const runtime=require('../../services/runtime');
 const labels={login:'登录',register:'注册', 'resend-verification':'重发验证邮件','forgot-password':'找回密码','verify-email':'验证邮箱','reset-password':'重置密码','redeem-invitation':'兑换管理员邀请',reauth:'再次验证密码'};
 Page({
  data:{moreOpen:false,mode:'login',title:'登录',email:'',password:'',passwordConfirm:'',token:'',invite_code:'',busy:false,actor:null,options:Object.entries(labels).map(([value,label])=>({value,label}))},
- onLoad(o={}){this.unloaded=false;try{const policy=runtime.policy();this.actions=policy.restricted?policy.actions:Object.keys(labels);this.setData({restricted:policy.restricted,registration:policy.registration===true,bindingAcceptance:policy.wechatBinding===true,wechatLogin:policy.wechatLogin===true});this.client=runtime.account();this.pending=this.client.pendingAuth?.();this.setData({actor:this.client.state().actor,wechatBinding:this.client.wechatBinding?.()||null,recoverable:!!this.pending});this.unwatch=this.client.subscribe(s=>this.publish({actor:s.actor,wechatBinding:this.client.wechatBinding?.()||null}));if(o.mode&&labels[o.mode])this.changeMode({detail:{value:o.mode}});}catch(e){this.setData({error:e.message});}},
+ onLoad(o={}){this.unloaded=false;try{const policy=runtime.policy();this.actions=policy.restricted?policy.actions:Object.keys(labels);this.setData({restricted:policy.restricted,canLogout:!policy.restricted||policy.canLogout===true,registration:policy.registration===true,bindingAcceptance:policy.wechatBinding===true,wechatLogin:policy.wechatLogin===true});this.client=runtime.account();this.pending=this.client.pendingAuth?.();this.setData({actor:this.client.state().actor,wechatBinding:this.client.wechatBinding?.()||null,recoverable:!!this.pending});this.unwatch=this.client.subscribe(s=>this.publish({actor:s.actor,wechatBinding:this.client.wechatBinding?.()||null}));if(o.mode&&labels[o.mode])this.changeMode({detail:{value:o.mode}});}catch(e){this.setData({error:e.message});}},
  publish(value){if(!this.unloaded)this.setData(value);},
  input(e){if(['email','password','passwordConfirm','token','invite_code','wechatPassword'].includes(e.currentTarget.dataset.key))this.setData({[e.currentTarget.dataset.key]:e.detail.value});},
  chooseMode(e){this.changeMode({detail:{value:e.currentTarget.dataset.mode}});},
@@ -60,7 +60,22 @@ Page({
   }finally{this.publish({busy:false,wechatPassword:''});}
  },
  async recover(){if(!this.pending||this.data.busy)return;this.publish({busy:true});try{const r=await this.client.recoverAuth(this.pending.key,this.pending.action);this.pending=this.client.pendingAuth?.()||null;this.publish({actor:this.client.state().actor,error:'',message:r.message||'原操作已核对',recoverable:!!this.pending});}catch(e){this.pending=this.client.pendingAuth?.()||null;this.publish({error:e.message,recoverable:!!this.pending,retryAfterMs:e.retryAfterMs||0});}finally{this.publish({busy:false});}},
- async logout(){if(this.data.restricted&&!this.data.bindingAcceptance){this.publish({error:'当前只读验收未开放退出操作'});return;}if(this.data.busy)return;this.publish({busy:true});try{await this.client.logout();this.publish({actor:null,message:'当前账号已退出，本机和云端车库保留'});}catch(e){this.publish({error:e.message});}finally{this.publish({busy:false});}},
+ async logout(){
+  if(!this.data.canLogout||this.data.busy||this.pending||!this.data.actor||!this.client)return;
+  this.publish({busy:true,error:'',message:''});
+  let error='', localOnly=false;
+  try{localOnly=(await this.client.logout())?.localOnly===true;}
+  catch(e){error=this.client.state().actor?e.message:'已退出本机，暂未确认服务器会话是否撤销。';}
+  finally{
+   if(!this.client.state().actor){
+    this.pending=null;
+    this.publish({actor:null,mode:'login',title:labels.login,email:'',password:'',passwordConfirm:'',
+     token:'',invite_code:'',wechatConfirm:false,wechatPassword:'',recoverable:false,
+     message:error?'':localOnly?'已退出本机，可使用其他邮箱登录。服务器会话将按原有效期到期。':'已退出登录，可使用其他邮箱登录。'});
+   }
+   this.publish({busy:false,error});
+  }
+ },
  back(){wx.navigateBack();},
  onHide(){this.setData({wechatConfirm:false,wechatPassword:'',password:'',passwordConfirm:'',token:'',invite_code:''});},onUnload(){this.unloaded=true;if(this.unwatch)this.unwatch();this.pending=null;}
 });

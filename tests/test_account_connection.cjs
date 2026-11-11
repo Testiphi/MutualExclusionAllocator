@@ -41,6 +41,45 @@ function lab(){
  return {wx,calls,storage,account,setHook:f=>hook=f};
 }
 const auth=c=>c.auth('login',{email:'fixture@example.test',password:'fixture-private-only'});
+test('formal read-only logout reuses the guest session and switches accounts on current and updated servers',async()=>{
+ for(const oldServer of [true,false]){
+  const f=lab(),{snapshot_versions,files,global_dataset}=binding.fixed_runtime;
+  const fixedRuntime={snapshot_versions,files,global_dataset};
+  const c=createAccountConnection(f.wx,{enabled:true,mode:'production-a',origin:'https://racepick.cn',
+   planId:'racepick-production-a-v1',allowCloudWrites:false,fixedRuntime});
+  let active;
+  f.setHook((o,u)=>{
+   if(u.pathname==='/api/health')return {body:{status:'ok',mode:'production',global_profile_schema:1,
+    score_version:fixedRuntime.snapshot_versions.cn,global_score_version:fixedRuntime.snapshot_versions.global,
+    mini_account:{mode:'formal-a',enabled:true,cloud_writes:false}}};
+   if(u.pathname.endsWith('/auth/login')){
+    active=o.data.email.startsWith('second')?'second':'first';
+    return {body:{...f.account(),token:'rpa1.fixture.'+active,actor:{...f.account().actor,id:active}}};
+   }
+   if(o.method==='DELETE')return oldServer?{status:404,body:{code:'ACCOUNT_ROUTE_PENDING'}}:{body:{logged_out:true}};
+   if(u.pathname.endsWith('/profile')){
+    assert.equal(o.header['X-Account-ID'],active);
+    return {body:{server:u.searchParams.get('server'),storage:'account',remote_supported:true,revision:0,profile:null}};
+   }
+   return null;
+  });
+  assert.equal(c.policy.canLogout,true);
+  await auth(c.client);
+  await c.client.profile('cn');
+  const logout=await c.client.logout();
+  assert.equal(logout?.localOnly===true,oldServer);
+  assert.equal(c.client.state().actor,null);
+  await assert.rejects(c.client.profile('cn'));
+  await c.client.auth('login',{email:'second@example.test',password:'fixture-private-only'});
+  assert.equal(c.client.state().actor.id,'second');
+  await c.client.profile('global');
+  await assert.rejects(c.client.saveProfile('cn',{cars:[],stars:{}},0));
+  assert.equal(f.calls.filter(o=>o.method==='DELETE').length,1);
+  assert.equal(f.calls.filter(o=>o.method==='PUT').length,0);
+  assert.equal(f.calls.filter(o=>o.kind==='wx.login').length,1);
+  assert.equal(f.storage.get('old-ocr-record'),'keep');
+ }
+});
 test('isolated registration requires its fixed delivery and recovers the original operation without another POST',async()=>{
  const f=lab(),registrationDelivery='1234567890abcdef12345678',p={...profile,registrationDelivery,planId:'mini-account-mirror-registration-fixture'};
  const c=createAccountConnection(f.wx,p),fields={email:'fixture@example.test',password:'fixture-private-only'};

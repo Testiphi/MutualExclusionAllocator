@@ -48,3 +48,47 @@ test('album request has only one original image, no camera choice, and local pre
  assert.equal(p.data.image,'tmp/album-screenshot');await p.controller.recognize();
  assert.match(p.data.error,/尚未接入/);assert.equal(JSON.stringify(p.state.draft.maps),before);p.onUnload();
 });
+
+test('ban recompute keeps the selected assignment at its new position or falls back to the first scheme',async()=>{
+ const {p}=page();
+ const map=p.state.model.maps[0], cars=p.state.model.cars.slice(0,3).map(c=>c.id);
+ const scheme=car=>({assignment:[car,null,null,null,null],rows:[],prioritySum:1,total:null});
+ p.controller.setMap(0,map);
+ p.service.banOptions=()=>cars;
+ p.service.calculate=d=>{
+  const bans=Object.values(d.mapBans||{})[0]||[];
+  const order=bans.length?[cars[1],cars[2],cars[0]]:cars;
+  return {schemes:order.filter(car=>!bans.includes(car)).map(scheme)};
+ };
+ await p.controller.compute();
+ p.selectScheme({detail:{value:1}});
+ const edit=async ids=>{
+  p.openMapBans({currentTarget:{dataset:{index:0}}});
+  p.changeMapBans({detail:{value:ids}});
+  p.applyMapBans();
+  await p.controller.compute();
+ };
+ await edit([cars[0]]);
+ assert.equal(p.state.result.schemes[p.data.schemeIndex].assignment[0],cars[1]);
+ assert.equal(p.data.schemeIndex,0);
+ await edit([]);
+ assert.equal(p.state.result.schemes[p.data.schemeIndex].assignment[0],cars[1]);
+ assert.equal(p.data.schemeIndex,1);
+ await edit([cars[1]]);
+ assert.equal(p.data.schemeIndex,0);
+ assert.equal(p.state.result.schemes[0].assignment[0],cars[2]);
+ p.onUnload();
+});
+
+test('read-only guidance explains incomplete results without a submission action',()=>{
+ const {p}=page();
+ p.service.resultGuidance=()=>({kind:'partial_missing',message:'请投稿',canSubmit:true});
+ p.data.accountRestricted=true;
+ p.updateView();
+ assert.match(p.data.resultGuidance.message,/当前车库/);
+ assert.equal(p.data.resultGuidance.canSubmit,false);
+ p.data.accountRestricted=false;
+ p.updateView();
+ assert.equal(p.data.resultGuidance.canSubmit,true);
+ p.onUnload();
+});

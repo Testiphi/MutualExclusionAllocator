@@ -34,7 +34,24 @@ Page({
     this.account=runtime.mount(wx,nativeConfig,service,accountConfig);
     const policy=runtime.policy();
     this.setData({accountAvailable:!!this.account,accountRestricted:policy.restricted,registrationAvailable:!!this.account&&(!policy.restricted||policy.registration===true),allowCloudWrites:policy.allowCloudWrites});
-    if(this.account){this.unsubscribeAccount=this.account.subscribe(s=>{const id=s.actor?.id||'',generation=this.account.generation();this.setData({actor:s.actor});if(id!==this.lastAccountActor||generation!==this.lastAccountGeneration){this.lastAccountActor=id;this.lastAccountGeneration=generation;this.setData({schemes:[],activeScheme:null,cars:[],selectedCount:0,cloudConflict:null,cloudEmpty:false,cloudLoaded:false,unreadCounts:{},homeNickname:'',homeHub:null});this.cloudReady=false;this.lastCloudProfile=null;if(this.homeVisible&&this.controller&&!this.refreshingAccount)void this.syncAccount();}});}
+    if(this.account){
+      this.unsubscribeAccount=this.account.subscribe(s=>{
+        const id=s.actor?.id||'',generation=this.account.generation();
+        this.setData({actor:s.actor});
+        if(id===this.lastAccountActor&&generation===this.lastAccountGeneration)return;
+        this.lastAccountActor=id;
+        this.lastAccountGeneration=generation;
+        this.cloudTicket=(this.cloudTicket||0)+1;
+        this.cloud=null;
+        this.cloudReady=false;
+        this.lastCloudProfile=null;
+        this.videoRows?.clear();
+        this.setData({rows:[],resultRows:[],schemes:[],schemeOptions:[],schemeIndex:0,activeScheme:null,
+          hasComputedResult:false,resultGuidance:null,banEditor:null,cars:[],selectedCount:0,cloudConflict:null,
+          cloudDirty:false,cloudEmpty:false,cloudLoaded:false,cloudStatus:'',unreadCounts:{},homeNickname:'',homeHub:null});
+        if(this.homeVisible&&this.controller&&!this.refreshingAccount)void this.syncAccount();
+      });
+    }
     this.mountController(service);
     if(this.account)void runtime.usage()?.visit('home',this.state.draft.server,'open');
   },
@@ -109,10 +126,18 @@ Page({
         stars:d.tier==='理论'?null:(m.cars.find(c=>c.id===r.car)||{}).effectiveStar,
         hasTime:r.time!=null,timeValue:r.time==null?'':r.time.toFixed(2),timeText:r.time==null?'':r.time.toFixed(2)+' 秒'}))
     })) : [];
-    const schemeIndex=this.lastResult===s.result && this.data.schemeIndex<schemes.length?this.data.schemeIndex:0;
+    const schemeIndex=this.lastResult===s.result && this.data.schemeIndex<schemes.length?this.data.schemeIndex:(s.preferredSchemeIndex ?? 0);
     const hasMaps=d.maps.some(map=>map?.big&&map?.small);
-    const guidance=!s.error&&!s.busy&&(s.result||!hasMaps)&&this.service.resultGuidance
+    let guidance=!s.error&&!s.busy&&(s.result||!hasMaps)&&this.service.resultGuidance
       ? this.service.resultGuidance(d,schemeIndex) : null;
+    if (guidance?.canSubmit && this.data.accountRestricted) {
+      const message = {
+        no_records:'当前车库在所选赛道均无匹配成绩，请检查档位或尝试点亮更多车辆。',
+        partial_missing:'部分赛道没有匹配当前车库的成绩，请检查档位或尝试点亮更多车辆。',
+        conflict:'部分赛道未能分配不同的车辆，请尝试在车库中点亮更多车辆。'
+      }[guidance.kind] ?? '当前车库无法覆盖所选赛道，请检查车辆和档位。';
+      guidance = {...guidance, message, canSubmit:false};
+    }
     this.lastResult=s.result;
     this.closeDropdown();
     this.setData({ ready:true, server: d.server, mode: s.mode, error: s.error, busy: s.busy,
@@ -164,8 +189,9 @@ Page({
   applyMapBans() {
     const editor=this.data.banEditor;
     if(!editor)return;
+    const assignment=this.state.result?.schemes[this.data.schemeIndex]?.assignment;
     this.closeMapBans();
-    if(editor.actor!==this.account?.generation()||!this.controller.setMapBans(editor.index,editor.key,editor.selected)){
+    if(editor.actor!==this.account?.generation()||!this.controller.setMapBans(editor.index,editor.key,editor.selected,assignment)){
       this.setData({error:'选图或账号已变化，请重新打开单图禁车'});
     }
   },

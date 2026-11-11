@@ -37,3 +37,19 @@ class FormalMiniAccountTests(unittest.TestCase):
             self.assertEqual(client.post(fixture.P+'/auth/register', json={}).status_code, 404)
             self.assertEqual(client.get(fixture.P+'/submissions/catalog?server=cn').status_code, 404)
             self.assertEqual(client.get(fixture.P+'/profile?server=cn').status_code, 401)
+
+            f.register()
+            f.register(email='bob@example.test')
+            _, first = f.login()
+            self.assertEqual(client.delete(fixture.P+'/session', headers=f.guest).status_code, 401)
+            logout = client.delete(fixture.P+'/session', headers=first)
+            self.assertEqual(logout.status_code, 200)
+            self.assertTrue(logout.json()['guest_session_retained'])
+            self.assertEqual(client.get(fixture.P+'/session', headers=first).status_code, 401)
+            self.assertIsNone(client.get(fixture.P+'/session', headers=f.guest).json()['actor'])
+            second = client.post(fixture.P+'/auth/login', headers=f.guest, json={
+                'schema': 1, 'request_key': 'fixture-switch-account',
+                'email': 'bob@example.test', 'password': fixture.PASSWORD,
+            })
+            self.assertEqual(second.status_code, 200)
+            self.assertEqual(second.json()['actor']['email'], 'bob@example.test')

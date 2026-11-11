@@ -159,7 +159,8 @@ def make_native_account(config, source):
     def formal_route(request):
         method, path = request.method, request.url.path
         allowed = (method, path) in {
-            ('GET', PREFIX+'/session'), ('POST', PREFIX+'/auth/login'),
+            ('GET', PREFIX+'/session'), ('DELETE', PREFIX+'/session'),
+            ('POST', PREFIX+'/auth/login'),
             ('GET', PREFIX+'/profile'), ('PUT', PREFIX+'/profile'),
         }
         if method == 'GET' and re.fullmatch(re.escape(PREFIX)+r'/operations/[A-Za-z0-9_-]{16,80}', path):
