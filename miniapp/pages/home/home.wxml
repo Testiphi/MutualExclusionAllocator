@@ -4,7 +4,7 @@
   <button wx:for="{{entry.visibleVideos}}" wx:for-item="video" wx:key="id" class="top-video-link" data-section="{{section}}" data-index="{{rowIndex}}" data-car="{{entry.car}}" data-video-id="{{video.id}}" bindtap="openVideoLink">{{video.title}}</button>
  </view>
 </template>
-<view class="page">
+<view class="page home-page">
  <view class="shell">
   <view class="home-heading"><view class="brand">Race<text class="brand-pick">Pick</text></view><view class="heading-title">擂台选车助手</view></view>
   <view class="subtitle">{{subtitle}}</view>
@@ -46,8 +46,8 @@
      <view class="map-row" wx:for="{{slotRows}}" wx:key="index">
       <text class="number">{{item.index + 1}}</text>
       <view class="map-fields">
-       <view class="map-field"><button id="review-map-{{item.index}}-big" class="map-picker map-trigger" data-index="{{item.index}}" data-field="big" data-pending="{{true}}" bindtap="openDropdown"><view class="select">{{item.big || '选择大地图'}}<text class="chevron">⌄</text></view></button></view>
-       <view class="map-field"><button id="review-map-{{item.index}}-small" class="map-picker map-trigger" wx:if="{{item.big}}" data-index="{{item.index}}" data-field="small" data-pending="{{true}}" bindtap="openDropdown"><view class="select">{{item.small || '选择小地图'}}<text class="chevron">⌄</text></view></button><view wx:else class="select is-disabled map-disabled" aria-disabled="true">先选大地图<text class="chevron">⌄</text></view></view>
+       <view class="map-field"><button id="review-map-{{item.index}}-big" class="map-picker map-trigger" data-index="{{item.index}}" data-field="big" data-pending="{{true}}" bindtap="openDropdown"><view class="select"><text>{{item.big || '选择大地图'}}</text><text class="chevron" aria-hidden="true"/></view></button></view>
+       <view class="map-field"><button id="review-map-{{item.index}}-small" class="map-picker map-trigger" wx:if="{{item.big}}" data-index="{{item.index}}" data-field="small" data-pending="{{true}}" bindtap="openDropdown"><view class="select"><text>{{item.small || '选择小地图'}}</text><text class="chevron" aria-hidden="true"/></view></button><view wx:else class="select is-disabled map-disabled" aria-disabled="true">先选大地图<text class="chevron" aria-hidden="true"/></view></view>
       </view>
      </view>
      <button class="primary" bindtap="applyRecognition">应用选图</button>
@@ -58,8 +58,8 @@
     <view class="map-row {{item.topOpen ? 'is-top-open' : ''}}" wx:for="{{rows}}" wx:key="index">
      <text class="number">{{item.index + 1}}</text>
      <view class="map-fields">
-     <view class="map-field"><view class="field-label">大地图</view><button id="map-{{item.index}}-big" class="map-picker map-trigger" data-index="{{item.index}}" data-field="big" bindtap="openDropdown"><view class="select">{{item.big || '选择大地图'}}<text class="chevron">⌄</text></view></button></view>
-     <view class="map-field"><view class="field-label">小地图</view><button id="map-{{item.index}}-small" class="map-picker map-trigger" wx:if="{{item.big}}" data-index="{{item.index}}" data-field="small" bindtap="openDropdown"><view class="select">{{item.small || '选择小地图'}}<text class="chevron">⌄</text></view></button><view wx:else class="select is-disabled map-disabled" aria-disabled="true">先选大地图<text class="chevron">⌄</text></view></view>
+     <view class="map-field"><view class="field-label">大地图</view><button id="map-{{item.index}}-big" class="map-picker map-trigger" data-index="{{item.index}}" data-field="big" bindtap="openDropdown"><view class="select"><text>{{item.big || '选择大地图'}}</text><text class="chevron" aria-hidden="true"/></view></button></view>
+     <view class="map-field"><view class="field-label">小地图</view><button id="map-{{item.index}}-small" class="map-picker map-trigger" wx:if="{{item.big}}" data-index="{{item.index}}" data-field="small" bindtap="openDropdown"><view class="select"><text>{{item.small || '选择小地图'}}</text><text class="chevron" aria-hidden="true"/></view></button><view wx:else class="select is-disabled map-disabled" aria-disabled="true">先选大地图<text class="chevron" aria-hidden="true"/></view></view>
      </view>
      <view wx:if="{{item.top}}" class="track-top-cars">
       <button class="top-toggle" data-index="{{item.index}}" bindtap="toggleTop">{{item.topOpen ? '▾' : '▸'}} {{item.top.label}}</button>
@@ -102,8 +102,8 @@
    <view class="card results">
     <view class="result-toolbar">
     <view class="result-heading"><text>方案</text><text class="badge">{{schemes.length}}</text></view>
-    <button wx:if="{{activeScheme}}" id="scheme-trigger" class="scheme-trigger" bindtap="openScheme"><view class="select scheme-select">{{schemeOptions[schemeIndex]}}<text class="chevron">⌄</text></view></button>
-    <view wx:if="{{!activeScheme}}" class="scheme-trigger scheme-empty"><view class="select scheme-select">请至少选择一张地图</view></view>
+    <button wx:if="{{activeScheme}}" id="scheme-trigger" class="scheme-trigger" bindtap="openScheme"><view class="select scheme-select"><text>{{schemeOptions[schemeIndex]}}</text><text class="chevron" aria-hidden="true"/></view></button>
+    <view wx:if="{{!activeScheme}}" class="scheme-trigger scheme-empty"><view class="select scheme-select"><text>请至少选择一张地图</text><text class="chevron" aria-hidden="true"/></view></view>
     </view>
     <view wx:if="{{!activeScheme && !resultGuidance && !error && !busy}}" class="empty-result">{{emptyResultText}}</view>
     <view wx:if="{{resultGuidance}}" class="result-guidance" aria-role="status">
@@ -111,10 +111,12 @@
       <button wx:if="{{resultGuidance.canSubmit}}" bindtap="contributeResult">{{resultGuidance.action}}</button>
     </view>
    <view wx:if="{{routes.length}}" class="route-panel">
-    <view class="section-title muted">特殊跑法</view>
-    <view wx:for="{{routes}}" wx:key="key" class="route-row {{item.enabled ? 'is-on' : ''}}">
-     <button class="route-toggle" data-key="{{item.key}}" bindtap="toggleRoute">{{item.label}} {{item.enabled ? '◉' : '○'}}</button>
-     <button wx:if="{{item.showTypes}}" id="route-{{index}}" data-index="{{index}}" class="route-selector" bindtap="openRoute"><view class="route-select">{{item.options[item.optionIndex]}} ⌄</view></button>
+    <view class="route-title">特殊跑法</view>
+    <view class="route-list">
+     <view wx:for="{{routes}}" wx:key="key" class="route-row {{item.enabled ? 'is-on' : ''}}">
+      <button class="route-toggle" data-key="{{item.key}}" bindtap="toggleRoute">{{item.label}} {{item.enabled ? '◉' : '○'}}</button>
+      <button wx:if="{{item.showTypes}}" id="route-{{index}}" data-index="{{index}}" class="route-selector" bindtap="openRoute"><view class="route-select">{{item.options[item.optionIndex]}} ⌄</view></button>
+     </view>
     </view>
    </view>
     <view class="result-grid">
@@ -122,7 +124,7 @@
       <view class="result-main">
       <view class="result-track"><view class="result-map">{{row.map}}</view><view class="result-big">{{row.big || '—'}}</view></view>
       <view class="result-car {{row.empty ? 'empty' : ''}}">
-       <view class="result-car-label"><text>{{row.empty && activeScheme ? (row.configured ? '无可用车' : '空位') : row.car}}{{row.oc ? ' [OC]' : ''}}</text><text wx:if="{{row.stars}}" class="result-stars"> ★{{row.stars}}</text></view>
+       <text class="result-car-label">{{row.empty && activeScheme ? (row.configured ? '无可用车' : '空位') : row.car}}{{row.oc ? ' [OC]' : ''}}</text><text wx:if="{{row.stars}}" class="result-stars">★{{row.stars}}</text>
        <button wx:if="{{mapBansAvailable && hasComputedResult && row.configured}}" class="map-ban-trigger {{row.banCount ? 'is-active' : ''}}" data-index="{{row.index}}" bindtap="openMapBans" disabled="{{busy}}" aria-label="{{row.map}}禁车设置，已禁{{row.banCount}}辆"><text>⊘ 禁车{{row.banCount ? ' ' + row.banCount : ''}}</text></button>
       </view>
       <view wx:if="{{row.hasTime}}" class="result-time">{{row.timeValue}}<text class="result-unit"> 秒</text></view>
@@ -134,23 +136,25 @@
   </view>
  </view>
  <view wx:if="{{banEditor}}" class="hub-backdrop" bindtap="closeMapBans">
-  <view class="hub-dialog map-ban-dialog" catchtap="keepMapBansOpen">
-   <view class="hub-heading">{{banEditor.title}} · 禁车</view>
-   <view class="hub-help map-ban-hint">勾选本图不用的车辆，取消勾选即可恢复。</view>
-   <view class="actions map-ban-actions"><button bindtap="selectAllMapBans">全选</button><button bindtap="clearMapBanChecks">取消全选</button></view>
-   <scroll-view scroll-y="{{true}}" class="map-ban-list">
-    <checkbox-group bindchange="changeMapBans">
-     <label wx:for="{{banEditor.cars}}" wx:key="id" class="map-ban-choice">
-      <checkbox value="{{item.id}}" checked="{{item.checked}}" color="#58a6ff"/>{{item.id}}<text wx:if="{{item.id === banEditor.currentCar}}" class="map-ban-current">当前</text>
-     </label>
-    </checkbox-group>
-    <view wx:if="{{!banEditor.cars.length}}" class="muted">当前车库没有本图候选车辆</view>
-   </scroll-view>
-   <view class="actions map-ban-actions">
-    <button bindtap="closeMapBans">取消</button>
-    <button class="primary" bindtap="applyMapBans">应用</button>
+  <scroll-view scroll-y="{{true}}" class="hub-dialog map-ban-dialog" catchtap="keepMapBansOpen">
+   <view class="map-ban-content">
+    <view class="map-ban-title">{{banEditor.title}} · 禁车</view>
+    <view class="map-ban-hint">勾选本图不用的车辆，取消勾选即可恢复。</view>
+    <view class="map-ban-actions"><button bindtap="selectAllMapBans">全选</button><button bindtap="clearMapBanChecks">取消全选</button></view>
+    <view class="map-ban-list">
+     <checkbox-group class="map-ban-choices" bindchange="changeMapBans">
+      <label wx:for="{{banEditor.cars}}" wx:key="id" class="map-ban-choice">
+       <checkbox value="{{item.id}}" checked="{{item.checked}}" color="#58a6ff"/>{{item.id}}<text wx:if="{{item.id === banEditor.currentCar}}" class="map-ban-current">当前</text>
+      </label>
+     </checkbox-group>
+     <view wx:if="{{!banEditor.cars.length}}" class="muted">当前车库没有本图候选车辆</view>
+    </view>
+    <view class="map-ban-actions">
+     <button bindtap="closeMapBans">取消</button>
+     <button class="primary" bindtap="applyMapBans">应用</button>
+    </view>
    </view>
-  </view>
+  </scroll-view>
  </view>
  <view wx:if="{{dropdown}}" class="dropdown-backdrop" catchtap="closeDropdown" catchtouchmove="blockDropdownScroll"></view>
  <view wx:if="{{dropdown}}" class="dropdown-menu" style="left:{{dropdown.left}}px;top:{{dropdown.top}}px;width:{{dropdown.width}}px;">
