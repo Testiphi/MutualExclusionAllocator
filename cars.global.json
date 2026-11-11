@@ -3,8 +3,8 @@
     "server_id": "global",
     "schema_version": 1,
     "catalog_payload_sha256": "658ddd38125b8b1b952836caf9772c9bfa3b00c78ff5e9e1e205d9cc93166da2",
-    "scores_payload_sha256": "70a5b6c1ba27743c1e8136f580e9e05cd9817d7497befc9526065ddfb918da61",
-    "dataset_version": "39ac7a7f856073e47520e9f25f71c21e2f8018bd7fc1c4b3ff476b15a94b489f",
+    "scores_payload_sha256": "993826eeeac3ef5065cf06c67ddf98391052c036c31b54f2c9dc50e4ee769c13",
+    "dataset_version": "6844acf93b8b5eae4ef1caaa75fc139fb52f077130aa7847c48942df06b0c1cd",
     "manifest_file": "global-data-manifest.json"
   },
   "_comment": "International accepted-score vehicles only; EVO configuration metrics remain unknown.",

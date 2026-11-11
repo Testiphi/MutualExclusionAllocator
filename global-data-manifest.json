@@ -3,8 +3,8 @@
     "server_id": "global",
     "schema_version": 1,
     "catalog_payload_sha256": "658ddd38125b8b1b952836caf9772c9bfa3b00c78ff5e9e1e205d9cc93166da2",
-    "scores_payload_sha256": "70a5b6c1ba27743c1e8136f580e9e05cd9817d7497befc9526065ddfb918da61",
-    "dataset_version": "39ac7a7f856073e47520e9f25f71c21e2f8018bd7fc1c4b3ff476b15a94b489f",
+    "scores_payload_sha256": "993826eeeac3ef5065cf06c67ddf98391052c036c31b54f2c9dc50e4ee769c13",
+    "dataset_version": "6844acf93b8b5eae4ef1caaa75fc139fb52f077130aa7847c48942df06b0c1cd",
     "manifest_file": "global-data-manifest.json"
   },
   "capabilities": {
@@ -19,14 +19,14 @@
   },
   "files": {
     "cars.global.json": {
-      "sha256": "f1c5d6820540644480d2dbc2794522f81c279f81542de580ae9f0a1f656d1da5",
+      "sha256": "739b5ae983f72bb370325e963b1aa6d06c8e8a9a5b4a16feaee0421c3f898c70",
       "bytes": 29852,
       "payload_sha256": "658ddd38125b8b1b952836caf9772c9bfa3b00c78ff5e9e1e205d9cc93166da2"
     },
     "gauntlet_data.global.json": {
-      "sha256": "cf2e8da4573357e3b3be367c2fad34dbeac1b1fef0c80baa0186eadcccaf4c5c",
-      "bytes": 134378,
-      "payload_sha256": "70a5b6c1ba27743c1e8136f580e9e05cd9817d7497befc9526065ddfb918da61"
+      "sha256": "a8c39d90881d522eb812aec466338d648f418c1f496bbe1cb38fcfbc398ea8ba",
+      "bytes": 134389,
+      "payload_sha256": "993826eeeac3ef5065cf06c67ddf98391052c036c31b54f2c9dc50e4ee769c13"
     }
   },
   "counts": {
@@ -41,10 +41,10 @@
   },
   "sources": {
     "cars-full.json": "1defa9d642e148e06fe4b57b12c2e30594f55ff00cc0deafc15800c10201a46f",
-    "current-maintenance.json": "e8661bd70a9b974c864a052d2dc6df08c07708dc6e7e11fedb4707ffd702c005",
-    "gauntlet_data_international.json": "0c0c29bdcf542280052c1adf59298dc2aa1a47815e344981d5b4a858ff493020",
+    "current-maintenance.json": "9a2392a85abf147eb17f95182064f123f0ffc13520c9f8f17523b1c757e64b9e",
+    "gauntlet_data_international.json": "cb32396440fac3064695b0ea729681bd7d5d8e6421c4365febe4026c31c69c2a",
     "maintenance-car-identities.json": "3b87ca9d9c140cb2b43b5dceb6e2121394086f187e6e8c4dd20b131b5f5a2a6a",
-    "oc-score-ledger.json": "6dde1f8bbb37d7b91ee49eb3beec4c341bdc3fff5a2dc24f4c5a3f9eb8ecfc1f",
-    "score-ledger.json": "c209966d047dcef3763bbddcf3620eb7cdcefb72c042e213084f5663ce707386"
+    "oc-score-ledger.json": "8402c8af54529ec5c1aef5f0e9e55e53dac24a959dbb38f4c23c8b48dd9b2e16",
+    "score-ledger.json": "4a3ebbfd7dd35fda814ece64a1b7c8ff9b48691c36912ba1ae77bdca3912abfe"
   }
 }
