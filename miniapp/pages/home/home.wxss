@@ -229,6 +229,7 @@
 .results .route-panel { margin:0 0 22px; padding:10px 14px; border:1px solid #21262d; border-radius:10px; background:#0d1117; }
 .results .route-title { margin:0 0 8px; color:#8b949e; font-size:12.8px; }
 .results .route-list { display:flex; flex-wrap:wrap; gap:8px; }
+.results .route-toggle, .results .route-selector { width:auto; margin:0; }
 .results .route-select { line-height:1.6; }
 .results .route-selector { display:block; min-width:0; padding:0; border:0; background:transparent; }
 
