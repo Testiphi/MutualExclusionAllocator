@@ -34,7 +34,7 @@
    </view>
    <view class="card ocr-workspace">
     <view class="recognition-entry">
-     <button wx:if="{{server === 'cn'}}" disabled="{{busy}}" bindtap="chooseImage">{{image ? '更换截图' : '截图文字提取'}}</button>
+     <button wx:if="{{server === 'cn'}}" disabled="{{busy || (serviceStatus && !serviceStatus.recognitionEnabled)}}" bindtap="chooseImage">{{image ? '更换截图' : '截图文字提取'}}</button>
      <text class="ocr-purpose">{{server === 'cn' ? '从相册选择文字清晰的截图，提取五个名称以辅助填写。' : '国际服支持手动填写'}}</text>
     </view>
     <view wx:if="{{image}}" class="recognition">

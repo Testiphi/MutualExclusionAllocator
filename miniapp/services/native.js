@@ -32,14 +32,22 @@ async function createNativeService(wx,core,config,options={}) {
     }
     snapshots=checked;contexts=next;known=ids;home=presenters;
   }
-  async function refresh() {
+  let refreshFlight;
+  function refresh() {
+    if(!refreshFlight)refreshFlight=refreshSnapshots().finally(()=>{
+      refreshFlight=null;
+      options.onStatus?.(status());
+    });
+    return refreshFlight;
+  }
+  async function refreshSnapshots() {
     try {
     await api.session.ensure();const identity=api.identity();
     const values=await Promise.all(['cn','global'].map(async s=>checkSnapshot(await api.snapshot(s),s,identity)));
     if(api.identity()!==identity)throw Error('会话已变化');
     commit({cn:values[0],global:values[1]});online=true;message='';
     for(const v of values)try{wx.setStorageSync(cacheKey(v.server),v.envelope);}catch(_){message='快照缓存未保存，当前仍可计算';}
-    }catch(e){online=false;message='连接未完成，已保留原地图与车库';throw e;}
+    }catch(e){online=false;message=formalModel?'截图识别暂不可用，可继续手动选图。':'连接未完成，已保留原地图与车库';throw e;}
   }
   const binding=()=>({server:'cn',identity:api.identity(),version:snapshots.cn.catalogVersion,catalog:contexts.cn.getModel(catalogDraft).maps});
   const recognitionEnabled=()=>online&&snapshots.cn.capabilities.map_recognition===true&&/^[a-f0-9]{64}$/.test(snapshots.cn.catalogVersion);
@@ -57,13 +65,22 @@ async function createNativeService(wx,core,config,options={}) {
   }
   const jobs=createRecognitionJobs({api:api.jobs,currentBinding:binding,createKey:()=>requestId(wx)});
   function wrap(value){return {...value,version:formalCatalog?.version||snapshots.cn.version,catalog_version:value.version};}
-  try{await refresh();}catch(e){
+  function status(){
+    const state=api.session.current();
+    if((!state.identity||state.expiresAt<=Date.now())&&online){online=false;message='访客会话已失效，请重新连接';}
+    return {online,fixture:api.fixture,message,recognitionEnabled:recognitionEnabled(),
+      canRetry:['paused','recoverable'].includes(jobs.state().phase),task:jobs.state().phase};
+  }
+  if(formalModel){
+    message='正在连接截图识别，可先手动选图。';
+    void refresh().catch(()=>{});
+  }else try{await refresh();}catch(e){
     const cached={};for(const s of ['cn','global'])try{const value=wx.getStorageSync(cacheKey(s));cached[s]=checkSnapshot(value,s,value.identity);}catch(_){}
     if(!cached.cn||!cached.global)throw e;
     commit(cached);online=false;message='离线使用已验证缓存；识图需重新连接';
   }
   return {
-    api,mode:api.fixture?'native-fixture':'native',get autoRecognize(){return recognitionEnabled();},diagnostics:()=>({task:jobs.state(),network:api.metrics(),versions:{cn:snapshots.cn.version,global:snapshots.global.version}}),
+    api,mode:api.fixture?'native-fixture':'native',get autoRecognize(){return recognitionEnabled();},diagnostics:()=>({task:jobs.state(),network:api.metrics(),versions:{cn:snapshots.cn?.version??null,global:snapshots.global?.version??null}}),
     defaults:server=>home[server].defaults(),
     garageView:(d,query,cls,sort)=>home[d.server].visible(d,query,cls,sort),
     model:d=>({...enrichModel(contexts[d.server].getModel(d),snapshots[d.server],d,core),knownCarIds:known[d.server],topCars:home[d.server].tops(d),subtitle:home[d.server].subtitle(d)}),
@@ -79,9 +96,14 @@ async function createNativeService(wx,core,config,options={}) {
     async verifyRecognition(){const b=await catalog();if(!lastBinding||b.identity!==lastBinding.identity||b.version!==lastBinding.version)throw Error('识别结果已失效，请重新识别');},
     cancel(){generation++;jobs.cancel();lastBinding=null;},
     suspend(){generation++;jobs.suspend();},
-    async resume(){await refresh();if(jobs.state().request_key&&['paused','recoverable','finished'].includes(jobs.state().phase)){await catalog();return wrap(await jobs.resume());}},
-    async reconnect(){const ticket=++generation,oldIdentity=api.session.current().identity;jobs.suspend();await api.reconnectSession();if(ticket!==generation)throw Error('本次连接已停止');if(oldIdentity&&api.session.current().identity!==oldIdentity){jobs.cancel();lastBinding=null;}await refresh();if(ticket!==generation)throw Error('本次连接已停止');if(jobs.state().request_key){await catalog();return wrap(await jobs.resume());}},
-    status(){const state=api.session.current();if((!state.identity||state.expiresAt<=Date.now())&&online){online=false;message='访客会话已失效，请重新连接';}return {online,fixture:api.fixture,message,recognitionEnabled:recognitionEnabled(),canRetry:['paused','recoverable'].includes(jobs.state().phase),task:jobs.state().phase};}
+    async resume(){
+      const resumable=()=>{const task=jobs.state();return task.request_key&&['paused','recoverable','finished'].includes(task.phase);};
+      if(formalModel&&!resumable()){void refresh().catch(()=>{});return;}
+      await refresh();
+      if(resumable()){await catalog();return wrap(await jobs.resume());}
+    },
+    async reconnect(){const ticket=++generation,oldIdentity=api.session.current().identity;jobs.suspend();if(refreshFlight)await refreshFlight.catch(()=>{});if(ticket!==generation)throw Error('本次连接已停止');await api.reconnectSession();if(ticket!==generation)throw Error('本次连接已停止');if(oldIdentity&&api.session.current().identity!==oldIdentity){jobs.cancel();lastBinding=null;}await refresh();if(ticket!==generation)throw Error('本次连接已停止');if(jobs.state().request_key){await catalog();return wrap(await jobs.resume());}},
+    status
   };
 }
 module.exports={createNativeService};

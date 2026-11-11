@@ -21,12 +21,15 @@ function validateProductionProfile(value) {
 
 function verifyProductionHealth(health, versions, writing) {
   const account = health?.mini_account;
+  const active = {cn:health?.score_version, global:health?.global_score_version};
   if (health?.mode !== 'production' || health.status !== 'ok' || health.global_profile_schema !== 1 ||
-      health.score_version !== versions.cn || health.global_score_version !== versions.global ||
+      !Object.values(active).every(version=>typeof version==='string'&&/^[a-f0-9]{32,64}$/.test(version)) ||
+      (versions && (active.cn !== versions.cn || active.global !== versions.global)) ||
       account?.mode !== 'formal-a' || account.enabled !== true || typeof account.cloud_writes !== 'boolean' ||
       (writing && !account.cloud_writes)) {
     throw Error('正式账号入口或云写开关尚未就绪');
   }
+  return active;
 }
 
 module.exports = {validateProductionProfile, verifyProductionHealth};

@@ -81,12 +81,48 @@ test('formal score bundle drives calculation while OCR results keep their verifi
   return {kind:'local-unfrozen',files,hashes};
  };
  const draft={schema:1,server:'cn',zone:'zone5',tier:'理论',maps:[null,null,null,null,null],cars:[],stars:{},oc:{},routes:{}};
- const service=await createNativeService(h.wx,core,config,{modelBundle:buildBundle(data.tracks)});
+ let connected;
+ const online=new Promise(resolve=>connected=resolve);
+ const service=await createNativeService(h.wx,core,config,{modelBundle:buildBundle(data.tracks),onStatus:s=>{if(s.online)connected();}});
  const version=service.model(draft).version;
  assert.notEqual(version,cn.version);
+ await online;
  assert.equal((await service.recognize({path:'tmp/a',size:3})).version,version);
  assert.equal(h.calls.filter(c=>c.upload).length,1);
  const incompatible=await createNativeService(h.wx,core,config,{modelBundle:buildBundle(data.tracks.slice(1))});
+ await incompatible.reconnect();
  await assert.rejects(incompatible.recognize({path:'tmp/a',size:3}),/目录不一致/);
  assert.equal(h.calls.filter(c=>c.upload).length,1);
+});
+
+test('formal cold start keeps the same manual model before and after OCR reconnect without cached snapshots',async()=>{
+ const cn=examples('cn'),global=examples('global');
+ const entries=Object.entries({...cn.files,...global.files});
+ const bundle={kind:'local-unfrozen',files:Object.fromEntries(entries.map(([name,file])=>[name,file.text])),
+  hashes:Object.fromEntries(entries.map(([name,{bytes,sha256}])=>[name,{bytes,sha256}]))};
+ let offline=true,settled;
+ const failed=new Promise(resolve=>settled=resolve);
+ const h=harness(o=>{
+  if(offline)throw Error('offline');
+  if(o.url.endsWith('/session'))return {body:session};
+  const snapshot=o.url.includes('server=global')?global:cn;
+  return {body:{...snapshot,identity:session.identity}};
+ });
+ const svc=await createNativeService(h.wx,core,config,{modelBundle:bundle,onStatus:s=>{if(!s.online)settled();}});
+ await failed;
+ const draft={schema:1,server:'cn',zone:'zone5',tier:'高手',maps:Array(5).fill(null),cars:[],stars:{},oc:{},routes:{}};
+ const before=svc.model(draft);
+ assert.ok(before.maps.length>0);
+ const manual={...draft,maps:[before.maps[0],null,null,null,null],cars:before.cars.map(car=>car.id)};
+ const plan=svc.calculate(manual);
+ assert.ok(plan.schemes[0].assignment[0]);
+ assert.equal(h.cache.size,0);
+ assert.equal(svc.status().recognitionEnabled,false);
+ await assert.rejects(svc.recognize({path:'tmp/a',size:3}),/离线/);
+ offline=false;
+ await svc.reconnect();
+ assert.equal(svc.status().recognitionEnabled,true);
+ assert.equal(svc.model(draft).version,before.version);
+ assert.deepEqual(svc.model(draft).maps,before.maps);
+ assert.deepEqual(svc.calculate(manual),plan);
 });

@@ -38,9 +38,29 @@ function lab(){
  const account=()=>({schema_version:1,session_kind:'racepick_account',token_type:'Bearer',token:'rpa1.fixture.account',actor:{id:'fixture-actor',role:'player',verified:true},expires_at:Math.floor(Date.now()/1000)+3000,association:{kind:'session_only',persistent_binding:false,guest_identity:'new-origin-parent'},features});
  function snapshot(server){const names=server==='cn'?['cars.json','gauntlet_data.json']:['cars.global.json','gauntlet_data.global.json','global-data-manifest.json'];return {schema_version:1,server,identity:'new-origin-parent',version:binding.fixed_runtime.snapshot_versions[server],catalog_version:null,capabilities:server==='cn'?{zones:['zone5','zone4'],tiers:['理论','高手','普通','自动'],map_recognition:false}:{zones:['zone5'],tiers:['理论'],map_recognition:false},files:Object.fromEntries(names.map(n=>[n,{text:fs.readFileSync(path.resolve(__dirname,'../../offline-evaluation/mini-account-isolation-20261105-01/candidate-04/snapshot',n),'utf8'),...binding.fixed_runtime.files[n]}]))};}
  const wx={getStorageSync:k=>storage.get(k)||'',setStorageSync:(k,v)=>storage.set(k,v),removeStorageSync:k=>storage.delete(k),getRandomValues:o=>{const b=crypto.randomBytes(o.length);o.success({randomValues:b.buffer.slice(b.byteOffset,b.byteOffset+b.byteLength)});},login:o=>{calls.push({kind:'wx.login'});o.success({code:'fixture-code-memory'});},getFileSystemManager:()=>({unlink(){}}),request(o){calls.push({kind:'request',...o});queueMicrotask(()=>{const u=new URL(o.url),r=hook(o,u);if(r?.lost){o.fail({errMsg:'network lost'});return;}let body=r?.body;if(body===undefined){if(u.pathname.endsWith('/health'))body=binding.health;else if(u.pathname==='/api/mini/v1/session')body={schema_version:1,token_type:'Bearer',token:'new-guest-memory',identity:'new-origin-parent',expires_at:Math.floor(Date.now()/1000)+3500};else if(u.pathname.endsWith('/snapshot'))body=snapshot(u.searchParams.get('server'));else if(u.pathname.endsWith('/auth/login')||u.pathname.includes('/operations/'))body=account();else if(u.pathname.endsWith('/profile'))body={server:u.searchParams.get('server'),storage:'account',remote_supported:true,revision:0,profile:null};else body={session_kind:'wechat_guest',actor:null,features};}o.success({statusCode:r?.status||200,data:JSON.stringify(body),header:r?.header||{}});});return {abort(){}};}};
- return {wx,calls,storage,account,setHook:f=>hook=f};
+ return {wx,calls,storage,account,snapshot,setHook:f=>hook=f};
 }
 const auth=c=>c.auth('login',{email:'fixture@example.test',password:'fixture-private-only'});
+test('formal read-only login accepts new scores but rejects a mismatched or corrupt snapshot before credential submission',async()=>{
+ for(const fault of ['none','mixed-version','invalid-bytes']){
+  const f=lab(),{snapshot_versions,files,global_dataset}=binding.fixed_runtime;
+  const active={cn:'1'.repeat(32),global:'2'.repeat(32)};
+  f.setHook((o,u)=>{
+   if(u.pathname==='/api/health')return {body:{mode:'production',status:'ok',global_profile_schema:1,
+    score_version:active.cn,global_score_version:active.global,mini_account:{mode:'formal-a',enabled:true,cloud_writes:false}}};
+   if(!u.pathname.endsWith('/snapshot'))return null;
+   const server=u.searchParams.get('server'),snapshot=f.snapshot(server);
+   snapshot.version=server==='global'&&fault==='mixed-version'?snapshot_versions.global:active[server];
+   if(server==='cn'&&fault==='invalid-bytes')snapshot.files['cars.json'].text+=' ';
+   return {body:snapshot};
+  });
+  const {client}=createAccountConnection(f.wx,{enabled:true,mode:'production-a',origin:'https://racepick.cn',
+   planId:'racepick-production-a-v1',allowCloudWrites:false,fixedRuntime:{snapshot_versions,files,global_dataset}});
+  if(fault==='none')await auth(client);
+  else await assert.rejects(auth(client),/版本|VERSION_MISMATCH|字节/);
+  assert.equal(f.calls.filter(o=>o.url?.endsWith('/auth/login')).length,fault==='none'?1:0);
+ }
+});
 test('formal read-only logout reuses the guest session and switches accounts on current and updated servers',async()=>{
  for(const oldServer of [true,false]){
   const f=lab(),{snapshot_versions,files,global_dataset}=binding.fixed_runtime;

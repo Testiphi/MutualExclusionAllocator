@@ -38,9 +38,13 @@ function validateScores(result, scope) {
   return result;
 }
 
-async function readScores(wx, scope, starsByCar, pending) {
-  const read=async stars=>validateScores(await get(wx,SCORES,{...scope,stars},pending),scope);
-  const base=await read('all');
+function changedScores() {
+  return Object.assign(Error('成绩版本或筛选结果已变化，请刷新重试。'),{code:'SCORE_VERSION_CHANGED'});
+}
+
+async function readScores(wx, scope, starsByCar, pending, previous=null) {
+  const read=async (stars,query=scope)=>validateScores(await get(wx,SCORES,{...query,stars},pending),query);
+  const base=previous||await read('all');
   const byStar=new Map();
   if(scope.tier==='高手')base.columns.forEach((column,index)=>{
     const star=starsByCar.get(column.car);
@@ -49,23 +53,38 @@ async function readScores(wx, scope, starsByCar, pending) {
       byStar.get(star).push(index);
     }
   });
-  // The anonymous endpoint supports one star parameter for a page. Keep the
-  // base ordering and copy only requested columns from the same score version.
+  if(!byStar.size)return base;
+  const columns=base.columns.slice();
+  const rows=base.rows.map(row=>({...row,cells:row.cells.slice()}));
+
+  // A single changed column can use the existing search endpoint. Check the
+  // exact vehicle ID because the server search also matches partial titles.
   await Promise.all([...byStar].map(async ([star,indexes])=>{
-    const variant=await read(star);
-    if(variant.version!==base.version || variant.column_offset!==base.column_offset ||
-       variant.columns.length!==base.columns.length || variant.rows.length!==base.rows.length ||
-       variant.columns.some((column,i)=>column.car!==base.columns[i].car) ||
-       variant.rows.some((row,i)=>row.map_id!==base.rows[i].map_id || row.small!==base.rows[i].small || row.route!==base.rows[i].route)){
-      throw Error('成绩版本或筛选结果已变化，请刷新重试。');
+    let variant,positions;
+    if(indexes.length===1){
+      const car=base.columns[indexes[0]].car;
+      variant=await read(star,{...scope,q:car,offset:0});
+      if(variant.version!==base.version)throw changedScores();
+      const position=variant.columns.findIndex(column=>column.car===car);
+      if(position!==-1)positions=[position];
     }
-    for(const index of indexes){
-      if(variant.columns[index].stars!==star)throw Error('所选星级暂不可用，请刷新重试。');
-      base.columns[index]=variant.columns[index];
-      for(let i=0;i<base.rows.length;i++)base.rows[i].cells[index]=variant.rows[i].cells[index];
+    if(!positions){
+      variant=await read(star);
+      if(variant.column_offset!==base.column_offset || variant.columns.length!==base.columns.length ||
+         variant.columns.some((column,i)=>column.car!==base.columns[i].car))throw changedScores();
+      positions=indexes;
+    }
+    if(variant.version!==base.version || variant.rows.length!==base.rows.length ||
+       variant.rows.some((row,i)=>row.map_id!==base.rows[i].map_id || row.big!==base.rows[i].big ||
+         row.small!==base.rows[i].small || row.route!==base.rows[i].route))throw changedScores();
+    for(const [i,index] of indexes.entries()){
+      const position=positions[i];
+      if(variant.columns[position].stars!==star)throw Error('所选星级暂不可用，请刷新重试。');
+      columns[index]=variant.columns[position];
+      for(let j=0;j<rows.length;j++)rows[j].cells[index]=variant.rows[j].cells[position];
     }
   }));
-  return base;
+  return {...base,columns,rows};
 }
 
 function projectScores(data) {

@@ -100,9 +100,11 @@ module.exports={
   async loadPublic(keepSheet=false) {
     this.stopPublic();
     const pending=this.publicRequests=[];
-    const scope=this.publicScope(),mode=this.data.publicMode;
+    const scope=this.publicScope(),mode=this.data.publicMode,scopeKey=JSON.stringify(scope);
+    const previous=keepSheet&&this.scoreView?.key===scopeKey?this.scoreView.data:null;
     if(mode==='videos')this.referenceMatrix=null;
-    this.setData({publicBusy:true,publicError:'',...(!keepSheet?{publicSheet:null}:{})});
+    if(!previous)this.scoreView=null;
+    this.setData({publicBusy:true,publicError:'',...(!previous?{publicSheet:null}:{})});
     try {
       if(mode==='videos'){
         const server=this.data.referenceServer;
@@ -112,12 +114,19 @@ module.exports={
         this.referenceMatrix=matrix;
         this.renderReference();
       }else{
-        const result=await scores.readScores(wx,scope,new Map(this.publicStars()),pending);
+        const stars=new Map(this.publicStars());
+        let result;
+        try{result=await scores.readScores(wx,scope,stars,pending,previous);}
+        catch(error){
+          if(!previous||error.code!=='SCORE_VERSION_CHANGED'||this.publicRequests!==pending)throw error;
+          result=await scores.readScores(wx,scope,stars,pending);
+        }
         if(this.publicRequests!==pending)return;
+        this.scoreView={key:scopeKey,data:result};
         this.setData({publicSheet:scores.projectScores(result),scoreMaps:[...allMaps,...result.maps.map(({id,name})=>({value:id,label:name}))]});
       }
     }catch(error){
-      if(this.publicRequests===pending)this.setData({publicError:error.message,publicSheet:null});
+      if(this.publicRequests===pending)this.setData({publicError:error.message,...(!previous?{publicSheet:null}:{})});
     }finally{
       if(this.publicRequests===pending){
         this.publicRequests=null;
