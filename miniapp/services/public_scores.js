@@ -1,4 +1,5 @@
 'use strict';
+const {networkDiagnostic}=require('../adapters/transport');
 
 const ORIGIN = 'https://racepick.cn';
 const SCORES = '/api/coverage';
@@ -11,12 +12,14 @@ function get(wx, path, query, pending) {
     const task = wx.request({
       url: ORIGIN+path+'?'+suffix,
       method: 'GET',
-      timeout: 15000,
+      timeout: 30000,
       success({statusCode, data}) {
         if(statusCode===200 && data && typeof data==='object')resolve(data);
         else reject(Error('读取公开表格失败，请重试。'));
       },
-      fail() { reject(Error('网络请求未完成，请重试。')); }
+      fail(reason) {
+        reject(Error(networkDiagnostic(reason).kind==='timeout'?'读取公开表格超时，请重试。':'网络请求未完成，请重试。'));
+      }
     });
     pending.push(task);
   });
