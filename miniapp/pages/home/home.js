@@ -19,7 +19,7 @@ const {conflictView}=require('../../services/profile_conflict');
 const {createAcceptanceReport}=require('../../services/account_acceptance_report');
 
 Page({
-  data: { routeVideoLab:buildInfo.routeVideoLab===true, buildId:buildInfo.buildId,planId:buildInfo.planId||'',writeAcceptance:accountConfig.allowCloudWrites===true&&accountConfig.mode!=='production-a',formalWriteCandidate:accountConfig.allowCloudWrites===true&&accountConfig.mode==='production-a',readbackAcceptance:!!accountConfig.readbackReceipt,conflictAcceptance:!!accountConfig.conflictRole,ready:false, garageOpen: true, query: '', rows: [], cars: [], schemes: [], slotRows: [], schemeIndex:0, activeScheme:null, dropdown:null,sortMode:'score-desc',carClass:'',classes:['','R','S','A','B','C','D'] },
+  data: { publicCoverage:accountConfig.mode==='production-a',routeVideoLab:buildInfo.routeVideoLab===true, buildId:buildInfo.buildId,planId:buildInfo.planId||'',writeAcceptance:accountConfig.allowCloudWrites===true&&accountConfig.mode!=='production-a',formalWriteCandidate:accountConfig.allowCloudWrites===true&&accountConfig.mode==='production-a',readbackAcceptance:!!accountConfig.readbackReceipt,conflictAcceptance:!!accountConfig.conflictRole,ready:false, garageOpen: true, query: '', rows: [], cars: [], schemes: [], slotRows: [], schemeIndex:0, activeScheme:null, dropdown:null,sortMode:'score-desc',carClass:'',classes:['','R','S','A','B','C','D'] },
   onLoad() {
     this.unloaded=false;this.routeMemory={};
     if(nativeConfig.enabled){this.connectNative();return;}
@@ -33,7 +33,7 @@ Page({
     this.baseService=service;
     this.account=runtime.mount(wx,nativeConfig,service,accountConfig);
     const policy=runtime.policy();
-    this.setData({accountAvailable:!!this.account,accountRestricted:policy.restricted,publicCoverage:policy.productionAccount===true,registrationAvailable:!!this.account&&(!policy.restricted||policy.registration===true),allowCloudWrites:policy.allowCloudWrites});
+    this.setData({accountAvailable:!!this.account,accountRestricted:policy.restricted,registrationAvailable:!!this.account&&(!policy.restricted||policy.registration===true),allowCloudWrites:policy.allowCloudWrites});
     if(this.account){
       this.unsubscribeAccount=this.account.subscribe(s=>{
         const id=s.actor?.id||'',generation=this.account.generation();
