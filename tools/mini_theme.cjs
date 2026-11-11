@@ -39,9 +39,9 @@ function functionalTheme(theme){
   ['.map-ban-hint','.map-ban-dialog .map-ban-hint',['color','font-size','line-height']],
   ['#resultGrid .map-ban-trigger','.results .result-car .map-ban-trigger',['min-height','padding','border','border-radius','background','color','font-size','white-space']],
   ['#resultGrid .map-ban-trigger[data-active]','.results .result-car .map-ban-trigger.is-active',['color']],
-  ['.route-video-links','.track-top-cars .track-top-videos',['display','gap','margin-top','font-size','line-height','overflow-wrap']],
-  ['.route-video-links a','.track-top-videos .top-video-link',['color']],
-  ['.route-video-links summary','.track-top-videos .top-videos-toggle',['color']],
+  ['.route-video-links','.route-video-group',['display','gap','margin-top','font-size','line-height','overflow-wrap']],
+  ['.route-video-links a','.route-video-group .top-video-link',['color']],
+  ['.route-video-links summary','.route-video-group .top-videos-toggle',['color']],
  ];
  const homeStyles=sharedHomeStyles.map(([web,native,properties])=>{
   const source=theme.rules.find(r=>r.source==='styles.css'&&!r.conditions.length&&r.selector.replace(/\s+/g,' ')===web);

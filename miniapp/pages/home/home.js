@@ -78,14 +78,14 @@ Page({
     const s = this.state, d = s.draft, m = s.model;
     const bigs = [...new Set(m.maps.map(x => x.big))];
     this.topKeys=this.topKeys||{};this.topOpen=this.topOpen||{};
-    this.topVideoRows=this.topVideoRows||new Map();
+    this.videoRows=this.videoRows||new Map();
     const row = (map, index,review=false) => {
       const big = map && map.big || '', small = map && map.small || '';
       const options = m.maps.filter(x => x.big === big).map(x => x.small);
       const top=!review&&(m.topCars||[]).find(t=>t.index===index);
       if(!review){const key=d.server+':'+big+'/'+small;if(this.topKeys[index]!==key){this.topKeys[index]=key;this.topOpen[index]=false;}}
       const topOpen=!!(!review&&this.topOpen[index]);
-      const videos=topOpen&&top?.items.length&&this.data.routeVideoLab ? this.topVideoRow(index,d,map,top) : null;
+      const videos=topOpen&&top?.items.length&&this.data.routeVideoLab ? this.videoRow('rows',index,d,map,top.items.map(item=>item.car)) : null;
       return { index, big, small,top:top?{...top,items:this.topVideoItems(top,videos)}:null,topOpen,videoKey:videos?.key,bigs: ['选择大地图'].concat(bigs),
         bigIndex: bigs.indexOf(big) + 1, smalls: ['选择小地图'].concat(options),
         smallIndex: options.indexOf(small) + 1 };
@@ -122,7 +122,12 @@ Page({
       zoneIndex: m.zones.indexOf(d.zone), tiers: m.tiers, tierIndex: m.tiers.indexOf(d.tier),
       rows: d.maps.map((m,i)=>row(m,i)), cars, routes, slotRows: s.pending ? s.pending.map((m,i)=>row(m,i,true)) : [],
       emptyResultText:hasMaps?'没有可用方案':'请先选择地图',resultGuidance:guidance,
-      resultRows:schemes[schemeIndex]?.rows||d.maps.map((map,index)=>({
+      resultRows:schemes[schemeIndex]?.rows.map(row=>{
+        const map=d.maps[row.index];
+        const videos=this.data.routeVideoLab&&!row.empty&&map?.small
+          ?this.videoRow('resultRows',row.index,d,map,[row.car]):null;
+        return {...this.videoItem(row,videos),videoKey:videos?.key};
+      })||d.maps.map((map,index)=>({
         index,map:map?.small||(map?.big?'未选完整':'第'+(index+1)+'图'),big:map?.big||'未选',
         empty:true,configured:!!map?.small,
         banCount:map?.small?(d.mapBans?.[mapBanKey(d,map)]?.length||0):0,
@@ -209,53 +214,60 @@ Page({
     return {...map,server:draft.server,zone:draft.zone==='zone4'?'四区':'五区',tier:draft.tier,
       routes:selected==='off'?[]:types.includes(selected)?[selected]:types};
   },
-  topVideoItems(top,entry) {
-    return top.items.map(item=>{
-      const videos=entry?.videos?.[item.car]||[];
-      const videosOpen=entry?.expanded.has(item.car)||false;
-      return {...item,videos,videoCount:videos.length,videosOpen,
-        visibleVideos:videos.length<=1||videosOpen?videos:[]};
-    });
+  videoItem(item,entry) {
+    const videos=entry?.videos?.[item.car]||[];
+    const videosOpen=entry?.expanded.has(item.car)||false;
+    return {...item,videoCount:videos.length,videosOpen,
+      visibleVideos:videos.length<=1||videosOpen?videos:[]};
   },
-  topVideoRow(index,draft,map,top) {
-    const scope=this.routeVideoScope(draft,map),cars=top.items.map(item=>item.car);
-    const key=JSON.stringify([scope,cars]);
-    const existing=this.topVideoRows.get(index);
+  topVideoItems(top,entry) {
+    return top.items.map(item=>this.videoItem(item,entry));
+  },
+  renderVideoRow(section,index,row,entry) {
+    const next=section==='rows'
+      ?{...row,top:{...row.top,items:this.topVideoItems(row.top,entry)}}
+      :this.videoItem(row,entry);
+    this.setData({[section+'['+index+']']:next});
+  },
+  videoRow(section,index,draft,map,cars) {
+    const scope=this.routeVideoScope(draft,map);
+    const key=JSON.stringify([scope,cars]),slot=section+':'+index;
+    const existing=this.videoRows.get(slot);
     if(existing?.key===key)return existing;
     const entry={key,scope,expanded:new Set()};
-    this.topVideoRows.set(index,entry);
+    this.videoRows.set(slot,entry);
     routeVideos.loadForCars(wx,scope,cars,buildInfo.routeVideoOrigin).then(videos=>{
       entry.videos=videos;
-      const row=this.data.rows?.[index];
-      if(!this.unloaded&&row?.videoKey===key&&this.topVideoRows.get(index)===entry){
-        this.setData({['rows['+index+']']:{...row,top:{...row.top,items:this.topVideoItems(row.top,entry)}}});
+      const row=this.data[section]?.[index];
+      if(!this.unloaded&&row?.videoKey===key&&this.videoRows.get(slot)===entry){
+        this.renderVideoRow(section,index,row,entry);
       }
     }).catch(()=>{
-      if(this.topVideoRows.get(index)===entry)this.topVideoRows.delete(index);
+      if(this.videoRows.get(slot)===entry)this.videoRows.delete(slot);
     });
     return entry;
   },
-  toggleTopVideos(e) {
-    const {index,car}=e.currentTarget.dataset,row=this.data.rows?.[index];
-    const entry=this.topVideoRows?.get(Number(index));
-    if(!row?.topOpen||!entry||row.videoKey!==entry.key||!(entry.videos?.[car]?.length>1))return;
+  videoActionContext(e) {
+    const {section,index,car}=e.currentTarget.dataset;
+    if(!['rows','resultRows'].includes(section))return null;
+    const row=this.data[section]?.[index],entry=this.videoRows?.get(section+':'+index);
+    if(!entry||row?.videoKey!==entry.key||
+       (section==='rows'?!row.topOpen:row.car!==car))return null;
+    return {section,index,car,row,entry};
+  },
+  toggleVideoLinks(e) {
+    const context=this.videoActionContext(e);
+    if(!context||!(context.entry.videos?.[context.car]?.length>1))return;
+    const {section,index,car,row,entry}=context;
     if(entry.expanded.has(car))entry.expanded.delete(car);
     else entry.expanded.add(car);
-    this.setData({['rows['+index+']']:{...row,top:{...row.top,items:this.topVideoItems(row.top,entry)}}});
+    this.renderVideoRow(section,index,row,entry);
   },
-  openTopVideo(e) {
-    const {index,car,videoId}=e.currentTarget.dataset,row=this.data.rows?.[index];
-    const entry=this.topVideoRows?.get(Number(index));
-    if(!row?.topOpen||!entry||row.videoKey!==entry.key||
-       !entry.videos?.[car]?.some(item=>String(item.id)===String(videoId)))return;
-    routeVideos.open(wx,{...entry.scope,car,videoId:String(videoId)});
-  },
-  openRouteVideos(e) {
-    const index=Number(e.currentTarget.dataset.index);
-    const draft=this.state?.draft, map=draft?.maps[index];
-    const row=this.data.activeScheme?.rows[index];
-    if(!this.data.routeVideoLab||!map?.small||!row||row.empty||this.state.busy||this.state.error)return;
-    routeVideos.open(wx,{...this.routeVideoScope(draft,map),car:row.car});
+  openVideoLink(e) {
+    const context=this.videoActionContext(e);
+    const videoId=String(e.currentTarget.dataset.videoId);
+    if(!context||!context.entry.videos?.[context.car]?.some(item=>String(item.id)===videoId))return;
+    routeVideos.open(wx,{...context.entry.scope,car:context.car,videoId});
   },
   openScheme() {this.presentMenu({field:'scheme',options:this.data.schemeOptions.map((label,i)=>({label,value:i,selected:i===this.data.schemeIndex}))},'scheme-trigger');},
   openRoute(e) {const route=this.data.routes[e.currentTarget.dataset.index];if(route)this.presentMenu({field:'route',routeKey:route.key,options:route.options.map((label,i)=>({label,value:i,selected:i===route.optionIndex}))},'route-'+e.currentTarget.dataset.index);},
