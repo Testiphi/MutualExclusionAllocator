@@ -46,15 +46,20 @@ const freezeRaw=freezePath?fs.readFileSync(freezePath):null;
 const freeze=freezeRaw?JSON.parse(freezeRaw):null;
 if(freezePath){
  assert.ok(formalRelease&&!config.allowCloudWrites,'预装冻结成绩仅用于正式只读候选');
- assert.equal(freeze.schema,'racepick.maintenance-data-freeze.v1');
+ const workingTreeFreeze=freeze.schema==='racepick.local-working-tree-data-freeze.v1';
+ assert.ok(workingTreeFreeze||freeze.schema==='racepick.maintenance-data-freeze.v1');
  assert.equal(freeze.frozen,true);
  assert.match(freeze.freeze_id,/^[a-f0-9]{24}$/);
- assert.match(freeze.data_commit,/^[a-f0-9]{40}$/);
+ if(workingTreeFreeze){
+  assert.equal(freeze.data_commit,null);
+  assert.match(freeze.base_commit,/^[a-f0-9]{40}$/);
+ }else assert.match(freeze.data_commit,/^[a-f0-9]{40}$/);
  assert.deepEqual(Object.keys(freeze.runtime).sort(),Object.keys(config.fixedRuntime.files).sort());
 }
 const source=cp.execFileSync('git',['rev-parse','HEAD'],{cwd:root,encoding:'utf8'}).trim();
 const receipt={source,dirty:!!cp.execFileSync('git',['status','--porcelain'],{cwd:root,encoding:'utf8'}).trim(),planId,origin:config.origin,...(formalRelease?{formalRuntime:config.fixedRuntime}:{}),allowCloudWrites:config.allowCloudWrites===true,...(registration?{registrationDelivery:config.registrationDelivery}:{}),...(wechatBinding?{wechatBindingDelivery:config.wechatBindingDelivery}:{}),...(readback?{readbackBinding}: {}),...(writable?{writableBinding}: {}),...(ocr?{ocrOrigin:ocr.origin,ocrBinding}:{}),files:{},previewInvoked:false,formalPackage:firstRelease||formalRelease,uploaded:false,networkExecuted:false};
 if(freeze)receipt.embeddedScoreFreeze={id:freeze.freeze_id,dataCommit:freeze.data_commit,
+ ...(freeze.base_commit?{baseCommit:freeze.base_commit}:{}),
  manifestSha256:crypto.createHash('sha256').update(freezeRaw).digest('hex'),
  files:freeze.runtime,globalDataset:freeze.international_dataset_version};
 function write(name,bytes,from){const file=path.join(out,name);assert.ok(!fs.existsSync(file));fs.mkdirSync(path.dirname(file),{recursive:true});fs.writeFileSync(file,bytes,{flag:'wx'});receipt.files[name]={sha256:crypto.createHash('sha256').update(bytes).digest('hex'),bytes:Buffer.byteLength(bytes),from};}
