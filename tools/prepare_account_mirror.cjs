@@ -41,8 +41,22 @@ if(ocr){
 }
 const formalRuntimeDir=formalRelease&&process.argv[6]?path.resolve(process.argv[6]):null;
 if(formalRelease)assert.ok(formalRuntimeDir,'正式候选需要已核对的五份活动运行文件');
+const freezePath=process.argv[7];
+const freezeRaw=freezePath?fs.readFileSync(freezePath):null;
+const freeze=freezeRaw?JSON.parse(freezeRaw):null;
+if(freezePath){
+ assert.ok(formalRelease&&!config.allowCloudWrites,'预装冻结成绩仅用于正式只读候选');
+ assert.equal(freeze.schema,'racepick.maintenance-data-freeze.v1');
+ assert.equal(freeze.frozen,true);
+ assert.match(freeze.freeze_id,/^[a-f0-9]{24}$/);
+ assert.match(freeze.data_commit,/^[a-f0-9]{40}$/);
+ assert.deepEqual(Object.keys(freeze.runtime).sort(),Object.keys(config.fixedRuntime.files).sort());
+}
 const source=cp.execFileSync('git',['rev-parse','HEAD'],{cwd:root,encoding:'utf8'}).trim();
 const receipt={source,dirty:!!cp.execFileSync('git',['status','--porcelain'],{cwd:root,encoding:'utf8'}).trim(),planId,origin:config.origin,...(formalRelease?{formalRuntime:config.fixedRuntime}:{}),allowCloudWrites:config.allowCloudWrites===true,...(registration?{registrationDelivery:config.registrationDelivery}:{}),...(wechatBinding?{wechatBindingDelivery:config.wechatBindingDelivery}:{}),...(readback?{readbackBinding}: {}),...(writable?{writableBinding}: {}),...(ocr?{ocrOrigin:ocr.origin,ocrBinding}:{}),files:{},previewInvoked:false,formalPackage:firstRelease||formalRelease,uploaded:false,networkExecuted:false};
+if(freeze)receipt.embeddedScoreFreeze={id:freeze.freeze_id,dataCommit:freeze.data_commit,
+ manifestSha256:crypto.createHash('sha256').update(freezeRaw).digest('hex'),
+ files:freeze.runtime,globalDataset:freeze.international_dataset_version};
 function write(name,bytes,from){const file=path.join(out,name);assert.ok(!fs.existsSync(file));fs.mkdirSync(path.dirname(file),{recursive:true});fs.writeFileSync(file,bytes,{flag:'wx'});receipt.files[name]={sha256:crypto.createHash('sha256').update(bytes).digest('hex'),bytes:Buffer.byteLength(bytes),from};}
 const files=cp.execFileSync('git',['ls-files','-z','miniapp'],{cwd:root,encoding:'utf8'}).split('\0').filter(Boolean);
 for(const name of ['account_write_acceptance.js','account_writable_binding.js','account_readback_binding.js','account_conflict_acceptance.js','profile_conflict.js','account_production.js']){const file='miniapp/services/'+name;if(!files.includes(file))files.push(file);}
@@ -67,14 +81,14 @@ write('shared/web_home.js',require('./web_home_adapter.cjs').generateWebHomeAdap
 const bundle={kind:'local-unfrozen',files:{},hashes:{}};
 for(const [name,fixedMeta] of Object.entries(binding.fixed_runtime.files)){
  const b=localSync?cp.execFileSync('git',['show',mirror.ref+':'+name],{cwd:root}):fs.readFileSync(path.join(formalRuntimeDir||path.join(workspace,'offline-evaluation/mini-account-isolation-20261105-01/candidate-04/snapshot'),name));
- const meta=localSync?{bytes:b.length,sha256:crypto.createHash('sha256').update(b).digest('hex')}:formal?config.fixedRuntime.files[name]:fixedMeta;
+ const meta=localSync?{bytes:b.length,sha256:crypto.createHash('sha256').update(b).digest('hex')}:formal?(freeze?.runtime||config.fixedRuntime.files)[name]:fixedMeta;
  assert.equal(b.length,meta.bytes);assert.equal(crypto.createHash('sha256').update(b).digest('hex'),meta.sha256);
  bundle.hashes[name]=meta;
  bundle.files[name]=new TextDecoder('utf-8',{fatal:true}).decode(b);
 }
 const verified=require('../miniapp/adapters/snapshot').verifyLocalBundle(bundle);
-if(formalRelease)assert.equal(verified.global.cars._meta.dataset_version,config.fixedRuntime.global_dataset);
-write('generated/local-bundle.js','module.exports='+JSON.stringify(bundle)+';\n',localSync?mirror.ref+':five local runtime JSON blobs':formalRelease?'verified formal active runtime files':'fixed account delivery five raw files');
+if(formalRelease)assert.equal(verified.global.cars._meta.dataset_version,freeze?freeze.international_dataset_version:config.fixedRuntime.global_dataset);
+write('generated/local-bundle.js','module.exports='+JSON.stringify(bundle)+';\n',freeze?'score freeze '+freeze.freeze_id:localSync?mirror.ref+':five local runtime JSON blobs':formalRelease?'verified formal active runtime files':'fixed account delivery five raw files');
 write('generated/native-config.js','module.exports='+JSON.stringify(native)+';\n',ocr?'fixed OCR gateway':'no OCR/visitor-service connection');
 write('generated/account-config.js','module.exports='+JSON.stringify(config)+';\n','independent account origin and write policy');
 const local=JSON.parse(fs.readFileSync(path.join(root,'miniapp/project.config.json'),'utf8'));
