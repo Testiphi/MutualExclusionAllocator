@@ -23,20 +23,20 @@ function element(tag) {
     return {tag, isConnected: true, children: [], append(...children) { this.children.push(...children); }};
 }
 
-async function render(tier, zone, specialRoutes, car = '9x8', connected = true) {
+async function render(tier, zone, specialRoutes, car = '9x8', connected = true, target = {server: 'cn', map}) {
     const context = {
         URLSearchParams, AbortSignal,
         document: {createElement: element},
         fetch: async url => {
             const params = new URL(url, 'http://localhost').searchParams;
-            assert.equal(params.get('server'), 'cn');
-            assert.equal(params.get('small'), map.small);
+            assert.equal(params.get('server'), target.server);
+            assert.equal(params.get('small'), target.map.small);
             return {ok: true, json: async () => ({videos: entries})};
         },
     };
     vm.runInNewContext(source, context);
     const anchor = element('li');
-    context.RacePickRouteVideos.showForCar(anchor, 'cn', map, car, {tier, zone, specialRoutes});
+    context.RacePickRouteVideos.showForCar(anchor, target.server, target.map, car, {tier, zone, specialRoutes});
     anchor.isConnected = connected;
     await new Promise(resolve => setImmediate(resolve));
     return anchor.children[0]?.children[0];
@@ -73,4 +73,15 @@ test('detached results stay empty', async () => {
     assert.equal(jump.tag, 'a');
     assert.equal(jump.textContent, '帕梅 偏僻小道 19.022（跳图）');
     assert.equal(await render('普通', '五区', ['跳图'], '帕梅', false), undefined);
+});
+
+test('F5 waterfront video labels map new jumps to stable jumps on both servers only', async () => {
+    for (const target of [
+        {server: 'cn', map: {big: '花都疾驰', small: '河畔漂移'}},
+        {server: 'global', map: {big: '巴黎', small: '塞纳河岸'}},
+    ]) {
+        assert.equal((await render('理论', '五区', ['稳定跳图'], '9x8', true, target)).textContent, '9x8（新跳图）');
+        assert.equal((await render('理论', '五区', ['旧跳图'], '9x8', true, target)).textContent, '9x8（旧跳图）');
+    }
+    assert.equal(await render('理论', '五区', ['稳定跳图']), undefined);
 });

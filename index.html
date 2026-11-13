@@ -211,12 +211,21 @@
     }
     function getRouteState(big, small, zone = currentZone) {
         const track = RACE_DATA?.tracks?.find(t => t.大地图 === big && t.小地图 === small);
-        const entries = track?.[zone === 'zone4' ? '四区' : '五区']?.[currentTier] || [];
-        const available = [...new Set(entries.filter(e => e.sc).map(e => e.sc_type))];
         const mapKey = big + '/' + small;
-        const normalized = appState.route(specialRouteEnabled[mapKey], available);
+        const normalized = appState.route(specialRouteEnabled[mapKey], getScTypes(track, zone));
         specialRouteEnabled[mapKey] = normalized;
         return normalized;
+    }
+
+    function getScoreRouteState(big, small, zone) {
+        const route = getRouteState(big, small, zone);
+        if (APP_CONFIG.server === 'global' && big === '巴黎' && small === '塞纳河岸' && route === '旧跳图') {
+            const track = RACE_DATA?.tracks?.find(t => t.大地图 === big && t.小地图 === small);
+            const types = getScoreScTypes(track, zone);
+            // 国际服已有的「跳图」成绩继承自旧跳图，只在仍使用旧标签时映射。
+            if (types.includes('跳图') && !types.includes('旧跳图')) return '跳图';
+        }
+        return route;
     }
 
     // ========================== 星级自定义 ==========================
@@ -444,7 +453,7 @@
         const found = smallMapsByBig[big]?.find(item => item.name === small);
         if (!found) return null;
         const entries = zone === 'zone4' ? found.zone4Entries : found.zone5Entries;
-        const routeState = getRouteState(big, small, zone);
+        const routeState = getScoreRouteState(big, small, zone);
         return raceScores.effectiveTime(entries, carName, currentTier, getCarStars(carName), routeState, null, {ocMap});
     }
 
@@ -868,7 +877,7 @@
         const found = smallMapsByBig[big]?.find(item => item.name === small);
         if (!found) return null;
         return selectionCore.originalGroups(zone === 'zone4' ? found.zone4Entries : found.zone5Entries, {
-            tier: currentTier, starsFor: getCarStars, ocMap, routeState: getRouteState(big, small, zone), times
+            tier: currentTier, starsFor: getCarStars, ocMap, routeState: getScoreRouteState(big, small, zone), times
         });
     }
     /** 默认无车优先级标记（100 以内，远大于实际优先级值） */
@@ -989,22 +998,24 @@
 
 
     /** 渲染特殊跑法开关（在结果面板中展示） */
-    function getScTypes(track) {
-        var zoneKey = currentZone === 'zone4' ? '四区' : '五区';
-        var tierData = track[zoneKey]?.[currentTier];
-        if (!tierData || !Array.isArray(tierData)) return [];
-        var types = {};
-        for (var ei = 0; ei < tierData.length; ei++) {
-            if (tierData[ei].sc && tierData[ei].sc_type) {
-                types[tierData[ei].sc_type] = true;
-            }
+    function getScoreScTypes(track, zone = currentZone) {
+        const zoneKey = zone === 'zone4' ? '四区' : '五区';
+        const entries = track?.[zoneKey]?.[currentTier] || [];
+        return [...new Set(entries.filter(entry => entry.sc && entry.sc_type).map(entry => entry.sc_type))];
+    }
+
+    function getScTypes(track, zone = currentZone) {
+        const types = getScoreScTypes(track, zone);
+        if (APP_CONFIG.server === 'global' && zone === 'zone5' && currentTier === '理论'
+            && track?.大地图 === '巴黎' && track.小地图 === '塞纳河岸') {
+            return ['稳定跳图', '旧跳图'];
         }
-        return Object.keys(types);
+        return types;
     }
 
     function getRouteVideoScope({big, small}) {
         const track = RACE_DATA?.tracks?.find(item => item.大地图 === big && item.小地图 === small);
-        const available = track?.has_special_route ? getScTypes(track) : [];
+        const available = getScTypes(track);
         const route = available.length ? getRouteState(big, small) : 'off';
         return {
             zone: currentZone === 'zone4' ? '四区' : '五区',
@@ -1025,14 +1036,11 @@
             if (!big || !small) continue;
             var mapKey = big + '/' + small;
             var track = RACE_DATA?.tracks?.find(function(t) { return t['大地图'] + '/' + t['小地图'] === mapKey; });
-            if (!track || !track.has_special_route) continue;
-            var zoneKey = currentZone === 'zone4' ? '四区' : '五区';
-            var tierData = track[zoneKey]?.[currentTier];
-            var hasScEntries = tierData && Array.isArray(tierData) && tierData.some(function(e) { return e.sc; });
-            if (!hasScEntries) continue;
+            if (!track) continue;
+            var scTypes = getScTypes(track);
+            if (!scTypes.length) continue;
             hasSc = true;
             var currentState = getRouteState(big, small);
-            var scTypes = getScTypes(track);
             var note = scTypes.length === 1 ? scTypes[0] : (track.special_route_note || '');
 
             var isOn = currentState !== 'off';

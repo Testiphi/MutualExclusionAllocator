@@ -58,13 +58,13 @@ function page(rows, tier = '高手', savedStars = 3) {
         const getStarRule = () => ({min:1,max:6});
         const currentTier = tier; const currentZone = 'zone5';
         const ocMap = {};
-        const specialRouteEnabled = {}; const getRouteState = () => 'all';
+        const APP_CONFIG = {server: 'cn'}; const getRouteState = () => 'all';
         const smallMapsByBig = {A:[{name:'B',zone5Entries:rows,zone4Entries:[]}]};
         const starsMap = {X:savedStars};
         const getZoneDefaultStar = () => 6;
         const getStarRange = () => ({min:1,max:6});
         const parseCarGroup = entry => [entry[0]];
-        ${['getCarStars','getCarScore','getEffectiveTime','getOriginalGroups'].map(extract).join('\n')}
+        ${['getScoreRouteState','getCarStars','getCarScore','getEffectiveTime','getOriginalGroups'].map(extract).join('\n')}
         return {
             display: getCarScore('A','B','X','zone5'),
             priorityTime: getEffectiveTime(rows,'X',true,'zone5'),

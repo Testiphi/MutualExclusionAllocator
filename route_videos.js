@@ -434,7 +434,7 @@
         return new URLSearchParams({server, big: map.big, small: map.small}).toString();
     }
 
-    function matchesScope(video, {zone, tier, specialRoutes}) {
+    function matchesScope(video, {zone, tier, specialRoutes}, waterfront) {
         // Older bindings sometimes carry these labels only in the title.
         const titleZones = [...new Set(video.title.match(/[四五]区/g) || [])];
         const videoZone = video.zone || (titleZones.length === 1 ? titleZones[0] : '');
@@ -444,14 +444,17 @@
         if (automatic !== (tier === '自动')) return false;
 
         const special = video.title.match(/稳定跳图|旧跳图|新跳图|跳图|滑栏杆|滑雪|跳楼|跳船|挂桥/)?.[0];
-        return special ? specialRoutes.includes(special) : specialRoutes.length === 0;
+        const route = waterfront && special === '新跳图' ? '稳定跳图' : special;
+        return route ? specialRoutes.includes(route) : specialRoutes.length === 0;
     }
 
     function showForCar(anchor, server, map, car, scope) {
         if (!anchor || !car) return;
+        const waterfront = (server === 'cn' && map.big === '花都疾驰' && map.small === '河畔漂移')
+            || (server === 'global' && map.big === '巴黎' && map.small === '塞纳河岸');
         void videosFor(mapKey(server, map)).then(({videos}) => {
             if (!anchor.isConnected) return;
-            const matches = videos.filter(video => video.car === car && matchesScope(video, scope));
+            const matches = videos.filter(video => video.car === car && matchesScope(video, scope, waterfront));
             if (!matches.length) return;
             const group = element('div');
             group.className = 'route-video-links';
