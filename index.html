@@ -1393,9 +1393,59 @@
         });
     }
 
+    /**
+     * 给分段控件加「选中块」滑块：纯装饰层，位置按按钮的实测几何写入。
+     * 量不到尺寸（如无布局的测试环境）就不插入滑块，控件退回原先的静态高亮；
+     * 布局变化时重新贴位，系统开启「减少动态效果」时不做过渡。
+     */
+    function initToggleSlider(group) {
+        if (!group || typeof group.querySelectorAll !== 'function') return null;
+        let slider = null, frame = 0;
+        const reduceMotion = () => globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches === true;
+        function measure() {
+            const active = group.querySelector('button.active, .toggle-choice.active');
+            if (!active || typeof active.getBoundingClientRect !== 'function') return null;
+            if (typeof group.getBoundingClientRect !== 'function') return null;
+            const box = active.getBoundingClientRect(), base = group.getBoundingClientRect();
+            if (!box || !base || !(box.width > 0) || !(box.height > 0)) return null;
+            // 绝对定位的坐标原点是 padding box，而 getBoundingClientRect 是 border box，差一圈边框宽。
+            const borderX = Number(group.clientLeft) || 0, borderY = Number(group.clientTop) || 0;
+            return {x: box.left - base.left - borderX, y: box.top - base.top - borderY, w: box.width, h: box.height};
+        }
+        function place(animate) {
+            const at = measure();
+            if (!at) {
+                // 量不到几何时退回静态高亮，避免选中块整个消失。
+                if (slider) { slider.style.opacity = '0'; group.classList.remove('has-slider'); }
+                return;
+            }
+            if (!slider) {
+                slider = document.createElement('div');
+                slider.className = 'toggle-slider';
+                slider.setAttribute('aria-hidden', 'true');
+                group.insertBefore(slider, group.firstChild);
+                group.classList.add('has-slider');
+                animate = false;
+            }
+            if (!animate) slider.style.transition = 'none';
+            slider.style.width = at.w + 'px';
+            slider.style.height = at.h + 'px';
+            slider.style.transform = 'translate(' + at.x + 'px,' + at.y + 'px)';
+            slider.style.opacity = '1';
+            if (!animate) { void slider.offsetHeight; slider.style.transition = ''; }
+        }
+        const sync = () => place(!reduceMotion());
+        globalThis.addEventListener?.('resize', () => {
+            cancelAnimationFrame(frame);
+            frame = requestAnimationFrame(() => place(false));
+        });
+        return {sync};
+    }
+
     // 档位切换
     function initTierToggle() {
         if (APP_CONFIG.server === 'global') { currentTier = '理论'; document.getElementById('tierToggle').hidden = true; return; }
+        const slider = initToggleSlider(document.getElementById('tierToggle'));
         const labels = document.querySelectorAll('#tierToggle button');
         labels.forEach(label => {
             label.addEventListener('click', () => {
@@ -1407,6 +1457,7 @@
                     l.className = l.dataset.tier === currentTier ? 'active' : 'inactive';
                     l.setAttribute('aria-pressed', String(l.dataset.tier === currentTier));
                 });
+                slider?.sync();
                 // 重构建地图索引（档位数据不同）
                 buildMapIndex();
                 refreshBigMaps();
@@ -1420,6 +1471,7 @@
             l.className = l.dataset.tier === currentTier ? 'active' : 'inactive';
             l.setAttribute('aria-pressed', String(l.dataset.tier === currentTier));
         });
+        slider?.sync();
     }
 
     function updateSubtitle() {
@@ -1436,6 +1488,7 @@
 
     function initZoneToggle() {
         if (APP_CONFIG.server === 'global') { currentZone = 'zone5'; document.getElementById('zoneToggle').hidden = true; return; }
+        const slider = initToggleSlider(document.getElementById('zoneToggle'));
         const labels = document.querySelectorAll('#zoneToggle button');
         labels.forEach(label => {
             label.addEventListener('click', () => {
@@ -1448,6 +1501,7 @@
                     l.className = l.dataset.zone === currentZone ? 'active' : 'inactive';
                     l.setAttribute('aria-pressed', String(l.dataset.zone === currentZone));
                 });
+                slider?.sync();
                 // 四区提示显示切换
                 var hint = document.getElementById('zoneHint');
                 if (hint) hint.classList.toggle('show', currentZone === 'zone4');
@@ -1463,6 +1517,7 @@
             l.className = l.dataset.zone === currentZone ? 'active' : 'inactive';
             l.setAttribute('aria-pressed', String(l.dataset.zone === currentZone));
         });
+        slider?.sync();
     }
 
     /**

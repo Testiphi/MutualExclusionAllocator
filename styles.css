@@ -82,6 +82,7 @@ h1 {
 }
 /* 切换开关：两段式分段控件，保留原 label/anchor 的点击语义 */
 .toggle-group {
+    position: relative;
     display: inline-flex;
     align-items: center;
     gap: 2px;
@@ -122,6 +123,24 @@ h1 {
     background: var(--rp-surface);
     color: var(--rp-text-2);
 }
+/* 选中块滑块：由 initToggleSlider() 插入的纯装饰层，位置按按钮实测几何写入。
+   量不到尺寸（无布局环境）时脚本不插入，控件退回原先的静态高亮。 */
+.toggle-slider {
+    position: absolute;
+    left: 0;
+    top: 0;
+    z-index: 0;
+    border-radius: var(--rp-radius-chip);
+    background: var(--rp-raised);
+    opacity: 0;
+    pointer-events: none;
+    will-change: transform;
+    transition: transform .18s ease, width .18s ease, height .18s ease, opacity .12s linear;
+}
+.toggle-group.has-slider > button,
+.toggle-group.has-slider > .toggle-choice { position: relative; z-index: 1; }
+.toggle-group.has-slider button.active,
+.toggle-group.has-slider .toggle-choice.active { background: transparent; }
 /* 服别、档位与分区各占一行，组内可换行，分隔靠间距而不靠横线。 */
 .mode-controls { display:flex; flex-direction:column; align-items:flex-start; gap:8px; margin:0 0 16px; }
 .mode-controls .toggle-group { margin:0; flex-wrap:wrap; row-gap:2px; align-self:flex-start; }
@@ -674,7 +693,7 @@ select:disabled {
 .loading-box p { color: var(--rp-text-2); font-size: var(--rp-size-sm); margin: 0; }
 @media (prefers-reduced-motion: reduce) {
     .loading-spinner { animation: none; }
-    .toggle-group button, .toggle-group .toggle-choice, .map-row, .car-tag { transition: none; }
+    .toggle-group button, .toggle-group .toggle-choice, .map-row, .car-tag, .toggle-slider { transition: none; }
 }
 
 .garage-actions button,.garage-confirm button{background:var(--rp-raised);color:var(--rp-text);border:1px solid var(--rp-border);border-radius:var(--rp-radius-control);padding:7px 12px;cursor:pointer}.garage-confirm{background:var(--rp-surface);color:var(--rp-text);border:1px solid var(--rp-border);border-radius:var(--rp-radius-card);max-width:440px}.garage-confirm::backdrop{background:#0009}#garageSaveStatus{color:var(--rp-warning);font-size:var(--rp-size-sm)}

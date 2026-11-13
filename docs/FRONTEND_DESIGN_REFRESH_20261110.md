@@ -1,4 +1,4 @@
-# 网页前端视觉刷新 2026-11-10
+﻿# 网页前端视觉刷新 2026-11-10
 
 ## 0. 状态
 
@@ -190,3 +190,25 @@ coverage.html 的「跑法参考」由 route_videos.js 生成，此前未跟随 
 - 窄屏：`.toolbar .check` 在 600px 以下保持单行，避免 320px 时「只看有视频的格子」折行。
 
 只改覆盖层 CSS，未动 route_videos.js、接口、数据与表格语义。Chrome headless 复核 320/390/768/1440 两视图无横向溢出，切换与滚动正常。Node 回归 149 项通过，5 项失败仍为 miniapp/shared 缺失的既有问题；启动冒烟与主题导出检查通过。
+
+## 档位与分区切换滑块（2026-11-13）
+
+首页三段分段控件（国服/国际服、理论—自动、五区/四区）此前只有背景色切换，选中块没有位移感。本轮给档位与分区两组加了一块会滑动的选中底，外观、配色、尺寸都不变。
+
+- 滑块是脚本插入的纯装饰层 `.toggle-slider`（`aria-hidden`），由 index.html 的 `initToggleSlider(group)` 按选中按钮的实测几何写入 `transform`/`width`/`height`。它不参与命中测试（`pointer-events:none`），点击语义仍是原按钮，键盘与读屏不变。
+- 选中背景从按钮挪到滑块上：`.toggle-group.has-slider button.active` 改为透明底，避免双层色块。只有滑块成功就位后才加 `has-slider`，量不到几何时自动退回原先的静态高亮。
+- 坐标修正：绝对定位原点是 padding box，`getBoundingClientRect` 是 border box，按 `clientLeft`/`clientTop` 扣掉 1px 边框。实测滑块与选中按钮在 320/360/390/414/1024/1440 逐项偏差均为 0，含窗口缩放重贴位。
+- 过渡 `.18s ease`；`prefers-reduced-motion: reduce` 下 `transition:none`（实测计算值 0s）。窗口缩放时用 `requestAnimationFrame` 合并重贴位，不做动画。
+- 服别切换（国服/国际服）是整页跳转，不接滑块。
+
+可行性数据（Chrome headless 1440x1000，程序化选满 5 张图后实测）：
+
+| 场景 | 1x | 6x 降速 | 10x 降速 |
+|---|---|---|---|
+| 点档位的同步重建 | 2.8–5.3 ms | 39.9–80.8 ms | 154–286.7 ms |
+| 纯滑块动画帧间隔 | 满帧 16.7 | max 16.8 / >33ms 0 帧 | max 50 / >33ms 6 帧 |
+| 动画与点击重叠 | max 16.8，无长任务 | 长任务 257/81 ms | 长任务 98/68/82/142 ms |
+
+滑块本身的开销可忽略：每帧写 `width` 与写 `transform` 的布局成本中位 0 ms、p95 0.1 ms；几何驱动（每帧一次 `getBoundingClientRect`）在 6x 降速下仍满帧。掉帧全部来自点击后那段既有的同步 DOM 重建（`buildMapIndex`/`refreshBigMaps`/`renderGarage`），与动画无关——动画只是让这段长任务更可见。桌面 1x 下无法感知。求解本身已被 `appState.createScheduler` 推到下一帧之后，不在点击同步路径上。
+
+验证：启动冒烟通过（无布局的 DOM 桩里滑块自动退化，不插入装饰层）；`test_global_frontend`/`test_map_uniqueness`/`test_home_presenter` 22 项通过；全量 Node 155 项 149 通过，5 项失败仍是 miniapp/shared 缺失的既有问题。styles.css 改动后已重新生成 home_theme.json，`--check` 通过。320/360/390/414/1024/1440 均无横向溢出。
