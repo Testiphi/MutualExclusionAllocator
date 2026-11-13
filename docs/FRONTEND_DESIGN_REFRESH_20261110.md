@@ -178,3 +178,15 @@ python -B -X utf8 tools/export_home_theme.py --check
 - Node 44 项、针对性 Python 40 项通过。另复核原生 OpenAPI 冻结测试，原基线已因审核字段契约漂移失败。未更新小程序契约。本轮未做实体触屏、屏幕阅读器或生产验收。
 
 用户已确认 8066 验收通过。成绩表界面只移除解锁相关入口和遮罩，保留原图例、投稿标记和筛选交互。
+
+## 成绩表跑法参考视图对齐（2026-11-13）
+
+coverage.html 的「跑法参考」由 route_videos.js 生成，此前未跟随 9704363 的面板语言：整块被 theme.css 的 `.rp-page main > section:not(.panel)` 套成卡片，切换用普通按钮，表格只有上缘圆角，提示文字落回 14px 正文色，与同页成绩表视图观感分叉。
+
+- 切换控件改为与首页 styles.css `.toggle-group` 同形的两段式分段控件：1px `--rp-border` 外壳、`--rp-radius-control` 外圆角、2px 内边距、`--rp-radius-chip` 圆角按钮，选中态 `--rp-raised` + 600 字重，未选中 `--rp-muted`。coverage.html 不加载 styles.css，规则复刻在 coverage.css。
+- 去掉 section 卡片：`.rp-page main > section.route-reference` 置为无背景、无边框、无内边距，工具栏与表格直接铺在页面上，与成绩表侧一致。
+- 跑法参考没有底部工作表条，`.sheet-wrap.route-reference-grid` 四角都用 `--rp-radius-card`，不再依赖 `.sheets` 补下缘。
+- hint 与 status 统一为 12px、`--rp-text-2`，与 `#summary`/`.legend` 同级；空文本时隐藏。分页与表格的间距对齐成绩表。
+- 窄屏：`.toolbar .check` 在 600px 以下保持单行，避免 320px 时「只看有视频的格子」折行。
+
+只改覆盖层 CSS，未动 route_videos.js、接口、数据与表格语义。Chrome headless 复核 320/390/768/1440 两视图无横向溢出，切换与滚动正常。Node 回归 149 项通过，5 项失败仍为 miniapp/shared 缺失的既有问题；启动冒烟与主题导出检查通过。

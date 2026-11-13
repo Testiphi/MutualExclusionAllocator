@@ -21,7 +21,7 @@ header p{margin-bottom:0}.toolbar{display:flex;flex-wrap:wrap;gap:10px;align-ite
 .paging{display:flex;align-items:center;gap:10px;margin:8px 0;font-size:12px}.paging button{min-height:30px;padding:5px 9px}.muted{color:var(--rp-text-2)}.warning{color:var(--rp-warning)}#message:empty{display:none}a{color:var(--rp-blue)}
 dialog{width:min(580px,calc(100vw - 28px));max-height:88vh;overflow:auto;padding:22px;color:var(--rp-text);font-size:14px;box-sizing:border-box}dialog h2{margin:0 0 14px}dialog p{overflow-wrap:anywhere}dialog .actions{justify-content:flex-end;margin-top:18px}form label{margin-top:12px}form textarea{min-height:80px;resize:vertical}
 .target{display:grid;grid-template-columns:78px minmax(0,1fr);gap:7px 12px;background:var(--rp-bg);border:1px solid var(--rp-divider);padding:13px;border-radius:var(--rp-radius-control)}.target dt{color:var(--rp-text-2)}.target dd{margin:0;overflow-wrap:anywhere}[hidden]{display:none!important}
-@media(max-width:600px){.toolbar{gap:8px}.toolbar label{flex:1 1 120px}.toolbar input[type=search]{max-width:none;width:100%}.sheet-wrap{max-height:460px}:is(#sheet,.route-reference-sheet){--index-width:26px;--map-width:72px;--track-width:136px;--car-width:68px}:is(#sheet,.route-reference-sheet) th,:is(#sheet,.route-reference-sheet) td{height:36px}:is(#sheet,.route-reference-sheet) .cell{min-height:36px}:is(#sheet,.route-reference-sheet) .map-col,:is(#sheet,.route-reference-sheet) .track-col{font-size:12px}.legend{gap:8px 12px}dialog{padding:17px}}
+@media(max-width:600px){.toolbar{gap:8px}.toolbar label{flex:1 1 120px}.toolbar .check{flex:0 0 auto;white-space:nowrap}.toolbar input[type=search]{max-width:none;width:100%}.sheet-wrap{max-height:460px}:is(#sheet,.route-reference-sheet){--index-width:26px;--map-width:72px;--track-width:136px;--car-width:68px}:is(#sheet,.route-reference-sheet) th,:is(#sheet,.route-reference-sheet) td{height:36px}:is(#sheet,.route-reference-sheet) .cell{min-height:36px}:is(#sheet,.route-reference-sheet) .map-col,:is(#sheet,.route-reference-sheet) .track-col{font-size:12px}.legend{gap:8px 12px}dialog{padding:17px}}
 
 :is(#sheet,.route-reference-sheet) .star-select{display:block;max-width:60px;width:100%;min-height:22px;margin:2px auto 0;padding:1px 3px;font-size:11px;line-height:1.25}:is(#sheet,.route-reference-sheet) .car-col:has(.star-select){height:44px}
 
@@ -29,10 +29,22 @@ dialog{width:min(580px,calc(100vw - 28px));max-height:88vh;overflow:auto;padding
 
 .route-video-mode{margin:0 0 16px;padding:12px;display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center}.route-video-mode[hidden]{display:none}.route-video-mode p{margin:0}
 
-.route-reference-tabs{display:flex;gap:8px;margin-bottom:12px}
-.route-reference-tabs [aria-pressed=true]{border-color:var(--rp-blue);background:var(--rp-selected)}
+/* 视图切换：与首页一致的两段式分段控件（coverage.html 不加载 styles.css，故在此复刻） */
+.route-reference-tabs{display:inline-flex;align-items:center;gap:2px;margin:0 0 14px;padding:2px;max-width:100%;border:1px solid var(--rp-border);border-radius:var(--rp-radius-control);background:var(--rp-bg)}
+.route-reference-tabs button{min-height:30px;padding:4px 12px;border:0;border-radius:var(--rp-radius-chip);background:transparent;color:var(--rp-muted);font-size:var(--rp-size-sm);line-height:1.2;white-space:nowrap}
+.route-reference-tabs button:hover{background:var(--rp-surface);color:var(--rp-text-2)}
+.route-reference-tabs button[aria-pressed=true]{background:var(--rp-raised);color:var(--rp-text);font-weight:600}
 .show-route-reference > :not(.route-reference-tabs,.route-reference){display:none}
+
+/* 跑法参考沿用成绩表的外壳：不套 section 卡片，表格自带边框 */
+.rp-page main > section.route-reference{margin:0;padding:0;background:none;border:0;border-radius:0}
+.route-reference .toolbar{margin-bottom:2px}
+.route-reference > p{margin:7px 0;font-size:12px;color:var(--rp-text-2)}
+.route-reference > p:empty{display:none}
+.route-reference .paging{margin:8px 0 0}
 
 .sheet-wrap { border-radius: var(--rp-radius-card) var(--rp-radius-card) 0 0; }
 .sheets { border-radius: 0 0 var(--rp-radius-card) var(--rp-radius-card); }
+/* 跑法参考没有底部工作表条，表格四条圆角自带 */
+.sheet-wrap.route-reference-grid { border-radius: var(--rp-radius-card); }
 .rp-page main .muted { color: var(--rp-text-2); }
