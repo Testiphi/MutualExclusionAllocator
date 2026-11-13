@@ -12,12 +12,18 @@ function createLocalService(core, bundle) {
     const initial = context.getModel(base);
     known[server] = [...new Set(initial.zones.flatMap(zone=>context.getModel({...base,zone}).cars.map(c=>c.id)))];
   }
-  function context(draft) { if (!contexts[draft.server]) throw Error('无效服别'); return contexts[draft.server]; }
+  function model(draft) {
+    const server=draft.server,context=contexts[server];
+    if(!context)throw Error('无效服别');
+    const enriched=enrichModel(context.getModel(draft),snapshots[server],draft,core);
+    return {...enriched,routes:home[server].routesFor(draft,enriched.routes),knownCarIds:known[server],
+      topCars:home[server].tops(draft),subtitle:home[server].subtitle(draft)};
+  }
   return {
     mode:'local',
     defaults:server=>home[server].defaults(),
     garageView:(draft,query,cls,sort)=>home[draft.server].visible(draft,query,cls,sort),
-    model: draft=>({...enrichModel(context(draft).getModel(draft),snapshots[draft.server],draft,core),knownCarIds:known[draft.server],topCars:home[draft.server].tops(draft),subtitle:home[draft.server].subtitle(draft)}),
+    model,
     banOptions:(draft,map)=>home[draft.server].banOptions(draft,map),
     calculate: draft=>home[draft.server].calculate(draft),
     resultGuidance: (draft,index)=>home[draft.server].guidance(draft,index),

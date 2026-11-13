@@ -25,10 +25,12 @@
      <button class="toggle-choice {{server === 'cn' ? 'active' : ''}}" data-server="cn" bindtap="switchServer">国服</button>
      <button class="toggle-choice {{server === 'global' ? 'active' : ''}}" data-server="global" bindtap="switchServer">国际服</button>
     </view>
-    <view wx:if="{{tiers.length > 1}}" class="mode-row tier-row">
+    <view wx:if="{{tiers.length > 1}}" class="mode-row tier-row {{tierSlider ? 'has-slider' : ''}}">
+     <view wx:if="{{tierSlider}}" class="toggle-slider" style="{{tierSlider}}" aria-hidden="true"></view>
      <button wx:for="{{tiers}}" wx:key="*this" class="toggle-choice {{tierIndex === index ? 'active' : ''}}" data-index="{{index}}" bindtap="selectTier">{{item}}档</button>
     </view>
-    <view wx:if="{{zones.length > 1}}" class="mode-row zone-row">
+    <view wx:if="{{zones.length > 1}}" class="mode-row zone-row {{zoneSlider ? 'has-slider' : ''}}">
+     <view wx:if="{{zoneSlider}}" class="toggle-slider" style="{{zoneSlider}}" aria-hidden="true"></view>
      <button wx:for="{{zones}}" wx:key="*this" class="toggle-choice {{zoneIndex === index ? 'active' : ''}}" data-index="{{index}}" bindtap="selectZone">{{item}}</button>
     </view>
    </view>

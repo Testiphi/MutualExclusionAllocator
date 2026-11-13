@@ -36,7 +36,10 @@ function matches(video, scope) {
     if (video.tier && video.tier !== scope.tier) return false;
     return scope.route ? special === scope.route : !special;
   }
-  return !special || scope.routes.includes(special);
+  const waterfront = (scope.server === 'cn' && scope.big === '花都疾驰' && scope.small === '河畔漂移') ||
+    (scope.server === 'global' && scope.big === '巴黎' && scope.small === '塞纳河岸');
+  const route = waterfront && special === '新跳图' ? '稳定跳图' : special;
+  return route ? scope.routes.includes(route) : scope.routes.length === 0;
 }
 
 function fetchVideos(wx, scope, origin = 'http://127.0.0.1:18746') {

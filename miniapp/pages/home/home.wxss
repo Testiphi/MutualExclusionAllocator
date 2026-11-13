@@ -238,3 +238,8 @@
 .map-ban-dialog .map-ban-hint { margin:0 0 12px; }
 .map-ban-dialog .map-ban-choices { display:grid; grid-template-columns:minmax(0,1fr); }
 .map-ban-dialog .map-ban-actions button { width:auto; margin:0; }
+.toolbar .mode-row {position:relative;}
+.toolbar .has-slider .toggle-choice {position:relative;z-index:1;}
+.toolbar .has-slider .toggle-choice.active {background:transparent;}
+.toggle-slider {position:absolute;left:0;top:0;z-index:0;border-radius:6px;background:#21262d;pointer-events:none;transition:transform .18s ease,width .18s ease,height .18s ease;}
+@media (prefers-reduced-motion:reduce) {.toggle-slider {transition:none;}}

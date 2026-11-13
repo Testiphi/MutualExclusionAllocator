@@ -20,8 +20,8 @@ test('read-only fixture uses the website contract, including both servers, tiers
   }};
   const ids = async extra => (await load(wx, {...scope, ...extra})).map(item => item.id);
   assert.deepEqual(await ids({}), [1, 7]);
-  assert.deepEqual(await ids({routes:['跳图']}), [1, 7]);
-  assert.deepEqual(await ids({routes:['稳定跳图']}), [1, 4, 7]);
+  assert.deepEqual(await ids({routes:['跳图']}), []);
+  assert.deepEqual(await ids({routes:['稳定跳图']}), [4]);
   assert.deepEqual(await ids({zone:'四区', tier:'高手', routes:['跳图']}), [2]);
   assert.deepEqual(await ids({tier:'自动'}), [3]);
   assert.deepEqual(await ids({server:'global'}), [6]);
@@ -96,4 +96,19 @@ test('top-car video groups reuse one response and a selected title opens only th
   assert.deepEqual(groups.ssc.map(v=>v.id),[3]);
   assert.deepEqual(groups['其他车'],[]);
   assert.deepEqual((await load(wx,{...scope,videoId:'2'})).map(v=>v.id),[2]);
+});
+
+test('waterfront normal videos and stable-jump aliases follow the selected route on both servers',async()=>{
+  const clip={car:'f5',url};
+  const wx={request:o=>o.success({statusCode:200,data:{videos:[
+    {...clip,id:1,title:'河畔普通跑法'},
+    {...clip,id:2,title:'河畔新跳图'},
+    {...clip,id:3,title:'河畔旧跳图'}
+  ]}})};
+  for(const map of [{server:'cn',big:'花都疾驰',small:'河畔漂移'},{server:'global',big:'巴黎',small:'塞纳河岸'}]){
+    const ids=async routes=>(await load(wx,{...scope,...map,routes})).map(v=>v.id);
+    assert.deepEqual(await ids([]),[1]);
+    assert.deepEqual(await ids(['稳定跳图']),[2]);
+    assert.deepEqual(await ids(['旧跳图']),[3]);
+  }
 });

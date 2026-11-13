@@ -117,7 +117,7 @@ Page({
       .map((x,index) => ({ ...x, index,selected: d.cars.includes(x.id), starIndex: x.stars.indexOf(x.effectiveStar|| (x.stars.includes(d.stars[x.id]) ? d.stars[x.id] : x.defaultStar)),
         oc: d.oc[x.id] === true }));
     const routes = (m.routes || []).map(x=>{
-      const saved = d.routes[x.key], value = saved === 'off' ? 'off' : x.types.includes(saved) ? saved : 'all';
+      const stored = d.routes[x.key], saved = x.aliases?.[stored] ?? stored, value = saved === 'off' ? 'off' : x.types.includes(saved) ? saved : 'all';
       return {...x, enabled:value!=='off', showTypes:value!=='off'&&x.types.length>1, options:['全部'].concat(x.types), optionIndex:value==='all'||value==='off'?0:x.types.indexOf(value)+1};
     });
     const schemes = s.result ? s.result.schemes.map((scheme,index)=>({
@@ -141,6 +141,9 @@ Page({
     }
     this.lastResult=s.result;
     this.closeDropdown();
+    const sliderKey=JSON.stringify([d.server,m.tiers,m.zones,d.tier,d.zone]);
+    const layoutChanged=this.sliderKey!==sliderKey;
+    this.sliderKey=sliderKey;
     this.setData({ ready:true, server: d.server, mode: s.mode, error: s.error, busy: s.busy,
       mapBansAvailable:typeof this.service.banOptions==='function',
       dirty: s.dirty, image: s.image, hasPending: !!s.pending,ocrBusy:!!s.image&&s.busy,subtitle:m.subtitle||'帕累托最优 · 擂台选车',zoneHint:d.zone==='zone4',
@@ -159,8 +162,26 @@ Page({
         banCount:map?.small?(d.mapBans?.[mapBanKey(d,map)]?.length||0):0,
         car:map?.small?(s.result?'无可用车':'待生成方案'):(map?.big?'缺小地图':'待选图')
       })),
-      hasComputedResult:!!s.result,schemes,schemeIndex,schemeOptions:s.result?s.result.schemes.map((x,i)=>x.summary||('方案'+(i+1)+' · Σ='+x.prioritySum)):[],activeScheme:schemes[schemeIndex]||null });
+      hasComputedResult:!!s.result,schemes,schemeIndex,schemeOptions:s.result?s.result.schemes.map((x,i)=>x.summary||('方案'+(i+1)+' · Σ='+x.prioritySum)):[],activeScheme:schemes[schemeIndex]||null },layoutChanged?()=>this.measureModeSliders():undefined);
   },
+  measureModeSliders() {
+    if(this.unloaded||typeof this.createSelectorQuery!=='function')return;
+    const ticket=this.sliderTicket=(this.sliderTicket||0)+1;
+    const query=this.createSelectorQuery();
+    for(const name of ['tier','zone']){
+      query.select('.'+name+'-row').boundingClientRect();
+      query.select('.'+name+'-row .active').boundingClientRect();
+    }
+    query.exec(rects=>{
+      if(this.unloaded||ticket!==this.sliderTicket)return;
+      const style=(row,button)=>row&&button
+        ? 'width:'+button.width+'px;height:'+button.height+'px;transform:translate('+
+          (button.left-row.left-1)+'px,'+(button.top-row.top-1)+'px)'
+        : '';
+      this.setData({tierSlider:style(rects[0],rects[1]),zoneSlider:style(rects[2],rects[3])});
+    });
+  },
+  onResize(){this.measureModeSliders();},
   async onShow() {this.homeVisible=true;this.refreshingAccount=true;try{if(this.account)await this.account.refresh();}catch(e){this.setData({cloudStatus:e.message});}finally{this.refreshingAccount=false;}if(this.controller){await this.syncAccount((runtime.policy().writeAcceptance||runtime.policy().readbackAcceptance||runtime.policy().conflictAcceptance)?false:true);this.controller.show();if(this.account){void runtime.usage()?.visit('home',this.state.draft.server,'resume');void this.refreshHomeIdentity();}}},
   onHide() {this.homeVisible=false;this.setData({homeHub:null,banEditor:null}); this.closeDropdown();if (this.controller) this.controller.hide(); },
   onUnload() { this.unloaded=true;this.cloudTicket=(this.cloudTicket||0)+1;if(this.unsubscribeAccount)this.unsubscribeAccount();this.closeDropdown();if (this.controller) this.controller.destroy();if(this.nativeApi)this.nativeApi.session.invalidate(); },
@@ -236,8 +257,9 @@ Page({
   openStars(e) {const car=this.data.cars.find(c=>c.id===e.currentTarget.dataset.id);if(car)this.presentMenu({field:'stars',carId:car.id,options:car.stars.map((n,i)=>({label:'★'+n,value:i,selected:i===car.starIndex}))},'star-'+e.currentTarget.dataset.anchor);},
   routeVideoScope(draft,map) {
     const key=map.big+'/'+map.small;
-    const types=this.state.model.routes?.find(route=>route.key===key)?.types||[];
-    const selected=draft.routes[key];
+    const route=this.state.model.routes?.find(item=>item.key===key);
+    const types=route?.types||[];
+    const stored=draft.routes[key],selected=route?.aliases?.[stored]??stored;
     return {...map,server:draft.server,zone:draft.zone==='zone4'?'四区':'五区',tier:draft.tier,
       routes:selected==='off'?[]:types.includes(selected)?[selected]:types};
   },
@@ -381,7 +403,8 @@ Page({
     const key=e.currentTarget.dataset.key, value=this.state.draft.routes[key];
     const memoryKey=this.state.draft.server+':'+key;
     if(value==='off') {
-      const route=this.state.model.routes.find(x=>x.key===key), remembered=this.routeMemory[memoryKey];
+      const route=this.state.model.routes.find(x=>x.key===key), saved=this.routeMemory[memoryKey];
+      const remembered=route.aliases?.[saved]??saved;
       this.controller.setRoute(key,route.types.includes(remembered)?remembered:'all');
     } else {
       this.routeMemory[memoryKey]=value||'all'; this.controller.setRoute(key,'off');

@@ -2,20 +2,41 @@
 const presenter=require('../shared/home_presenter');
 const core=require('../shared/selection_core');
 const mapBanKey=(d,map)=>JSON.stringify([d.server,d.zone,map.big,map.small]);
+const waterfrontKey='巴黎/塞纳河岸';
+const globalWaterfront=map=>map?.big==='巴黎'&&map.small==='塞纳河岸';
 function createWebHomeAdapter(snapshot) {
+ const waterfront=snapshot.server==='global'&&snapshot.data.tracks.find(track=>track.大地图==='巴黎'&&track.小地图==='塞纳河岸');
+ const types=waterfront?.五区?.理论?.filter(entry=>entry.sc).map(entry=>entry.sc_type)||[];
+ function scoreRoutes(d){
+  const route=d.routes?.[waterfrontKey];
+  if(!waterfront||d.zone!=='zone5'||d.tier!=='理论'||!route)return d.routes;
+  if(route==='旧跳图'&&types.includes('跳图')&&!types.includes('旧跳图'))return {...d.routes,[waterfrontKey]:'跳图'};
+  // A displayed option can have video but no recorded score. Filtering must
+  // not fall back to all special scores when the chosen subtype is absent.
+  if(route==='稳定跳图'&&!types.includes(route))return {...d.routes,[waterfrontKey]:'off'};
+  return d.routes;
+ }
+ function routesFor(d,routes){
+  if(!waterfront||d.zone!=='zone5'||d.tier!=='理论'||!d.maps.some(globalWaterfront))return routes;
+  const route={key:waterfrontKey,label:'塞纳河岸',types:['稳定跳图','旧跳图'],aliases:{跳图:'旧跳图'}};
+  const index=routes.findIndex(item=>item.key===waterfrontKey);
+  if(index===-1)return [...routes,route];
+  return routes.map((item,i)=>i===index?route:item);
+ }
  const p=presenter.createHomePresenter(snapshot),selection=core.createSelectionCore(snapshot);let cachedKey,cached;
- function view(d,filters={}) {const key=JSON.stringify([d,filters]);if(key!==cachedKey){cached=p.present(d,filters);cachedKey=key;}return cached;}
+ function view(d,filters={}) {const key=JSON.stringify([d,filters]);if(key!==cachedKey){cached=p.present({...d,routes:scoreRoutes(d)},filters);cachedKey=key;}return cached;}
  function candidates(d,map){
-  return selection.prepareMapCandidates({maps:[map],zone:d.zone,tier:d.tier,starsMap:d.stars,ocMap:d.oc,scStates:d.routes})[0];
+  return selection.prepareMapCandidates({maps:[map],zone:d.zone,tier:d.tier,starsMap:d.stars,ocMap:d.oc,scStates:scoreRoutes(d)})[0];
  }
  function filteredReferences(d,map){
   const candidate=core.excludeBannedCars(candidates(d,map),new Set(d.mapBans?.[mapBanKey(d,map)]));
   const rules=selection.carRules().rules;
   return presenter.getTopCars(candidate,new Set(d.cars),{tier:d.tier,
    starsFor:car=>core.carStars(rules[car],d.zone,d.stars?.[car],d.server),
-   scoreFor:car=>selection.effectiveTime({...map,car,zone:d.zone,tier:d.tier,starsMap:d.stars,ocMap:d.oc,scStates:d.routes})});
+   scoreFor:car=>selection.effectiveTime({...map,car,zone:d.zone,tier:d.tier,starsMap:d.stars,ocMap:d.oc,scStates:scoreRoutes(d)})});
  }
  return {
+  routesFor,
   defaults:()=>({tier:presenter.initialTier(snapshot.server),selectAllOnFirstLoad:true}),
   visible:(d,query,cls,sort)=>view(d,{query,class:cls,sort}).visibleCars,
   subtitle:d=>view(d).subtitle,
