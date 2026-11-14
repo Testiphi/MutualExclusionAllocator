@@ -1,3 +1,27 @@
+## 2026-11-13 跑法视频 1495 条批次 d804aea0 上线
+
+- 16:00:02 CST 开始，用户通过 Workbench 手动上传冻结 ZIP，DSH 中转执行。整包 SHA-256 1605da8a6cce9e3a322ec007532918ae9cac17b7b9bdb3c38bdd51bdb53c5bfc，26 个清单成员均匹配。计划 SHA-256 d804aea048e77720ed29322940ad75414ef3a5f73615d975d20bfef8a5eb29df。
+- 现场与停服预检均为 baseline，零冲突，单事务新增 383、更新 22、停用 5。上线后 1495 条启用绑定逐键匹配冻结数据，16 条停用，五条本次停用按行 ID 读回匹配。公网矩阵独立逐格通过，国服 827 格／1077 条，国际服 334 格／418 条，其中国际服 sgt 12 条。
+- 应用 6186bfb2f0587e92faf6c8a7，网站 PID 306711，OCR PID 304868。公网健康正常，OCR ready，正式 A 云车库写入关闭。国服活动指针 d6c91bbffea4c2036d1e294887faba5b、国际服 a77287a9475af758dcff3f22c8a03ae6。五份活动成绩文件的哈希和公网版本头匹配导入前基线。
+- 服务器回执在 /root/racepick-deploy/sgt-preflight-6186bfb2.oCRmeLU7/video1495-publish.*，包含 publish.log、video-preview.json、video-apply.json、backup-before.sha256、backup-after.sha256、restore-before.json、restore-after.json。切换前后各有成套备份和独立恢复，两次均通过，active_database_replaced=false。上线后恢复副本的活动成绩和视频逐键核验通过。完成标记 VIDEO1495_PUBLISH_AND_RESTORE_OK。备份 timer 为 enabled、active(waiting)，现场所示下次触发 2026-11-14 04:15:19 CST。
+
+## 2026-11-13 网页 6186bfb2 与国际服 SGT 上线
+
+- 通过 DSH 接入 Edge 的阿里云 Workbench。应用包 SHA-256 a303ecbb1f6b38cfb8626e1fc27adf72ad37087e6504b1b2e232fcba7498da50，发布 6186bfb2f0587e92faf6c8a7，源码 07d14514e456e83c2ca201645d49496783753a00，应用回退目标 f43ef27ef5d56ec3c3f1c577。正式目录隔离自检与切换前成套备份及独立恢复通过，恢复副本五份活动成绩和全部 1128 条视频行与基线匹配。
+- 应用切换在 15:29 CST 发起，APPLICATION_CUTOVER_OK。切换后两项服务均从新发布目录运行，双服成绩响应和原视频矩阵通过核验。服务器回执根目录 /root/racepick-deploy/sgt-preflight-6186bfb2.oCRmeLU7，准备与切换分别保存在 deploy-prepare.* 和 application-cutover.*。
+- 国际服 SGT 计划 5bf0e0b8d939651dff46af7c314ad2be9a51eabb5d4e0fd7f43151475b99f616。独立恢复副本的发布和回退演练通过。生产仅切换国际服成绩指针，国际服由 8f4c827ecd4b5b3466bc39bcbd1a521c 更新为 a77287a9475af758dcff3f22c8a03ae6，国服指针 d6c91bbffea4c2036d1e294887faba5b。国际服新增 McLaren Solus GT（sgt）及 11 条成绩，697 → 708，目标网页 dataset_version 026524111594439013cdc676a57b744ea6229730a42b69d0f6a21d0e89cd3b52。公网三份国际服文件和两份国服文件均匹配计划，OCR ready，正式 A 云车库写关闭。
+- SGT_PUBLISH_AND_RESTORE_OK。上线后成套备份和独立恢复通过，回执在同一根目录的 sgt-publish.*，演练在 sgt-publish-drill.*。恢复副本的双服指针、五文件及全部视频行匹配。两项服务均运行，备份 timer 已恢复 waiting。
+- 视频冻结 d804aea048e77720ed293229 待上传及现场预检。Workbench 文件服务曾返回会话过期，用户重连后 Chromium 文件选择器两次返回 DOM.setFileInputFiles: Not allowed，已停止自动上传。公网复查国服 797 格／953 条、国际服 160 格／164 条。需通过 Workbench 文件管理上传原冻结 ZIP 到 /root/racepick-deploy/，再以整包 SHA-256 1605da8a6cce9e3a322ec007532918ae9cac17b7b9bdb3c38bdd51bdb53c5bfc 核验实际落盘后接续。
+
+## 2026-11-12 网页 f43ef27e 上线
+
+- 01:32:53 CST 开始应用切换，01:34:14 CST 起的收尾回执确认 current、网站 PID 294561、OCR PID 294558 均指向 /opt/racepick/releases/f43ef27ef5d56ec3c3f1c577。切换前新旧版本兼容性核验均通过，应用回退目标为 2a57aa1739d1e96301c6b302。
+- 候选应用源码 9017c52ed5f8c1fe6a28f97fab7f27a2733b1024，包内成绩来源 39e913601dc163d2ff350a8df639b9c23a0993ce，冻结 49d419f168b2a6d600919e57。外层 SHA-256 56485fcd676bf797d9fc4a168f74d5deeb4b0519e2069f9e91a3afb4e5f43351，内层 SHA-256 e6377fc843ce1d013b96137c1473e813fa85070442492b519362982114327815。外层 10 项、内层 183 文件和重算发布 ID 均通过。
+- 目标 Linux 独立网络下离线安装 37 个锁定 wheel，临时库应用冒烟及 CPU 合成图 OCR 通过。首次双版本临时库初始化缺反馈 schema，补齐后五份活动成绩响应与版本头、957 条临时视频矩阵一致。候选实际提供的 route_videos.js SHA-256 为 577fbd43ec8eedf23b55493685adeae151bbc9072f6ccd8931b4e6fccfdd49e7，隔离环境中杰皇 33.99 秒视频 BV1EtdKB9EPw 随跳图开关隐藏、出现、再次隐藏。公网验证覆盖同一脚本哈希及样例接口。
+- 本次只切换应用。公网健康正常，OCR ready，正式 A 启用且云车库写入关闭。双服游客成绩页可读，国服 994 个、国际服 624 个有成绩单元格。活动国服 d6c91bbffea4c2036d1e294887faba5b、国际服 8f4c827ecd4b5b3466bc39bcbd1a521c，国际服网页 dataset_version 为 39ac7a7f856073e47520e9f25f71c21e2f8018bd7fc1c4b3ff476b15a94b489f。五份活动文件和响应版本头与切换前匹配。视频公网矩阵逐格匹配，国服 797 格／953 条、国际服 160 格／164 条。全部 1128 条启停行 SHA-256 为 f1c13d542b5cd7561553393f8235d9a054a5feb7340cf32255d0a60c2e08fdae。
+- 切换前备份 scores-20261111T172951533151Z.zip，SHA-256 67356f75c41ec45832b494f4b3f407b8641c04d3b96a0858ec8f83eea9e34dae，独立恢复目录 edddb33839052c8b2eb66d06。上线后备份 scores-20261111T173415531144Z.zip，SHA-256 c343b913ec21c2c7b2e6f612a5caf2eb19a4a39e5501ebe825b1159863aa0e15，独立恢复目录 194c89ade5185b3dacc46282。两次恢复副本的双服活动指针、五份活动文件和全部视频行均匹配，活动库未被替换。备份在 /var/lib/racepick/backups，恢复副本在 /var/lib/racepick/restore-drills。
+- 回执根目录 /root/racepick-deploy/route-filter-f43ef27e.bWGYsP3N，现场预检 production-readonly.KyH6Vz7F，切换前备份 precutover-backup.PMCLEjFN，最终路径自检 final-runtime.lmiaP4hu/selfcheck.log，切换 cutover.3h3p2DES，收尾 postcutover.nyjPqFBa。末尾标记 POSTCUTOVER_BACKUP_RESTORE_OK。备份 timer 为 enabled、active(waiting)，下次触发 2026-11-12 04:15:00 CST。
+
 ## 2026-11-10 网页 2a57aa17 上线
 
 - 23:05:17 CST 开始应用切换。23:08:21 CST 起的收尾回执确认 current、网站 PID 287231、OCR PID 287228 均指向 /opt/racepick/releases/2a57aa1739d1e96301c6b302。源码 11fe5a44cc46c8e9291aa2b6f097f520bb9b65e1，上一版本 80fd1c937db91d3df4ac1170。发布范围为首页键盘操作和双服网页成绩公开，沿用现有账号库、活动成绩及视频绑定。
@@ -59,7 +83,48 @@
 - 主站 Nginx 通用 location / 将跑法根路径及子路径交给 127.0.0.1:8001。公网列表及矩阵均返回 JSON 404，账号库尚无两张跑法表。后续先校验候选 Linux 运行条件、备份恢复和实际库只读预览，再另行授权导入与切换。
 - 最近成套备份 `scores-20261108T201926976965Z.zip`，2271529 字节，SHA256 `50f12d23514c28f83c247e42599b33aeddb8a02d1f6d5ea342b19170e46da515`，全部成员哈希通过，清单指向上述双服活动版本。timer enabled/active(waiting)，上次 11-09 04:19:25，下次 11-10 04:15:36 CST，备份服务上次成功。最新列出的恢复目录 `e7f97f5876567566f94f8ff4` 尚未与源备份及成功回执配对。历史演练及其对应备份见下文。本轮只读，未导入、写成绩、迁移、改配置、重启或切换。
 
-## 2026-11-07 最新交接：隔离双服云车库可写准备与现场回退通过，客户端 W1/W2 待接管；文档更新后暂停
+## 2026-11-07 CN4569 正式 A 兼容版上线并验收
+
+- 用户确认 `d740b5fb5a0ffdae201b1229` 及计划 `f216de6ed93613613dc428e632a48037fdbc427d57d985a8317326e5ad2d4778`，接受国际同内容指针推进。停服前后均复核计划、待处理投稿和 OCR 队列。停服最终成套备份 `/var/lib/racepick/backups/scores-20261107T130022499120Z.zip`，独立恢复 `/var/lib/racepick/restore-drills/9e33b26625914f041561ee22` 通过，正式库未替换。
+- apply 已提交，原业务行保护断言通过。国服 4569 键活动版本 `b195cd622bba75671c93308efc2b99ec`，国际 694 条同内容新版本 `9121ae372bdc0b8ed8ac1cbafd769561`，五份活动文件 SHA 与冻结一致。正式维护审计和回执在现场工作目录 `/root/racepick-deploy/preview-d740b5fb.jaWW3x8S/`。
+- current、网站 PID 256196 和 OCR PID 256193 实际 cwd 均为 `/opt/racepick/releases/d740b5fb5a0ffdae201b1229`。公网首页 200，health ok/production，双服新版本一致，OCR ready。正式 A 已启用、云车库写关闭；匿名双服 GET 401、PUT 503、注册 404、Origin 403。此次为公网门禁验收，未使用真实账号或上传游戏截图。
+- 新版成套备份 `/var/lib/racepick/backups/scores-20261107T130417900252Z.zip`，独立恢复 `/var/lib/racepick/restore-drills/66771dd25dfb08492ca4c686` 通过，两服新版本正确、待处理批次均 0、正式库未替换。备份 timer enabled/active(waiting)，下次 2026-11-08 04:16:15 CST。现场完成标记 CLOSEOUT_OK。
+
+## 2026-11-07 CN4569 正式 A 兼容候选：现场预览通过
+
+用户已上传 `d740b5fb` 完整包。现场外层及内层 SHA、逐文件清单、冻结清单和发布 manifest 校验通过，已暂存 `/opt/racepick/releases/d740b5fb5a0ffdae201b1229`。离线依赖、Linux 临时库迁移/锁/恢复、合成图 OCR 和五项隔离正式 A 门禁通过。自检日志、原始计划保存在 `/root/racepick-deploy/preview-d740b5fb.jaWW3x8S/`。新计划 canonical digest 为 `f216de6ed93613613dc428e632a48037fdbc427d57d985a8317326e5ad2d4778`，双服基线保持，国际三份文件 SHA 一致，完整差异 SHA 仍为 `1d3c9c742cc049d0c8b8276cf24f8cd5f0fb2a6354ab69b7d0711f9c66a059ad`，对应已交付的完整差异 JSON。等待用户确认新摘要后再进入停服最终备份、apply 与切换。
+
+## 2026-11-07 CN4569 正式 A 兼容候选：本地构包通过
+
+新候选 `d740b5fb5a0ffdae201b1229` 由已校验的 `33d1da40` 叠加现网正式 A 补丁，176 个载荷中仅 app.py、mini_accounts.py、production.py 变化。五份数据及冻结保持原字节，离线依赖和 OCR 模型沿用。内层 manifest、外层 CRC 和回读验证通过，18 项本地正式 A 与原生账号测试通过。外包 SHA256 `cef00e61946cf55492341f52420cb575fad4afc734806cc46b737d1be4701bde`。Workbench 文件传输提示登录态过期，本轮未取得新包上传或现场 preview 回执。旧计划留存，后续只审核新候选绑定的计划。
+
+## 2026-11-07 CN4569 维护发布：已暂存并生成现场计划，待审核
+
+用户已确认计划及国际同内容指针推进。在线成套备份 `/var/lib/racepick/backups/scores-20261107T124352750282Z.zip` 已完成，SHA256 `6e82c1c56dbf85845ba4fcacdaa594cad4d0eaef191aa84fa39aea1f47a2c4e8`，独立恢复命令成功，回执保存在现场工作目录的 `online-drill.json`。停服前发现兼容性差异：当前网站运行正式 A overlay，33d1da40 中未接线 formal-a 路由；维护激活门禁又禁止切回缺少维护能力的旧版。停在在线状态，尚未执行停服、apply 或切换。先补齐或明确处理正式 A 兼容性，重新固定候选与计划后推进。
+
+- Workbench 已校验外层 SHA、外层逐文件清单、冻结清单和内层包 SHA，通过部署工具核验内层 manifest 并暂存至 `/opt/racepick/releases/33d1da409923cdb9a3498630`。服务器无 unzip，使用 Python 标准库解包后进入 delivery 子目录。37 个锁定 wheel 离线安装、pip check、Linux 临时库迁移/锁/恢复及合成图 OCR 自检通过。
+- 现场计划 `/root/racepick-deploy/preview-33d1da40.bAj8b9Md/plan.json`，canonical digest `4ae724b3cb4fa4cacd8ebd4b8b89d4b1ae138ffa4243aca8598639a5d1eca36d`。基线 CN `c815b612a17433f403ae2965000fd74b` 写开，Global `435d5b40fd1aa4a01753a395f28d1f89` 写关。CN 4516→4569，新增 53、提速 6、删除/变慢/其他成绩变更均 0，20 张地图的条目结构有变化，3 辆车目录规则变化。Global 694→694，三份文件哈希一致。
+- 本地完整差异 `本地归档/release-maintenance4569-20261107/FIELD_PREVIEW_DIFF_33d1da40.json` 由匹配基线及目标的文件重算，其 scores/catalogs canonical SHA256 与现场一致：`1d3c9c742cc049d0c8b8276cf24f8cd5f0fb2a6354ab69b7d0711f9c66a059ad`。保留服务器原计划供后续按摘要执行。
+- 停在审核阶段，等待确认计划及同内容 Global 指针推进。尚未 apply、停服或切换。
+
+## 2026-11-07 CN4569 维护发布：现场只读核验完成，待确认暂存
+
+- 唯一候选 `33d1da409923cdb9a3498630`，冻结 `abd1613a8e14d2050e1f40f1`。本地重算外层 ZIP 和冻结清单 SHA256 与交付一致。
+- Workbench 19:56 CST：`current` 与网站 PID 253267 cwd 同为 `/opt/racepick/releases/7241d9d67cc99178bd7d2d14-formal-a-2733390d`，OCR PID 219538 cwd 为 `/opt/racepick/releases/7241d9d67cc99178bd7d2d14`。两项 active/running，公网 health ok、OCR ready、正式原生 A 写关。
+- 生产活动 CN `c815b612a17433f403ae2965000fd74b` 写开、3 个 applied 批次，Global `435d5b40fd1aa4a01753a395f28d1f89` 写关、无批次。未完成批次 0，已采纳未写入投稿 0，生产 OCR 队列仅 2 个 expired。国服两份活动文件 SHA 与目标不同，国际三份与冻结逐字节哈希一致。国际同内容新版本与指针推进仍需确认。
+- 最新成套备份 `scores-20261106T201739169326Z.zip`，2171868 字节，SHA256 `045185975bfe8f5a670db69819587ea294529585aa088d5964174a2b10edde1`，41 成员 CRC 通过。最新列出的独立恢复目录为 `d56fbfb914503c8898d758d6`，历史回执对应 11 月 4 日 14:26 的备份，当前最新 ZIP 未重新恢复演练。timer enabled/active(waiting)，上次 11 月 7 日 04:17:38，下次 11 月 8 日 04:17:36 CST。
+- 本轮停在只读阶段。待用户确认后才上传、校验、暂存、做 Linux 原生自检并生成现场 preview，随后单独审核计划及国际指针行为。小程序暂缓。
+
+## 2026-11-07 接手核验：已完成部署作为基线，等待新任务范围
+
+- 本轮 fetch 成功，main 与远端均为 `bb94e34b25d3e10f31883b5ce568a66e2c4a0565`。检查 32 个登记工作树，主树原先干净。另有 4 个工作树存在改动：`miniprogram-v1` 52 项、`map-layout-parser` 27 项、`snapshot-server-20261107` 4 项、Codex 的 `mini-first-release/repo` 4 项。小程序分支 `5e29ccf` 比远端 `5b253a6` 多 7 个提交，此外还有本地未提交改动。保留现有工作树及忽略目录。
+- 本轮公网只读确认正式站 health 200，生产 schema 6，网页 OCR ready，贡献、反馈、通知、统计开启。正式原生 A 账号入口启用，云车库写入关闭，匿名 profile 401。双服活动成绩 CN `c815b612a17433f403ae2965000fd74b` / Global `435d5b40fd1aa4a01753a395f28d1f89`，国服成绩写开。公网首页未见 main 的无方案投稿引导节点。11 月 7 日较早 Workbench 回执确认网站 current 与进程 cwd 同为 `7241d9d67cc99178bd7d2d14`，timer 当时 active/waiting。正式 A 的现场补丁另有本地交付证据。本轮未读取服务器内部 current、进程、配置、实际备份或 timer，公网响应仅证明对外行为。
+- 隔离账号服务公网 health 200，交付 `7c5f53fc366b7af555214846`，A ready、云车库可写、邮件 file、OCR 关闭。客户端后续证据覆盖隔离 W1/W2、手机已保存读回、W4 网页与原生同记录，以及 W3 双服 2 次成功写、2 次预期 409，最终两服 revision 3。上述隔离验收与正式写入分开记录。另有本地正式首发候选及手机预览资料，未取得微信提审或发布回执。
+- 最新网站交付为本地归档 `release-main-data-20261107` 下的 `ccc6e2d3ede4da34a9c7fcb7`，替代 `af35d936`，源码及包内数据绑定 main。重算外层 ZIP 为 158512243 字节，SHA256 `1c7681c194deac93b28600968bd6c631ab766dbc2b7fd06df77177d3f534e231`，符合回执。回执记录 176 个 manifest 文件、37 个锁定 wheel、Windows 暂存冒烟通过、Linux 原生待验、生产未部署。包含投稿引导及服务端整合代码，包内 CN 4569 键，Global 694 条五区满星理论。国际维护冻结记录 733 键。工作簿、完整维护集、账号库和正式成绩状态各自保留。若有新发布范围，再逐项核定运行投影和实际活动成绩差异。
+- 本机 Node 24.15.0、Python 3.14.4，WSL 的 docker-desktop 停止，8000–8099 及 9440–9470 未观察到监听。国服数据校验 0 错误。针对投稿引导、启动、成绩逻辑的 25 个 Node 测试中 24 通过，1 个失败在 `tests/test_result_guidance.js:29`，归一化换行后网站 presenter 与小程序固定来源仍有内容差异。现有测试资料和公告草稿保留。
+- 本轮只完成核验和更新本交接。下一步由用户确认具体范围。若安排上线，从用户执行的现场只读核验开始，逐步回传 current/实际 cwd、健康、活动成绩、原生门禁、备份和 timer，再确定可用交付与切换步骤。
+
+## 2026-11-07 隔离双服云车库可写准备与现场回退通过，客户端 W1/W2 当时待接管
 
 本段覆盖下方旧阶段“cloud_writes=false／真实账号只读未验收”等当前态描述，旧记录原样保留。最后服务器现场验证为 **2026-11-07 02:41:43 Asia/Shanghai（UTC 2026-11-06T18:41:43.152877+00:00）**，本次文档收尾没有再次连接服务器，不能将归档时刻当成新现场检查。用户先授权只读，随后明确授权代理执行本次必要写入与配置修改；代理通过用户已登录的阿里云 Workbench 浏览器终端操作，没有直接 SSH。网站侧准备完成，真实客户端保存/重载尚未执行。本轮文档更新不提交、不推送、不合并，完成后暂停，不继续服务器、客户端、监控或跨对话派工。
 
