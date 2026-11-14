@@ -1146,7 +1146,7 @@
       "小地图": "飞向未来",
       "has_special_route": false,
       "五区": {
-        "理论": [{"cars":[{"name":"f5r"}],"time":25.09},{"cars":[{"name":"杰皇"}],"time":25.6},{"cars":[{"name":"陀飞轮"}],"time":25.69},{"cars":[{"name":"f5"}],"time":25.84},{"cars":[{"name":"杰哥"}],"time":25.99},{"cars":[{"name":"r兔","stars":null}],"time":26.05},{"cars":[{"name":"玻璃"}],"time":26.15},{"cars":[{"name":"银电"}],"time":26.19},{"cars":[{"name":"cc850"}],"time":26.6},{"cars":[{"name":"ssc"}],"time":26.7},{"cars":[{"name":"肥龙","stars":null}],"time":27.05},{"time":27.29,"stars":null,"sc":false,"sc_type":null,"cars":[{"name":"速尾"}]},{"time":28.06,"stars":null,"sc":false,"sc_type":null,"cars":[{"name":"狼崽"}]}],
+        "理论": [{"cars":[{"name":"f5r"}],"time":25.09},{"cars":[{"name":"杰皇"}],"time":25.6},{"cars":[{"name":"陀飞轮"}],"time":25.69},{"cars":[{"name":"f5"}],"time":25.84},{"cars":[{"name":"杰哥"}],"time":25.99},{"cars":[{"name":"r兔","stars":null}],"time":26.05},{"cars":[{"name":"玻璃"}],"time":26.15},{"cars":[{"name":"银电"}],"time":26.19},{"cars":[{"name":"cc850"}],"time":26.6},{"cars":[{"name":"ssc"}],"time":26.7},{"cars":[{"name":"恶魔"}],"time":26.8},{"cars":[{"name":"肥龙","stars":null}],"time":27.05},{"time":27.29,"stars":null,"sc":false,"sc_type":null,"cars":[{"name":"速尾"}]},{"time":28.06,"stars":null,"sc":false,"sc_type":null,"cars":[{"name":"狼崽"}]}],
         "高手": [{"cars":[{"name":"f5","stars":6}],"time":26.3},{"cars":[{"name":"杰哥","stars":6}],"time":26.5},{"cars":[{"name":"f5r","stars":5}],"time":26.6},{"cars":[{"name":"速尾","stars":6}],"time":27.68}],
         "普通": [{"cars":[{"name":"f5","stars":6}]},{"cars":[{"name":"杰哥","stars":6}]},{"cars":[{"name":"速尾","stars":6}]},{"cars":[{"name":"f5r","stars":5}]}],
         "自动": [{"cars":[{"name":"速尾"}]}]
