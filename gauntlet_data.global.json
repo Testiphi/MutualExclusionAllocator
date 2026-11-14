@@ -2,9 +2,9 @@
   "_meta": {
     "server_id": "global",
     "schema_version": 1,
-    "catalog_payload_sha256": "658ddd38125b8b1b952836caf9772c9bfa3b00c78ff5e9e1e205d9cc93166da2",
-    "scores_payload_sha256": "993826eeeac3ef5065cf06c67ddf98391052c036c31b54f2c9dc50e4ee769c13",
-    "dataset_version": "6844acf93b8b5eae4ef1caaa75fc139fb52f077130aa7847c48942df06b0c1cd",
+    "catalog_payload_sha256": "42925c1c12ca6ce2aab0a455ac91a04d7303e81f1dd536071c77ee087f015c37",
+    "scores_payload_sha256": "8e5a8cf0e35f97ba3b72ebb393b42d28b8efa01cf6d64df967d400c8a3f69141",
+    "dataset_version": "c76bd21cf20b0257b1074c1f24000cd9248b22f0b5a0280ddb9e85f15fc906de",
     "manifest_file": "global-data-manifest.json"
   },
   "_version": 2,
@@ -418,6 +418,14 @@
           {
             "cars": [
               {
+                "name": "sgt"
+              }
+            ],
+            "time": 18.39
+          },
+          {
+            "cars": [
+              {
                 "name": "火山"
               }
             ],
@@ -696,6 +704,14 @@
               }
             ],
             "time": 19.41
+          },
+          {
+            "cars": [
+              {
+                "name": "sgt"
+              }
+            ],
+            "time": 20.19
           },
           {
             "cars": [
@@ -2711,6 +2727,14 @@
           {
             "cars": [
               {
+                "name": "sgt"
+              }
+            ],
+            "time": 23.39
+          },
+          {
+            "cars": [
+              {
                 "name": "无敌牛"
               }
             ],
@@ -2868,6 +2892,14 @@
               }
             ],
             "time": 19.29
+          },
+          {
+            "cars": [
+              {
+                "name": "sgt"
+              }
+            ],
+            "time": 19.3
           }
         ],
         "高手": [],
@@ -3014,6 +3046,14 @@
               }
             ],
             "time": 20.21
+          },
+          {
+            "cars": [
+              {
+                "name": "sgt"
+              }
+            ],
+            "time": 20.49
           },
           {
             "cars": [
@@ -3321,6 +3361,14 @@
               }
             ],
             "time": 23.05
+          },
+          {
+            "cars": [
+              {
+                "name": "sgt"
+              }
+            ],
+            "time": 23.59
           },
           {
             "cars": [
@@ -3768,6 +3816,14 @@
               }
             ],
             "time": 22.25
+          },
+          {
+            "cars": [
+              {
+                "name": "sgt"
+              }
+            ],
+            "time": 22.4
           }
         ],
         "高手": [],
@@ -5229,6 +5285,14 @@
               }
             ],
             "time": 24.5
+          },
+          {
+            "cars": [
+              {
+                "name": "sgt"
+              }
+            ],
+            "time": 24.89
           }
         ],
         "高手": [],
@@ -5917,6 +5981,16 @@
           {
             "cars": [
               {
+                "name": "sgt"
+              }
+            ],
+            "time": 19.0,
+            "sc": true,
+            "sc_type": "滑栏杆"
+          },
+          {
+            "cars": [
+              {
                 "name": "万达"
               }
             ],
@@ -5939,6 +6013,14 @@
               }
             ],
             "time": 19.25
+          },
+          {
+            "cars": [
+              {
+                "name": "sgt"
+              }
+            ],
+            "time": 19.39
           },
           {
             "cars": [
@@ -6008,6 +6090,14 @@
               }
             ],
             "time": 17
+          },
+          {
+            "cars": [
+              {
+                "name": "sgt"
+              }
+            ],
+            "time": 17.09
           },
           {
             "cars": [
@@ -6283,14 +6373,6 @@
           {
             "cars": [
               {
-                "name": "帝国"
-              }
-            ],
-            "time": 24.3
-          },
-          {
-            "cars": [
-              {
                 "name": "陀飞轮"
               }
             ],
@@ -6344,6 +6426,14 @@
               }
             ],
             "time": 25.59
+          },
+          {
+            "cars": [
+              {
+                "name": "帝国"
+              }
+            ],
+            "time": 25.616
           },
           {
             "cars": [

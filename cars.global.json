@@ -2,9 +2,9 @@
   "_meta": {
     "server_id": "global",
     "schema_version": 1,
-    "catalog_payload_sha256": "658ddd38125b8b1b952836caf9772c9bfa3b00c78ff5e9e1e205d9cc93166da2",
-    "scores_payload_sha256": "993826eeeac3ef5065cf06c67ddf98391052c036c31b54f2c9dc50e4ee769c13",
-    "dataset_version": "6844acf93b8b5eae4ef1caaa75fc139fb52f077130aa7847c48942df06b0c1cd",
+    "catalog_payload_sha256": "42925c1c12ca6ce2aab0a455ac91a04d7303e81f1dd536071c77ee087f015c37",
+    "scores_payload_sha256": "8e5a8cf0e35f97ba3b72ebb393b42d28b8efa01cf6d64df967d400c8a3f69141",
+    "dataset_version": "c76bd21cf20b0257b1074c1f24000cd9248b22f0b5a0280ddb9e85f15fc906de",
     "manifest_file": "global-data-manifest.json"
   },
   "_comment": "International accepted-score vehicles only; EVO configuration metrics remain unknown.",
@@ -36,6 +36,7 @@
     "fxxk": "Ferrari FXX K",
     "ps龙": "Bugatti Chiron Pur Sport",
     "r兔": "Rimac Nevera R",
+    "sgt": "McLaren Solus GT",
     "ssc": "SSC Tuatara",
     "ts900": "Tushek TS 900 Racer Pro",
     "urs": "Ultima RS",
@@ -492,6 +493,31 @@
       "acceleration": 87.93,
       "handling": 48.12,
       "nitro": 36.29,
+      "stats_status": "asec_max_star"
+    },
+    {
+      "title": "McLaren Solus GT",
+      "nickname": "sgt",
+      "asec_id": 150,
+      "base_title": "McLaren Solus GT",
+      "base_class": "B",
+      "class": "B",
+      "class_source": "base_vehicle_class",
+      "variant": "regular",
+      "max_stars": 5,
+      "zones": [
+        "五区"
+      ],
+      "star_rule": {
+        "min": 5,
+        "max": 5,
+        "default": 5
+      },
+      "score": 4076,
+      "max_speed": 335.4,
+      "acceleration": 89.3,
+      "handling": 83.12,
+      "nitro": 76.83,
       "stats_status": "asec_max_star"
     },
     {
