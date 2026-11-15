@@ -79,6 +79,24 @@ class GlobalDataTests(unittest.TestCase):
                          {'Regular': 'Brand Regular', 'evoExample': 'Brand Example'})
         self.assertEqual(bundle[CATALOG_FILE]['capabilities'], CAPABILITIES)
 
+    def test_route_video_admission_keeps_base_and_evo_separate_without_adding_scores(self):
+        source = source_fixture()
+        before = self.build(source)
+        identities = source[4]
+        identities['cars'].append({'title': 'Brand Example', 'nickname': 'Example', 'asec_id': 2})
+        identities['route_video_nicknames'] = ['Example']
+        bundle = self.build(source)
+        catalog = bundle[CATALOG_FILE]
+        self.assertEqual(catalog['cars'], before[CATALOG_FILE]['cars'])
+        self.assertEqual(catalog['route_video_cars'], [
+            {'nickname': 'Example', 'title': 'Brand Example', 'asec_id': 2, 'variant': 'regular'}
+        ])
+        self.assertEqual(bundle[SCORES_FILE]['tracks'], before[SCORES_FILE]['tracks'])
+        identities['cars'].append({'title': 'Brand Example', 'nickname': 'Duplicate', 'asec_id': 2})
+        identities['route_video_nicknames'].append('Duplicate')
+        with self.assertRaisesRegex(ValueError, 'Duplicate/invalid route-video identity'):
+            self.build(source)
+
     def test_oc_is_independent_score_state_of_the_same_car_and_value_is_unchanged(self):
         bundle = self.build()
         entries = bundle[SCORES_FILE]['tracks'][0]['五区']['理论']

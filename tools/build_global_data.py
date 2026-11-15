@@ -135,10 +135,29 @@ def _catalog(asec, identities, used_names):
         result.append(record)
         seen_ids.add(aid)
         seen_titles.add(title)
-    return {'_comment': 'International accepted-score vehicles only; EVO configuration metrics remain unknown.',
+    reference_names = identities.get('route_video_nicknames', [])
+    _require(isinstance(reference_names, list)
+             and all(isinstance(name, str) and name in identity_records for name in reference_names)
+             and len(reference_names) == len(set(reference_names)), 'Invalid route-video admission list')
+    references = []
+    for name in sorted(set(reference_names) - used_names):
+        identity = identity_records[name]
+        aid = identity.get('asec_id')
+        _require(type(aid) is int and aid in by_id, 'Unknown route-video ASEC identity')
+        source = by_id[aid]
+        title = source['brand'] + ' ' + source['model']
+        _require(_normalized_name(identity.get('title')) == _normalized_name(title),
+                 'Route-video title does not match its ASEC ID')
+        variant = ('evo' if name.startswith('evo') else
+                   'neon' if 'neon edition' in title.casefold() else 'regular')
+        references.append({'nickname': name, 'title': title, 'asec_id': aid, 'variant': variant})
+    catalog = {'_comment': 'International accepted-score vehicles only; EVO configuration metrics remain unknown.',
             'capabilities': deepcopy(CAPABILITIES),
             '_nickname_map': {car['nickname']: car['title'] for car in result},
             'cars': result}
+    if references:
+        catalog['route_video_cars'] = references
+    return catalog
 
 
 def build_bundle(active, accepted_ledger, oc_ledger, asec, identities,
@@ -335,6 +354,20 @@ def validate_global_bundle(catalog, scores, manifest, raw_files=None):
         titles.add(title)
     _require(catalog.get('_nickname_map') == {c['nickname']: c['title'] for c in catalog['cars']},
              'Runtime nickname map differs from physical catalog')
+    references = catalog.get('route_video_cars', [])
+    _require(isinstance(references, list), 'Invalid route-video catalog')
+    binding_names = set(names)
+    identities = {(car['asec_id'], car['variant']) for car in catalog['cars']}
+    for car in references:
+        _require(isinstance(car, dict) and set(car) == {'nickname', 'title', 'asec_id', 'variant'},
+                 'Invalid route-video identity fields')
+        name, title, aid, variant = (car[field] for field in ('nickname', 'title', 'asec_id', 'variant'))
+        _require(isinstance(name, str) and 0 < len(name) <= 80 and name not in binding_names
+                 and isinstance(title, str) and bool(title.strip())
+                 and type(aid) is int and aid > 0 and variant in ('regular', 'evo', 'neon')
+                 and (aid, variant) not in identities, 'Duplicate/invalid route-video identity')
+        binding_names.add(name)
+        identities.add((aid, variant))
     seen, used, track_ids, maps = set(), set(), set(), set()
     non_oc, oc, special, covered = 0, 0, 0, 0
     for track in scores.get('tracks', []):

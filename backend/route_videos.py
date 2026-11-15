@@ -174,6 +174,9 @@ def install(app, path, user, source, *, initialize=True):
                               (server, big, small)).fetchall()
         return {'videos': [public(row) for row in rows]}
 
+    def reference_cars(server, catalog):
+        return catalog.get('route_video_cars', []) if server == 'global' else []
+
     @app.get('/api/route-videos/matrix')
     def matrix(server: Literal['cn', 'global'], zone: Literal['五区', '四区'] = '五区',
                tier: Literal['理论', '高手'] = '理论', route: Literal['normal', 'special'] = 'normal',
@@ -189,6 +192,8 @@ def install(app, path, user, source, *, initialize=True):
         for car in catalog['cars']:
             if car.get('nickname') and car.get('zones'):
                 cars.setdefault(car['nickname'], car.get('title', ''))
+        for car in reference_cars(server, catalog):
+            cars.setdefault(car['nickname'], car['title'])
         with closing(connect()) as db:
             counts = db.execute("""SELECT big,small,car,COUNT(*) FROM route_videos
                 WHERE server=? AND active=1 GROUP BY big,small,car""", (server,)).fetchall()
@@ -219,8 +224,9 @@ def install(app, path, user, source, *, initialize=True):
     def bind(request: Request, value: Binding):
         editor = admin(request)
         data, catalog, _ = source(value.server)
+        cars = [*catalog['cars'], *reference_cars(value.server, catalog)]
         if not any((track['大地图'], track['小地图']) == (value.big, value.small) for track in data['tracks']) or not any(
-            car.get('nickname') == value.car for car in catalog['cars']
+            car.get('nickname') == value.car for car in cars
         ):
             raise HTTPException(422, '车辆或地图已变化，请刷新成绩表')
         title = value.title.strip()
