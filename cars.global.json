@@ -2,9 +2,9 @@
   "_meta": {
     "server_id": "global",
     "schema_version": 1,
-    "catalog_payload_sha256": "42925c1c12ca6ce2aab0a455ac91a04d7303e81f1dd536071c77ee087f015c37",
-    "scores_payload_sha256": "8e5a8cf0e35f97ba3b72ebb393b42d28b8efa01cf6d64df967d400c8a3f69141",
-    "dataset_version": "c76bd21cf20b0257b1074c1f24000cd9248b22f0b5a0280ddb9e85f15fc906de",
+    "catalog_payload_sha256": "a1786bfa4c49a8aa19246acd4853e5c917286bf34c13245249060e4180b2deae",
+    "scores_payload_sha256": "6629f1fbbedc2be9ec9db6b6d3eda9a30c7e54c42a2f849cea6d75803b31f607",
+    "dataset_version": "b8d62b4321827e224107e7ff9371d0ce62949df64b4674bdc9f360c2a3a5df05",
     "manifest_file": "global-data-manifest.json"
   },
   "_comment": "International accepted-score vehicles only; EVO configuration metrics remain unknown.",
@@ -1294,6 +1294,80 @@
       "handling": 54.63,
       "nitro": 63.79,
       "stats_status": "asec_max_star"
+    }
+  ],
+  "route_video_cars": [
+    {
+      "nickname": "570s",
+      "title": "McLaren 570S Spider",
+      "asec_id": 197,
+      "variant": "regular"
+    },
+    {
+      "nickname": "918",
+      "title": "Porsche 918 Spyder",
+      "asec_id": 193,
+      "variant": "regular"
+    },
+    {
+      "nickname": "c1",
+      "title": "Rimac Concept One",
+      "asec_id": 222,
+      "variant": "regular"
+    },
+    {
+      "nickname": "er9",
+      "title": "Lotus E-R9",
+      "asec_id": 170,
+      "variant": "regular"
+    },
+    {
+      "nickname": "sf90",
+      "title": "Ferrari SF90 Stradale",
+      "asec_id": 249,
+      "variant": "regular"
+    },
+    {
+      "nickname": "狼崽",
+      "title": "W Motors Lykan Hypersport",
+      "asec_id": 238,
+      "variant": "regular"
+    },
+    {
+      "nickname": "狼王",
+      "title": "W Motors Fenyr Supersport",
+      "asec_id": 257,
+      "variant": "regular"
+    },
+    {
+      "nickname": "绿蛙",
+      "title": "Porsche 911 GT3 RS",
+      "asec_id": 159,
+      "variant": "regular"
+    },
+    {
+      "nickname": "肥龙",
+      "title": "Bugatti Chiron",
+      "asec_id": 272,
+      "variant": "regular"
+    },
+    {
+      "nickname": "阿波罗n",
+      "title": "Apollo N",
+      "asec_id": 142,
+      "variant": "regular"
+    },
+    {
+      "nickname": "霓虹gtr",
+      "title": "Nissan GT-R Neon Edition",
+      "asec_id": 248,
+      "variant": "neon"
+    },
+    {
+      "nickname": "霓虹狼",
+      "title": "W Motors Lykan Neon Edition",
+      "asec_id": 284,
+      "variant": "neon"
     }
   ]
 }
