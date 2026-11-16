@@ -1,3 +1,32 @@
+## 2026-11-16 8065 跑法视频 25 条批次 9b5b66c3 上线
+
+- 批次计划 SHA-256 `9b5b66c35a2317b77b76056ee551dad9fb6519cf7c2ab64ade4a351bcd2a9c29`。生产基线为 1495 条启用、16 条停用，25 条均属于现网可选的 12 个参考车型，完整键无重复、停用撞键或字段冲突。
+- 11:28:26 CST 单事务新增 25 条，更新和停用各 0 条。生产行 ID `1512–1536`，账号库和公网详情逐键匹配验收值，原 1511 行完整保留。上线后 1520 条启用、16 条停用，国服 827 格／1077 条，国际服 358 格／443 条，公网矩阵逐格匹配目标。
+- 双服指针、五份活动文件 SHA-256 及公网版本头与导入前一致。此批未重启服务，网站 PID `324703`、OCR PID `323881` 均继续从 `/opt/racepick/releases/44a28bcfd8e8e471645ea133` 运行。网站健康正常、OCR ready、正式 A 云车库写入关闭。
+- 回执位于 `/root/racepick-deploy/video8065-release-9b5b66c3.GgSECoo2/`。事务详见 `transaction.json`，公网验收见 `public-after.json`，恢复逐键结果见 `restored-after-keys.json`。11:29:31 CST 收尾标记 `VIDEO8065_PUBLISH_AND_RESTORE_OK`。
+
+## 2026-11-16 国际服参考车型目录 0bb23ba8 上线
+
+- 目录计划摘要 `0bb23ba84377d41636427866df1174a8aad046ae408129d868df112697345ec3`，计划包 SHA-256 `5e4bb628b9c78613c8eeba8fd9f5e548333537f341d59371074f2011dd071df5`。发布与回退先在独立恢复副本上演练，生产于 11:08:51 CST 提交，只推进国际服活动指针，由 `a77287a9475af758dcff3f22c8a03ae6` 切到 `226c3ba8271f67120bd0cf5bb0228b9a`。国服保持 `d6c91bbffea4c2036d1e294887faba5b`。
+- 国际服 `route_video_cars` 追加 12 个身份，参考车型 49 → 61。49 辆计算车、708 条成绩及成绩载荷 SHA-256 `47ad02dd922bf3775bba32004100c023240bd468145f48c14cb9a85db5a12c03` 均保持一致。网页国际服 `dataset_version` 为 `4c5fd0ef1cc31ef6ffb8e81f1f971a09da51e24426ab8a63392efcf4689de82a`，公网五文件与现场哈希及双服版本头均匹配。
+- 此次只重启网站以加载新目录，OCR PID 保持 `323881`。目录阶段验收仍为原 1495 条视频，国服 827 格／1077 条，国际服 334 格／418 条，16 条停用行保留。11:08:53 CST 回执标记 `GLOBAL_DIRECTORY_ACCEPTED`。现场事务见 `global-apply.json`，五文件哈希和矩阵见 `final-live.json`。
+
+## 2026-11-16 网页 44a28bcf 上线与备份恢复回执
+
+- 应用 `44a28bcfd8e8e471645ea133`，源码 `ec7be2cb79088690314b48d78067f168a521eaed`，上一应用 `6186bfb2f0587e92faf6c8a7`。外包 SHA-256 `cea24a4205a29105e4da2f4fb9df76a44b0487cb10dc073918bc637206cc220c`，内包 SHA-256 `aceabf976f2523939f8b89113da862121fd94f2db7ac59d18b42616f49a5966d`。183 个运行文件、37 个锁定 wheel、最终发布路径的断网离线安装、临时库应用检查与合成图 OCR 自检均通过。
+- 11:06:58 CST 开始切应用，11:07:04 CST 标记 `APPLICATION_ACCEPTED`。网站 PID `323876`、OCR PID `323881` 的实际目录与 `current` 一致。应用阶段仍使用原双服活动指针、1495 条视频矩阵和 49 个国际服参考车型。应用及目录回执同在 `/root/racepick-deploy/reference-release-44a28bcf.TMGilKqI/`，应用详见 `stage.log`、`application-cutover.log` 和 `application-live.json`。应用与目录 11:09:18 CST 收尾标记 `REFERENCE_RELEASE_AND_RESTORE_OK`。
+- 应用与目录共用一组切换前后成套备份，8065 视频批次另有一组。四次独立恢复均返回 `active_database_replaced=false`。应用与目录发布后副本核对了活动指针、五文件、原视频行和维护审计。视频发布后副本核对了全部 1536 行、25 条新增行 ID 和字段、双服指针和五文件哈希。备份位于 `/var/lib/racepick/backups/`，恢复副本位于 `/var/lib/racepick/restore-drills/`。
+
+| 阶段 | 备份 ZIP | SHA-256 | 独立恢复目录 |
+| --- | --- | --- | --- |
+| 应用与目录切换前 | `scores-20261116T030627234885Z.zip` | `3513fab0d720a98d62d21ef0ac0ffc6459165e011828466af762f4e7a9595d1d` | `7dcf2ba840a88601a5694aee` |
+| 应用与目录上线后 | `scores-20261116T030914312952Z.zip` | `006a56894de5a3ee9d6eb9c90dfd43fcb595782fd6bca68febb16957c04cad70` | `0acf44957f3204561c6ab64c` |
+| 8065 视频写入前 | `scores-20261116T032727789582Z.zip` | `49df59dce074afde9f3e2f05dbe01e26fe434f34de74b4f56405dd6ba9b9c827` | `26cf74ea60e12bb7ba0c16dd` |
+| 8065 视频上线后 | `scores-20261116T032928028790Z.zip` | `b48c1df4f18cc2f708892fb5ad96b40de157aaed63feb47f4e2b9f21934356c5` | `c3fa655a7f1442cbd9a58cdd` |
+
+- 两个回执目录各有 `backup-before.sha256`、`backup-after.sha256`、`restore-before.json`、`restore-after.json` 和 `closeout.log`。收尾时备份 timer 为 enabled、active(waiting)，最近一次实际定时执行于 11 月 16 日 04:17:14 CST 成功结束，下次计划为 11 月 17 日 04:19:20 CST。
+- 归档复核于 11:34:59 CST 读回原始回执，校验两份回执清单及四个备份文件 SHA-256，并逐项核对四份独立恢复和生产验收。公网复测五文件 SHA-256、双服版本头、61 个国际服参考车型及 1520 条视频矩阵一致。
+
 ## 2026-11-13 跑法视频 1495 条批次 d804aea0 上线
 
 - 16:00:02 CST 开始，用户通过 Workbench 手动上传冻结 ZIP，DSH 中转执行。整包 SHA-256 1605da8a6cce9e3a322ec007532918ae9cac17b7b9bdb3c38bdd51bdb53c5bfc，26 个清单成员均匹配。计划 SHA-256 d804aea048e77720ed29322940ad75414ef3a5f73615d975d20bfef8a5eb29df。
