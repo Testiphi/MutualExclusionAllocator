@@ -134,11 +134,13 @@ setTimeout(() => {
         }
         check(state.zone5Cars.includes('919') && state.zone5Cars.includes('dose'),
             'zone5Cars 应含 919 与 dose');
+        check(state.zone5Cars.includes('r鹰') && !state.zone4Cars.includes('r鹰'),
+            'zone5Cars 应含 r鹰 且不进四区');
         check(state.zone4Cars.includes('919') && state.zone4Cars.includes('biome'),
             'zone4Cars 应含 919 与 biome');
         check(JSON.stringify(state.rules.dose) === '{"min":3,"max":6,"zone4Max":4}',
             `dose 星级规则不符: ${JSON.stringify(state.rules.dose)}`);
-        check(Object.keys(state.carStats).length === 346, 'carStats 应为 346 条');
+        check(Object.keys(state.carStats).length === 347, 'carStats 应为 347 条');
         check(state.rdata && state.rdata.tracks.length === 83, 'RACE_DATA 应为 83 条赛道');
     }
 

@@ -25,6 +25,7 @@
     "gtr50": "Nissan GTR-50 Italdesign",
     "ps龙": "Bugatti Chiron Pur Sport",
     "r兔": "Rimac Nevera R",
+    "r鹰": "Aspark Owl SP600",
     "sf90": "Ferrari SF90 Stradale",
     "sgt": "McLaren Solus GT",
     "ssc": "SSC Tuatara",
@@ -95,6 +96,19 @@
       "handling": 51.72,
       "nitro": 51.29,
       "nickname": "猫头鹰",
+      "zones": [
+        "五区"
+      ]
+    },
+    {
+      "title": "Aspark Owl SP600",
+      "score": 5640,
+      "class": "R",
+      "max_speed": 480.4,
+      "acceleration": 86.14,
+      "handling": 50.56,
+      "nitro": 60.59,
+      "nickname": "r鹰",
       "zones": [
         "五区"
       ]
