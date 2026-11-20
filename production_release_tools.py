@@ -44,6 +44,7 @@ ROUTE_VIDEO_FILES=('backend/route_videos.py','backend/route_video_release.py','r
                   'route-video-seed.json','ROUTE_VIDEO_RELEASE.md')
 APP_FILES+=ROUTE_VIDEO_FILES
 COMPONENT_GROUPS+=(ROUTE_VIDEO_FILES,)
+APP_FILES+=('backend/route_video_update.py','backend/mini_wechat_binding.py')
 OCR_CODE_FILES=('backend/map_layout.py','backend/map_recognition.py','backend/map_ocr_engine.py','backend/map_ocr_worker.py',
  'backend/map_ocr_production.py','backend/map_ocr_supervisor.py','map_recognition.js','map_recognition.css',
  'production/ocr-models.json','production/ocr-assets.json','production/ocr-selfcheck.py','production/racepick-map-ocr.service',
