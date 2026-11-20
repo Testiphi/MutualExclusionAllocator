@@ -11294,6 +11294,11 @@
             "title": "Slower Confirmed",
             "default": false
           },
+          "tier_change_confirmed": {
+            "type": "boolean",
+            "title": "Tier Change Confirmed",
+            "default": false
+          },
           "review_score": {
             "anyOf": [
               {
