@@ -67,6 +67,8 @@ test('存储写入失败会返回失败而不是假装成功', async () => {
 });
 const html = read('index.html');
 const fn = name => html.match(new RegExp(`^    (?:async )?function ${name}\\([^\\n]*\\) \\{.*?^    \\}`, 'ms'))[0];
+// 页面片段注入按依赖顺序带上被调用的辅助函数，避免页面新增依赖后测试在合成作用域里报未定义。
+const fns = (...names) => names.map(name => fn(name)).join('\n');
 test('真实页面清空选择后不会发布排队的旧结果', () => {
     const result = new Function(`${source}
         const raf=[],timers=[],published=[];
@@ -117,10 +119,11 @@ test('真实页面损坏车库读取保留原存储，不自动全选并保存',
 test('真实页面SC状态切到不含原类型的区档时恢复默认', () => {
     const result = new Function(`${source}
         const currentZone='zone5';let currentTier='理论';
+        const APP_CONFIG={server:'cn'};
         const specialRouteEnabled={'A/B':'新跳图'};
         const RACE_DATA={tracks:[{大地图:'A',小地图:'B',五区:{
             理论:[{sc:true,sc_type:'新跳图'}],高手:[{sc:true,sc_type:'旧跳图'}]}}]};
-        ${fn('getRouteState')}
+        ${fns('getScoreScTypes','getScTypes','getRouteState')}
         const theory=getRouteState('A','B');currentTier='高手';
         return {theory,expert:getRouteState('A','B'),stored:specialRouteEnabled['A/B']};`)();
     assert.deepEqual(result, {theory:'新跳图',expert:'all',stored:'all'});
