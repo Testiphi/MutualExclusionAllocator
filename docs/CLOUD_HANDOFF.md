@@ -1,3 +1,17 @@
+## 2026-11-20 网页应用 6e3b1f9b 待审包构包与解包验证
+
+- 本记录为待审包构包回执，不是上线回执。生产未切换、未改活动指针、未改成绩、未导入视频；现场只读预检与目标 Linux 隔离自检尚待运维回传。
+- 候选发布 ID `6e3b1f9b057fb10695c46462`，源码与数据来源同为 `41447fbf191d6800ac5846301b11224e359fc5f7`（`data_source_kind=git_commit`，五份运行数据由 Git blob 原字节生成）。上一已验收应用 `44a28bcfd8e8e471645ea133`，即本包的应用回退目标。
+- 交付包 `RacePick-Web-R-Eagle-20261120-6e3b1f9b-delivery.zip`，158584088 字节，整包 SHA-256 `556e7d5db05a32c170e20ae2bf4e52cdcfe4526f30b430f6bc50dc835c3e603e`。内层 `racepick-accounts-release.zip` SHA-256 `13c2490a2c179c7ed9c17cd85dca3596befe17112ffdeeb71091f8ceedf47d5b`，158416319 字节、184 成员（183 运行文件 + manifest.json）。37 个锁定 wheel，外层 20 成员、SHA256SUMS 19 项。
+- 相对 44a28bcf 仅 7 个成员变化，其余 177 个逐字节相同、无增删：`MINI_FEATURES_OPENAPI_20261103.json` 354178→354339、`cars.json` 83653→83944、`cars.global.json` 31999→31999、`gauntlet_data.json` 236325→237122、`gauntlet_data.global.json` 136085→136485、`global-data-manifest.json` 2173→1866、`manifest.json` 29730→27755。已按上个包核对运行白名单，历史补充的 `backend/mini_wechat_binding.py` 与 `backend/route_video_update.py` 均在包内，且已补进仓库 `production_release_tools.py`。
+- 改动来源：三项缺陷修复（构包白名单补齐、小程序原生契约补出 `tier_change_confirmed`、页面片段测试补齐 `getScTypes` 依赖）、新增车辆 Aspark Owl SP600（昵称 r鹰，`zones=["五区"]`，仅入国服五区车池，无星级限制）、国服五区理论 r鹰 5 条成绩及 11-18 至 11-20 各批回代。
+- 包内国服：83 赛道、4779 条目、2918 条带成绩、347 辆车；带成绩档位为五区理论 1122／五区高手 749／四区理论 528／四区高手 519。包内国际服：710 条成绩全在五区理论，49 辆计算车型、12 个路线参考身份，`dataset_version` `62212fba9aa5784f9aeec48264178e6d2ca2650f1102c00c390f24fee0c0dbd9`，`global-data-manifest.json` 1866 字节。
+- 包内三份国际服 JSON 是种子而非生产活动成绩：`backend/app.py` 在存在 `global_score_versions` 时一律从活动版本指针返回 `cars.global.json`／`gauntlet_data.global.json`／`global-data-manifest.json`，缺该写入器才回退包内文件；国服同理走 `score_versions.current()`。仅切换应用不改变活动成绩。生产活动 `dataset_version` 仍应为 `4c5fd0ef1cc31ef6ffb8e81f1f971a09da51e24426ab8a63392efcf4689de82a`、708 条成绩，与种子不同属预期，不得对齐。
+- 验证：`tests/` 106 项 OK（跳过 1）、`backend/` 408 项 OK（跳过 24）、四个 JS 套件 47 项全过、启动冒烟通过、`validate_data.py` 0 错误、`validate_global_bundle` 通过。解包后外层 CRC、SHA256SUMS 19/19、内层 `read_bundle`／`verify`、重算发布 ID 均通过；`production/selfcheck.py` 在 Windows 实跑 PASS（临时数据库、未发信、HTTP 仅限本机）。
+- 未执行项：目标 Linux 隔离目录 37 wheel 离线安装与临时库应用、`selfcheck.py` 的 posix 分支（备份/恢复锁、成绩与社区组件迁移）、现场只读预检（current、双服务 PID/cwd、健康、正式 A 云写开关、备份 timer）、隔离库双场景视频矩阵与 r鹰 抽样。均列入本轮待核验项，已写进运维提示词。
+- 归档 `本地归档\release-r-eagle-20261120\`：`delivery\`（20 个文件，含内层包与 SHA256SUMS）、`BUILD_VERIFICATION.json`、`OPS_HANDOFF.txt`（可直接复制的运维提示词）、整包 `.sha256` 旁挂文件。
+- 本记录提交发生在构包之后，包内 `code_commit` 仍为 `41447fb`；文档提交不影响包内 183 文件，重新构包须以新的干净提交为准。
+
 ## 2026-11-16 8065 跑法视频 25 条批次 9b5b66c3 上线
 
 - 批次计划 SHA-256 `9b5b66c35a2317b77b76056ee551dad9fb6519cf7c2ab64ade4a351bcd2a9c29`。生产基线为 1495 条启用、16 条停用，25 条均属于现网可选的 12 个参考车型，完整键无重复、停用撞键或字段冲突。
