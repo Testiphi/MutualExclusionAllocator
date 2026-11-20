@@ -17,7 +17,7 @@ function storageWx(wx,scope=planScope){
  return {
   getStorageSync:key=>wx.getStorageSync(prefix+key),
   setStorageSync:(key,value)=>wx.setStorageSync(prefix+key,value),
-  removeStorageSync:key=>wx.removeStorageSync(prefix+key),
+  removeStorageSync:key=>{if(typeof wx.removeStorageSync==='function')wx.removeStorageSync(prefix+key);},
   getRandomValues:typeof wx.getRandomValues==='function'?options=>wx.getRandomValues(options):undefined
  };
 }

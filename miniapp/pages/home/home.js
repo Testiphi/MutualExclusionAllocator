@@ -48,7 +48,7 @@ Page({
         this.videoRows?.clear();
         this.setData({rows:[],resultRows:[],schemes:[],schemeOptions:[],schemeIndex:0,activeScheme:null,
           hasComputedResult:false,resultGuidance:null,banEditor:null,cars:[],selectedCount:0,cloudConflict:null,
-          cloudDirty:false,cloudEmpty:false,cloudLoaded:false,cloudStatus:'',unreadCounts:{},homeNickname:'',homeHub:null});
+          cloudDirty:false,cloudEmpty:false,cloudLoaded:false,cloudStatus:''});
         if(this.homeVisible&&this.controller&&!this.refreshingAccount)void this.syncAccount();
       });
     }
@@ -182,8 +182,8 @@ Page({
     });
   },
   onResize(){this.measureModeSliders();},
-  async onShow() {this.homeVisible=true;this.refreshingAccount=true;try{if(this.account)await this.account.refresh();}catch(e){this.setData({cloudStatus:e.message});}finally{this.refreshingAccount=false;}if(this.controller){await this.syncAccount((runtime.policy().writeAcceptance||runtime.policy().readbackAcceptance||runtime.policy().conflictAcceptance)?false:true);this.controller.show();if(this.account){void runtime.usage()?.visit('home',this.state.draft.server,'resume');void this.refreshHomeIdentity();}}},
-  onHide() {this.homeVisible=false;this.setData({homeHub:null,banEditor:null}); this.closeDropdown();if (this.controller) this.controller.hide(); },
+  async onShow() {this.homeVisible=true;this.refreshingAccount=true;try{if(this.account)await this.account.refresh();}catch(e){this.setData({cloudStatus:e.message});}finally{this.refreshingAccount=false;}if(this.controller){await this.syncAccount((runtime.policy().writeAcceptance||runtime.policy().readbackAcceptance||runtime.policy().conflictAcceptance)?false:true);this.controller.show();if(this.account){void runtime.usage()?.visit('home',this.state.draft.server,'resume');}}},
+  onHide() {this.homeVisible=false;this.setData({banEditor:null}); this.closeDropdown();if (this.controller) this.controller.hide(); },
   onUnload() { this.unloaded=true;this.cloudTicket=(this.cloudTicket||0)+1;if(this.unsubscribeAccount)this.unsubscribeAccount();this.closeDropdown();if (this.controller) this.controller.destroy();if(this.nativeApi)this.nativeApi.session.invalidate(); },
   onPageScroll() { this.closeDropdown(); },
   closeDropdown() { this.dropdownGeneration=(this.dropdownGeneration||0)+1;if(this.data.dropdown)this.setData({dropdown:null}); },
@@ -345,29 +345,6 @@ Page({
     const index=Number(e.detail.value);
     if(Number.isInteger(index)&&this.data.schemes[index]){this.setData({schemeIndex:index,activeScheme:this.data.schemes[index]});this.updateView();}
   },
-  contributeResult() {
-    const guidance=this.data.resultGuidance;
-    if(!guidance?.canSubmit||this.state.busy||this.state.error)return;
-    if(!this.account||runtime.policy().restricted){
-      wx.showModal({title:'投稿入口暂不可用',content:'现在还没连上投稿服务，稍后再来试试吧！',showCancel:false});
-      return;
-    }
-    const draft=this.state.draft,binding=JSON.stringify(draft),result=this.state.result,index=this.data.schemeIndex;
-    const generation=this.account.generation(),targets=guidance.targetMaps;
-    const open=map=>{
-      if(this.unloaded||this.state.busy||this.state.error||this.state.result!==result||this.data.schemeIndex!==index||
-         JSON.stringify(this.state.draft)!==binding||this.account.generation()!==generation||runtime.policy().restricted)return;
-      const app=getApp();
-      app.submissionTarget=null;
-      app.openSubmission=null;
-      app.submissionMapTarget={server:draft.server,big:map.big,small:map.small,zone:draft.zone==='zone4'?'四区':'五区',tier:draft.tier};
-      wx.navigateTo({url:'/pages/submissions/submissions?compose=1&server='+draft.server,fail:()=>{app.submissionMapTarget=null;}});
-    };
-    if(targets.length===1){open(targets[0]);return;}
-    wx.showActionSheet({itemList:targets.map(m=>`第${m.originalIndex+1}图 · ${m.big} / ${m.small}`),success:r=>{
-      if(Number.isInteger(r.tapIndex)&&targets[r.tapIndex])open(targets[r.tapIndex]);
-    }});
-  },
   selectMap(e) {
     const { index, field, pending } = e.currentTarget.dataset;
     const target = pending ? this.state.pending : this.state.draft.maps;
@@ -426,10 +403,7 @@ Page({
   importGarage(){if(runtime.policy().writeAcceptance||runtime.policy().readbackAcceptance||runtime.policy().conflictAcceptance){this.setData({cloudStatus:'游客导入另行验收，本轮保留原游客记录'});return;}if(!this.canEditGarage())return;const server=this.state.draft.server;this.confirmCloud('导入本机游客车库','导入到本账号的临时车库。只有点击保存车库后才会上传；游客记录保留。',cloud=>{const storage=createStorage(runtime.storageWx(wx),this.service.mode),saved=storage.read(server),draft=storage.readWorking(server,saved)||saved;if(!draft)throw Error('本机没有已保存的游客车库');cloud.importGuest({cars:draft.cars,stars:draft.stars,...(server==='global'?{ocMap:draft.oc}:{})});});},
   overwriteCloud(){if(runtime.policy().writeAcceptance||runtime.policy().conflictAcceptance){this.setData({cloudStatus:'冲突两份已保留，本轮停止，不覆盖'});return;}if(runtime.policy().allowCloudWrites===false){this.setData({cloudStatus:'当前服务尚未开放云端保存'});return;}this.confirmCloud('保存本地版本','保留本地车库，以当前最新云端版本为基线再次保存？',cloud=>cloud.overwrite());},
   async recoverCloud(){if(!this.cloud){this.setData({cloudStatus:'请先重试读取账号车库'});return;}const cloud=this.cloud,ticket=this.cloudTicket;try{await cloud.recover();if(ticket===this.cloudTicket)this.setData({cloudStatus:'原保存已确认；后续修改保留。请先核对报告，不继续写；未知结果专项另行核对。'});}catch(e){if(ticket===this.cloudTicket)this.setData({cloudStatus:e.message});}},
-  openHub(e){this.closeDropdown();this.setData({homeHub:e.currentTarget.dataset.hub});},
-  closeHub(){this.setData({homeHub:null});},
-  async refreshHomeIdentity(){if(runtime.policy().restricted||!this.account?.state().actor)return;const ticket=this.account.generation();const values=await Promise.allSettled([this.account.call('/notifications'),this.account.call('/contributions/me?period=month')]);if(ticket!==this.account.generation())return;this.setData({unreadCounts:values[0].status==='fulfilled'?values[0].value.counts:{},homeNickname:values[1].status==='fulfilled'?values[1].value.preference.nickname:''});},
-  navigate(e){const {page,mode,tab,compose}=e.currentTarget.dataset;const policy=runtime.policy();if(policy.restricted&&!(page==='coverage'&&policy.productionAccount===true)&&(page!=='account'||mode&&mode!=='login'&&!(mode==='register'&&policy.registration===true&&!this.data.actor))){this.setData({cloudStatus:'当前服务暂未开放此功能'});return;}if(!['account','coverage','submissions','community','workbench'].includes(page))return;this.setData({homeHub:null});wx.navigateTo({url:'/pages/'+page+'/'+page+'?server='+this.state.draft.server+(mode?'&mode='+encodeURIComponent(mode):'')+(tab?'&tab='+encodeURIComponent(tab):'')+(compose?'&compose=1':'')});},
+  navigate(e){const {page,mode}=e.currentTarget.dataset;const policy=runtime.policy();if(policy.restricted&&!(page==='coverage'&&policy.productionAccount===true)&&(page!=='account'||mode&&mode!=='login'&&!(mode==='register'&&policy.registration===true&&!this.data.actor))){this.setData({cloudStatus:'当前服务暂未开放此功能'});return;}if(!['account','coverage'].includes(page))return;wx.navigateTo({url:'/pages/'+page+'/'+page+'?server='+this.state.draft.server+(mode?'&mode='+encodeURIComponent(mode):'')});},
   compute() { this.controller.compute(); }, chooseImage() { this.controller.chooseImage(); },
   reconnect() {return this.controller?this.controller.reconnect():this.connectNative(true);},
   retryRecognition() {return this.controller.retryRecognition();},

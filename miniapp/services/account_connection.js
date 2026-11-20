@@ -127,7 +127,7 @@ function createAccountConnection(wx,input){
     throw e;
    }
   }),
-  call:unavailable,contract:unavailable,recover:unavailable,uploadEvidence:unavailable,downloadEvidence:unavailable
+  call:unavailable,contract:unavailable,recover:unavailable
  };
  return {client:facade,ensure,dispose(){disposed=true;ready=false;guest.session.invalidate();},origin:config.origin,planId:profile.planId,policy:{restricted:true,canLogout,allowCloudWrites:writable,writeAcceptance:writable&&!conflict&&!formal,productionAccount:formal,conflictAcceptance:conflict,readbackAcceptance:readback,actions,registration,wechatBinding,wechatLogin},
   diagnostics:()=>({ready,healthDiagnostic,counts:{...counts},...(registration?{registration:true}:{}),retryAfterMs:Math.max(0,retryAt-Date.now()),allowCloudWrites:writable,...(readback?{readbackAcceptance:true,readbackHalted}:{}),...(conflict?{conflictAcceptance:guard?.summary()||null,conflictConfigured:true}:writable&&!formal?{writeAcceptance:guard?.summary()||null}: {})})};

@@ -8,10 +8,10 @@ const copy=x=>JSON.parse(JSON.stringify(x));
 function createAccountClient(wx,config,guest) {
  const transport=createTransport(wx,{enabled:true,baseURL:config.origin,allowLocal:config.kind==='fixture',namespace:'account'});
  const anonymousTransport=createTransport(wx,{enabled:true,baseURL:config.origin,allowLocal:config.kind==='fixture',namespace:'account'});
- let current=null,generation=0,availability=null,contractFlight=null,pendingAuth=null;const listeners=new Set(),operations=new Map(),pendingWrites=new Map(),privateFiles=new Set();
+ let current=null,generation=0,availability=null,contractFlight=null,pendingAuth=null;const listeners=new Set(),operations=new Map(),pendingWrites=new Map();
  function emit(){for(const fn of listeners)fn(state());}
  function state(){return current?copy({actor:current.actor,features:current.features,expires_at:current.expires_at,authenticated_at:current.authenticated_at}):{actor:null,features:null};}
- function clear(){generation++;current=null;availability=null;contractFlight=null;pendingAuth=null;transport.clearSession();operations.clear();pendingWrites.clear();for(const f of privateFiles)wx.getFileSystemManager().unlink({filePath:f,complete:()=>{}});privateFiles.clear();emit();}
+ function clear(){generation++;current=null;availability=null;contractFlight=null;pendingAuth=null;transport.clearSession();operations.clear();pendingWrites.clear();emit();}
  function actor(){if(!current||current.expires_at*1000<=Date.now()){if(current)clear();throw Object.assign(Error('请先登录RacePick账号'),{status:401});}return current.actor;}
  function validateSession(value,tokenRequired){const now=Date.now(),parent=guest.session?.current();
   const issuedAt=value?.authenticated_at;
@@ -130,12 +130,6 @@ function createAccountClient(wx,config,guest) {
   async recover(key){const operation=operations.get(key);if(!operation)throw Error('当前会话没有此待核对操作');const r=await direct('/feature-operations/'+encodeURIComponent(key));pendingWrites.delete((operation.method||'POST')+':'+operation.path);operations.delete(key);return r;},
   async profile(server){return direct('/profile?server='+server);},
   async saveProfile(server,profile,revision,{intent='save',key}={}) {const ticket=generation;key=key||await requestId(wx);sameActor(ticket);try{return await direct('/profile?server='+server,{method:'PUT',data:{schema:1,request_key:key,explicit_save:true,intent,...(intent==='import_guest'?{confirm_guest_import:true}:{}),revision,cars:profile.cars,stars:profile.stars,...(server==='global'?{ocMap:profile.ocMap||{}}:{})}});}catch(e){e.operationKey=key;throw e;}},
-  async uploadEvidence(sid,revision,file,key){const ticket=generation;actor();if(file.size>2097152)throw Error('证据图片不能超过2MiB');key=key||await requestId(wx);sameActor(ticket);const id=current.actor.id,path='/submissions/'+sid+'/images/upload?revision='+revision;blockPending('POST:'+path);
-   try{const r=responseJSON(await transport.upload(prefix+path,{filePath:file.path,name:'image',formData:{},header:{'X-Account-ID':id,'Idempotency-Key':key}}).promise);if(ticket!==generation)throw Error('账号已变化');return r;}catch(e){if(ticket===generation){if(e.status===401){clear();throw e;}operations.set(key,{path,actor:id,method:'POST'});if(uncertain(e))pendingWrites.set('POST:'+path,key);e.operationKey=key;}throw e;}
-  },
-  async downloadEvidence(url){const id=actor().id,ticket=generation;if(!/^\/api\/mini\/account\/v1\/submissions\/[a-f0-9]+\/images\/[a-f0-9]+$/.test(url))throw Error('私有图片地址无效');
-   return new Promise((resolve,reject)=>wx.downloadFile({url:config.origin+url,timeout:30000,header:{Authorization:'Bearer '+current.token,'X-Account-ID':id},success:r=>{if(r.statusCode!==200||ticket!==generation){if(r.tempFilePath)wx.getFileSystemManager().unlink({filePath:r.tempFilePath,complete:()=>{}});if(r.statusCode===401&&ticket===generation)clear();reject(Error('私有图片不可用'));return;}privateFiles.add(r.tempFilePath);resolve(r.tempFilePath);},fail:()=>reject(Error('图片下载未完成'))}));
-  }
  };
 }
 module.exports={createAccountClient};
